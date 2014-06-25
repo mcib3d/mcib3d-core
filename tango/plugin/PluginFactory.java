@@ -339,6 +339,26 @@ public class PluginFactory {
         }
         return null;
     }
+    
+    public static NucleusSegmenter getNucleusSegmenter(String s) {
+        if (s == null) {
+            return null;
+        }
+        try {
+            Object res = null;
+            if (nucleiSegmenters.containsKey(s)) {
+                res = nucleiSegmenters.get(s).newInstance();
+            }
+            if (res != null && res instanceof NucleusSegmenter) {
+                return ((NucleusSegmenter) res);
+            }
+        } catch (Throwable e) {
+            mcib3d.utils.exceptionPrinter.print(e, "getClass SpotSegmenter exception...", Core.GUIMode);
+        }
+        return null;
+    }
+    
+    
 
     public static Thresholder getThresholder(String s) {
         if (s == null) {

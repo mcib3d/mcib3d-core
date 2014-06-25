@@ -50,6 +50,8 @@ public class IterativeThreshold implements NucleusSegmenter, SpotSegmenter {
     BooleanParameter useUnit = new BooleanParameter("Use units", "ITunits", true);
     SliderParameter step = new SliderParameter("Step for iteration", "step", 1, 1000, 10);
     BooleanParameter deleteOutsideNuclei = new BooleanParameter("Delete outside nuclei", "deleteOutsideNuclei", true);
+    // TODO creat choice to choose among different criteria method
+    
     
     private boolean nucMode;
 
@@ -65,8 +67,8 @@ public class IterativeThreshold implements NucleusSegmenter, SpotSegmenter {
         }
         TrackThreshold TT = new TrackThreshold((int) volMin, (int) volMax, st, 0, 0);
         TT.setMethodThreshold(TrackThreshold.THRESHOLD_METHOD_STEP); // others methods for histogram are available
-        TT.verbose=verb;
-        TT.minElong = true; // find roundest object (or max volume if false)
+        TT.setCriteriaMethod(TrackThreshold.CRITERIA_METHOD_MIN_ELONGATIO);// find roundest object (or max volume if false)
+        TT.verbose=verb; 
         ImagePlus res = TT.segment(img.getImagePlus(), verb);
 
         if (deleteOutsideNuclei.isSelected() && !nucMode) {
