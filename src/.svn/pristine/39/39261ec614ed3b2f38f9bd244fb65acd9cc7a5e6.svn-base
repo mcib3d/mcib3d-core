@@ -1,0 +1,153 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package mcib3d.utils;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+/**
+ *
+ **
+ * /**
+Copyright (C) 2008- 2011 Thomas Boudier
+ *
+
+ *
+This file is part of mcib3d
+
+mcib3d is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ * @author thomas
+ */
+public class HistogramPopulation {
+
+    ArrayList<HistogramUtil> histograms = null;
+    ArrayUtil[] bins = null;
+
+    /**
+     * 
+     */
+    public HistogramPopulation() {
+        histograms = new ArrayList<HistogramUtil>();
+    }
+
+    /**
+     * 
+     * @param h
+     */
+    public void addHistogram(HistogramUtil h) {
+        histograms.add(h);
+    }
+
+    /**
+     * 
+     * @param nb
+     * @return
+     */
+    public HistogramUtil getHistogram(int nb) {
+        return histograms.get(nb);
+    }
+
+    /**
+     * 
+     */
+    public void computeCumulBins() {
+        HistogramUtil hist;
+        Iterator it = histograms.iterator();
+        int nbh = histograms.size();
+        int nbbins = histograms.get(0).getNbBins();
+        bins = new ArrayUtil[nbbins];
+        int po = 0;
+        for (int c = 0; c < nbbins; c++) {
+            it = histograms.iterator();
+            po = 0;
+            bins[c] = new ArrayUtil(nbh);
+            while (it.hasNext()) {
+                hist = (HistogramUtil) it.next();
+                bins[c].addValue(po, hist.getCumulNumber(c));
+                po++;
+            }
+        }
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public double[] getMinimumCumul() {
+        if (bins == null) {
+            computeCumulBins();
+        }
+        double[] minVal = new double[bins.length];
+        for (int i = 0; i < bins.length; i++) {
+            minVal[i] = bins[i].getMinimum();
+        }
+
+        return minVal;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public double[] getMaximumCumul() {
+        if (bins == null) {
+            computeCumulBins();
+        }
+        double[] minVal = new double[bins.length];
+        for (int i = 0; i < bins.length; i++) {
+            minVal[i] = bins[i].getMaximum();
+        }
+
+        return minVal;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public double[] getAverageCumul() {
+        if (bins == null) {
+            computeCumulBins();
+        }
+        double[] minVal = new double[bins.length];
+        for (int i = 0; i < bins.length; i++) {
+            minVal[i] = bins[i].getMean();
+        }
+
+        return minVal;
+    }
+
+    /**
+     * 
+     * @param f
+     * @return
+     */
+    public double[] getSDCumul(double f) {
+        if (bins == null) {
+            computeCumulBins();
+        }
+        double me, sd;
+        double[] minVal = new double[bins.length];
+        for (int i = 0; i < bins.length; i++) {
+            me = bins[i].getMean();
+            sd = bins[i].getStdDev();
+            minVal[i] = me + f * sd;
+        }
+
+        return minVal;
+    }
+}
