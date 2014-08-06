@@ -2551,7 +2551,7 @@ public abstract class Object3D {
             return Double.NaN;
         }
     }
-    
+
     public double getModePixValue(ImageHandler ima) {
         if (volume > 0) {
             return listValues(ima).getMode();
@@ -2559,7 +2559,7 @@ public abstract class Object3D {
             return Double.NaN;
         }
     }
-    
+
     public double getModePixValueNonZero(ImageHandler ima) {
         if (volume > 0) {
             return listValues(ima).getModeNonZero();
@@ -2567,8 +2567,6 @@ public abstract class Object3D {
             return Double.NaN;
         }
     }
-    
-    
 
     /**
      *
@@ -3064,6 +3062,25 @@ public abstract class Object3D {
      */
     public Object3DVoxels getOpenedObject(float radX, float radY, float radZ, boolean createLabelImage) {
         return getMorphoObject(BinaryMorpho.MORPHO_OPEN, radX, radY, radZ, createLabelImage);
+    }
+
+    public Object3DVoxels getLayerObject(float r1, float r2) {
+        Object3DVoxels obMax;
+        if (r2 > 0) {
+            obMax = getDilatedObject(r2, r2, r2, true);
+        } else {
+            obMax = getErodedObject(-r2, -r2, -r2, true);
+        }
+        Object3DVoxels obMin;
+        if (r1 > 0) {
+            obMin = getDilatedObject(r1, r1, r1, true);
+        } else {
+            obMin = getErodedObject(-r1, -r1, -r1, true);
+        }
+
+        obMax.substractObject(obMin);
+
+        return obMax;
     }
 
     /**
