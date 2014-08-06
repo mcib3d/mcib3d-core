@@ -117,24 +117,27 @@ public class Layer_Statistics implements PlugInFilter, MeasurementObject {
         for (int i = 0; i < pop.getNbObjects(); i++) {
             Object3D ob = pop.getObject(i);
             Object3DVoxels obMax;
-            if (radMax > 0) {
-                obMax = ob.getDilatedObject(radMax, radMax, radMax, true);
-            } else {
-                obMax = ob.getErodedObject(-radMax, -radMax, -radMax, true);
-            }
-            Object3DVoxels obMin;
-            if (radMin > 0) {
-                obMin = ob.getDilatedObject(radMin, radMin, radMin, true);
-            } else {
-                obMin = ob.getErodedObject(-radMin, -radMin, -radMin, true);
-            }
-//        ImageInt test=new ImageShort("test",512,512,512);
-//        test.draw(obMax, 200);
-//        test.draw(obMin, 100);
-//        test.draw(ob, 50);
-//        test.show();
+//            if (radMax > 0) {
+//                obMax = ob.getDilatedObject(radMax, radMax, radMax, true);
+//            } else {
+//                obMax = ob.getErodedObject(-radMax, -radMax, -radMax, true);
+//            }
+//            Object3DVoxels obMin;
+//            if (radMin > 0) {
+//                obMin = ob.getDilatedObject(radMin, radMin, radMin, true);
+//            } else {
+//                obMin = ob.getErodedObject(-radMin, -radMin, -radMin, true);
+//            }
+////        ImageInt test=new ImageShort("test",512,512,512);
+////        test.draw(obMax, 200);
+////        test.draw(obMin, 100);
+////        test.draw(ob, 50);
+////        test.show();
+//
+//            obMax.substractObject(obMin);
 
-            obMax.substractObject(obMin);
+            obMax = ob.getLayerObject(radMin, radMax);
+
             rt.setValue("Avg_object", i, ob.getMeanPixValue(signal));
             rt.setValue("IntDen_object", i, ob.getIntegratedDensity(signal));
             rt.setValue("Avg_layer", i, obMax.getMeanPixValue(signal));
