@@ -92,6 +92,16 @@ public class Objects3DPopulation {
         addImage(plus, cal);
     }
 
+    public Objects3DPopulation(ImageInt plus, int threshold) {
+        objects = new ArrayList();
+        hash = new HashMap();
+        Calibration cal = plus.getCalibration();
+        if (cal == null) {
+            cal = new Calibration();
+        }
+        addImage(plus, threshold, cal);
+    }
+
     /**
      *
      * @return
@@ -312,7 +322,7 @@ public class Objects3DPopulation {
      *
      * @param seg
      */
-    public void addImage(ImageInt seg, Calibration cali) {
+    public void addImage(ImageInt seg, int threshold, Calibration cali) {
         int min = (int) seg.getMinAboveValue(0);
         int max = (int) seg.getMax();
         if (max == 0) {
@@ -335,7 +345,7 @@ public class Objects3DPopulation {
             for (int j = 0; j < sy; j++) {
                 for (int i = 0; i < sx; i++) {
                     pix = seg.getPixelInt(i, j, k);
-                    if (pix > 0) {
+                    if (pix > threshold) {
                         objectstmp[pix - min].add(new Voxel3D(i, j, k, pix));
                     }
                 }
@@ -350,6 +360,10 @@ public class Objects3DPopulation {
                 //IJ.log("adding ob " + ob.getValue() + " " + ob.getCenterAsPoint());
             }
         }
+    }
+
+    public void addImage(ImageInt seg, Calibration cali) {
+        addImage(seg, 0, cali);
     }
 
     /**
@@ -1237,4 +1251,5 @@ public class Objects3DPopulation {
 //    public void setLabelImage(ImageInt labelImage) {
 //        this.labelImage = labelImage;
 //    }
+
 }
