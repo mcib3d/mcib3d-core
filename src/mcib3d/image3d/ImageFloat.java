@@ -835,6 +835,15 @@ public class ImageFloat extends ImageHandler {
         }
     }
 
+    public void intersectMask(ImageFloat mask) {
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (mask.getPixel(xy, z) == 0) {
+                    pixels[z][xy] = 0;
+                }
+            }
+        }
+    }
     @Override
     public void invert(ImageInt mask) {
         getMinAndMax(mask);
