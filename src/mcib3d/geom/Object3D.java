@@ -655,7 +655,10 @@ public abstract class Object3D {
         double I2 = J3 / (J1 * J1 * J1);
 
         return new double[]{J1, J2, J3, I1, I2};
-
+    }
+    
+    public static int getNbMoments3D(){
+        return 5;
     }
 
     /**
