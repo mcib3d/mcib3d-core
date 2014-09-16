@@ -110,9 +110,9 @@ public class ImageFloat extends ImageHandler {
             this.pixels = ((ImageFloat) im).pixels;
         }
     }
-    
+
     public static ImageFloat newBlankImageFloat(String title, ImageHandler ih) {
-        ImageFloat res =  new ImageFloat(title, ih.sizeX, ih.sizeY, ih.sizeZ);
+        ImageFloat res = new ImageFloat(title, ih.sizeX, ih.sizeY, ih.sizeZ);
         res.setScale(ih);
         res.setOffset(ih);
         return res;
@@ -346,10 +346,10 @@ public class ImageFloat extends ImageHandler {
     public void setPixel(int coord, float value) {
         pixels[coord / sizeXY][coord % sizeXY] = value;
     }
-    
+
     @Override
     public void setPixel(Point3D point, float value) {
-        pixels[(int)point.z][(int)point.x + (int)point.y * sizeX] = value;
+        pixels[(int) point.z][(int) point.x + (int) point.y * sizeX] = value;
     }
 
     @Override
@@ -463,6 +463,22 @@ public class ImageFloat extends ImageHandler {
     @Override
     public IntImage3D getImage3D() {
         return new IntImage3D(img.getImageStack());
+    }
+
+    public ImageByte thresholdRange(float min, float max) {
+        ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
+        res.offsetX = offsetX;
+        res.offsetY = offsetY;
+        res.offsetZ = offsetZ;
+
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if ((pixels[z][xy] >= min) && (pixels[z][xy] <= max)) {
+                    res.pixels[z][xy] = (byte) 255;
+                }
+            }
+        }
+        return res;
     }
 
     @Override
@@ -844,6 +860,7 @@ public class ImageFloat extends ImageHandler {
             }
         }
     }
+
     @Override
     public void invert(ImageInt mask) {
         getMinAndMax(mask);
@@ -862,13 +879,11 @@ public class ImageFloat extends ImageHandler {
         }
     }
 
-    
-    
     public void subtract(ImageFloat other) {
         /*if (!this.sameDimentions(other)) {
-            return;
-        }
-        */
+         return;
+         }
+         */
         for (int z = 0; z < sizeZ; z++) {
             for (int xy = 0; xy < sizeXY; xy++) {
                 pixels[z][xy] -= other.pixels[z][xy];
@@ -900,8 +915,6 @@ public class ImageFloat extends ImageHandler {
     public float getPixelInterpolated(Point3D P) {
         return getPixel((float) P.x, (float) P.y, (float) P.z);
     }
-
- 
 
     @Override
     public ImageHandler cropRadius(int xc, int yc, int zc, int rx, int ry, int rz, boolean mean, boolean sphere) {
@@ -1061,7 +1074,6 @@ public class ImageFloat extends ImageHandler {
         double ez;
         double edge;
 
-
         for (int k = 0; k < sizeZ; k++) {
             //if (this.showStatus) {
             //    IJ.showStatus("3D Sobel : " + (int) (100 * k / sizez) + "%");
@@ -1103,7 +1115,6 @@ public class ImageFloat extends ImageHandler {
         final float radX2 = radx;
         final float radY2 = rady;
         final float radZ2 = radz;
-
 
         // PARALLEL 
         final AtomicInteger ai = new AtomicInteger(0);
@@ -1207,7 +1218,7 @@ public class ImageFloat extends ImageHandler {
     public double getSizeInMb() {
         return (double) (4 * sizeX * sizeY * sizeZ) / (1024 * 1024);
     }
-    
+
     @Override
     public int getType() {
         return ImagePlus.GRAY32;

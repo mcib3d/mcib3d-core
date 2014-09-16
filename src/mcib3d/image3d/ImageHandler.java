@@ -80,6 +80,7 @@ public abstract class ImageHandler {
         this.sizeXY = this.sizeX * this.sizeY;
         this.sizeXYZ = this.sizeXY * this.sizeZ;
     }
+    
 
     protected ImageHandler(ImageStack stack) {
         this.img = new ImagePlus("Image", stack);
@@ -147,6 +148,8 @@ public abstract class ImageHandler {
     public boolean maskContains(int x, int y, int z) {
         return (contains(x, y, z) && getPixel(x, y, z) != 0);
     }
+    
+   
 
     public abstract float getPixel(int coord);
 
@@ -1317,6 +1320,8 @@ public abstract class ImageHandler {
         return (x == 0 || y == 0 || z == 0 || x == (sizeX - 1) || y == (sizeY - 1) || (z == sizeZ - 1));
     }
 
+    public abstract ImageByte thresholdRange(float min, float max);
+    
     public abstract ImageByte threshold(float thld, boolean keepUnderThld, boolean strict);
 
     public ImageByte thresholdAboveInclusive(float thld) {
@@ -1744,6 +1749,7 @@ public abstract class ImageHandler {
     }
 
     public abstract void intersectMask(ImageInt mask);
+    
 
     public ImageFloat getDistanceMap(float thld, float scaleXY, float scaleZ, boolean invert, int nbCPUs) {
         return EDT.run(this, thld, scaleXY, scaleZ, invert, nbCPUs);
@@ -1872,5 +1878,20 @@ public abstract class ImageHandler {
             }
         }
         return false;
+    }
+
+    public ArrayList<Voxel3D> createListVoxels(int thresh) {
+        ArrayList<Voxel3D> voxelList = new ArrayList<Voxel3D>();
+        for (int z = 0; z < sizeZ; z++) {
+            for (int x = 0; x < sizeX; x++) {
+                for (int y = 0; y < sizeY; y++) {
+                    if (getPixel(x, y, z) > thresh) {
+                        Voxel3D v = new Voxel3D(x, y, z, getPixel(x, y, z));
+                        voxelList.add(v);
+                    }
+                }
+            }
+        }
+        return voxelList;
     }
 }

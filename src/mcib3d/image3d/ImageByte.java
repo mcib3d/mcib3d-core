@@ -464,6 +464,23 @@ public class ImageByte extends ImageInt {
     public IntImage3D getImage3D() {
         return new IntImage3D(img.getImageStack());
     }
+    
+    @Override
+    public ImageByte thresholdRange(float min, float max){
+        ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
+        res.offsetX = offsetX;
+        res.offsetY = offsetY;
+        res.offsetZ = offsetZ;
+        
+         for (int z = 0; z < sizeZ; z++) {
+                for (int xy = 0; xy < sizeXY; xy++) {
+                    if (((pixels[z][xy] & 0xFF) >=min)&&(((pixels[z][xy] & 0xFF) <=max))) {
+                        res.pixels[z][xy] = (byte) 255;
+                    }
+                }
+            }
+        return res;
+    }
 
     @Override
     public ImageByte threshold(float thld, boolean keepUnderThld, boolean strict) {
