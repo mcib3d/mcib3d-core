@@ -655,7 +655,7 @@ public class Objects3DPopulation {
         // geometrical mesure volume (pix and unit) and surface (pix and unit)
         ArrayList<double[]> al = new ArrayList<double[]>();
         for (Object3D ob : objects) {
-            double[] mes = {ob.getMeanPixValue(raw), ob.getStDevPixValue(raw), ob.getPixMinValue(raw), ob.getPixMaxValue(raw), ob.getIntegratedDensity(raw)};
+            double[] mes = {ob.getPixMeanValue(raw), ob.getPixStdDevValue(raw), ob.getPixMinValue(raw), ob.getPixMaxValue(raw), ob.getIntegratedDensity(raw)};
             al.add(mes);
         }
 

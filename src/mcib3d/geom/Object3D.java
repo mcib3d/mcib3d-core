@@ -418,13 +418,13 @@ public abstract class Object3D {
             return getDistCenterSigma();
         } else if (Measure == MEASURE_INTENSITY_AVG) {
             if (currentQuantifImage != null) {
-                return getMeanPixValue(currentQuantifImage);
+                return getPixMeanValue(currentQuantifImage);
             } else {
                 return 0;
             }
         } else if (Measure == MEASURE_INTENSITY_SD) {
             if (currentQuantifImage != null) {
-                return getStDevPixValue(currentQuantifImage);
+                return getPixStdDevValue(currentQuantifImage);
             } else {
                 return 0;
             }
@@ -2547,7 +2547,7 @@ public abstract class Object3D {
      * @param ima
      * @return The meanPixValue value
      */
-    public double getMeanPixValue(ImageHandler ima) {
+    public double getPixMeanValue(ImageHandler ima) {
         if (volume > 0) {
             return getIntegratedDensity(ima) / getVolumePixels();
         } else {
@@ -2555,7 +2555,7 @@ public abstract class Object3D {
         }
     }
 
-    public double getModePixValue(ImageHandler ima) {
+    public double getPixModeValue(ImageHandler ima) {
         if (volume > 0) {
             return listValues(ima).getMode();
         } else {
@@ -2563,7 +2563,7 @@ public abstract class Object3D {
         }
     }
 
-    public double getModePixValueNonZero(ImageHandler ima) {
+    public double gePixModeNonZero(ImageHandler ima) {
         if (volume > 0) {
             return listValues(ima).getModeNonZero();
         } else {
@@ -2653,7 +2653,7 @@ public abstract class Object3D {
      * @param ima the 3D image
      * @return The sigma value
      */
-    public double getStDevPixValue(ImageHandler ima) {
+    public double getPixStdDevValue(ImageHandler ima) {
         if ((currentQuantifImage == null) || (currentQuantifImage != ima)) {
             computeMassCenter(ima);
             currentQuantifImage = ima;

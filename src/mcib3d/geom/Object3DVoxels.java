@@ -57,6 +57,7 @@ public class Object3DVoxels extends Object3D {
     ArrayList<Voxel3D> voxels = null;
     // debug
     private boolean showStatus = false;
+    private double correctedSurfaceArea;
 
     /**
      *
@@ -704,6 +705,9 @@ public class Object3DVoxels extends Object3D {
     /**
      * Compute the contours of the object rad=0.5
      */
+    /**
+     * Compute the contours of the object rad=0.5
+     */
     private void computeContours(ImageInt segImage, int x0, int y0, int z0) {
         // init kdtree
         kdtreeContours = new KDTreeC(3);
@@ -719,6 +723,12 @@ public class Object3DVoxels extends Object3D {
         int sx = segImage.sizeX;
         int sy = segImage.sizeY;
         int sz = segImage.sizeZ;
+
+        // METHOD LAURENT GOLE FROM ??? TO COMPUTE SURFACE
+        int face;
+        int class3or4;
+        int class1 = 0, class2 = 0, class3 = 0, class4 = 0, class5 = 0, class6 = 0;
+
         // TODO parcourir seulement les objets de arraylist voxels et non la bounding box!
         // pb ??
 //       for (Voxel3D vox : voxels) {
@@ -735,6 +745,8 @@ public class Object3DVoxels extends Object3D {
                     if (segImage.contains(i, j, k)) {
                         pix0 = segImage.getPixelInt(i, j, k);
                         if (pix0 == value) {
+                            face = 0;
+                            class3or4 = 0;
                             if (i + 1 < sx) {
                                 pix1 = segImage.getPixelInt(i + 1, j, k);
                             } else {
@@ -769,43 +781,84 @@ public class Object3DVoxels extends Object3D {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
+                                face++;
+                                if (pix2 != value) {
+                                    class3or4 = 1;
+                                }
                             }
                             if (pix2 != value) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
+                                face++;
                             }
                             if (pix3 != value) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
+                                face++;
+                                if (pix4 != value) {
+                                    class3or4 = 1;
+                                }
                             }
                             if (pix4 != value) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
+                                face++;
                             }
                             if (pix5 != value) {
                                 cont = true;
                                 areaContactUnit += XX;
                                 areaContactVoxels++;
+                                face++;
+                                if (pix6 != value) {
+                                    class3or4 = 1;
+                                }
                             }
                             if (pix6 != value) {
                                 cont = true;
                                 areaContactUnit += XX;
                                 areaContactVoxels++;
+                                face++;
                             }
                             if (cont) {
                                 areaNbVoxels++;
                                 Voxel3D voxC = new Voxel3D(i + x0, j + y0, k + z0, value);
                                 contours.add(voxC);
                                 kdtreeContours.add(voxC.getArray(), voxC);
+                                // METHOD LAURENT GOLE FROM ??? TO COMPUTE SURFACE
+                                if (face == 1) {
+                                    class1++;
+                                }
+                                if (face == 2) {
+                                    class2++;
+                                }
+
+                                if (face == 3 && class3or4 == 0) {
+                                    class3++;
+                                }
+
+                                if (face == 3 && class3or4 == 1) {
+                                    class4++;
+                                }
+
+                                if (face == 4) {
+                                    class5++;
+                                }
+
+                                if (face == 5) {
+                                    class6++;
+                                }
                             }
                         }
                     }
                 }
             }
         }
+        // METHOD LAURENT GOLE FROM ??? TO COMPUTE SURFACE
+        double w1 = 0.894, w2 = 1.3409, w3 = 1.5879, w4 = 2.0, w5 = 8.0 / 3.0, w6 = 10.0 / 3.0;
+        correctedSurfaceArea = (class1 * w1 + class2 * w2 + class3 * w3 + class4 * w4 + class5 * w5 + class6 * w6);
 
         if (areaNbVoxels == 0) {
             //new ImagePlus("MiniSeg 0", segImage.getImageStack()).show();
@@ -1322,6 +1375,18 @@ public class Object3DVoxels extends Object3D {
         double tmp = Math.pow(n, 2.0 / 3.0);
 
         return ((n - areaContactVoxels / 6.0) / (n - tmp));
+    }
+
+    // METHOD LAURENT GOLE FROM ??? TO COMPUTE SURFACE
+    public double getCompactnessCorrected() {
+        double V = getVolumePixels();
+        double S = correctedSurfaceArea;
+
+        return (Math.PI * 36.0 * V * V) / (S * S * S);
+    }
+
+    public double getSphericityCorrected() {
+        return Math.pow(getCompactnessCorrected(), 1.0 / 3.0);
     }
 
     /**
