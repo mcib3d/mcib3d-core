@@ -2,6 +2,8 @@ package mcib3d.image3d.distanceMap3d;
 
 import ij.ImagePlus;
 import ij.measure.Calibration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import mcib3d.image3d.*;
 import mcib3d.utils.ThreadUtil;
 import mcib3d.utils.exceptionPrinter;
@@ -19,6 +21,7 @@ public class EDT {
      * @param inverse
      * @param scaleXY
      * @param scaleZ
+     * @param nbCPUs
      * @return
      * @throws Exception
      */
@@ -115,5 +118,56 @@ public class EDT {
         } catch (Exception e) {
         }
         return null;
+    }
+
+    public static void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask, boolean excludeZeros) {
+        // int count = 0;
+        ArrayList<VoxEVF> idxList = new ArrayList<VoxEVF>();
+        //VoxEVF[] idx = new VoxEVF[mask.countMaskVolume()];
+        //double volume = idx.length;
+        double minDist = Double.NEGATIVE_INFINITY;
+        if (excludeZeros) {
+            minDist = 0;
+        }
+        for (int z = 0; z < distanceMap.sizeZ; z++) {
+            for (int xy = 0; xy < distanceMap.sizeXY; xy++) {
+                if ((mask.getPixelInt(xy, z) > 0) && (distanceMap.getPixel(xy, z) > minDist)) {
+                    idxList.add(new VoxEVF(distanceMap.pixels[z][xy], xy, z));
+                    //idx[count] = new VoxEVF(distanceMap.pixels[z][xy], xy, z);
+                    //count++;
+                } else {
+                    distanceMap.setPixel(xy, z, 2);
+                }
+            }
+        }
+        if (idxList.isEmpty()) {
+            return;
+        }
+        VoxEVF[] idx = new VoxEVF[idxList.size()];
+        idx = (VoxEVF[]) idxList.toArray(idx);
+        double volume = idx.length;
+        Arrays.sort(idx);
+        for (int i = 0; i < idx.length - 1; i++) {
+            // gestion des repetitions
+            if (idx[i + 1].distance == idx[i].distance) {
+                int j = i + 1;
+                while (j < (idx.length - 1) && idx[i].distance == idx[j].distance) {
+                    j++;
+                }
+                double median = (i + j) / 2d;
+                for (int k = i; k <= j; k++) {
+                    idx[k].index = median;
+                }
+                i = j;
+            } else {
+                idx[i].index = i;
+            }
+        }
+        if (idx[idx.length - 1].index == 0) {
+            idx[idx.length - 1].index = idx.length - 1;
+        }
+        for (int i = 0; i < idx.length; i++) {
+            distanceMap.pixels[idx[i].z][idx[i].xy] = (float) (idx[i].index / volume);
+        }
     }
 }
