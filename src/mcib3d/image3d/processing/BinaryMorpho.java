@@ -1,9 +1,11 @@
 package mcib3d.image3d.processing;
+
 import mcib3d.image3d.*;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.utils.ThreadRunner;
 import mcib3d.utils.exceptionPrinter;
 import mcib3d.utils.ThreadUtil;
+
 /**
  *
  **
@@ -122,6 +124,10 @@ public class BinaryMorpho {
     }
 
     public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ, int nbCPUs) {
+        return binaryDilate(in, radius, radiusZ, false, nbCPUs);
+    }
+
+    public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ, boolean resize, int nbCPUs) {
         try {
             if (nbCPUs == 0) {
                 nbCPUs = ThreadUtil.getNbCpus();
@@ -143,10 +149,15 @@ public class BinaryMorpho {
             edm.flush();
             edm = null;
             temp.setOffset(in);
-            temp.offsetX -= reX;
-            temp.offsetY -= reY;
-            temp.offsetZ -= reZ;
             temp.setScale(in);
+            if (resize) {
+                temp.offsetX -= reX;
+                temp.offsetY -= reY;
+                temp.offsetZ -= reZ;
+            } else {
+                temp = (ImageByte) temp.resize(-reX, -reY, -reZ);
+            }
+
             return temp;
         } catch (Exception e) {
             exceptionPrinter.print(e, null, true);
@@ -206,18 +217,18 @@ public class BinaryMorpho {
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
-                public void run() {
-                    for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
-                        for (int y = 0; y < in.sizeY; y++) {
-                            for (int x = 0; x < in.sizeX; x++) {
-                                if (minRad1(in, thld, x, y, z)) {
-                                    min.pixels[z][x + y * in.sizeX] = (byte) 255;
+                        public void run() {
+                            for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
+                                for (int y = 0; y < in.sizeY; y++) {
+                                    for (int x = 0; x < in.sizeX; x++) {
+                                        if (minRad1(in, thld, x, y, z)) {
+                                            min.pixels[z][x + y * in.sizeX] = (byte) 255;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            });
+                    });
         }
         tr.startAndJoin();
         final ImageByte open = new ImageByte(in.getTitle() + "::open", in.sizeX, in.sizeY, in.sizeZ);
@@ -225,18 +236,18 @@ public class BinaryMorpho {
         for (int i = 0; i < tr2.threads.length; i++) {
             tr2.threads[i] = new Thread(
                     new Runnable() {
-                public void run() {
-                    for (int z = tr2.ai.getAndIncrement(); z < tr2.end; z = tr2.ai.getAndIncrement()) {
-                        for (int y = 0; y < in.sizeY; y++) {
-                            for (int x = 0; x < in.sizeX; x++) {
-                                if (maxRad1(min, 1, x, y, z)) {
-                                    open.pixels[z][x + y * in.sizeX] = (byte) 255;
+                        public void run() {
+                            for (int z = tr2.ai.getAndIncrement(); z < tr2.end; z = tr2.ai.getAndIncrement()) {
+                                for (int y = 0; y < in.sizeY; y++) {
+                                    for (int x = 0; x < in.sizeX; x++) {
+                                        if (maxRad1(min, 1, x, y, z)) {
+                                            open.pixels[z][x + y * in.sizeX] = (byte) 255;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            });
+                    });
         }
         tr2.startAndJoin();
         min.closeImagePlus();
@@ -254,18 +265,18 @@ public class BinaryMorpho {
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
-                public void run() {
-                    for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
-                        for (int y = 0; y < in.sizeY; y++) {
-                            for (int x = 0; x < in.sizeX; x++) {
-                                if (minRad1(in, thld, x, y, z)) {
-                                    min.pixels[z][x + y * in.sizeX] = (byte) 255;
+                        public void run() {
+                            for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
+                                for (int y = 0; y < in.sizeY; y++) {
+                                    for (int x = 0; x < in.sizeX; x++) {
+                                        if (minRad1(in, thld, x, y, z)) {
+                                            min.pixels[z][x + y * in.sizeX] = (byte) 255;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            });
+                    });
         }
         tr.startAndJoin();
         min.setScale(in);
@@ -282,18 +293,18 @@ public class BinaryMorpho {
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
-                public void run() {
-                    for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
-                        for (int y = 0; y < in.sizeY; y++) {
-                            for (int x = 0; x < in.sizeX; x++) {
-                                if (maxRad1(in, thld, x, y, z)) {
-                                    max.pixels[z][x + y * in.sizeX] = (byte) 255;
+                        public void run() {
+                            for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
+                                for (int y = 0; y < in.sizeY; y++) {
+                                    for (int x = 0; x < in.sizeX; x++) {
+                                        if (maxRad1(in, thld, x, y, z)) {
+                                            max.pixels[z][x + y * in.sizeX] = (byte) 255;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            });
+                    });
         }
         tr.startAndJoin();
 
@@ -312,18 +323,18 @@ public class BinaryMorpho {
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
-                public void run() {
-                    for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
-                        for (int y = 0; y < in.sizeY; y++) {
-                            for (int x = 0; x < in.sizeX; x++) {
-                                if (maxRad1(in, thld, x, y, z)) {
-                                    max.pixels[z][x + y * in.sizeX] = (byte) 255;
+                        public void run() {
+                            for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
+                                for (int y = 0; y < in.sizeY; y++) {
+                                    for (int x = 0; x < in.sizeX; x++) {
+                                        if (maxRad1(in, thld, x, y, z)) {
+                                            max.pixels[z][x + y * in.sizeX] = (byte) 255;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            });
+                    });
         }
         tr.startAndJoin();
         final ThreadRunner tr2 = new ThreadRunner(0, in.sizeZ, nbCPUs);
@@ -331,18 +342,18 @@ public class BinaryMorpho {
         for (int i = 0; i < tr2.threads.length; i++) {
             tr2.threads[i] = new Thread(
                     new Runnable() {
-                public void run() {
-                    for (int z = tr2.ai.getAndIncrement(); z < tr2.end; z = tr2.ai.getAndIncrement()) {
-                        for (int y = 0; y < in.sizeY; y++) {
-                            for (int x = 0; x < in.sizeX; x++) {
-                                if (minRad1(max, 1, x, y, z)) {
-                                    close.pixels[z][x + y * in.sizeX] = (byte) 255;
+                        public void run() {
+                            for (int z = tr2.ai.getAndIncrement(); z < tr2.end; z = tr2.ai.getAndIncrement()) {
+                                for (int y = 0; y < in.sizeY; y++) {
+                                    for (int x = 0; x < in.sizeX; x++) {
+                                        if (minRad1(max, 1, x, y, z)) {
+                                            close.pixels[z][x + y * in.sizeX] = (byte) 255;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            });
+                    });
         }
         tr2.startAndJoin();
         max.closeImagePlus();
