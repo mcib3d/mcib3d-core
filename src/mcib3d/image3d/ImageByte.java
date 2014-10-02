@@ -109,7 +109,6 @@ public class ImageByte extends ImageInt {
             this.pixels = ((ImageByte) im).pixels;
         }
     }
-    
 
     public static byte[] getArray1DByte(ImagePlus img) {
         byte[] res = new byte[img.getNSlices() * img.getWidth() * img.getHeight()];
@@ -131,15 +130,13 @@ public class ImageByte extends ImageInt {
         }
         return res;
     }
-    
+
     public Object getArray1D(int z) {
         byte[] res = new byte[sizeXY];
-            System.arraycopy((byte[]) img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
-            
+        System.arraycopy((byte[]) img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
+
         return res;
     }
-    
-    
 
     public static ImagePlus getImagePlus(byte[] pixels, int sizeX, int sizeY, int sizeZ, boolean setMinAndMax) {
         if (pixels == null) {
@@ -293,12 +290,13 @@ public class ImageByte extends ImageInt {
     @Override
     public void fill(double value) {
         for (int xy = 0; xy < sizeXY; xy++) {
-            pixels[0][xy] = (byte)value;
+            pixels[0][xy] = (byte) value;
         }
         for (int z = 1; z < sizeZ; z++) {
             System.arraycopy(pixels[0], 0, pixels[z], 0, sizeXY);
         }
     }
+
     @Override
     public ImageByte duplicate() {
         ImageByte res = new ImageByte(img.duplicate());
@@ -316,10 +314,12 @@ public class ImageByte extends ImageInt {
             System.arraycopy(pixels[z], 0, destination.pixels[z], 0, sizeXY);
         }
     }
+
     @Override
     public float getPixel(int xy, int z) {
         return (float) (pixels[z][xy] & 0xff);
     }
+
     @Override
     public float getPixel(int coord) {
         return (float) (pixels[coord / sizeXY][coord % sizeXY] & 0xff);
@@ -333,10 +333,12 @@ public class ImageByte extends ImageInt {
     public float getPixel(int x, int y, int z) {
         return (float) (pixels[z][x + y * sizeX] & 0xff);
     }
+
     @Override
     public int getPixelInt(int xy, int z) {
         return pixels[z][xy] & 0xff;
     }
+
     @Override
     public int getPixelInt(int coord) {
         return pixels[coord / sizeXY][coord % sizeXY] & 0xff;
@@ -358,10 +360,10 @@ public class ImageByte extends ImageInt {
     public void setPixel(int coord, float value) {
         pixels[coord / sizeXY][coord % sizeXY] = (byte) (value);
     }
-    
+
     @Override
     public void setPixel(Point3D point, float value) {
-        pixels[(int)point.z][(int)point.x + (int)point.y * sizeX] = (byte) (value);
+        pixels[(int) point.z][(int) point.x + (int) point.y * sizeX] = (byte) (value);
     }
 
     @Override
@@ -387,7 +389,9 @@ public class ImageByte extends ImageInt {
     @Override
     protected synchronized void getMinAndMax(ImageInt mask) {
         ImageStats s = getImageStats(mask);
-        if (s.minAndMaxSet()) return;
+        if (s.minAndMaxSet()) {
+            return;
+        }
         int max = 0;
         int min = 255;
         if (mask == null) {
@@ -464,21 +468,21 @@ public class ImageByte extends ImageInt {
     public IntImage3D getImage3D() {
         return new IntImage3D(img.getImageStack());
     }
-    
+
     @Override
-    public ImageByte thresholdRange(float min, float max){
+    public ImageByte thresholdRange(float min, float max) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
         res.offsetX = offsetX;
         res.offsetY = offsetY;
         res.offsetZ = offsetZ;
-        
-         for (int z = 0; z < sizeZ; z++) {
-                for (int xy = 0; xy < sizeXY; xy++) {
-                    if (((pixels[z][xy] & 0xFF) >=min)&&(((pixels[z][xy] & 0xFF) <=max))) {
-                        res.pixels[z][xy] = (byte) 255;
-                    }
+
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (((pixels[z][xy] & 0xFF) >= min) && (((pixels[z][xy] & 0xFF) <= max))) {
+                    res.pixels[z][xy] = (byte) 255;
                 }
             }
+        }
         return res;
     }
 
@@ -572,9 +576,9 @@ public class ImageByte extends ImageInt {
         int sY = y_max - y_min + 1;
         int sZ = z_max - z_min + 1;
         ImageByte res = new ImageByte(title, sX, sY, sZ);
-        res.offsetX = x_min;
-        res.offsetY = y_min;
-        res.offsetZ = z_min;
+        res.offsetX = offsetX + x_min;
+        res.offsetY = offsetY + y_min;
+        res.offsetZ = offsetZ + z_min;
         res.setScale(this);
         int oZ = -z_min;
         int oY_i = 0;
@@ -790,8 +794,6 @@ public class ImageByte extends ImageInt {
      * (y+images[idx].offsetY)*sizeX]=label; } } } } } return out; }
      *
      */
-    
-
     @Override
     public ImageHandler resize(int dX, int dY, int dZ) {
         int newX = Math.max(1, sizeX + 2 * dX);
@@ -823,7 +825,9 @@ public class ImageByte extends ImageInt {
 
     @Override
     public ImageByte resample(int newX, int newY, int newZ, int method) {
-        if (method ==-1 ) method = ij.process.ImageProcessor.BICUBIC;
+        if (method == -1) {
+            method = ij.process.ImageProcessor.BICUBIC;
+        }
         if ((newX == sizeX && newY == sizeY && newZ == sizeZ) || (newX == 0 && newY == 0 && newZ == 0)) {
             return new ImageByte(img.duplicate());
         }
@@ -844,7 +848,9 @@ public class ImageByte extends ImageInt {
 
     @Override
     public ImageByte resample(int newZ, int method) {
-        if (method ==-1 ) method = ij.process.ImageProcessor.BICUBIC;
+        if (method == -1) {
+            method = ij.process.ImageProcessor.BICUBIC;
+        }
         ij.plugin.Resizer r = new ij.plugin.Resizer();
         return new ImageByte(r.zScale(img, newZ, method));
     }
@@ -861,7 +867,7 @@ public class ImageByte extends ImageInt {
             max_ = s.getMin() + 1;
         }
         double scale = 1 / (max_ - s.getMin());
-        double offset = - s.getMin() * scale;
+        double offset = -s.getMin() * scale;
         ImageFloat res = new ImageFloat(title + "::normalized", sizeX, sizeY, sizeZ);
         if (saturation > 0 && saturation < 1) {
             for (int z = 0; z < sizeZ; z++) {
@@ -971,8 +977,6 @@ public class ImageByte extends ImageInt {
         return (int) getPixel((float) P.getX(), (float) P.getY(), (float) P.getZ());
     }
 
-   
-
     @Override
     public ImageHandler deleteSlices(int zmin, int zmax) {
         int z0 = Math.min(zmin, zmax);
@@ -993,85 +997,105 @@ public class ImageByte extends ImageInt {
 
         return res;
     }
-    
+
     @Override
     public void trimSlices(int zmin, int zmax) {
         int z0 = Math.max(1, Math.min(zmin, zmax));
         int z1 = Math.min(sizeZ, Math.max(zmin, zmax));
-        int newSize = z1-z0+1;
+        int newSize = z1 - z0 + 1;
         byte[][] newPixels = new byte[newSize][];
-        for (int i = 0; i<newSize; i++) {
-            newPixels[i]=pixels[i+z0-1];
+        for (int i = 0; i < newSize; i++) {
+            newPixels[i] = pixels[i + z0 - 1];
         }
-        if (this.img!=null) {
+        if (this.img != null) {
             ImageStack stack = img.getImageStack();
-            for (int i = 1; i<z0; i++) stack.deleteSlice(1);
-            for (int i = z1+1; i<=sizeZ; i++) stack.deleteLastSlice();
+            for (int i = 1; i < z0; i++) {
+                stack.deleteSlice(1);
+            }
+            for (int i = z1 + 1; i <= sizeZ; i++) {
+                stack.deleteLastSlice();
+            }
         }
-        this.sizeZ=newSize;
-        this.sizeXYZ=sizeXY*sizeZ;
-        this.offsetZ+=z0-1;
+        this.sizeZ = newSize;
+        this.sizeXYZ = sizeXY * sizeZ;
+        this.offsetZ += z0 - 1;
         this.stats = new HashMap<ImageHandler, ImageStats>(2);
     }
-    
+
     // mask operation
     @Override
     public void intersectMask(ImageInt mask) {
-        if (mask==null) return;
-        for (int z = 0; z<sizeZ; z++) {
-            for (int xy = 0; xy<sizeXY; xy++) {
-                if (mask.getPixel(xy, z)==0) pixels[z][xy]=0;
+        if (mask == null) {
+            return;
+        }
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (mask.getPixel(xy, z) == 0) {
+                    pixels[z][xy] = 0;
+                }
             }
         }
     }
-    
+
     public void substractMask(ImageInt mask) {
-        if (mask==null) return;
-        for (int z = 0; z<sizeZ; z++) {
-            for (int xy = 0; xy<sizeXY; xy++) {
-                if (mask.getPixel(xy, z)!=0) pixels[z][xy]=0;
+        if (mask == null) {
+            return;
+        }
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (mask.getPixel(xy, z) != 0) {
+                    pixels[z][xy] = 0;
+                }
             }
         }
     }
-    
+
     public void addMask(ImageInt mask) {
-        if (mask==null) return;
-        for (int z = 0; z<sizeZ; z++) {
-            for (int xy = 0; xy<sizeXY; xy++) {
-                if (mask.getPixel(xy, z)!=0) pixels[z][xy]=(byte)255;
+        if (mask == null) {
+            return;
+        }
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (mask.getPixel(xy, z) != 0) {
+                    pixels[z][xy] = (byte) 255;
+                }
             }
         }
     }
 
     @Override
     public double getSizeInMb() {
-        return (double)(sizeX*sizeY*sizeZ) / (1024*1024);
+        return (double) (sizeX * sizeY * sizeZ) / (1024 * 1024);
     }
 
     @Override
     public int getType() {
         return ImagePlus.GRAY8;
     }
-    
-    @Override 
+
+    @Override
     public ImageByte toMask() {
         ImageByte res = new ImageByte("mask", this.sizeX, this.sizeY, this.sizeZ);
         res.setScale(this);
         res.setOffset(this);
-        for (int z = 0; z<sizeZ; z++) {
-            for (int xy = 0; xy<sizeXY; xy++) {
-                if (pixels[z][xy]!=0) res.pixels[z][xy]=(byte)255;
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (pixels[z][xy] != 0) {
+                    res.pixels[z][xy] = (byte) 255;
+                }
             }
         }
         return res;
     }
-    
-    @Override 
+
+    @Override
     public int countMaskVolume() {
         int count = 0;
-        for (int z = 0; z<sizeZ; z++) {
-            for (int xy = 0; xy<sizeXY; xy++) {
-                if (pixels[z][xy]!=0) count++;
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (pixels[z][xy] != 0) {
+                    count++;
+                }
             }
         }
         return count;
