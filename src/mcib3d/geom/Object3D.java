@@ -2563,7 +2563,7 @@ public abstract class Object3D {
         }
     }
 
-    public double gePixModeNonZero(ImageHandler ima) {
+    public double getPixModeNonZero(ImageHandler ima) {
         if (volume > 0) {
             return listValues(ima).getModeNonZero();
         } else {
