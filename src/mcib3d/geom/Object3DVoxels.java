@@ -1389,6 +1389,13 @@ public class Object3DVoxels extends Object3D {
         return Math.pow(getCompactnessCorrected(), 1.0 / 3.0);
     }
 
+    
+    public double getAreaPixelsCorrected() {
+        if (correctedSurfaceArea == -1) {
+            computeContours();
+        }
+        return correctedSurfaceArea;
+    }
     /**
      *
      * @param path
