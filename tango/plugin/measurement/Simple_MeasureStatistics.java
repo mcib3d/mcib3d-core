@@ -153,14 +153,14 @@ public class Simple_MeasureStatistics implements PlugInFilter, MeasurementObject
         if (k_avg.isSelected()) {
             double[] values = new double[os.length];
             for (int i = 0; i < os.length; i++) {
-                values[i] = os[i].getMeanPixValue(intensityMap);
+                values[i] = os[i].getPixMeanValue(intensityMap);
             }
             quantifications.setQuantificationObjectNumber(k_avg, values);
         }
         if (k_sd.isSelected()) {
             double[] values = new double[os.length];
             for (int i = 0; i < os.length; i++) {
-                values[i] = os[i].getStDevPixValue(intensityMap);
+                values[i] = os[i].getPixStdDevValue(intensityMap);
             }
             quantifications.setQuantificationObjectNumber(k_sd, values);
         }
@@ -189,8 +189,8 @@ public class Simple_MeasureStatistics implements PlugInFilter, MeasurementObject
         if (k_sigma_mu.isSelected()) {
             double[] values = new double[os.length];
             for (int i = 0; i < os.length; i++) {
-                values[i] = os[i].getStDevPixValue(intensityMap);
-                double mu = os[i].getMeanPixValue(intensityMap);
+                values[i] = os[i].getPixStdDevValue(intensityMap);
+                double mu = os[i].getPixMeanValue(intensityMap);
                 if (mu!=0) values[i]/=mu;
                 else values[i]=Double.NaN;
             }

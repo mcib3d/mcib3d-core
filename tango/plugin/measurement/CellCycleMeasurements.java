@@ -110,7 +110,7 @@ public class CellCycleMeasurements implements MeasurementObject {
         if (doReplication.isSelected()) {
             ImageHandler rep = proliferation.getImage(raw, verbose, nCPUs);
             if (replication_int.isSelected()) {
-                quantifications.setQuantificationObjectNumber(replication_int, new double[]{nuc.getMeanPixValue(rep)});
+                quantifications.setQuantificationObjectNumber(replication_int, new double[]{nuc.getPixMeanValue(rep)});
             }           
             RadialAutoCorrelation rac=null;
             if (rep_rac2.isSelected()) {
@@ -130,7 +130,7 @@ public class CellCycleMeasurements implements MeasurementObject {
         
         if (doProlif.isSelected()) {
             ImageHandler prolif = proliferation.getImage(raw, verbose, nCPUs);//gaussian par défaut?            
-            double prolifMean = nuc.getMeanPixValue(prolif);
+            double prolifMean = nuc.getPixMeanValue(prolif);
             if (prolif_int.isSelected()) quantifications.setQuantificationObjectNumber(prolif_int, new double[]{prolifMean});
             
             RadialAutoCorrelation rac=null;

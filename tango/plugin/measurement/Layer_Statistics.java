@@ -138,9 +138,9 @@ public class Layer_Statistics implements PlugInFilter, MeasurementObject {
 
             obMax = ob.getLayerObject(radMin, radMax);
 
-            rt.setValue("Avg_object", i, ob.getMeanPixValue(signal));
+            rt.setValue("Avg_object", i, ob.getPixMeanValue(signal));
             rt.setValue("IntDen_object", i, ob.getIntegratedDensity(signal));
-            rt.setValue("Avg_layer", i, obMax.getMeanPixValue(signal));
+            rt.setValue("Avg_layer", i, obMax.getPixMeanValue(signal));
             rt.setValue("IntDen_layer", i, obMax.getIntegratedDensity(signal));
         }
     }
@@ -238,10 +238,10 @@ public class Layer_Statistics implements PlugInFilter, MeasurementObject {
             }
             //IJ.log("Ob layer " + obMax.getVolumePixels());
             if (k_avg.isSelected()) {
-                avg[i] = obMax.getMeanPixValue(intensityMap);
+                avg[i] = obMax.getPixMeanValue(intensityMap);
             }
             if (k_sd.isSelected()) {
-                sd[i] = obMax.getStDevPixValue(intensityMap);
+                sd[i] = obMax.getPixStdDevValue(intensityMap);
             }
 
             if (k_max.isSelected()) {
