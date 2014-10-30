@@ -54,7 +54,7 @@ public class SizeFilter implements PostFilter {
     BooleanParameter edge_PZ = new BooleanParameter("Remove Objects touching edges Z", "edgeZ", false);
     IntParameter edgeSurf_PXY = new IntParameter("Min nb of Voxels touching XY edges:", "edgeSurfXY", 1);
     IntParameter edgeSurf_PZ = new IntParameter("Min nb of Voxels touching Z edges:", "edgeSurfZ", 1);
-   // BooleanParameter outside = new BooleanParameter("Delete outside structures", "outside", false);
+    BooleanParameter outside = new BooleanParameter("Delete outside nucleus", "outside", false);
     //SliderParameter minPc = new SliderParameter("Min % coloc to remove", "coloc", 1, 100, 50);
     HashMap<Object, Parameter[]> mapXY = new HashMap<Object, Parameter[]>() {
         {
@@ -79,8 +79,8 @@ public class SizeFilter implements PostFilter {
 //        }
 //    };
     ConditionalParameter maxCond = new ConditionalParameter(max_P, map2);
-   //ConditionalParameter outParam = new ConditionalParameter(outside, mapOut);
-    Parameter[] parameters = new Parameter[]{minVox, maxCond, edgeCondXY, edgeCondZ};
+    //ConditionalParameter outParam = new ConditionalParameter(outside, mapOut);
+    Parameter[] parameters = new Parameter[]{minVox, maxCond, edgeCondXY, edgeCondZ, outside};
 
     public SizeFilter() {
         minVox.setHelp("if an objects has less voxel than this value, it is erased", false);
@@ -90,7 +90,7 @@ public class SizeFilter implements PostFilter {
         edge_PXY.setHelp("Pixels touching the border of the image (Z border) will be erased", false);
         edgeSurf_PXY.setHelp("Minimum number of edge-touching voxel per objects: if the objects too few voxels touching the edges, it won't be erased", false);
         edgeSurf_PZ.setHelp("Minimum number of edge-touching voxel per objects: if the objects too few voxels touching the edges, it won't be erased", false);
-        //outside.setHelp("Delete objects falling outside containing structure (nucleus)", false);
+        outside.setHelp("Delete objects outside nucleus", false);
         //minPc.setHelp("Minimum % of structure colocalisation outside nucleus to remove it", false);
     }
 
@@ -199,12 +199,13 @@ public class SizeFilter implements PostFilter {
                         in.draw(o, 0);
                     }
                 }
-//                // OUTSIDE
-//                else if(outside.isSelected()){
-//                    
-//                }
             }
         }
+        if (outside.isSelected()) {
+            in.intersectMask(images.getMask());
+            //in.show("delete outside");
+        }
+
         return in;
     }
 
@@ -321,6 +322,6 @@ public class SizeFilter implements PostFilter {
 
     @Override
     public String getHelp() {
-        return "Erase Objects according to their sizes (in voxels)";
+        return "Erase Objects according to their sizes (in voxels). Also remove objects touching edges, and outside nuclei.";
     }
 }

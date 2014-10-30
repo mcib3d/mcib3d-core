@@ -102,8 +102,8 @@ public class EraseRegions implements PostFilter {
             Object3DVoxels bck = input.getObject3DBackground(images.getMask());
             double bckValue;
             if (choice.getSelectedIndex()==0) {
-                bckValue = bck.getMeanPixValue(intensityMap);
-                if (intensityMap2!=null) bckValue *= bck.getMeanPixValue(intensityMap2);
+                bckValue = bck.getPixMeanValue(intensityMap);
+                if (intensityMap2!=null) bckValue *= bck.getPixMeanValue(intensityMap2);
             } else {
                 bckValue = bck.getQuantilePixValue(intensityMap, quantile.getValue());
                 if (intensityMap2!=null) bckValue *= bck.getQuantilePixValue(intensityMap2, quantile.getValue());
@@ -151,8 +151,8 @@ public class EraseRegions implements PostFilter {
                 if (intensityMap2!=null) res[i]*=objects[i].getQuantilePixValue(intensityMap2, q);
             }
             else if (c==1) {
-                res[i]=objects[i]. getMeanPixValue(intensityMap);
-                if (intensityMap2!=null) res[i]*=objects[i].getMeanPixValue(intensityMap2);
+                res[i]=objects[i].getPixMeanValue(intensityMap);
+                if (intensityMap2!=null) res[i]*=objects[i].getPixMeanValue(intensityMap2);
             }
         }
         return res;

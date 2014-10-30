@@ -91,14 +91,14 @@ public class IntensityFilter_legacy implements PostFilter {
             double coeff;
             if (hess!=null) {
                 //coeff = objects[i].getQuantilePixValue(hess,q);
-                coeff=(center.isSelected())? hess.getPixel(x, y, z, images.getMask()) : objects[i].getMeanPixValue(hess);
+                coeff=(center.isSelected())? hess.getPixel(x, y, z, images.getMask()) : objects[i].getPixMeanValue(hess);
                 
                 //coeff = objects[i].getMeanPixValueAroundBarycenter(false, in, hess, 3, 2);
                 //coeff = objects[i].getMeanPixValue(hess);
             } else coeff = 1;
             //ij.IJ.log(objects[i].getValue()+" mean:"+mean+ " quantile:"+quantileValue);
             //meanValues[i] = objects[i].getMeanPixValue(input) * coeff;
-            if (useIntensity.isSelected()) meanValues[i]=(center.isSelected()?input.getPixel(x, y, z, images.getMask()):objects[i].getMeanPixValue(input)) / max * coeff;
+            if (useIntensity.isSelected()) meanValues[i]=(center.isSelected()?input.getPixel(x, y, z, images.getMask()):objects[i].getPixMeanValue(input)) / max * coeff;
             else meanValues[i]=coeff;
             //meanValues[i]=coeff;
             //meanValues[i] = objects[i].getMeanPixValueAroundBarycenter(true, in, input, 3, 2) * coeff;

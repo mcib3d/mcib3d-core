@@ -30,8 +30,8 @@ public class Fast_Filters3D implements PreFilter, PostFilter {
     Calibration calibration;
     boolean debug = false;
     ChoiceParameter filter_P = new ChoiceParameter("Choose Filter: ", "filter", filters, null);
-    DoubleParameter voisXY_P = new DoubleParameter("VoisXY: ", "voisXY", (double) voisx, Parameter.nfDEC1);
-    DoubleParameter voisZ_P = new DoubleParameter("VoisZ: ", "voisZ", (double) voisx, Parameter.nfDEC1);
+    DoubleParameter voisXY_P = new DoubleParameter("RadXY: ", "voisXY", (double) voisx, Parameter.nfDEC1);
+    DoubleParameter voisZ_P = new DoubleParameter("RadZ: ", "voisZ", (double) voisx, Parameter.nfDEC1);
     Parameter[] parameters = new Parameter[]{filter_P, voisXY_P, voisZ_P};
 
     // contructor for Tango

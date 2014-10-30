@@ -130,13 +130,13 @@ public class EraseSpots implements PostFilter {
             ij.IJ.log("eraseSpots error: no background");
             bcg=mask.getObjects3D()[0];
         }
-        double sigma = bcg.getStDevPixValue(intensity);
-        double mean = bcg.getMeanPixValue(intensity);
+        double sigma = bcg.getPixStdDevValue(intensity);
+        double mean = bcg.getPixMeanValue(intensity);
         Iterator<Object3DVoxels> it = objects.iterator();
         while(it.hasNext()) {
             Object3DVoxels o = it.next();
             double I;
-            if (quantile<0) I= o.getMeanPixValue(intensity);
+            if (quantile<0) I= o.getPixMeanValue(intensity);
             else I=o.getQuantilePixValue(intensity, quantile);
             double snrValue = (I-mean) / sigma;
             if (debug) ij.IJ.log("EraseSpots::SNR::spot:"+o.getValue()+ " snr:"+snrValue+ " thld:"+thld+ (snrValue<thld?"erased":""));
@@ -153,7 +153,7 @@ public class EraseSpots implements PostFilter {
         while(it.hasNext()) {
             Object3DVoxels o = it.next();
             double I;
-            if (quantile<0) I= o.getMeanPixValue(intensity);
+            if (quantile<0) I= o.getPixMeanValue(intensity);
             else I=o.getQuantilePixValue(intensity, quantile);
             if (debug) ij.IJ.log("EraseSpots::Intensity::spot:"+o.getValue()+ " intensity:"+I+ " thld:"+thld+ (I<thld?"erased":""));
             if (I<thld) {
