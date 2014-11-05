@@ -224,9 +224,8 @@ public class PluginFactory {
                 }
             } catch (ClassNotFoundException e) {
                 if (Core.GUIMode) {
-                    ij.IJ.log("plugin not found: " + className);
+                    //ij.IJ.log("plugin not found: " + className);
                 }
-                //mcib3d.utils.exceptionPrinter.print(e, "getClass exception...", Core.GUIMode);
             } catch (NoClassDefFoundError e) {
                 int dotIndex = className.indexOf('.');
                 if (dotIndex >= 0) {
