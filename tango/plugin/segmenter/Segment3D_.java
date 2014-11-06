@@ -2,6 +2,7 @@ package tango.plugin.segmenter;
 
 import ij.IJ;
 import ij.ImagePlus;
+import java.text.NumberFormat;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
@@ -9,6 +10,7 @@ import mcib3d.image3d.ImageLabeller;
 import tango.dataStructure.InputImages;
 import tango.parameter.BooleanParameter;
 import tango.parameter.ConditionalParameter;
+import tango.parameter.DoubleParameter;
 import tango.parameter.IntParameter;
 import tango.parameter.Parameter;
 import tango.parameter.ThresholdParameter;
@@ -52,12 +54,13 @@ public class Segment3D_ implements NucleusSegmenter, SpotSegmenter {
     //ThresholdParameter highThreshold = new ThresholdParameter("High Threshold:", "highThreshold", "Value");
     //BooleanParameter useMaxThresholdBox = new BooleanParameter("Specify a Max threshold", "useMaxThreshold", true);
     //ConditionalParameter useMaxThreshold = new ConditionalParameter(useMaxThresholdBox);
-    IntParameter minSize = new IntParameter("Minimum size:", "minSize", 0);
-    BooleanParameter useMaxsizeBox = new BooleanParameter("Specify a Max size", "useMaxSize", false);
+    DoubleParameter minSize = new DoubleParameter("Minimum size:", "minSize", 0.0, DoubleParameter.nfDEC2);
+    BooleanParameter useMaxsizeBox = new BooleanParameter("Specify a Max size:", "useMaxSize", false);
     ConditionalParameter useMaxSize = new ConditionalParameter(useMaxsizeBox);
-    IntParameter maxSize = new IntParameter("Maximum size:", "maxSize", Integer.MAX_VALUE);
-    BooleanParameter deleteOutsideNuclei = new BooleanParameter("Delete outside nuclei", "deleteOutsideNuclei", true);
-    Parameter[] par = {lowThreshold, minSize, useMaxSize, deleteOutsideNuclei};
+    DoubleParameter maxSize = new DoubleParameter("Maximum size:", "maxSize", 0.0, DoubleParameter.nfDEC2);
+    BooleanParameter useUnits = new BooleanParameter("Size in calibrated units:", "useUnits", false);
+    //BooleanParameter deleteOutsideNuclei = new BooleanParameter("Delete outside nuclei", "deleteOutsideNuclei", true);
+    Parameter[] par = {lowThreshold, minSize, useMaxSize, useUnits};
     private boolean nucMode;
 
     @Override
@@ -69,9 +72,11 @@ public class Segment3D_ implements NucleusSegmenter, SpotSegmenter {
         lowThreshold.setHelp("The lower threshold inclusive, the high threshold is the maximum value in the image", true);
         //highThreshold.setHelp("The upper threshold, only if you do not want to use the highest pixel value", true);
         minSize.setHelp("The minimum size for object", true);
+        useMaxsizeBox.setHelp("Use the maximum possible size for objects, or specify a maximal size", true);
         useMaxSize.setHelp("Use the maximum possible size for objects, or specify a maximal size", true);
         maxSize.setHelp("The maximum size for object, only if you do not want to use the default maximum size", true);
-        deleteOutsideNuclei.setHelp("Delete objects or parts of them that are outside the nuclei", true);
+        useUnits.setHelp("The values for sizes are in calibrated units instead of voxels", true);
+        //deleteOutsideNuclei.setHelp("Delete objects or parts of them that are outside the nuclei (only valid for structures)", true);
         return par;
     }
 
@@ -91,7 +96,6 @@ public class Segment3D_ implements NucleusSegmenter, SpotSegmenter {
 //    public int[] getTags() {
 //        return null;
 //    }
-
     @Override
     public void setMultithread(int nbCPUs) {
         this.nbCPUs = nbCPUs;
@@ -123,11 +127,22 @@ public class Segment3D_ implements NucleusSegmenter, SpotSegmenter {
 //                IJ.log("Threshold high specified  " + high);
 //            }
 //        }
-
-        int min = minSize.getIntValue(0);
-        int max = Integer.MAX_VALUE;
-        if (useMaxsizeBox.isSelected()) {
-            max = maxSize.getIntValue(Integer.MAX_VALUE);
+        //IJ.log("Calibration:" + input.getCalibration());
+        int min = 0, max = Integer.MAX_VALUE;
+        double mind = minSize.getFloatValue(0);
+        double maxd = maxSize.getFloatValue(Integer.MAX_VALUE);
+        double volunit = input.getCalibration().pixelWidth * input.getCalibration().pixelHeight * input.getCalibration().pixelDepth;
+        if (!useUnits.isSelected()) {
+            min = (int) mind;
+            max = Integer.MAX_VALUE;
+            if (useMaxsizeBox.isSelected()) {
+                max = (int) maxd;
+            }
+        } else {
+            min = (int) (mind / volunit);
+            if (useMaxsizeBox.isSelected()) {
+                max = (int) (maxd / volunit);
+            }
         }
 //        Segment3D seg3d = new Segment3D();       
 //        ImagePlus segPlus = seg3d.segmentation3D(input.getImagePlus(), low, high, min, max, false);       
@@ -137,9 +152,9 @@ public class Segment3D_ implements NucleusSegmenter, SpotSegmenter {
         // use ImageLabeller
         ImageLabeller labeller = new ImageLabeller(min, max);
         ImageInt segHandler = labeller.getLabels(input.thresholdAboveInclusive(low), false);
-        if (deleteOutsideNuclei.isSelected()&& !nucMode) {
-            segHandler.intersectMask(images.getMask());
-        }
+//        if (deleteOutsideNuclei.isSelected()&& !nucMode) {
+//            segHandler.intersectMask(images.getMask());
+//        }
 
         return segHandler;
     }
@@ -151,6 +166,6 @@ public class Segment3D_ implements NucleusSegmenter, SpotSegmenter {
 
     @Override
     public String getHelp() {
-        return "Simple 3D thresholding and labelling, using code from 3D Objects Counter";
+        return "Simple 3D thresholding and labelling";
     }
 }
