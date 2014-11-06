@@ -1,6 +1,7 @@
 package tango.analysis;
 
 import com.mongodb.BasicDBList;
+import ij.IJ;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,9 +64,9 @@ public class AnalysisCore {
     public RFace rInterface;
     public AnalysisCore(Core newcore) {
         try {
+            IJ.log(System.getProperty("R_HOME"));
             core=newcore;
             layout = new AnalysisGUI(this);
-            System.out.println(System.getProperty("R_HOME"));
             try {
                 this.rInterface = RFace.getInstance(layout.getConsole());
                 try {
@@ -93,10 +94,12 @@ public class AnalysisCore {
         }
         REXP e;
         try {
+            IJ.showStatus(cmd+" hasn't been executed...");
             e = rInterface.parseEvalTry(cmd, silent);
             layout.getConsole().printPrompt();
             return e;
         } catch (RFaceException ex) {
+            System.out.println(cmd);
             Logger.getLogger(AnalysisCore.class.getName()).log(Level.SEVERE, null, ex);
             layout.getConsole().printPrompt();
             return null;

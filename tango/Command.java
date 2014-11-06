@@ -1,6 +1,5 @@
 package tango;
 
-import tango.dataStructure.Experiment;
 
 /**
  *

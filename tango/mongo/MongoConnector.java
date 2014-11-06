@@ -245,7 +245,7 @@ public class MongoConnector {
             "start",
             "mongodb"
             };
-            tango.Supervisor.execProcess(cellar, commandArgs, false);
+            tango.Installer.execProcess(cellar, commandArgs, false);
         } else if (IJ.isWindows()) {
             File cellar = new File("C:\\mongodb");
             String[] commandArgs = {
@@ -253,7 +253,7 @@ public class MongoConnector {
             "start",
             "mongodb"
             };
-            tango.Supervisor.execProcess(cellar, commandArgs, true);
+            tango.Installer.execProcess(cellar, commandArgs, true);
         } else if (IJ.isLinux()){
             File cellar = new File("/usr/bin");
             String[] commandArgs = {
@@ -261,7 +261,7 @@ public class MongoConnector {
             "mongodb",
             "start"
             };
-            tango.Supervisor.execProcess(cellar, commandArgs, true);
+            tango.Installer.execProcess(cellar, commandArgs, true);
         } 
     }
     
@@ -274,7 +274,7 @@ public class MongoConnector {
             "stop",
             "mongodb"
             };
-            tango.Supervisor.execProcess(cellar, commandArgs, false);
+            tango.Installer.execProcess(cellar, commandArgs, false);
         } else if (IJ.isWindows()) {
             File cellar = new File("C:\\mongodb");
             String[] commandArgs = {
@@ -282,7 +282,7 @@ public class MongoConnector {
             "stop",
             "mongodb"
             };
-            tango.Supervisor.execProcess(cellar, commandArgs, true);
+            tango.Installer.execProcess(cellar, commandArgs, true);
         } else if (IJ.isLinux()){
             File cellar = new File("/usr/bin");
             String[] commandArgs = {
@@ -290,7 +290,7 @@ public class MongoConnector {
             "mongodb",
             "stop"
             };
-            tango.Supervisor.execProcess(cellar, commandArgs, true);
+            tango.Installer.execProcess(cellar, commandArgs, true);
         }
     }
 
