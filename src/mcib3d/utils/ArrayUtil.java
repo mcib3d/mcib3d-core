@@ -1256,7 +1256,7 @@ public class ArrayUtil {
     public int getModeNonZero() {
         return (int) getIntegerHistogram().getMaximumStarting(1)[1];
     }
-
+    
     /**
      * Fit a gaussian to the values (radial distribution)
      *
