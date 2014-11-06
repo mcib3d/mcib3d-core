@@ -80,7 +80,6 @@ public abstract class ImageHandler {
         this.sizeXY = this.sizeX * this.sizeY;
         this.sizeXYZ = this.sizeXY * this.sizeZ;
     }
-    
 
     protected ImageHandler(ImageStack stack) {
         this.img = new ImagePlus("Image", stack);
@@ -148,8 +147,6 @@ public abstract class ImageHandler {
     public boolean maskContains(int x, int y, int z) {
         return (contains(x, y, z) && getPixel(x, y, z) != 0);
     }
-    
-   
 
     public abstract float getPixel(int coord);
 
@@ -907,6 +904,15 @@ public abstract class ImageHandler {
         return res;
     }
 
+    public ImageHandler powImage(double pow) {
+        // ImageFloat is returned
+        ImageFloat res = new ImageFloat("pow", this.sizeX, this.sizeY, this.sizeZ);
+        for (int i = 0; i < sizeXYZ; i++) {
+            res.setPixel(i, (float) Math.pow(getPixel(i), pow));
+        }
+        return res;
+    }
+
     /**
      * Compute the operation this/(other*coeff);
      *
@@ -1321,7 +1327,7 @@ public abstract class ImageHandler {
     }
 
     public abstract ImageByte thresholdRange(float min, float max);
-    
+
     public abstract ImageByte threshold(float thld, boolean keepUnderThld, boolean strict);
 
     public ImageByte thresholdAboveInclusive(float thld) {
@@ -1749,7 +1755,6 @@ public abstract class ImageHandler {
     }
 
     public abstract void intersectMask(ImageInt mask);
-    
 
     public ImageFloat getDistanceMap(float thld, float scaleXY, float scaleZ, boolean invert, int nbCPUs) {
         return EDT.run(this, thld, scaleXY, scaleZ, invert, nbCPUs);
@@ -1814,6 +1819,20 @@ public abstract class ImageHandler {
         }
         return mini;
     }
+    
+    public float getMaxBelowValue(float value) {
+        float mini = Float.MIN_VALUE;
+        float pix;
+        for (int p = 0; p < this.sizeXYZ; p++) {
+            pix = this.getPixel(p);
+            if ((pix < value) && (pix > mini)) {
+                mini = pix;
+            }
+        }
+        return mini;
+    }
+    
+    
 
     /**
      * Radial distribution of pixels mean values in layers

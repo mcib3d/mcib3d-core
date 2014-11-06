@@ -247,9 +247,56 @@ public class MereoAnalysis {
                     }
                 }
             }
-
         } catch (IOException ex) {
             Logger.getLogger(MereoAnalysis.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    public void writeN3Facts(String filename, boolean excludeDC, boolean excludeEQ) {
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(filename));
+            // write prefix
+            out.write("@prefix  image: <Image.n3#>.\n@prefix algo:<Algo.n3#>.\n@prefix structure:<Structure.n3#>.\n@prefix mereo:<Mereo.n3#>.\n@prefix event:<Event.n3#>.\n");
+            // first write structures
+            out.write("\n##  POPULATION A   ###\n");
+            for (int ia = 0; ia < popA.getNbObjects(); ia++) {
+                out.write("structure:A" + popA.getObject(ia).getValue() + " a structure:Structure;\n");
+                out.write("\t structure:id " + (1000 + ia) + ";\n");
+                out.write("\t structure:name \"A" + popA.getObject(ia).getValue() + "\";\n");
+                out.write("\t structure:radius " + popA.getObject(ia).getDistCenterMean() + ".\n");
+            }
+            out.write("##  POPULATION B   ###\n");
+            for (int ib = 0; ib < popB.getNbObjects(); ib++) {
+                out.write("structure:B" + popB.getObject(ib).getValue() + " a structure:Structure;\n");
+                out.write("\t structure:id " + (1000 + ib) + ";\n");
+                out.write("\t structure:name \"B" + popB.getObject(ib).getValue() + "\";\n");
+                out.write("\t structure:radius " + popB.getObject(ib).getDistCenterMean() + ".\n");
+            }
+            // second write relations
+            int count = 0;
+            out.write("\n##  RELATIONS   ###\n");
+            for (int ia = 0; ia < popA.getNbObjects(); ia++) {
+                for (int ib = 0; ib < popB.getNbObjects(); ib++) {
+                    boolean write = true;
+                    if ((relationships[ia][ib].equalsIgnoreCase(MereoObject3D.DC)) && (excludeDC)) {
+                        write = false;
+                    }
+                    if ((relationships[ia][ib].equalsIgnoreCase(MereoObject3D.EQ)) && (excludeEQ)) {
+                        write = false;
+                    }
+                    if (write) {
+                        out.write("mereo:relation" + count + " a mereo:Relation;\n");
+                        out.write("\tmereo:structureA structure:A" + popA.getObject(ia).getValue() + ";\n");
+                        out.write("\tmereo:structureB structure:B" + popB.getObject(ib).getValue() + ";\n");
+                        out.write("\tmereo:relation mereo:" + relationships[ia][ib] + ".\n");
+                    }
+                    count++;
+                }
+            }
+            out.close();
+        } catch (IOException ex) {
+            Logger.getLogger(MereoAnalysis.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
 }

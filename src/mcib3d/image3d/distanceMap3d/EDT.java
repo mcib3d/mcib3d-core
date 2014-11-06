@@ -136,7 +136,7 @@ public class EDT {
                     //idx[count] = new VoxEVF(distanceMap.pixels[z][xy], xy, z);
                     //count++;
                 } else {
-                    distanceMap.setPixel(xy, z, 2);
+                    distanceMap.setPixel(xy, z, 1.0f);
                 }
             }
         }

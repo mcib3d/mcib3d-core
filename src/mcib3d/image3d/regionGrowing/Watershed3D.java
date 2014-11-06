@@ -55,8 +55,8 @@ public class Watershed3D {
     // get volumes for each labels (jaza)
     protected boolean computeVolumes = false;
     ArrayList<Double> volumeLabels = null;
-    private int rawThreshold;
-    private int seedsThreshold;
+    private final int rawThreshold;
+    private final int seedsThreshold;
     private boolean okseeds = false;
 
     /**

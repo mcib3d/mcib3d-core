@@ -724,7 +724,6 @@ public class Object3DVoxels extends Object3D {
         int sy = segImage.sizeY;
         int sz = segImage.sizeZ;
 
-        // METHOD LAURENT GOLE FROM ??? TO COMPUTE SURFACE
         int face;
         int class3or4;
         int class1 = 0, class2 = 0, class3 = 0, class4 = 0, class5 = 0, class6 = 0;
@@ -827,7 +826,7 @@ public class Object3DVoxels extends Object3D {
                                 Voxel3D voxC = new Voxel3D(i + x0, j + y0, k + z0, value);
                                 contours.add(voxC);
                                 kdtreeContours.add(voxC.getArray(), voxC);
-                                // METHOD LAURENT GOLE FROM ??? TO COMPUTE SURFACE
+                                 // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
                                 if (face == 1) {
                                     class1++;
                                 }
@@ -856,7 +855,7 @@ public class Object3DVoxels extends Object3D {
                 }
             }
         }
-        // METHOD LAURENT GOLE FROM ??? TO COMPUTE SURFACE
+        // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
         double w1 = 0.894, w2 = 1.3409, w3 = 1.5879, w4 = 2.0, w5 = 8.0 / 3.0, w6 = 10.0 / 3.0;
         correctedSurfaceArea = (class1 * w1 + class2 * w2 + class3 * w3 + class4 * w4 + class5 * w5 + class6 * w6);
 
@@ -1377,7 +1376,7 @@ public class Object3DVoxels extends Object3D {
         return ((n - areaContactVoxels / 6.0) / (n - tmp));
     }
 
-    // METHOD LAURENT GOLE FROM ??? TO COMPUTE SURFACE
+    // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
     public double getCompactnessCorrected() {
         double V = getVolumePixels();
         double S = correctedSurfaceArea;
@@ -1385,6 +1384,7 @@ public class Object3DVoxels extends Object3D {
         return (Math.PI * 36.0 * V * V) / (S * S * S);
     }
 
+     // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
     public double getSphericityCorrected() {
         return Math.pow(getCompactnessCorrected(), 1.0 / 3.0);
     }
