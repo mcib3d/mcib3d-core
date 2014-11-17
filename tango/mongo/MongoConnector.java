@@ -17,8 +17,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import mcib3d.image3d.ImageInt;
@@ -27,6 +25,7 @@ import tango.dataStructure.Selection;
 import tango.gui.Core;
 import tango.helper.ID;
 import tango.parameter.SettingsParameter;
+import static tango.util.SystemMethods.execProcess;
 /**
  *
  **
@@ -71,14 +70,29 @@ public class MongoConnector {
     public static String[] collectionsSettings=new String[] {"nucleus", "channel"};
     ObjectId userId;
     Thread mongod;
+    
     public MongoConnector(String host_DB) {
+        boolean r;
         if (host_DB ==null || host_DB.equals("")) host=defaultHost_DB;
-        else this.host=host_DB;
+        else host=host_DB;
         createMongo();
         IJ.showStatus("testing connection with db...");
         if (isConnected()) {
             IJ.showStatus("connection with db ok!");
-            try {
+            setAdminParameters();
+        } else {
+            if(host=="localhost") r = mongoStart();
+            if (isConnected()){
+                IJ.showStatus("connection with db ok!");
+                setAdminParameters();
+            }else{
+            IJ.error("Couldn't connect to DB. Try to run mongoDB server first, or check hostname.");                
+            }
+        }
+    }
+        
+    public boolean setAdminParameters(){
+        try {
                 // FIXME for compatibility with older version...
                 String adminName = prefix+"_admin";
                 String oldAdminName = "ij3DM_admin";
@@ -89,11 +103,10 @@ public class MongoConnector {
                 adminUser=admin.getCollection("user");
                 adminProject=admin.getCollection("dbnames");
                 help=admin.getCollection("help");
-            } catch (Exception e) {
+                return true;
+        } catch (Exception e) {
                 exceptionPrinter.print(e, "Connection: ", Core.GUIMode);
-            }
-        } else {
-            IJ.error("Couldn't connect to DB. Try to run mongoDB server first, or check hostname.");
+                return false;
         }
     }
     
@@ -236,87 +249,127 @@ public class MongoConnector {
         return prefix;
     }
 
-    public synchronized static void mongoStart() {
+    public synchronized static boolean mongoStart() {
+        boolean r = false;
         if (IJ.isMacOSX()) {
             File cellar = new File("/usr/local/Cellar/mongodb");
-            String[] commandArgs = {
-            "brew",
-            "services",
-            "start",
-            "mongodb"
-            };
-            tango.Installer.execProcess(cellar, commandArgs, false);
+            ArrayList<String> commandArgs = new ArrayList<String>();
+            commandArgs.add("launchctl");
+            commandArgs.add("load");
+            commandArgs.add("~/Library/LaunchAgents/homebrew.mxcl.mongodb.plist");
+            r = execProcess(cellar, commandArgs, true);
         } else if (IJ.isWindows()) {
             File cellar = new File("C:\\mongodb");
-            String[] commandArgs = {
-            "net",
-            "start",
-            "mongodb"
-            };
-            tango.Installer.execProcess(cellar, commandArgs, true);
+            ArrayList<String> commandArgs = new ArrayList<String>();
+            commandArgs.add("net");
+            commandArgs.add("start");
+            commandArgs.add("mongodb");
+            r = execProcess(cellar, commandArgs, true);
         } else if (IJ.isLinux()){
             File cellar = new File("/usr/bin");
-            String[] commandArgs = {
-            "service",
-            "mongodb",
-            "start"
-            };
-            tango.Installer.execProcess(cellar, commandArgs, true);
-        } 
+            ArrayList<String> commandArgs = new ArrayList<String>();
+            commandArgs.add("service");
+            commandArgs.add("mongodb");
+            commandArgs.add("start");
+            r = execProcess(cellar, commandArgs, true);
+        }
+        return r;
     }
     
-    public synchronized static void mongoStop() {
+    public synchronized static boolean mongoStop() {
+        boolean r = false;
         if (IJ.isMacOSX()) {
             File cellar = new File("/usr/local/Cellar/mongodb");
-            String[] commandArgs = {
-            "brew",
-            "services",
-            "stop",
-            "mongodb"
-            };
-            tango.Installer.execProcess(cellar, commandArgs, false);
+            ArrayList<String> commandArgs = new ArrayList<String>();
+            commandArgs.add("launchctl");
+            commandArgs.add("unload");
+            commandArgs.add("~/Library/LaunchAgents/homebrew.mxcl.mongodb.plist");
+            r = execProcess(cellar, commandArgs, true);
         } else if (IJ.isWindows()) {
             File cellar = new File("C:\\mongodb");
-            String[] commandArgs = {
-            "net",
-            "stop",
-            "mongodb"
-            };
-            tango.Installer.execProcess(cellar, commandArgs, true);
+            ArrayList<String> commandArgs = new ArrayList<String>();
+            commandArgs.add("net");
+            commandArgs.add("stop");
+            commandArgs.add("mongodb");
+            r = execProcess(cellar, commandArgs, true);
         } else if (IJ.isLinux()){
             File cellar = new File("/usr/bin");
-            String[] commandArgs = {
-            "service",
-            "mongodb",
-            "stop"
-            };
-            tango.Installer.execProcess(cellar, commandArgs, true);
+            ArrayList<String> commandArgs = new ArrayList<String>();
+            commandArgs.add("service");
+            commandArgs.add("mongodb");
+            commandArgs.add("stop");
+            r = execProcess(cellar, commandArgs, true);
         }
+        return r;
     }
 
-    public void mongoDumpProject(String projectName, String outputPath, boolean inputImages, boolean outputImages) {
+    public boolean mongoDumpProject(String projectName, String outputPath, boolean inputImages, boolean outputImages) {
+        boolean r = true;
         String projectDBName = this.getProjectDBName(projectName);
-        for (String col : collections) dumpCollection(projectDBName, col, outputPath);
+        for (String col : collections) r = r && dumpCollection(projectDBName, col, outputPath);
         if (inputImages || outputImages) {
             ImageManager im = new ImageManager(this, m.getDB(projectDBName));
-            if (inputImages) for (String col : im.getFieldCollections()) dumpCollection(projectDBName, col, outputPath);
-            if (outputImages) for (String col : im.getNucleusCollections()) dumpCollection(projectDBName, col, outputPath);
+            if (inputImages) for (String col : im.getFieldCollections()) r = r && dumpCollection(projectDBName, col, outputPath);
+            if (outputImages) for (String col : im.getNucleusCollections()) r = r && dumpCollection(projectDBName, col, outputPath);
         }
+        return r;
     }
     
-    private void dumpCollection(String projectDBName, String collectionName, String outputPath) {
-        ProcessBuilder pb = new ProcessBuilder("mongodump", "--host", host, "--db", projectDBName, "--collection", collectionName, "-o", outputPath);
-        execProcess(pb);
+    private boolean dumpCollection(String projectDBName, String collectionName, String outputPath) {
+        File cellar = null;
+        if (IJ.isMacOSX()) {
+            cellar = new File("/usr/local/Cellar/mongodb/bin");
+        } else if (IJ.isWindows()) {
+            cellar = new File("C:\\mongodb/bin");
+        } else if (IJ.isLinux()){
+            cellar = new File("/usr/bin");
+        }
+        ArrayList<String> commandArgs = new ArrayList<String>();
+        commandArgs.add("mongodump");
+        commandArgs.add("--host");
+        commandArgs.add(host);
+        commandArgs.add("--db");
+        commandArgs.add(projectDBName);
+        commandArgs.add("--collection");
+        commandArgs.add(collectionName);
+        commandArgs.add("-o");
+        commandArgs.add(outputPath);
+        return execProcess(cellar, commandArgs, true);
     }
     
-    public void mongoDumpSettings(String outputPath) {
-        for (String col : collectionsSettings) dumpCollection(this.settings.getName(), col, outputPath);
+    public boolean mongoDumpSettings(String outputPath) {
+        boolean r = true;
+        for (String col : collectionsSettings) r = r && dumpCollection(this.settings.getName(), col, outputPath);
+        return r;
     }
     
-    public void mongoRestoreProject(String dumpProjectPath, String projectName) {
+    private boolean restoreCollection(String projectDBName, String collectionName, String inputPath, boolean drop) {
+        File cellar = null;
+        if (IJ.isMacOSX()) {
+            cellar = new File("/usr/local/Cellar/mongodb/bin");
+        } else if (IJ.isWindows()) {
+            cellar = new File("C:\\mongodb/bin");
+        } else if (IJ.isLinux()){
+            cellar = new File("/usr/bin");
+        }
+        ArrayList<String> commandArgs = new ArrayList<String>();
+        commandArgs.add("mongorestore");
+        commandArgs.add("--host");
+        commandArgs.add(host);
+        commandArgs.add("--db");
+        commandArgs.add(projectDBName);
+        commandArgs.add("--collection");
+        commandArgs.add(collectionName);
+        if(drop) commandArgs.add("--drop");
+        commandArgs.add(inputPath);
+        return execProcess(cellar, commandArgs, true);
+    }
+    
+    public boolean mongoRestoreProject(String dumpProjectPath, String projectName) {
+        boolean r = true;
         if (!this.projectNameisValid(projectName)) {
             IJ.error("invalid project name");
-            return;
+            return false;
         }
         File dir = new File(dumpProjectPath);
         if (!dir.isDirectory()) dir=dir.getParentFile();
@@ -332,32 +385,28 @@ public class MongoConnector {
             ProcessBuilder pb;
             for (File f : bsonFiles) {
                 String colName = f.getName().replaceFirst("[.][^.]+$", "");
-                pb= new ProcessBuilder("mongorestore", "--host", host, "--db", newDB, "--collection", colName, f.getAbsolutePath());
-                execProcess(pb);
+                r = r && restoreCollection(newDB, colName, f.getAbsolutePath(), false);
             }
             this.setProject(projectName);
         } else {
             if (Core.GUIMode) ij.IJ.log("Folder:"+dir.getAbsolutePath()+ " does not contains .bson files");
         }
-        
+        return r;
     }
     
-    public void mongoRestoreSettings(String dumpProjectPath) {
-        ProcessBuilder pb;
+    public boolean mongoRestoreSettings(String dumpProjectPath) {
+        boolean r = true;
         File dir = new File(dumpProjectPath);
         if (!dir.isDirectory()) dir=dir.getParentFile();
         File nuc = new File(dir.getAbsolutePath()+File.separator+"nucleus.bson");
         if (nuc.exists()) {
-            pb = new ProcessBuilder("mongorestore", "--host", host, "--db", this.settings.getName(), "--collection", "nucleus", "--drop",  nuc.getAbsolutePath());
-            execProcess(pb);
+            r = r && restoreCollection(this.settings.getName(), "nucleus", nuc.getAbsolutePath(), true);
         } else if (Core.GUIMode) ij.IJ.log("nucleus.bson file not found in folder:"+dir.getAbsolutePath());
-        
-        
         File chan = new File(dir.getAbsolutePath()+File.separator+"channel.bson");
         if (chan.exists()) {
-            pb = new ProcessBuilder("mongorestore", "--host", host, "--db", this.settings.getName(), "--collection", "channel", "--drop",  chan.getAbsolutePath());
-            execProcess(pb);
+            r = r && restoreCollection(this.settings.getName(), "channel", chan.getAbsolutePath(), true);
         } else if (Core.GUIMode) ij.IJ.log("channel.bson file not found in folder:"+dir.getAbsolutePath());
+        return r;
     }
     
     /*public synchronized static boolean exec(String[] command) {
@@ -382,7 +431,7 @@ public class MongoConnector {
             exceptionPrinter.print(e, "exec command:"+command, Core.GUIMode);
             return false;
         }  
-    }*/
+    }
     
     private static boolean execProcess(ProcessBuilder pb) {
         try {
@@ -411,7 +460,7 @@ public class MongoConnector {
             return false;
         }
         
-    }
+    }*/
     
     public String getUserName() {
         return username;

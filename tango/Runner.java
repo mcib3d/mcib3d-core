@@ -4,9 +4,6 @@
  */
 package tango;
 
-import ij.Macro;
-import ij.Prefs;
-import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -68,7 +65,7 @@ public class Runner implements PlugIn {
         if (!connected) {
             String start = prompt("Not connected to DB. Start MongoDB? [Y/N]");
             if (start.equals("Y")) {
-                MongoConnector.mongoStart();
+                boolean mongoStart = MongoConnector.mongoStart();
                 connected = Core.mongoConnector.isConnected();
             }
         }
