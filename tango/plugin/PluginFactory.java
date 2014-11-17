@@ -67,11 +67,12 @@ public class PluginFactory {
             add("SignalNoiseQuantification");
             add("ObjectPatternAnalysis");
             add("MediatedContact");
-            add("CellCycleMeasurements");
+            //add("CellCycleMeasurements");
             add("VolumeFractionSpatialDistribution");
             add("ExtendedVolumeFraction");
             add("ObjectRelativeSpatialDistribution");
             add("SummarizeObject2Object");
+            add("TestFeatures");
         }
     };
     // renamed plugins -> retro-compatibility

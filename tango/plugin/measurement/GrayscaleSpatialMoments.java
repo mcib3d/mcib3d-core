@@ -75,8 +75,7 @@ public class GrayscaleSpatialMoments implements MeasurementObject {
     
     int nCPUs=1;
     boolean verbose=false;
-    double[] variance, skewness, kurtosis;
-    double sum;
+    
     @Override
     public void setMultithread(int nbCPUs) {
         this.nCPUs=nbCPUs;
@@ -87,7 +86,9 @@ public class GrayscaleSpatialMoments implements MeasurementObject {
         this.verbose=verbose;
     }
 
-    public void computeMoments(ImageHandler intensityMap, ImageInt mask) {
+    public static double[][] computeMoments(ImageHandler intensityMap, ImageInt mask) { // returns matrix res[0][0] = sum, res[1]=variance, res[2] skewness, res[3] = kurtosis
+        double[] variance, skewness, kurtosis;
+        double sum;
         double scaleXY=mask.getScaleXY();
         double scaleZ=mask.getScaleZ();
         // get center of mass
@@ -158,23 +159,14 @@ public class GrayscaleSpatialMoments implements MeasurementObject {
                 kurtosis[i]=kurtosis[i] / ( sum * Math.pow(variance[i], 2.0)) - 3.0;
             }
         }
+        double[][] res = new double[3][];
+        res[0] = new double[]{sum};
+        res[1] = variance;
+        res[2] = skewness;
+        res[3] = kurtosis;
+        return res;
     }
     
-    public double[] getVariance() {
-        return variance;
-    } 
-    
-    public double[] getKurtosis() {
-        return kurtosis;
-    }
-    
-    public double[] getSkewness() {
-        return skewness;
-    }
-    
-    public double getSum() {
-        return sum;
-    }
     
     @Override
     public void getMeasure(InputCellImages raw, SegmentedCellImages seg, ObjectQuantifications quantifications) {
@@ -185,10 +177,12 @@ public class GrayscaleSpatialMoments implements MeasurementObject {
         } else mask = seg.getImage(structureObjects.getIndex());
         ImageHandler intensityMap = raw.getImage(structureSignal.getIndex());
         intensityMap=preFilters.runPreFilterSequence(structureSignal.getIndex(), intensityMap, raw, nCPUs, verbose);
-        computeMoments(intensityMap, mask);
-        
+        double[][] moments = computeMoments(intensityMap, mask);
+        double[]variance=moments[1];
+        double[]skewness=moments[2];
+        double[]kurtosis=moments[3];
         if (m0.isSelected()) {
-            quantifications.setQuantificationObjectNumber(m0, new double[]{sum});
+            quantifications.setQuantificationObjectNumber(m0, moments[0]);
         } 
         if (m2.isSelected()) {
             quantifications.setQuantificationObjectNumber(m2, new double[]{variance[0]+variance[1]+variance[2]});

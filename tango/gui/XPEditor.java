@@ -800,7 +800,7 @@ public class XPEditor extends javax.swing.JPanel implements PanelDisplayer {
     private void duplicateExperimentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateExperimentActionPerformed
         if (experiments.getSelectedIndex() >= 0) {
             //String[] dest = TextChoiceJOptionPane.showInputDialog("Enter Name and Destination Set:", Core.mongoConnector.getProjects());
-            DuplicateXP d = DuplicateXPOptionPane.showInputDialog("Duplicate or Override Experiment:", Core.mongoConnector.getProjects(), utils.getSelectedString(experiments));
+            DuplicateXP d = DuplicateXPOptionPane.showInputDialog("Duplicate Experiment:", Core.mongoConnector.getProjects(), utils.getSelectedString(experiments));
             if (d == null) {
                 return;
             }

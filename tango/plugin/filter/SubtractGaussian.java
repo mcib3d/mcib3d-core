@@ -38,8 +38,8 @@ public class SubtractGaussian implements PreFilter {
     int nbCPUs=1;
     double voisx=20;
     double voisz=voisx/2;
-    DoubleParameter voisXY_P = new DoubleParameter("VoisXY: ", "voisXY", (double) voisx, Parameter.nfDEC1);
-    DoubleParameter voisZ_P = new DoubleParameter("VoisZ: ", "voisZ", (double) voisz, Parameter.nfDEC1);
+    DoubleParameter voisXY_P = new DoubleParameter("VoisXY (pix): ", "voisXY", (double) voisx, Parameter.nfDEC1);
+    DoubleParameter voisZ_P = new DoubleParameter("VoisZ (pix): ", "voisZ", (double) voisz, Parameter.nfDEC1);
     BooleanParameter useScale = new BooleanParameter("Use Image Scale for Z radius: ", "useScale", true);
     ConditionalParameter cond = new ConditionalParameter(useScale);
     Parameter[] parameters;
