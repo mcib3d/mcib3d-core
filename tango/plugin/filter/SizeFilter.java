@@ -13,6 +13,7 @@ import tango.dataStructure.InputCellImages;
 import tango.dataStructure.InputImages;
 import tango.parameter.BooleanParameter;
 import tango.parameter.ConditionalParameter;
+import tango.parameter.DoubleParameter;
 import tango.parameter.IntParameter;
 import tango.parameter.Parameter;
 import tango.parameter.SliderParameter;
@@ -47,8 +48,9 @@ public class SizeFilter implements PostFilter {
     boolean debug;
     int nbCPUs = 1;
     int min, max, edgeXY, edgeZ, limX, limY, limZ;
-    IntParameter minVox = new IntParameter("Min Voxels:", "minVox", 1);
-    IntParameter maxVox = new IntParameter("Max Voxels:", "maxVox", null);
+    DoubleParameter minVox = new DoubleParameter("Min volume:", "minVox", 1.0, DoubleParameter.nfDEC2);
+    DoubleParameter maxVox = new DoubleParameter("Max volume:", "maxVox", 0.0, DoubleParameter.nfDEC2);
+    BooleanParameter useUnits = new BooleanParameter("Size in calibrated units:", "useUnits", false);
     BooleanParameter max_P = new BooleanParameter("Use constraint on maximum size", "useMaw", false);
     BooleanParameter edge_PXY = new BooleanParameter("Remove Objects touching edges XY", "edgeXY", false);
     BooleanParameter edge_PZ = new BooleanParameter("Remove Objects touching edges Z", "edgeZ", false);
@@ -80,17 +82,18 @@ public class SizeFilter implements PostFilter {
 //    };
     ConditionalParameter maxCond = new ConditionalParameter(max_P, map2);
     //ConditionalParameter outParam = new ConditionalParameter(outside, mapOut);
-    Parameter[] parameters = new Parameter[]{minVox, maxCond, edgeCondXY, edgeCondZ, outside};
+    Parameter[] parameters = new Parameter[]{minVox, maxCond, useUnits, edgeCondXY, edgeCondZ, outside};
 
     public SizeFilter() {
-        minVox.setHelp("if an objects has less voxel than this value, it is erased", false);
-        maxVox.setHelp("if an objects has more voxel than this value, it is erased. \nleave blank or 0 for no maximum value", false);
+        minVox.setHelp("if an objects has less volume than this value, it is erased", false);
+        maxVox.setHelp("if an objects has more volume than this value, it is erased. \nleave blank or 0 for no maximum value", false);
         maxVox.setCompulsary(false);
         edge_PXY.setHelp("Pixels touching the border of the image (XY border) will be erased", false);
         edge_PXY.setHelp("Pixels touching the border of the image (Z border) will be erased", false);
         edgeSurf_PXY.setHelp("Minimum number of edge-touching voxel per objects: if the objects too few voxels touching the edges, it won't be erased", false);
         edgeSurf_PZ.setHelp("Minimum number of edge-touching voxel per objects: if the objects too few voxels touching the edges, it won't be erased", false);
-        outside.setHelp("Delete objects outside nucleus", false);
+        outside.setHelp("Delete objects outside nucleus (only valid for structures)", false);
+        useUnits.setHelp("The values for sizes are in calibrated units instead of voxels", true);
         //minPc.setHelp("Minimum % of structure colocalisation outside nucleus to remove it", false);
     }
 
@@ -106,24 +109,36 @@ public class SizeFilter implements PostFilter {
             edgeZ = 1;
         }
 
-        min = minVox.getIntValue(1);
-        max = maxVox.getIntValue(0);
+        int min = 0, max = Integer.MAX_VALUE;
+        double mind = minVox.getFloatValue(0);
+        double maxd = maxVox.getFloatValue(Integer.MAX_VALUE);
+        double volunit = in.getCalibration().pixelWidth * in.getCalibration().pixelHeight * in.getCalibration().pixelDepth;
+        if (useUnits.isSelected()) {
+            min = (int) (mind / volunit);
+            if (max_P.isSelected()) {
+                max = (int) (maxd / volunit);
+            }
+        } else {
+            min = (int) mind;
+            max = Integer.MAX_VALUE;
+            if (max_P.isSelected()) {
+                max = (int) maxd;
+            }
+        }
+
         if (max <= min) {
-            max = 0;
+            max = Integer.MAX_VALUE;
         }
         limX = in.sizeX - 1;
         limY = in.sizeY - 1;
         limZ = in.sizeZ - 1;
-        boolean useMax = max_P.getValue();
-        if (max <= min) {
-            useMax = false;
-        }
+
         // NUCLEI
         if (images instanceof InputCellImages) {
             // IJ.log("Input Cell images");
             ImageInt mask = ((InputCellImages) images).getMask();
             for (Object3D o : objects) {
-                if (o.getVolumePixels() < min || (max > 0 && o.getVolumePixels() > max)) {
+                if ((o.getVolumePixels() < min) || (o.getVolumePixels() > max)) {
                     in.draw(o, 0);
                 } else if (edge_PXY.isSelected()) {
                     int count = 0;
@@ -158,7 +173,7 @@ public class SizeFilter implements PostFilter {
             // OBJECTS
         } else {
             for (Object3D o : objects) {
-                if (o.getVolumePixels() < min || (useMax && o.getVolumePixels() > max)) {
+                if ((o.getVolumePixels() < min) || (o.getVolumePixels() > max)) {
                     in.draw(o, 0);
                     //EDGE XY
                 } else if (edge_PXY.isSelected() && (o.getXmax() == limX || o.getXmin() == 0 || o.getYmax() == limY || o.getYmin() == 0)) {
