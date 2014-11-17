@@ -304,6 +304,11 @@ public abstract class ImageInt extends ImageHandler {
     public ImageFloat getDistanceMapInsideMask(int nbCPUs) {
         return EDT.run(this, 0, false, nbCPUs);
     }
+    
+    public ImageByte erode(float erodeRadius, int nbCPUs) {
+        ImageFloat dm = getDistanceMapInsideMask(nbCPUs);
+        return dm.threshold(erodeRadius, false, true);
+    }
 
     public static ImageInt wrap(ImagePlus imp) {
         switch (imp.getBitDepth()) {
