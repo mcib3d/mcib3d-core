@@ -36,9 +36,9 @@ import tango.parameter.Parameter;
 public class DifferenceOfGaussians implements PreFilter {
     boolean debug;
     int nbCPUs=1;
-    double voisx1=8;
+    double voisx1=1;
     double voisz1=voisx1/2;
-    double voisx2=10;
+    double voisx2=2;
     double voisz2=voisx2/2;
     DoubleParameter voisXY_1_P = new DoubleParameter("Smaller Gaussian scale XY (pix): ", "voisXY1", (double) voisx1, Parameter.nfDEC1);
     DoubleParameter voisZ_1_P = new DoubleParameter("Smaller Gaussian sacle Z (pix): ", "voisZ1", (double) voisz1, Parameter.nfDEC1);
@@ -73,7 +73,7 @@ public class DifferenceOfGaussians implements PreFilter {
             gaussSmall.show("Subtract Gaussian:: SmoothXY:"+voisx1+" SmooothZ:"+voisz1);
             gaussLarge.show("Subtract Gaussian:: SmoothXY:"+voisx2+" SmooothZ:"+voisz2);
         }
-        return gaussLarge.substractImage(gaussSmall);
+        return gaussSmall.substractImage(gaussLarge);
     }
 
     @Override

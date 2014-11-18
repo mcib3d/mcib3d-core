@@ -159,7 +159,7 @@ public class GrayscaleSpatialMoments implements MeasurementObject {
                 kurtosis[i]=kurtosis[i] / ( sum * Math.pow(variance[i], 2.0)) - 3.0;
             }
         }
-        double[][] res = new double[3][];
+        double[][] res = new double[4][];
         res[0] = new double[]{sum};
         res[1] = variance;
         res[2] = skewness;

@@ -207,4 +207,8 @@ public class GroupKeyParameter extends Parameter implements NestedParameter {
         } else return true;
     }
     
+    public KeyParameter getPrefix() {
+        return prefix;
+    }
+    
 }
