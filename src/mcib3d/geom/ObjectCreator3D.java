@@ -800,6 +800,132 @@ public class ObjectCreator3D {
         }
     }
 
+    public void createCone(int centerx, int centery, int centerz, double rx0, double ry0, double rx1, double ry1, double height, float value) {
+        //IJ.log("cone : " + rx0 + " " + rx1 + " " + ry0 + " " + ry1 + " " + height);
+        int startx = (int) Math.round(centerx - Math.max(rx0, rx1));
+        if (startx < 0) {
+            startx = 0;
+        }
+        int starty = (int) Math.round(centery - Math.max(ry0, ry1));
+        if (starty < 0) {
+            starty = 0;
+        }
+        int startz = (int) Math.round(centerz - height / 2);
+        if (startz < 0) {
+            startz = 0;
+        }
+        int endx = (int) Math.round(centerx + Math.max(rx0, rx1));
+        if (endx >= img.sizeX) {
+            endx = img.sizeX - 1;
+        }
+        int endy = (int) Math.round(centery + Math.max(ry0, ry1));
+        if (endy >= img.sizeY) {
+            endy = img.sizeY - 1;
+        }
+        int endz = (int) Math.round(centerz + height / 2);
+        if (endz >= img.sizeZ) {
+            endz = img.sizeZ - 1;
+        }
+
+        double ratio = 1.0 / (double) (endz - startz);
+        for (int k = startz; k <= endz; k++) {
+            double rx = rx0 + (rx1 - rx0) * (k - startz) * ratio;
+            double rx2 = rx * rx;
+            double ry = ry0 + (ry1 - ry0) * (k - startz) * ratio;
+            double ry2 = ry * ry;
+            //IJ.log("z=" + k + " " + rx + " " + ry);
+            for (int j = starty; j <= endy; j++) {
+                float dy = j - centery;
+                for (int i = startx; i <= endx; i++) {
+                    float dx = i - centerx;
+                    double d = (dx * dx) / (rx2) + (dy * dy) / (ry2);
+                    if (d <= 1.0) {
+                        img.setPixel(i, j, k, value);
+                    }
+                }
+            }
+        }
+    }
+
+    public void createConeAxes(int centerx, int centery, int centerz, double rx0, double ry0, double rx1, double ry1, double height, float value, Matrix M) {
+
+        double radius = Math.max(Math.max(rx0, rx1), Math.max(Math.max(ry0, ry1), height / 2));
+        int startx = (int) (centerx - radius);
+        if (startx < 0) {
+            startx = 0;
+        }
+        int starty = (int) (centery - radius);
+        if (starty < 0) {
+            starty = 0;
+        }
+        int startz = (int) (centerz - radius);
+        if (startz < 0) {
+            startz = 0;
+        }
+        int endx = (int) (centerx + radius);
+        if (endx >= img.sizeX) {
+            endx = img.sizeX - 1;
+        }
+        int endy = (int) (centery + radius);
+        if (endy >= img.sizeY) {
+            endy = img.sizeY - 1;
+        }
+        int endz = (int) (centerz + radius);
+        if (endz >= img.sizeZ) {
+            endz = img.sizeZ - 1;
+        }
+
+        double ddx, ddy, ddz;
+        double dx, dy, dz;
+
+        // inverse
+        Matrix MM = M.inverse();
+
+        Matrix V1 = new Matrix(3, 1);
+        Matrix V2;
+
+        // work in pixel coordinate
+        double ratio = 1.0 / (double) (endz - startz);
+        for (int k = startz; k <= endz; k++) {
+            IJ.showStatus("Cylinder " + k + "/" + endz);
+
+            ddz = (k - centerz);
+            for (int j = starty; j <= endy; j++) {
+                ddy = (j - centery);
+                for (int i = startx; i <= endx; i++) {
+                    ddx = (i - centerx);
+
+                    // vector in column
+                    V1.set(0, 0, ddx);
+                    V1.set(1, 0, ddy);
+                    V1.set(2, 0, ddz);
+
+                    // multiplication
+                    V2 = MM.times(V1);
+
+                    // result
+                    dx = V2.get(0, 0);
+                    dy = V2.get(1, 0);
+                    dz = V2.get(2, 0);
+
+                    // cylinder
+                    if (Math.abs(dz) < height / 2) {
+                        double rx = rx0 + (rx1 - rx0) * (dz + height / 2) / height;
+                        double rx2 = rx * rx;
+                        double ry = ry0 + (ry1 - ry0) * (dz + height / 2) / height;
+                        double ry2 = ry * ry;
+                        double d = (dx * dx) / (rx2) + (dy * dy) / (ry2);
+                        if (d <= 1.0) {
+                            img.setPixel(i, j, k, value);
+                        }
+                    }
+                    //System.out.println(ddx + " " + ddy + " " + ddz + " | " + dx + " " + dy + " " + dz);
+
+                }
+            }
+        }
+    }
+
     /**
      * Creation d'un cylindre
      *
@@ -907,6 +1033,29 @@ public class ObjectCreator3D {
         M.set(2, 2, X.getZ());
 
         createCylinderAxes(centerx, centery, centerz, rx, ry, height, value, M);
+    }
+
+    public void createConeAxes(int centerx, int centery, int centerz, double rx0, double ry0, double rx1, double ry1, double height, float value, Vector3D V, Vector3D W) {
+        V.normalize();
+        W.normalize();
+        Vector3D X = V.crossProduct(W);
+        X.normalize();
+
+        Matrix M = new Matrix(3, 3);
+        // V
+        M.set(0, 0, V.getX());
+        M.set(1, 0, V.getY());
+        M.set(2, 0, V.getZ());
+        // W
+        M.set(0, 1, W.getX());
+        M.set(1, 1, W.getY());
+        M.set(2, 1, W.getZ());
+        // X
+        M.set(0, 2, X.getX());
+        M.set(1, 2, X.getY());
+        M.set(2, 2, X.getZ());
+
+        createConeAxes(centerx, centery, centerz, rx0, ry0, rx1, ry1, height, value, M);
     }
 
     /**
