@@ -442,9 +442,7 @@ public class Segment3DSpots {
         }
         // locate seeds
         for (int z = 0; z < seedsImage.sizeZ; z++) {
-            if (show) {
-                IJ.showStatus("Segmenting slice " + (z + 1));
-            }
+            IJ.showStatus("Segmenting slice " + (z + 1));
             for (int y = 0; y < seedsImage.sizeY; y++) {
                 for (int x = 0; x < seedsImage.sizeX; x++) {
                     if (seedsImage.getPixel(x, y, z) > seedsThreshold) {
@@ -1395,7 +1393,6 @@ public class Segment3DSpots {
          * (k1 + k2) / 2.0;
          *
          */
-
         if (debug) {
             System.out.println("max locaux centres en Z:");
             System.out.println("centre1: " + cx1 + " " + cy1 + " " + cz1);
