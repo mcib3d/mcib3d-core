@@ -76,8 +76,8 @@ public class CellCycleMeasurements implements MeasurementObject {
     KeyParameterObjectNumber replication_int = new KeyParameterObjectNumber("Replication marker Mean Intensity", "replication_mean_intensity");
     KeyParameterObjectNumber rep_rac2 = new KeyParameterObjectNumber("Replication RadialAutoCorrelation rad:2", "replication_rac2");
     
-    BooleanParameter doNL =  new BooleanParameter("Compute localisation towards nucleoli and periphery?","doNL", false);
-    ConditionalParameter condNL = new ConditionalParameter(doNL);
+    BooleanParameter doNL =  new BooleanParameter("Compute?","doNL", false);
+    ConditionalParameter condNL = new ConditionalParameter("Localisation towards nucleoli and periphery", doNL);
     StructureParameter nl = new StructureParameter("Nucleoli:", "nl", -1, true);
     KeyParameterObjectNumber rep_loc = new KeyParameterObjectNumber("Replication Localization", "replication_loc");
     

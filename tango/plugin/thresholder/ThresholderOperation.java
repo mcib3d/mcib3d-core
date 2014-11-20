@@ -36,13 +36,13 @@ public class ThresholderOperation implements Thresholder {
     ThresholdParameter threshold2 = new ThresholdParameter("Threshold method 2:", "thld2", null);
     DoubleParameter coeff = new DoubleParameter("Coefficient:", "coeff", 0.5d, Parameter.nfDEC3);
     static String[] methods = new String[]{"Max", "Min", "Mean"};
-    ChoiceParameter operation = new ChoiceParameter("Operation:", "operation", methods, methods[0]); 
+    ChoiceParameter operation = new ChoiceParameter("Choose:", "operation", methods, methods[0]); 
     HashMap<Object, Parameter[]> map = new HashMap<Object, Parameter[]>(){{
         put(methods[0], new Parameter[]{}); 
         put(methods[1], new Parameter[]{});
         put(methods[2], new Parameter[]{coeff});
     }};
-    ConditionalParameter cond= new ConditionalParameter(operation, map);
+    ConditionalParameter cond= new ConditionalParameter("Operation", operation, map);
     Parameter[] parameters= new Parameter[]{threshold1, threshold2, cond};
     
     public ThresholderOperation() {

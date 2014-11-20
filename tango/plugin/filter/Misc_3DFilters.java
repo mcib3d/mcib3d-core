@@ -65,7 +65,7 @@ public class Misc_3DFilters implements PreFilter {
     DoubleParameter voisXY_P = new DoubleParameter("VoisXY: ", "voisXY", (double) voisx, Parameter.nfDEC1);
     DoubleParameter voisZ_P = new DoubleParameter("VoisZ: ", "voisZ", (double) voisz, Parameter.nfDEC1);
     BooleanParameter useScale = new BooleanParameter("Use Image Scale for Z radius: ", "useScale", true);
-    ConditionalParameter condScale = new ConditionalParameter(useScale);
+    ConditionalParameter condScale = new ConditionalParameter("Z-radius", useScale);
     SliderParameter iteration_P = new SliderParameter("Nb Iterations (Denoise):", "iterations", 1, 10, cs);
     IntParameter mins_P = new IntParameter("Min size (BandPass):", "minsize", mins);
     IntParameter maxs_P = new IntParameter("Max size (BandPass):", "maxsize", maxs);
@@ -77,7 +77,7 @@ public class Misc_3DFilters implements PreFilter {
             //put(filters[BANDPASS], new Parameter[]{mins_P, maxs_P});
         }
     };
-    ConditionalParameter cond = new ConditionalParameter(filter_P, map);
+    ConditionalParameter cond = new ConditionalParameter("Filter", filter_P, map);
     Parameter[] parameters = new Parameter[]{cond};
     static String gauss3DHelp = "<ul><li><strong>Gaussian 3D</strong> taken from ImageJ Process/Filters.</li></ul>";
     static String log3DHelp = "<ul><li><strong>LoG</strong>, laplacian of Gaussian, <br>taken from BIG http://bigwww.epfl.ch/sage/soft/LoG3D/ <br>. <br>When using this plugin, please cite : <br><br>D. Sage, F.R. Neumann, F. Hediger, S.M. Gasser, M. Unser, \"Automatic Tracking of Individual Fluorescence Particles: Application to the Study of Chromosome Dynamics,\" IEEE Transactions on Image Processing, vol. 14, no. 9, pp. 1372-1383, September 2005.<br> </li></ul>";

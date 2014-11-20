@@ -50,7 +50,7 @@ public class BinaryOpen implements PostFilter, PlugIn{
         put(false, new Parameter[]{radiusZ}); 
         put(true, new Parameter[0]);
     }};
-    ConditionalParameter cond = new ConditionalParameter(useScale, map);
+    ConditionalParameter cond = new ConditionalParameter("Z-radius", useScale, map);
     Parameter[] parameters = new Parameter[] {radiusXY, cond};
 
     public BinaryOpen() {

@@ -45,7 +45,7 @@ public class GroupParameter extends Parameter implements NestedParameter{
     public GroupParameter(String label, String id) {
         super(id);
         this.label=new JLabel(label);
-        box= new CollapsiblePanel(this.label);
+        box= new CollapsiblePanel(null, this.label);
         
         
         mainBox = Box.createVerticalBox();
@@ -70,7 +70,7 @@ public class GroupParameter extends Parameter implements NestedParameter{
     public GroupParameter(String label, String id, Parameter[] parameters) {
         super(id);
         this.label=new JLabel(label);
-        box= new CollapsiblePanel(this.label);
+        box= new CollapsiblePanel(null, this.label);
         
         //this.parameters=parameters;
         mainBox = Box.createVerticalBox();

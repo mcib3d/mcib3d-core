@@ -56,7 +56,7 @@ public class Jacop_ implements PlugIn, MeasurementStructure {
             put(methods[3], new Parameter[]{threshold1, threshold2});
         }
     };
-    ConditionalParameter cond = new ConditionalParameter(jacop_method, action);
+    ConditionalParameter cond = new ConditionalParameter("Colocalization method", jacop_method, action);
     Parameter[] parameters = new Parameter[]{structure1, preFilter1, preFilters1, structure2, preFilter2, preFilters2, cond};
     KeyParameterStructureNumber K_pearson = new KeyParameterStructureNumber("Pearson", "pearson");
     KeyParameterStructureNumber K_M1 = new KeyParameterStructureNumber("M1", "m1");

@@ -49,7 +49,7 @@ public class HistogramDerivative implements Thresholder {
     DoubleParameter sigma = new DoubleParameter("Sigma : ", "sigma", 3d, Parameter.nfDEC1);
     
     static String[] methods = new String[]{"Max Value", "Pixel number limit", "Pixel proportion limit"}; //, "Gaussian Fit", "Gamma Fit"
-    ChoiceParameter method = new ChoiceParameter("Operation:", "operation", methods, methods[0]); 
+    ChoiceParameter method = new ChoiceParameter("Choose operation:", "operation", methods, methods[0]); 
     HashMap<Object, Parameter[]> map = new HashMap<Object, Parameter[]>(){{
         put(methods[0], new Parameter[]{}); 
         put(methods[1], new Parameter[]{numberLimit});
@@ -57,7 +57,7 @@ public class HistogramDerivative implements Thresholder {
         //put(methods[3], new Parameter[]{sigma});
         //put(methods[4], new Parameter[]{sigma});
     }};
-    ConditionalParameter cond= new ConditionalParameter(method, map);
+    ConditionalParameter cond= new ConditionalParameter("Operation", method, map);
     
     Parameter[] parameters=new Parameter[] {
         derivativeOrder, cond

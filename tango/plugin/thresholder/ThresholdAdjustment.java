@@ -37,7 +37,7 @@ public class ThresholdAdjustment implements Thresholder {
     SliderDoubleParameter per = new SliderDoubleParameter("Proportion of pixels:", "per", -1, 1, 0.5d, 4);
     DoubleParameter sigmaCoeff = new DoubleParameter("Sigma coefficient:", "sigmaCoeff", 1d, Parameter.nfDEC3);
     static String[] methods = new String[]{"Proportion of brigth pixels", "Mean + n * Sigma", "Threshold + n * Sigma"};
-    ChoiceParameter choice = new ChoiceParameter("Compute Method:", "computeMethod", methods, methods[2]); 
+    ChoiceParameter choice = new ChoiceParameter("Choose method:", "computeMethod", methods, methods[2]); 
     static String[] sigmaMethods = new String[]{"Over Threshold", "Under Threshold", "Whole Image"};
     ChoiceParameter choiceSigma = new ChoiceParameter("Compute Sigma:", "computeSigma", sigmaMethods, sigmaMethods[0]); 
     static String[] sigmaMethods2 = new String[]{"Over Threshold", "Under Threshold"};
@@ -48,7 +48,7 @@ public class ThresholdAdjustment implements Thresholder {
         put(methods[1], new Parameter[]{choiceSigma2, sigmaCoeff});
         put(methods[2], new Parameter[]{choiceSigma, sigmaCoeff});
     }};
-    ConditionalParameter cond= new ConditionalParameter(choice, map);
+    ConditionalParameter cond= new ConditionalParameter("Method", choice, map);
     
     Parameter[] parameters = new Parameter[]{threshold, cond};
     boolean debug;

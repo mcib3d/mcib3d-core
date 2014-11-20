@@ -44,9 +44,9 @@ public class AdjustRegions implements PostFilter {
     int nbCPUs=1;
     
     static String[] methods=new String[] {"Gaussian Fit", "Edge Detector"}; //, "Local Threshold"
-    ChoiceParameter choice = new ChoiceParameter("Choose Adjustement Method:", "thresholderMethod", methods, methods[0]); 
+    ChoiceParameter choice = new ChoiceParameter("Method:", "thresholderMethod", methods, methods[0]); 
     SpotLocalThresholder gaussianThresholder=new GaussianFit(); //, new LocalThresholdAdjustment() , new MaximumGradientFit(), new MaximumGradientFitDistanceMap()
-    ConditionalParameter cond= new ConditionalParameter(choice);
+    ConditionalParameter cond= new ConditionalParameter("Adjustement Method",choice);
     Parameter[] parameters = new Parameter[] {cond};
         
     public AdjustRegions() {

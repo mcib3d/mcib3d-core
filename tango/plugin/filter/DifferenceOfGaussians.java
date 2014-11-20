@@ -38,16 +38,16 @@ public class DifferenceOfGaussians implements PreFilter {
     int nbCPUs=1;
     double voisx1=1;
     double voisz1=voisx1/2;
-    double voisx2=2;
+    double voisx2=10;
     double voisz2=voisx2/2;
     DoubleParameter voisXY_1_P = new DoubleParameter("Smaller Gaussian scale XY (pix): ", "voisXY1", (double) voisx1, Parameter.nfDEC1);
     DoubleParameter voisZ_1_P = new DoubleParameter("Smaller Gaussian sacle Z (pix): ", "voisZ1", (double) voisz1, Parameter.nfDEC1);
     BooleanParameter useScale_1 = new BooleanParameter("Use Image Scale for Z radius: ", "useScale1", true);
-    ConditionalParameter cond_1 = new ConditionalParameter(useScale_1);
+    ConditionalParameter cond_1 = new ConditionalParameter("Z-radius", useScale_1);
     DoubleParameter voisXY_2_P = new DoubleParameter("Larger Gaussian scale XY (pix): ", "voisXY2", (double) voisx2, Parameter.nfDEC1);
     DoubleParameter voisZ_2_P = new DoubleParameter("Larger Gaussi scale Z (pix): ", "voisZ2", (double) voisz2, Parameter.nfDEC1);
     BooleanParameter useScale_2 = new BooleanParameter("Use Image Scale for Z radius: ", "useScale2", true);
-    ConditionalParameter cond_2 = new ConditionalParameter(useScale_2);
+    ConditionalParameter cond_2 = new ConditionalParameter("Z-radius", useScale_2);
     Parameter[] parameters;
     public DifferenceOfGaussians() {
         voisXY_1_P.setHelp("The radius in <em>X</em> and <em>Y</em> direction for Smaller Gaussian Kernel, in pixels", true);

@@ -59,8 +59,8 @@ public class TestFeatures implements MeasurementObject {
     int nCPUs = 1;
     boolean verbose;
     StructureParameter structureSignal = new StructureParameter("Signal:", "structureSignal", -1, false);
-    ChoiceParameter doErodeNuc =  new ChoiceParameter("Erode nucleus", "doErodeNuc", new String[]{"No Erosion", "Constant Radius", "Proportion of Volume"}, "No Erosion");
-    ConditionalParameter condErodeNuc = new ConditionalParameter(doErodeNuc);
+    ChoiceParameter doErodeNuc =  new ChoiceParameter("Perform", "doErodeNuc", new String[]{"No Erosion", "Constant Radius", "Proportion of Volume"}, "No Erosion");
+    ConditionalParameter condErodeNuc = new ConditionalParameter("Erode nucleus", doErodeNuc);
     double defRadErodeNuc=3;
     DoubleParameter radErodeNuc = new DoubleParameter("Radius (pix)", "radErodeNuc", defRadErodeNuc, DoubleParameter.nfDEC1);
     SliderDoubleParameter perErodeNuc = new SliderDoubleParameter("Proportion of nuclear volume:", "perErodeNuc", 0d, 1d, 0.3d, 2);
@@ -68,26 +68,26 @@ public class TestFeatures implements MeasurementObject {
     TextParameter prefix = new TextParameter("Global Prefix", "prefix", "");
     
     final static int RAW=0;
-    BooleanParameter doRaw = new BooleanParameter("Raw Image", "doRaw", true);
-    ConditionalParameter condRaw = new ConditionalParameter(doRaw);
+    BooleanParameter doRaw = new BooleanParameter("Perform", "doRaw", true);
+    ConditionalParameter condRaw = new ConditionalParameter("Raw Image", doRaw);
     TextParameter rawPrefix = new TextParameter("Prefix", "rawPrefix", "raw");
     
     final static int CUSTOM=1;
-    BooleanParameter doCustom = new BooleanParameter("Custom Filter", "doCustom", false);
-    ConditionalParameter condCustom = new ConditionalParameter(doCustom);
+    BooleanParameter doCustom = new BooleanParameter("Perform", "doCustom", false);
+    ConditionalParameter condCustom = new ConditionalParameter("Custom Filter",doCustom);
     PreFilterSequenceParameter prefSeq = new PreFilterSequenceParameter("Pre-Filters", "preFilters");
     TextParameter customPrefix = new TextParameter("Prefix", "customPrefix", "");
     
     final static int GAUSS=2;
-    BooleanParameter doGauss = new BooleanParameter("Gaussian Blur", "doGauss", true);
-    ConditionalParameter condGauss = new ConditionalParameter(doGauss);
+    BooleanParameter doGauss = new BooleanParameter("Perform", "doGauss", true);
+    ConditionalParameter condGauss = new ConditionalParameter("Gaussian Blur", doGauss);
     IntParameter gaussMinRad = new IntParameter("Min. Radius (pix)", "gaussMinRad", 1);
     IntParameter gaussMaxRad = new IntParameter("Max. Radius (pix)", "gaussMaxRad", 10);
     TextParameter gaussPrefix = new TextParameter("Prefix", "gaussPrefix", "gauss");
     
     final static int DOG=3;
-    BooleanParameter doDOG = new BooleanParameter("Difference Of Gaussian", "doGauss", true);
-    ConditionalParameter condDOG = new ConditionalParameter(doDOG);
+    BooleanParameter doDOG = new BooleanParameter("Perform", "doGauss", true);
+    ConditionalParameter condDOG = new ConditionalParameter("Difference of Gaussians",doDOG);
     IntParameter DOGMinRadS = new IntParameter("Min. Radius for Smaller Gaussian (pix)", "DOGminRadS", 0);
     IntParameter DOGMaxRadS = new IntParameter("Max. Radius for Smaller Gaussian (pix)", "DOGmaxRadS", 4);
     IntParameter DOGMinRadL = new IntParameter("Min. Radius for Larger Gaussian (pix)", "DOGminRadL", 1);
@@ -95,55 +95,55 @@ public class TestFeatures implements MeasurementObject {
     TextParameter DOGPrefix = new TextParameter("Prefix", "DOGprefix", "DOG");
     
     final static int LOG=4;
-    BooleanParameter doLOG = new BooleanParameter("Laplacian Of Gaussian", "doLOG", true);
-    ConditionalParameter condLOG = new ConditionalParameter(doLOG);
+    BooleanParameter doLOG = new BooleanParameter("Perform", "doLOG", true);
+    ConditionalParameter condLOG = new ConditionalParameter("Laplacian of Gaussian", doLOG);
     IntParameter LOGMinRad = new IntParameter("Min. Radius (pix)", "LOGMinRad", 1);
     IntParameter LOGMaxRad = new IntParameter("Max. Radius (pix)", "LOGMaxRad", 4);
     TextParameter LOGPrefix = new TextParameter("Prefix", "LOGPrefix", "LOG");
     
     final static int OPEN=5;
-    BooleanParameter doOpen = new BooleanParameter("Grayscale Opening", "doOpen", true);
-    ConditionalParameter condOpen = new ConditionalParameter(doOpen);
+    BooleanParameter doOpen = new BooleanParameter("Perform", "doOpen", true);
+    ConditionalParameter condOpen = new ConditionalParameter("Grayscale Opening",doOpen);
     IntParameter openMinRad = new IntParameter("Min. Radius (pix)", "OpenMinRad", 1);
     IntParameter openMaxRad = new IntParameter("Max. Radius (pix)", "OpenMaxRad", 8);
     TextParameter openPrefix = new TextParameter("Prefix", "openPrefix", "open");
     PreFilterParameter openFilter = new PreFilterParameter("De-noising", "openDenoising", "Fast Filters 3D");
-    BooleanParameter doOpenDenoising = new BooleanParameter("Perform denoising", "doOpenDenoising", true);
-    ConditionalParameter condOpenDenoising = new ConditionalParameter(doOpenDenoising);
+    BooleanParameter doOpenDenoising = new BooleanParameter("Perform", "doOpenDenoising", true);
+    ConditionalParameter condOpenDenoising = new ConditionalParameter("De-noising", doOpenDenoising);
     
     final static int TH=6;
-    BooleanParameter doTH = new BooleanParameter("Top-Hat", "doTH", true);
-    ConditionalParameter condTH = new ConditionalParameter(doTH);
+    BooleanParameter doTH = new BooleanParameter("Perform", "doTH", true);
+    ConditionalParameter condTH = new ConditionalParameter("Top-Hat",doTH);
     IntParameter THMinRad = new IntParameter("Min. Radius (pix)", "THMinRad", 1);
     IntParameter THMaxRad = new IntParameter("Max. Radius (pix)", "THMaxRad", 8);
     TextParameter THprefix = new TextParameter("Prefix", "THprefix", "topHat");
     PreFilterParameter THFilter = new PreFilterParameter("De-noising", "THdenoising", "Fast Filters 3D");
-    BooleanParameter doTHDenoising = new BooleanParameter("Perform denoising", "doTHDenoising", true);
-    ConditionalParameter condTHDenoising = new ConditionalParameter(doTHDenoising);
+    BooleanParameter doTHDenoising = new BooleanParameter("Perform", "doTHDenoising", true);
+    ConditionalParameter condTHDenoising = new ConditionalParameter("De-noising", doTHDenoising);
     
     final static int GRAD=7;
-    BooleanParameter doGrad = new BooleanParameter("Gradient Magnitude", "doGrad", true);
-    ConditionalParameter condGrad = new ConditionalParameter(doGrad);
+    BooleanParameter doGrad = new BooleanParameter("Performe", "doGrad", true);
+    ConditionalParameter condGrad = new ConditionalParameter("Gradient Magnitude", doGrad);
     IntParameter gradMinRad = new IntParameter("Min. Radius (pix)", "gradMinRad", 1);
     IntParameter gradMaxRad = new IntParameter("Max. Radius (pix)", "gradMaxRad", 4);
     TextParameter gradPrefix = new TextParameter("Prefix", "gradPrefix", "grad");
     PreFilterParameter gradFilter = new PreFilterParameter("De-noising", "gradDenoising", "Fast Filters 3D");
-    BooleanParameter doGradDenoising = new BooleanParameter("Perform denoising", "doGradDenoising", true);
-    ConditionalParameter condGradDenoising = new ConditionalParameter(doGradDenoising);
+    BooleanParameter doGradDenoising = new BooleanParameter("Perform", "doGradDenoising", true);
+    ConditionalParameter condGradDenoising = new ConditionalParameter("De-noising" , doGradDenoising);
     
     final static int HM=8;
-    BooleanParameter doHM = new BooleanParameter("Max eigen value of Hessian transform", "doHM", true);
-    ConditionalParameter condHM = new ConditionalParameter(doHM);
+    BooleanParameter doHM = new BooleanParameter("Perform", "doHM", true);
+    ConditionalParameter condHM = new ConditionalParameter("Max eigen value of Hessian transform", doHM);
     IntParameter HMMinRad = new IntParameter("Min. Radius (pix)", "HMMinRad", 1);
     IntParameter HMMaxRad = new IntParameter("Max. Radius (pix)", "HMMaxRad", 4);
     TextParameter HMprefix = new TextParameter("Prefix", "HMprefix", "hessian");
     PreFilterParameter HMFilter = new PreFilterParameter("De-noising", "HMdenoising", "Fast Filters 3D");
-    BooleanParameter doHMDenoising = new BooleanParameter("Perform denoising", "doHMDenoising", true);
-    ConditionalParameter condHMDenoising = new ConditionalParameter(doHMDenoising);
+    BooleanParameter doHMDenoising = new BooleanParameter("Perform", "doHMDenoising", true);
+    ConditionalParameter condHMDenoising = new ConditionalParameter("De-noising",doHMDenoising);
     
     final static int STRUCTURE=9;
-    BooleanParameter doStruct = new BooleanParameter("Max eigen value of Inertia transform", "doStruct", true);
-    ConditionalParameter condStruct = new ConditionalParameter(doStruct);
+    BooleanParameter doStruct = new BooleanParameter("Perform", "doStruct", true);
+    ConditionalParameter condStruct = new ConditionalParameter("Max eigen value of Inertia transform", doStruct);
     IntParameter structMinRad = new IntParameter("Min. Radius (pix)", "structMinRad", 1);
     IntParameter structMaxRad = new IntParameter("Max. Radius (pix)", "structMaxRad", 4);
     TextParameter structPrefix = new TextParameter("Prefix", "structPrefix", "inertia");

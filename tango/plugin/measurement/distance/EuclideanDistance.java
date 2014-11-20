@@ -34,7 +34,7 @@ import tango.parameter.Parameter;
  */
 public class EuclideanDistance extends Distance {
     public static String[] type = new String[] {"Center-Center", "Border-Border", "Center-Border", "Border-Center"};
-    ChoiceParameter type_P = new ChoiceParameter("Distance: ", "type", type, type[0]);
+    ChoiceParameter type_P = new ChoiceParameter("Type: ", "type", type, type[0]);
     public static String[] inc = new String[] {"Positive distance", "zero", "Negative distance"};
     ChoiceParameter inside = new ChoiceParameter("If inclusion:",  "inclusion", inc, inc[0]);
     HashMap<Object, Parameter[]> map = new HashMap<Object, Parameter[]>(){{
@@ -42,7 +42,7 @@ public class EuclideanDistance extends Distance {
         put(type[2], new Parameter[]{inside});
         put(type[3], new Parameter[]{inside});
     }};
-    ConditionalParameter action = new ConditionalParameter(type_P, map);
+    ConditionalParameter action = new ConditionalParameter("Distance configuration", type_P, map);
     int dType;
     int incl;
     

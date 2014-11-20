@@ -55,7 +55,7 @@ public class G2ToObservedStructure implements SpatialDescriptor {
         put(false, new Parameter[]{negative}); 
         put(true, gdm.getParameters());
     }};
-    ConditionalParameter action = new ConditionalParameter(geodesic, map);
+    ConditionalParameter action = new ConditionalParameter(null, geodesic, map);
     Parameter[] defaultParameters = new Parameter[] {structure, sampler, structure2, action, curves.getParameters()};
     ImageFloat distanceMap;
     ImageInt mask;

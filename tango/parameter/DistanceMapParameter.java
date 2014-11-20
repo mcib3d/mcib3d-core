@@ -44,13 +44,13 @@ public class DistanceMapParameter extends GroupParameter {
     MultiParameter referenceStructures = new MultiParameter("Reference Structures:", "refStructure", new Parameter[]{new StructureParameter("Structure:", "structure", 0, true)}, 1, 10, 1);
     BooleanParameter negativeInsideInternal = new BooleanParameter("Negative distances inside internal structures", "center", false);
     BooleanParameter onlyInsideInternal = new BooleanParameter("Only Inside Structures", "outside", false);
-    BooleanParameter normalize = new BooleanParameter("Normalize distances [0:1]", "normalize", true);
-    BooleanParameter erode = new BooleanParameter("Erode nuclear edges", "erode", false);
+    BooleanParameter normalize = new BooleanParameter("Normalize distances [0:1]?", "normalize", true);
+    BooleanParameter erode = new BooleanParameter("Erode nuclear edges?", "erode", false);
     
-    ConditionalParameter normCond = new ConditionalParameter(normalize);
+    ConditionalParameter normCond = new ConditionalParameter("Normalize distances", normalize);
     FilteredStructureParameter normStruct = new FilteredStructureParameter("Normalization map (optional):", "normMap");
     
-    ConditionalParameter erodeCond = new ConditionalParameter(erode);
+    ConditionalParameter erodeCond = new ConditionalParameter("Erode nuclear edges", erode);
     DoubleParameter erodeDist = new DoubleParameter("Erosion from periphery (unit):", "hardcoreStruct",0d, Parameter.nfDEC5);
     
     public DistanceMapParameter(String label, String id) {

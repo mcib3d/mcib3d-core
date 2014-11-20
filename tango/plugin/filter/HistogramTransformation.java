@@ -36,7 +36,7 @@ public class HistogramTransformation implements PreFilter {
     boolean debug;
     int nbCPUs=1;
     static String[] transfo = new String[]{"Invert", "Normalize", "Scale"}; //"Size Normalization"
-    ChoiceParameter transfo_P = new ChoiceParameter("Choose Transformation:", "transformation", transfo, transfo[1]);
+    ChoiceParameter transfo_P = new ChoiceParameter("Choose:", "transformation", transfo, transfo[1]);
     SizeNormalization sn = new SizeNormalization();
     Invert invert = new Invert();
     Normalize normalize =new Normalize();
@@ -47,7 +47,7 @@ public class HistogramTransformation implements PreFilter {
         put(transfo[2], scale.getParameters());
         //put(transfo[3], sn.getParameters());
     }};
-    ConditionalParameter cond = new ConditionalParameter(transfo_P, map);
+    ConditionalParameter cond = new ConditionalParameter("Transformation" , transfo_P, map);
     
     @Override
     public ImageHandler runPreFilter(int currentStructureIdx, ImageHandler input, InputImages images) {

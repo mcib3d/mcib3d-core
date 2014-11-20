@@ -63,12 +63,12 @@ public class XPEditor extends javax.swing.JPanel implements PanelDisplayer {
     public final static DoubleParameter scalexy = new DoubleParameter("Scale XY:", "scaleXY", null, Parameter.nfDEC5);
     public final static DoubleParameter scalez = new DoubleParameter("Scale Z:", "scaleZ", null, Parameter.nfDEC5);
     public final static TextParameter unit = new TextParameter("Unit:", "unit", "µm");
-    public final static BooleanParameter useScale=new BooleanParameter("Use Global Scale:", "globalScale", false);
+    public final static BooleanParameter useScale=new BooleanParameter("Use Global Calibration?", "globalScale", false);
     private final static HashMap<Object, Parameter[]> map = new HashMap<Object, Parameter[]>(){{
         put(true, new Parameter[]{scalexy, scalez, unit}); 
         put(false, new Parameter[0]);
     }};
-    private final static ConditionalParameter globalScale = new ConditionalParameter(useScale, map);
+    private final static ConditionalParameter globalScale = new ConditionalParameter("Image Calibration", useScale, map);
     //private final static FileParameter inputFile = new FileParameter("Input Folder", "inputFolder", null);
     private final static ChoiceParameter importFileMethod = new ChoiceParameter("Import File Method:", "importFileMethod", FieldFactory.importMethod, FieldFactory.importMethod[0]);
     public static Parameter[] xpParams = new Parameter[]{globalScale, importFileMethod};

@@ -47,13 +47,13 @@ public class ImageFeatures implements PreFilter {
         //put(features[3], edm.getParameters());
         //put(features[4], lt.getParameters());
     }};
-    ConditionalParameter cond = new ConditionalParameter(feature_P, map);
-    BooleanParameter usePreFilter = new BooleanParameter("Perform Pre-Filter", "usePreFilter", false);
+    ConditionalParameter cond = new ConditionalParameter("Feature", feature_P, map);
+    BooleanParameter usePreFilter = new BooleanParameter("Perform", "usePreFilter", false);
     PreFilterParameter preFilter = new PreFilterParameter("Pre-Filter:", "preFilter", "Fast_Filters3D", new Parameter[]{new ChoiceParameter("Choose Filter: ", "filter", new String[]{"Median"}, "Median"), new DoubleParameter("VoisXY: ", "voisXY", 2d, Parameter.nfDEC1), new DoubleParameter("VoisZ: ", "voisZ", 1d, Parameter.nfDEC1)});
-    ConditionalParameter condPreFilter = new ConditionalParameter(usePreFilter);
-    BooleanParameter usePostFilter = new BooleanParameter("Perform Post-Filter", "usePostFilter", false);
+    ConditionalParameter condPreFilter = new ConditionalParameter("Pre-Filter", usePreFilter);
+    BooleanParameter usePostFilter = new BooleanParameter("Perform", "usePostFilter", false);
     PreFilterParameter postFilter = new PreFilterParameter("Post-Filter:", "postFilter", "Fast_Filters3D", new Parameter[]{new ChoiceParameter("Choose Filter: ", "filter", new String[]{"Median"}, "Median"), new DoubleParameter("VoisXY: ", "voisXY", 2d, Parameter.nfDEC1), new DoubleParameter("VoisZ: ", "voisZ", 1d, Parameter.nfDEC1)});
-    ConditionalParameter condPostFilter = new ConditionalParameter(usePostFilter);
+    ConditionalParameter condPostFilter = new ConditionalParameter("Post-Filter", usePostFilter);
     
     public ImageFeatures() {
         condPreFilter.setCondition(true, new Parameter[]{preFilter});

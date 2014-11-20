@@ -45,9 +45,9 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
     Parameter[] currentParameters;
     Box mainBox;
     
-    public ConditionalParameter(ActionnableParameter actionnableParameter, HashMap<Object, Parameter[]> parameters) {
+    public ConditionalParameter(String title, ActionnableParameter actionnableParameter, HashMap<Object, Parameter[]> parameters) {
         super(actionnableParameter.getParameter().getId());
-        init(actionnableParameter);
+        init(title, actionnableParameter);
         this.parameters=parameters;
         currentParameters=parameters.get(actionnableParameter.getValue());
         if (currentParameters!=null) for (Parameter p : currentParameters) p.addToContainer(mainBox);       
@@ -63,9 +63,15 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         setColor();
     }
     
+    public ConditionalParameter(String title, ActionnableParameter actionnableParameter) {
+        super(actionnableParameter.getParameter().getId());
+        init(title, actionnableParameter);
+        parameters = new HashMap<Object, Parameter[]> ();
+    }
+    
     public ConditionalParameter(ActionnableParameter actionnableParameter) {
         super(actionnableParameter.getParameter().getId());
-        init(actionnableParameter);
+        init(null, actionnableParameter);
         parameters = new HashMap<Object, Parameter[]> ();
     }
     
@@ -86,9 +92,9 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         setColor();
     }
     
-    protected void init(ActionnableParameter actionnableParameter) {
+    protected void init(String title, ActionnableParameter actionnableParameter) {
         this.label=actionnableParameter.getParameter().label;
-        box= new CollapsiblePanel(label);
+        box= new CollapsiblePanel(title, label);
         this.actionnableParameter=actionnableParameter;
         actionnableParameter.setRefreshOnAction(this);
         mainBox = Box.createVerticalBox();
@@ -137,7 +143,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         for (Object key : parameters.keySet()) {
             newParameters.put(key, Parameter.duplicateArray(parameters.get(key)));
         }
-        return new ConditionalParameter((ActionnableParameter)actionnableParameter.getParameter().duplicate(newLabel, newId), newParameters);
+        return new ConditionalParameter( newLabel ,(ActionnableParameter)actionnableParameter.getParameter().duplicate(actionnableParameter.getParameter().getLabel(), newId), newParameters);
     }
 
     @Override

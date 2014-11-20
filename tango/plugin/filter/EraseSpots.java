@@ -51,7 +51,7 @@ public class EraseSpots implements PostFilter {
     static String[] methodsBackground = new String[]{"whole nucleus", "nucleus minus spots"}; //, "nucleus minus dialted spots"
     static String[] methodsSignal = new String[]{"mean intensity", "max intensity", "quantile"};
     ChoiceParameter criterionChoice = new ChoiceParameter("Criterion:", "criterionChoice", methods, methods[1]);
-    ConditionalParameter criterion = new ConditionalParameter(criterionChoice);
+    ConditionalParameter criterion = new ConditionalParameter("Erase Criterion", criterionChoice);
     Parameter[] defaultParameters = new Parameter[]{criterion};
     MultiParameter criteria;
     

@@ -51,9 +51,9 @@ public class SizeFilter implements PostFilter {
     DoubleParameter minVox = new DoubleParameter("Min volume:", "minVox", 1.0, DoubleParameter.nfDEC2);
     DoubleParameter maxVox = new DoubleParameter("Max volume:", "maxVox", 0.0, DoubleParameter.nfDEC2);
     BooleanParameter useUnits = new BooleanParameter("Size in calibrated units:", "useUnits", false);
-    BooleanParameter max_P = new BooleanParameter("Use constraint on maximum size", "useMaw", false);
-    BooleanParameter edge_PXY = new BooleanParameter("Remove Objects touching edges XY", "edgeXY", false);
-    BooleanParameter edge_PZ = new BooleanParameter("Remove Objects touching edges Z", "edgeZ", false);
+    BooleanParameter max_P = new BooleanParameter("use", "useMaw", false);
+    BooleanParameter edge_PXY = new BooleanParameter("Remove", "edgeXY", false);
+    BooleanParameter edge_PZ = new BooleanParameter("Remove", "edgeZ", false);
     IntParameter edgeSurf_PXY = new IntParameter("Min nb of Voxels touching XY edges:", "edgeSurfXY", 1);
     IntParameter edgeSurf_PZ = new IntParameter("Min nb of Voxels touching Z edges:", "edgeSurfZ", 1);
     BooleanParameter outside = new BooleanParameter("Delete outside nucleus", "outside", false);
@@ -68,8 +68,8 @@ public class SizeFilter implements PostFilter {
             put(true, new Parameter[]{edgeSurf_PZ});
         }
     };
-    ConditionalParameter edgeCondXY = new ConditionalParameter(edge_PXY, mapXY);
-    ConditionalParameter edgeCondZ = new ConditionalParameter(edge_PZ, mapZ);
+    ConditionalParameter edgeCondXY = new ConditionalParameter("Objects touching edges XY", edge_PXY, mapXY);
+    ConditionalParameter edgeCondZ = new ConditionalParameter("Objects touching edges Z", edge_PZ, mapZ);
     HashMap<Object, Parameter[]> map2 = new HashMap<Object, Parameter[]>() {
         {
             put(true, new Parameter[]{maxVox});
@@ -80,7 +80,7 @@ public class SizeFilter implements PostFilter {
 //            put(true, new Parameter[]{minPc});
 //        }
 //    };
-    ConditionalParameter maxCond = new ConditionalParameter(max_P, map2);
+    ConditionalParameter maxCond = new ConditionalParameter("Constraint on maximum size", max_P, map2);
     //ConditionalParameter outParam = new ConditionalParameter(outside, mapOut);
     Parameter[] parameters = new Parameter[]{minVox, maxCond, useUnits, edgeCondXY, edgeCondZ, outside};
 

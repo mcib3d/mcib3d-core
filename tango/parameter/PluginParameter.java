@@ -70,7 +70,7 @@ public abstract class PluginParameter extends Parameter  implements ItemListener
     
     protected void init(String label, String defMethod) {
         this.label = new JLabel(label);
-        box = new CollapsiblePanel(this.label);
+        box = new CollapsiblePanel(label, this.label);
         mainBox=Box.createVerticalBox();
         mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         Box subBox = Box.createHorizontalBox();
