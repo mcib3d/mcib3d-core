@@ -117,7 +117,7 @@ public class Rafael2_ implements ij.plugin.PlugIn {
         ImagePlus imgMask = img.getImagePlus();
 
         spatialAnalysis spa = new spatialAnalysis(numPoints, numRandomSamples, distHardCore, env);
-        spa.process(imagePlus, imgMask, true);
+        spa.processAll(imagePlus, imgMask, true,true);
     }
     
     /**
@@ -298,7 +298,7 @@ public class Rafael2_ implements ij.plugin.PlugIn {
         int c = 0;
         for (Object3D region : popRegions.getObjectsList()) 
         {
-            int nuc = (int) region.getModePixValueNonZero(nucLabel);
+            int nuc = (int) region.getPixModeNonZero(nucLabel);
             Cell cell = new Cell();
             cell.region = region;
             cell.nucleus = popNuclei.getObjectByValue(nuc);

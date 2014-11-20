@@ -85,7 +85,7 @@ public class Rafael_ implements ij.plugin.PlugIn {
             }
 
             // seg Values
-            int segV = (int) obj.getModePixValueNonZero(imgSeg);
+            int segV = (int) obj.getPixModeNonZero(imgSeg);
             seg[i] = segV;
             typeWat[i] = col;
             obj.setType(col);

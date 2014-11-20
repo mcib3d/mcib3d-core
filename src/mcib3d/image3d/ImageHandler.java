@@ -887,6 +887,21 @@ public abstract class ImageHandler {
 
         return res;
     }
+    
+     public ImageHandler addImage(ImageHandler image, int s1, int s2) {
+        if (!this.sameDimentions(image)) {
+            return null;
+        }
+        // Same type is returned is returned
+        ImageHandler res = this.createSameDimensions();
+        for (int i = 0; i < sizeXYZ; i++) {
+            res.setPixel(i, s1 * this.getPixel(i) + s2 * image.getPixel(i));
+        }
+
+        return res;
+    }
+    
+    
 
     /**
      * Compute the operation coeff*this*other;
