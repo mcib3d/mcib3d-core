@@ -245,7 +245,7 @@ public class ImageFloat extends ImageHandler {
         ImageByte res = new ImageByte(title, sizeX, sizeY, sizeZ);
         if (scaling) {
             double coeff = 255d / (s.getMax() - s.getMin());
-            System.out.println("convert to byte: min:" + s.getMin() + " max:" + s.getMax() + "coeff:" + coeff);
+            //System.out.println("convert to byte: min:" + s.getMin() + " max:" + s.getMax() + "coeff:" + coeff);
             double min = s.getMin();
             for (int z = 0; z < sizeZ; z++) {
                 for (int xy = 0; xy < sizeXY; xy++) {
