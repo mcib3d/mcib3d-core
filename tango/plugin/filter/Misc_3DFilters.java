@@ -63,17 +63,18 @@ public class Misc_3DFilters implements PreFilter {
     String[] filters = {"Gaussian 3D (IJ)", "LoG 3D (BIG)", "PureDenoise (BIG)", "BandPass (Droplet)"};
     ChoiceParameter filter_P = new ChoiceParameter("Choose Filter: ", "filter", filters, null);
     DoubleParameter voisXY_P = new DoubleParameter("VoisXY: ", "voisXY", (double) voisx, Parameter.nfDEC1);
-    DoubleParameter voisZ_P = new DoubleParameter("VoisZ: ", "voisZ", (double) voisx, Parameter.nfDEC1);
+    DoubleParameter voisZ_P = new DoubleParameter("VoisZ: ", "voisZ", (double) voisz, Parameter.nfDEC1);
+    BooleanParameter useScale = new BooleanParameter("Use Image Scale for Z radius: ", "useScale", true);
+    ConditionalParameter condScale = new ConditionalParameter(useScale);
     SliderParameter iteration_P = new SliderParameter("Nb Iterations (Denoise):", "iterations", 1, 10, cs);
     IntParameter mins_P = new IntParameter("Min size (BandPass):", "minsize", mins);
     IntParameter maxs_P = new IntParameter("Max size (BandPass):", "maxsize", maxs);
     HashMap<Object, Parameter[]> map = new HashMap<Object, Parameter[]>() {
-
         {
-            put(filters[GAUSSIAN], new Parameter[]{voisXY_P, voisZ_P});
-            put(filters[LOG], new Parameter[]{voisXY_P, voisZ_P});
-            put(filters[DENOISE], new Parameter[]{voisXY_P, voisZ_P, iteration_P});
-            put(filters[BANDPASS], new Parameter[]{mins_P, maxs_P});
+            put(filters[GAUSSIAN], new Parameter[]{voisXY_P, condScale});
+            put(filters[LOG], new Parameter[]{voisXY_P, condScale});
+            //put(filters[DENOISE], new Parameter[]{voisXY_P, condScale, iteration_P});
+            //put(filters[BANDPASS], new Parameter[]{mins_P, maxs_P});
         }
     };
     ConditionalParameter cond = new ConditionalParameter(filter_P, map);
@@ -91,39 +92,24 @@ public class Misc_3DFilters implements PreFilter {
         iteration_P.setHelp("Number of iterations for PureDenoise", true);
         mins_P.setHelp("Minimum size to filter for BandPass", true);
         maxs_P.setHelp("Maximum size to filter for BandPass", true);
+        condScale.setCondition(false, new Parameter[]{voisZ_P});
     }
 
-    private ImagePlus process(ImagePlus imp) {
+    private ImageHandler process(ImageHandler ih) {
         if (filter == GAUSSIAN) {
-            ImagePlus img2 = new Duplicator().run(imp);
+            ImageHandler img2 = ih.duplicate();
             //img2.show();
-            ij.plugin.GaussianBlur3D.blur(img2, voisx, voisx, voisz);
-            //IJ.run("Gaussian Blur 3D...", "x=" + voisx + " y=" + voisx + " z=" + voisz);
-            if (this.debug) {
-                IJ.log("finished");
-            }
-            img2.setTitle(imp.getTitle() + "::Gauss3D");
+            ij.plugin.GaussianBlur3D.blur(img2.getImagePlus(), voisx, voisx, voisz);
+            //IJ.run("Gaussian Blur 3D...", "x=" + voisx + " y=" + voisx + " z=" + voisz);  IJ.log("finished");
+            
+            img2.setTitle(ih.getTitle() + "::Gauss3D");
             return img2;
         } else if (filter == LOG) {
-            ImageWare in = Builder.create(imp, 3);
-            LoG3D localLoG3D = new LoG3D(false);
-            ImageWare res;
-            if (imp.getStackSize() > 1) {
-                res = localLoG3D.doLoG(in, voisx, voisx, voisz);
-            } else {
-                res = localLoG3D.doLoG(in, voisx, voisx);
-            }
-            res.invert();
-            return new ImagePlus(imp.getTitle() + "::loG3D", res.buildImageStack());
+            return LOG(ih, voisx, voisz);
 
-            /*
-             * int nb = WindowManager.getImageCount(); IJ.run("LoG 3D",
-             * "sigmax=" + voisx + " sigmay=" + voisx + " sigmaz=" + voisz + "
-             * displaykernel=0 volume=1"); while (WindowManager.getWindowCount()
-             * == nb) { IJ.wait(100); } IJ.log("finished");
-             *
-             */
         } else if (filter == DENOISE) {
+            // TODO ne pas utiliser le window manager car en general process en batch
+            /*
             if(!imp.isVisible())imp.show();
             int nb = WindowManager.getImageCount();
             IJ.run("PureDenoise ...", "parameters='1 " + cs + "' estimation='Auto Global'");            
@@ -135,11 +121,12 @@ public class Misc_3DFilters implements PreFilter {
             }
             ImagePlus res = IJ.getImage();
             //res.hide();
-            return res;
+            */
+            return ih;
         } else if (filter == BANDPASS) {
             //ImageFloat iflo = new ImageFloat(ImageHandler.wrap(imp));
             //iflo.showDuplicate("converted float image");
-            
+            ImagePlus imp = ih.getImagePlus();
             new ImageConverter(imp).convertToGray32();
             imp.updateAndRepaintWindow();
             imp.updateImage();
@@ -175,21 +162,35 @@ public class Misc_3DFilters implements PreFilter {
             if (this.debug) {
                 IJ.log("finished");
             }
-            return impOut;
+            return ImageHandler.wrap(impOut);
         }
         return null;
+    }
+    
+    public static ImageHandler LOG(ImageHandler imp, double radX, double radZ) {
+        ImageWare in = Builder.create(imp.getImagePlus(), 3);
+            LoG3D localLoG3D = new LoG3D(false);
+            ImageWare res;
+            if (imp.sizeZ > 1) {
+                res = localLoG3D.doLoG(in, radX, radX, radZ);
+            } else {
+                res = localLoG3D.doLoG(in, radX, radX);
+            }
+            res.invert();
+        return ImageHandler.wrap(res.buildImageStack());
     }
 
     @Override
     public ImageHandler runPreFilter(int currentStructureIdx, ImageHandler input, InputImages images) {
         filter = filter_P.getSelectedIndex();
         voisx = voisXY_P.getDoubleValue(voisx);
-        voisz = voisZ_P.getDoubleValue(voisz);
+        if (useScale.isSelected()) voisz = voisx * input.getScaleXY()/input.getScaleZ();
+        else voisz = voisZ_P.getDoubleValue(voisz);
         cs = iteration_P.getValue();
         mins = mins_P.getIntValue(mins);
         maxs = maxs_P.getIntValue(maxs);
 
-        return ImageHandler.wrap(process(input.getImagePlus()));
+        return process(input);
     }
 
     @Override

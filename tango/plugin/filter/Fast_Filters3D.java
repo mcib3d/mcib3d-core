@@ -23,13 +23,13 @@ public class Fast_Filters3D implements PreFilter, PostFilter {
     int filter;
     float voisx = 2;
     float voisy = 2;
-    float voisz = 2;
+    float voisz = 1;
     boolean xy = true;
     Calibration calibration;
     boolean debug = false;
-    ChoiceParameter filter_P = new ChoiceParameter("Choose Filter: ", "filter", filters, null);
+    ChoiceParameter filter_P = new ChoiceParameter("Choose Filter: ", "filter", filters, "Median");
     DoubleParameter voisXY_P = new DoubleParameter("RadXY: ", "voisXY", (double) voisx, Parameter.nfDEC1);
-    DoubleParameter voisZ_P = new DoubleParameter("RadZ: ", "voisZ", (double) voisx, Parameter.nfDEC1);
+    DoubleParameter voisZ_P = new DoubleParameter("RadZ: ", "voisZ", (double) voisz, Parameter.nfDEC1);
     BooleanParameter useUnits = new BooleanParameter("Size in calibrated units:", "useUnits", false);
     Parameter[] parameters = new Parameter[]{filter_P, voisXY_P, voisZ_P, useUnits};
 
