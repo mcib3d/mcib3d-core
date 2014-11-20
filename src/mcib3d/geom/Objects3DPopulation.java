@@ -203,6 +203,17 @@ public class Objects3DPopulation {
             ob.draw(ima, col);
         }
     }
+    
+    public void draw(ImageHandler ima, int col) {
+        Object3D ob;
+        Iterator it = objects.iterator();
+        while (it.hasNext()) {
+            ob = (Object3D) it.next();
+            ob.draw(ima, col);
+        }
+    }
+    
+    
 
     public void draw(ImageStack ima) {
         Object3D ob;
