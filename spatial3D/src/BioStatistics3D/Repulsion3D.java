@@ -255,7 +255,7 @@ public class Repulsion3D {
             ImagePlus imgMask = img.getImagePlus();
             
             spatialAnalysis spa = new spatialAnalysis(numPoints, numRandomSamples, distHardCore, env);
-            spa.process(imagePlus, imgMask, true);
+            spa.processAll(imagePlus, imgMask, true,true);
         }
         public Object3DVoxels addFirstVesicle(int nbPropage)
 	{	
