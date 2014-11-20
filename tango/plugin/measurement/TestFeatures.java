@@ -67,36 +67,41 @@ public class TestFeatures implements MeasurementObject {
     
     TextParameter prefix = new TextParameter("Global Prefix", "prefix", "");
     
-    final static int CUSTOM=0;
+    final static int RAW=0;
+    BooleanParameter doRaw = new BooleanParameter("Raw Image", "doRaw", true);
+    ConditionalParameter condRaw = new ConditionalParameter(doRaw);
+    TextParameter rawPrefix = new TextParameter("Prefix", "rawPrefix", "raw");
+    
+    final static int CUSTOM=1;
     BooleanParameter doCustom = new BooleanParameter("Custom Filter", "doCustom", false);
     ConditionalParameter condCustom = new ConditionalParameter(doCustom);
     PreFilterSequenceParameter prefSeq = new PreFilterSequenceParameter("Pre-Filters", "preFilters");
     TextParameter customPrefix = new TextParameter("Prefix", "customPrefix", "");
     
-    final static int GAUSS=1;
+    final static int GAUSS=2;
     BooleanParameter doGauss = new BooleanParameter("Gaussian Blur", "doGauss", true);
     ConditionalParameter condGauss = new ConditionalParameter(doGauss);
     IntParameter gaussMinRad = new IntParameter("Min. Radius (pix)", "gaussMinRad", 1);
     IntParameter gaussMaxRad = new IntParameter("Max. Radius (pix)", "gaussMaxRad", 10);
     TextParameter gaussPrefix = new TextParameter("Prefix", "gaussPrefix", "gauss");
     
-    final static int DOG=2;
+    final static int DOG=3;
     BooleanParameter doDOG = new BooleanParameter("Difference Of Gaussian", "doGauss", true);
     ConditionalParameter condDOG = new ConditionalParameter(doDOG);
-    IntParameter DOGMinRadS = new IntParameter("Min. Radius for Smaller Gaussian (pix)", "DOGminRadS", 1);
+    IntParameter DOGMinRadS = new IntParameter("Min. Radius for Smaller Gaussian (pix)", "DOGminRadS", 0);
     IntParameter DOGMaxRadS = new IntParameter("Max. Radius for Smaller Gaussian (pix)", "DOGmaxRadS", 4);
-    IntParameter DOGMinRadL = new IntParameter("Min. Radius for Larger Gaussian (pix)", "DOGminRadL", 2);
+    IntParameter DOGMinRadL = new IntParameter("Min. Radius for Larger Gaussian (pix)", "DOGminRadL", 1);
     IntParameter DOGMaxRadL = new IntParameter("Max. Radius for Larger Gaussian (pix)", "DOGmaxRadL", 10);
     TextParameter DOGPrefix = new TextParameter("Prefix", "DOGprefix", "DOG");
     
-    final static int LOG=3;
+    final static int LOG=4;
     BooleanParameter doLOG = new BooleanParameter("Laplacian Of Gaussian", "doLOG", true);
     ConditionalParameter condLOG = new ConditionalParameter(doLOG);
     IntParameter LOGMinRad = new IntParameter("Min. Radius (pix)", "LOGMinRad", 1);
     IntParameter LOGMaxRad = new IntParameter("Max. Radius (pix)", "LOGMaxRad", 4);
     TextParameter LOGPrefix = new TextParameter("Prefix", "LOGPrefix", "LOG");
     
-    final static int OPEN=4;
+    final static int OPEN=5;
     BooleanParameter doOpen = new BooleanParameter("Grayscale Opening", "doOpen", true);
     ConditionalParameter condOpen = new ConditionalParameter(doOpen);
     IntParameter openMinRad = new IntParameter("Min. Radius (pix)", "OpenMinRad", 1);
@@ -106,7 +111,7 @@ public class TestFeatures implements MeasurementObject {
     BooleanParameter doOpenDenoising = new BooleanParameter("Perform denoising", "doOpenDenoising", true);
     ConditionalParameter condOpenDenoising = new ConditionalParameter(doOpenDenoising);
     
-    final static int TH=5;
+    final static int TH=6;
     BooleanParameter doTH = new BooleanParameter("Top-Hat", "doTH", true);
     ConditionalParameter condTH = new ConditionalParameter(doTH);
     IntParameter THMinRad = new IntParameter("Min. Radius (pix)", "THMinRad", 1);
@@ -116,7 +121,7 @@ public class TestFeatures implements MeasurementObject {
     BooleanParameter doTHDenoising = new BooleanParameter("Perform denoising", "doTHDenoising", true);
     ConditionalParameter condTHDenoising = new ConditionalParameter(doTHDenoising);
     
-    final static int GRAD=6;
+    final static int GRAD=7;
     BooleanParameter doGrad = new BooleanParameter("Gradient Magnitude", "doGrad", true);
     ConditionalParameter condGrad = new ConditionalParameter(doGrad);
     IntParameter gradMinRad = new IntParameter("Min. Radius (pix)", "gradMinRad", 1);
@@ -126,7 +131,7 @@ public class TestFeatures implements MeasurementObject {
     BooleanParameter doGradDenoising = new BooleanParameter("Perform denoising", "doGradDenoising", true);
     ConditionalParameter condGradDenoising = new ConditionalParameter(doGradDenoising);
     
-    final static int HM=7;
+    final static int HM=8;
     BooleanParameter doHM = new BooleanParameter("Max eigen value of Hessian transform", "doHM", true);
     ConditionalParameter condHM = new ConditionalParameter(doHM);
     IntParameter HMMinRad = new IntParameter("Min. Radius (pix)", "HMMinRad", 1);
@@ -136,7 +141,7 @@ public class TestFeatures implements MeasurementObject {
     BooleanParameter doHMDenoising = new BooleanParameter("Perform denoising", "doHMDenoising", true);
     ConditionalParameter condHMDenoising = new ConditionalParameter(doHMDenoising);
     
-    final static int STRUCTURE=8;
+    final static int STRUCTURE=9;
     BooleanParameter doStruct = new BooleanParameter("Max eigen value of Inertia transform", "doStruct", true);
     ConditionalParameter condStruct = new ConditionalParameter(doStruct);
     IntParameter structMinRad = new IntParameter("Min. Radius (pix)", "structMinRad", 1);
@@ -144,8 +149,8 @@ public class TestFeatures implements MeasurementObject {
     TextParameter structPrefix = new TextParameter("Prefix", "structPrefix", "inertia");
     DoubleParameter structSmooth = new DoubleParameter("Smoothing", "structSmooth", 1d, DoubleParameter.nfDEC1);
     
-    GroupKeyParameter[][] allKeysMatrix = new GroupKeyParameter[9][];
-    Parameter[] parameters = new Parameter[]{structureSignal, prefix, condCustom, condGauss, condDOG, condLOG, condOpen, condTH, condGrad, condHM, condStruct}; //,condErodeNuc
+    GroupKeyParameter[][] allKeysMatrix = new GroupKeyParameter[10][];
+    Parameter[] parameters = new Parameter[]{structureSignal, prefix, condRaw, condCustom, condGauss, condDOG, condLOG, condOpen, condTH, condGrad, condHM, condStruct}; //,condErodeNuc
 
     
     // Histogram Moments [0-3]
@@ -218,6 +223,7 @@ public class TestFeatures implements MeasurementObject {
         condHM.setCondition(true, new Parameter[]{HMprefix, HMMinRad, HMMaxRad, condHMDenoising});
         condGrad.setCondition(true, new Parameter[]{gradPrefix, gradMinRad, gradMaxRad, condGradDenoising});
         condStruct.setCondition(true, new Parameter[]{structPrefix, structMinRad, structMaxRad, structSmooth});
+        condRaw.setCondition(true, new Parameter[]{rawPrefix});
         
         condTHDenoising.setCondition(true, new Parameter[]{THFilter});
         condOpenDenoising.setCondition(true, new Parameter[]{openFilter});
@@ -233,6 +239,8 @@ public class TestFeatures implements MeasurementObject {
         HMprefix.allowSpecialCharacter(false);
         gradPrefix.allowSpecialCharacter(false);
         structPrefix.allowSpecialCharacter(false);
+        rawPrefix.allowSpecialCharacter(false);
+        rawPrefix.setCompulsary(false);
     }
 
     @Override
@@ -248,7 +256,11 @@ public class TestFeatures implements MeasurementObject {
         double Zfactor = mask.getScaleXY()/mask.getScaleZ();
         ImageHandler rawSignal  = structureSignal.getImage(raw, false);
         ImageHandler[] filteredImages;
-        
+        if (doRaw.isSelected()) {
+            filteredImages = new ImageHandler[1];
+            filteredImages[0]=rawSignal;
+            performMeasures(allKeysMatrix[RAW], filteredImages, quantifications, mask, nuc);
+        }
         if (this.doCustom.isSelected()) {
             filteredImages = new ImageHandler[1];
             filteredImages[0] = this.prefSeq.runPreFilterSequence(structureSignal.getIndex(), rawSignal, raw, nCPUs, verbose);
@@ -339,7 +351,10 @@ public class TestFeatures implements MeasurementObject {
     private ArrayList<String> getPrefixEnd(int measureIdx) {
         ArrayList<String> res = new ArrayList<String>();
         switch(measureIdx) {
-            case CUSTOM: if (doCustom.isSelected()) res.add(customPrefix.getText());
+            case RAW: 
+                if (doRaw.isSelected()) res.add(rawPrefix.getText()+ ( (rawPrefix.getText().length()>0) ? "_"  : "") );
+                break;
+            case CUSTOM: if (doCustom.isSelected()) res.add(customPrefix.getText()+ ( (customPrefix.getText().length()>0) ? "_"  : ""));
                     break;
             case GAUSS: 
                 if (doGauss.isSelected()) for (int i = this.gaussMinRad.getIntValue(1); i<=this.gaussMaxRad.getIntValue(10); i++) res.add(gaussPrefix.getText()+i+"_");

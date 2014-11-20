@@ -2,6 +2,7 @@
 package tango.gui.util;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,20 +38,19 @@ import tango.util.utils;
  * @author Jean Ollion
  */
 public class DuplicateXPOptionPane extends JOptionPane {
-    public static DuplicateXP showInputDialog(final String message, final ArrayList<String> set, final String name) {
+    public static DuplicateXP showInputDialog(Component comp, final String message, final ArrayList<String> set, final String name) {
         class GetData extends JDialog implements ActionListener, ItemListener {
             JTextArea ta = new JTextArea(name, 1,12);
             JComboBox sets = new JComboBox(set.toArray());
-            JButton btnNew = new JButton("  New XP  ");
+            JButton btnNew = new JButton("New XP");
             JButton btnCancel = new JButton("Cancel");
             DuplicateXP res = null;
             
-            public GetData() {
+            public GetData(Component comp) {
                 setModal(true);
                 getContentPane().setLayout(new BorderLayout());
                 setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-                setLocation(400,300);
-                
+                setLocationRelativeTo(comp);
                 getContentPane().add(new JLabel(message),BorderLayout.NORTH);
                 JPanel jpcb = new JPanel();
                 jpcb.setLayout(new BoxLayout(jpcb, BoxLayout.Y_AXIS));
@@ -79,6 +79,7 @@ public class DuplicateXPOptionPane extends JOptionPane {
                 setPreferredSize(new Dimension(700, 500));
                 setMinimumSize(new Dimension(700, 500));
             }
+            
             public void actionPerformed(ActionEvent ae) {
                 if(ae.getSource() == btnNew) {
                     res=new DuplicateXP();
@@ -96,9 +97,8 @@ public class DuplicateXPOptionPane extends JOptionPane {
                 if (ie.getStateChange()==ItemEvent.DESELECTED) return;
                 
             }
-            
     }
-    return  new GetData().getData();
+    return  new GetData(comp).getData();
   }
   
   public static class DuplicateXP {
