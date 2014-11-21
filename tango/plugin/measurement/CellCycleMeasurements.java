@@ -140,7 +140,7 @@ public class CellCycleMeasurements implements MeasurementObject {
                 double rad = this.radErodeNuc.getDoubleValue(defRadErodeNuc) * mask.getScaleXY();
                 ImageByte erodedMask = mask.erode((float)rad, nCPUs);
                 if (verbose) erodedMask.show("Eroded Mask: "+this.radErodeNuc.getDoubleValue(defRadErodeNuc));
-                Object3DVoxels[] obj = erodedMask.getObjects3D();
+                Object3DVoxels[] obj = erodedMask.getObjects3D(false);
                 if (obj.length>=1) {
                     nuc=obj[0];
                     mask = erodedMask;

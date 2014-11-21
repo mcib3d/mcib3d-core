@@ -99,7 +99,7 @@ public class SizeFilter implements PostFilter {
 
     @Override
     public ImageInt runPostFilter(int currentStructureIdx, ImageInt in, InputImages images) {
-        Object3D[] objects = in.getObjects3D();
+        Object3D[] objects = in.getObjects3D(false);
         edgeXY = edgeSurf_PXY.getIntValue(1);
         if (edgeXY < 1) {
             edgeXY = 1;

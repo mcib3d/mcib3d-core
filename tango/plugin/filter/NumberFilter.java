@@ -56,7 +56,7 @@ public class NumberFilter implements PostFilter {
 
     @Override
     public ImageInt runPostFilter(int currentStructureIdx, ImageInt in, InputImages images) {
-        Object3D[] objects = in.getObjects3D();
+        Object3D[] objects = in.getObjects3D(false);
         int nb = objects.length;
         int min = nbMin.getIntValue(1);
         int max = Integer.MAX_VALUE;

@@ -93,7 +93,7 @@ public class ObjectPatternAnalysis implements MeasurementStructure {
                 o.draw(im, 255);
             }
             im.setScale(nuc.getResXY(), nuc.getResZ(), nuc.getUnits());
-            Object3DVoxels obj = (im.getObjects3D()[0]).getConvexObject(nbCPUs > 1);
+            Object3DVoxels obj = (im.getObjects3D(false)[0]).getConvexObject(nbCPUs > 1);
 //            Object3DVoxels obj = im.getObjects3D()[0];
 //            Object3DSurface surf = new Object3DSurface(obj.computeMeshSurface(false));
 //            surf.setCalibration(nuc.getCalibration());

@@ -516,7 +516,7 @@ public class NucleusManager extends ObjectManager {
     */
     
     protected void repaintObject(ImageInt image, Object3DGui o) {
-        Object3DVoxels[] newObjects = image.getObjects3D();
+        Object3DVoxels[] newObjects = image.getObjects3D(false);
         for (int i = 0; i<newObjects.length; i++) {
             newObjects[i].translate(image.offsetX, image.offsetY, image.offsetZ);
             Object3DGui oGui = i==0?o:newObject();

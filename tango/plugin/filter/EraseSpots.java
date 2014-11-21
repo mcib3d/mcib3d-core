@@ -74,7 +74,7 @@ public class EraseSpots implements PostFilter {
         ImageHandler intensityMap = preFilters.runPreFilterSequence(currentStructureIdx, input, images, nbCPUs, debug);
         if (debug) intensityMap.showDuplicate("erase spot input image");
         ArrayList<Parameter[]> alCrit = criteria.getParametersArrayList();
-        Object3DVoxels[] objectsArray = in.getObjects3D();
+        Object3DVoxels[] objectsArray = in.getObjects3D(false);
         ArrayList<Object3DVoxels> objects = new ArrayList<Object3DVoxels>(Arrays.asList(objectsArray));
         for (Parameter[] p : alCrit) {
             ConditionalParameter crit =  (ConditionalParameter)p[0];
@@ -125,10 +125,10 @@ public class EraseSpots implements PostFilter {
                 bcg = in.getObject3DBackground(mask);
             }
         } else if (dilate==0) bcg = in.getObject3DBackground(mask);
-        else bcg=mask.getObjects3D()[0];
+        else bcg=mask.getObjects3D(false)[0];
         if (bcg.getVolumePixels()==0) {
             ij.IJ.log("eraseSpots error: no background");
-            bcg=mask.getObjects3D()[0];
+            bcg=mask.getObjects3D(false)[0];
         }
         double sigma = bcg.getPixStdDevValue(intensity);
         double mean = bcg.getPixMeanValue(intensity);
