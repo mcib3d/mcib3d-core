@@ -203,7 +203,7 @@ public class Objects3DPopulation {
             ob.draw(ima, col);
         }
     }
-    
+
     public void draw(ImageHandler ima, int col) {
         Object3D ob;
         Iterator it = objects.iterator();
@@ -212,8 +212,6 @@ public class Objects3DPopulation {
             ob.draw(ima, col);
         }
     }
-    
-    
 
     public void draw(ImageStack ima) {
         Object3D ob;
@@ -917,6 +915,46 @@ public class Objects3DPopulation {
         return res;
     }
 
+    public Object3D closestBorder(Object3D O, int[] allowed, double dist) {
+        double distmin = Double.MAX_VALUE;
+        Object3D res = null;
+        if (allowed.length == 0) {
+            return null;
+        }
+        //for (it = objects.iterator(); it.hasNext();) {
+        for (int ob : allowed) {
+            Object3D tmp = getObject(ob);
+            double d = O.distBorderUnit(tmp);
+            if (d > dist) {
+                if (d < distmin) {
+                    distmin = d;
+                    res = tmp;
+                }
+            }
+        }
+        return res;
+    }
+
+    public Object3D closestCenter(Object3D O, int[] allowed, double dist) {
+        double distmin = Double.MAX_VALUE;
+        Object3D res = null;
+        if (allowed.length == 0) {
+            return null;
+        }
+        //for (it = objects.iterator(); it.hasNext();) {
+        for (int ob : allowed) {
+            Object3D tmp = getObject(ob);
+            double d = O.distCenterUnit(tmp);
+            if (d > dist) {
+                if (d < distmin) {
+                    distmin = d;
+                    res = tmp;
+                }
+            }
+        }
+        return res;
+    }
+
     /**
      * Get the closest object in the population from given object Center to
      * center distance
@@ -929,6 +967,10 @@ public class Objects3DPopulation {
         return kClosestCenter(obj, 1, excludeInputObject);
     }
 
+    public Object3D closestCenter(Object3D obj, int[] allowed, boolean excludeInputObject) {
+        return closestCenter(obj, allowed, 0);
+    }
+
     /**
      * Get the closest object in the population from given object Border to
      * border distance
@@ -939,6 +981,10 @@ public class Objects3DPopulation {
      */
     public Object3D closestBorder(Object3D O) {
         return closestBorder(O, 0);
+    }
+
+    public Object3D closestBorder(Object3D O, int[] allowed) {
+        return closestBorder(O, allowed, 0);
     }
 
     public Object3D kClosestCenter(Object3D ob, int k, boolean excludeInputObject) {
