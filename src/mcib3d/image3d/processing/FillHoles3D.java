@@ -1,11 +1,14 @@
 package mcib3d.image3d.processing;
 
+import ij.IJ;
 import java.util.LinkedList;
 import java.util.Queue;
 import mcib3d.image3d.Coordinate3D;
 import mcib3d.image3d.ImageByte;
+import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageShort;
 import mcib3d.utils.exceptionPrinter;
+
 /**
  *
  **
@@ -30,21 +33,33 @@ import mcib3d.utils.exceptionPrinter;
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Jean Ollion
- * @author Thomas Boudier
  */
 public class FillHoles3D {
-
+    
+    public static void process(ImageHandler mask, int foregroundValue, int nbCPUs, boolean verbose) {
+        if (mask instanceof ImageByte) {
+            process((ImageByte) mask, foregroundValue, nbCPUs, verbose);
+        } else if (mask instanceof ImageShort) {
+            process((ImageShort) mask, foregroundValue, nbCPUs, verbose);
+        } else {
+            IJ.log("Cannot perform Fillholes 3D on image type" + mask.getType());
+        }
+    }
+    
     public static void process(ImageByte mask, int foregroundValue, int nbCPUs, boolean verbose) {
-        final byte[][] pixels= mask.pixels;
+        final byte[][] pixels = mask.pixels;
         final int sizeX = mask.sizeX;
         final int sizeZ = mask.sizeZ;
         final int sizeY = mask.sizeY;
         final int sizeXY = mask.sizeXY;
         final byte fgValue = (byte) foregroundValue;
         int mid;
-        if (foregroundValue>1) mid= foregroundValue-1;
-        else mid = foregroundValue+1;
-        final byte midValue = (byte)mid;
+        if (foregroundValue > 1) {
+            mid = foregroundValue - 1;
+        } else {
+            mid = foregroundValue + 1;
+        }
+        final byte midValue = (byte) mid;
         //ImageByte im1 = new ImageByte(pixels, "", sizeX);
         //Z axis
         final mcib3d.utils.ThreadRunner tr = new mcib3d.utils.ThreadRunner(0, sizeY, nbCPUs);
@@ -79,13 +94,12 @@ public class FillHoles3D {
         }
         tr.startAndJoin();
 
-
         //Y axis
         final mcib3d.utils.ThreadRunner tr2 = new mcib3d.utils.ThreadRunner(0, sizeZ, nbCPUs);
         for (int i = 0; i < tr2.threads.length; i++) {
             tr2.threads[i] = new Thread(
                     new Runnable() {
-
+                        
                         public void run() {
                             for (int idx = tr2.ai.getAndIncrement(); idx < tr2.end; idx = tr2.ai.getAndIncrement()) {
                                 try {
@@ -130,14 +144,14 @@ public class FillHoles3D {
         for (int i = 0; i < tr3.threads.length; i++) {
             tr3.threads[i] = new Thread(
                     new Runnable() {
-
+                        
                         public void run() {
                             for (int idx = tr3.ai.getAndIncrement(); idx < tr3.end; idx = tr3.ai.getAndIncrement()) {
                                 try {
                                     byte mid = midValue;
                                     byte fg = fgValue;
                                     for (int x = 0; x < sizeX; x++) {
-
+                                        
                                         boolean bcg = pixels[idx][x] == 0;
                                         for (int y = 0; y < sizeY; y++) {
                                             byte value = pixels[idx][y * sizeX + x];
@@ -215,7 +229,7 @@ public class FillHoles3D {
         for (int i = 0; i < tr4.threads.length; i++) {
             tr4.threads[i] = new Thread(
                     new Runnable() {
-
+                        
                         public void run() {
                             for (int idx = tr4.ai.getAndIncrement(); idx < tr4.end; idx = tr4.ai.getAndIncrement()) {
                                 try {
@@ -236,9 +250,9 @@ public class FillHoles3D {
                     });
         }
         tr4.startAndJoin();
-
+        
     }
-
+    
     private static boolean checkVoxel(final byte[][] pixels, final int x, final int y, final int z, final int sizeX, final int sizeY, final int sizeZ, byte midValue) {
         if (z > 0 && pixels[z - 1][x + y * sizeX] == midValue) {
             return true;
@@ -262,23 +276,26 @@ public class FillHoles3D {
     }
     
     public static void process(ImageShort mask, int foregroundValue, int nbCPUs, boolean verbose) {
-        final short[][] pixels= mask.pixels;
+        final short[][] pixels = mask.pixels;
         final int sizeX = mask.sizeX;
         final int sizeZ = mask.sizeZ;
         final int sizeY = mask.sizeY;
         final int sizeXY = mask.sizeXY;
         final short fgValue = (short) foregroundValue;
         int mid;
-        if (foregroundValue>1) mid= foregroundValue-1;
-        else mid = foregroundValue+1;
-        final short midValue = (short)mid;
+        if (foregroundValue > 1) {
+            mid = foregroundValue - 1;
+        } else {
+            mid = foregroundValue + 1;
+        }
+        final short midValue = (short) mid;
         //ImageByte im1 = new ImageByte(pixels, "", sizeX);
         //Z axis
         final mcib3d.utils.ThreadRunner tr = new mcib3d.utils.ThreadRunner(0, sizeY, nbCPUs);
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
-                    new Runnable() {
-
+                    new Runnable() {                        
+                        @Override
                         public void run() {
                             for (int idx = tr.ai.getAndIncrement(); idx < tr.end; idx = tr.ai.getAndIncrement()) {
                                 try {
@@ -307,13 +324,12 @@ public class FillHoles3D {
         }
         tr.startAndJoin();
 
-
         //Y axis
         final mcib3d.utils.ThreadRunner tr2 = new mcib3d.utils.ThreadRunner(0, sizeZ, nbCPUs);
         for (int i = 0; i < tr2.threads.length; i++) {
             tr2.threads[i] = new Thread(
-                    new Runnable() {
-
+                    new Runnable() {                        
+                        @Override
                         public void run() {
                             for (int idx = tr2.ai.getAndIncrement(); idx < tr2.end; idx = tr2.ai.getAndIncrement()) {
                                 try {
@@ -357,15 +373,15 @@ public class FillHoles3D {
         final mcib3d.utils.ThreadRunner tr3 = new mcib3d.utils.ThreadRunner(0, sizeZ, nbCPUs);
         for (int i = 0; i < tr3.threads.length; i++) {
             tr3.threads[i] = new Thread(
-                    new Runnable() {
-
+                    new Runnable() {                        
+                        @Override
                         public void run() {
                             for (int idx = tr3.ai.getAndIncrement(); idx < tr3.end; idx = tr3.ai.getAndIncrement()) {
                                 try {
                                     short mid = midValue;
                                     short fg = fgValue;
                                     for (int x = 0; x < sizeX; x++) {
-
+                                        
                                         boolean bcg = pixels[idx][x] == 0;
                                         for (int y = 0; y < sizeY; y++) {
                                             short value = pixels[idx][y * sizeX + x];
@@ -442,8 +458,8 @@ public class FillHoles3D {
         final mcib3d.utils.ThreadRunner tr4 = new mcib3d.utils.ThreadRunner(0, sizeZ, nbCPUs);
         for (int i = 0; i < tr4.threads.length; i++) {
             tr4.threads[i] = new Thread(
-                    new Runnable() {
-
+                    new Runnable() {                        
+                        @Override
                         public void run() {
                             for (int idx = tr4.ai.getAndIncrement(); idx < tr4.end; idx = tr4.ai.getAndIncrement()) {
                                 try {
@@ -464,9 +480,9 @@ public class FillHoles3D {
                     });
         }
         tr4.startAndJoin();
-
+        
     }
-
+    
     private static boolean checkVoxel(final short[][] pixels, final int x, final int y, final int z, final int sizeX, final int sizeY, final int sizeZ, short midValue) {
         if (z > 0 && pixels[z - 1][x + y * sizeX] == midValue) {
             return true;
