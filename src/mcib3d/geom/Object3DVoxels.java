@@ -17,9 +17,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import mcib3d.Jama.EigenvalueDecomposition;
 import mcib3d.Jama.Matrix;
+import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
+import mcib3d.image3d.processing.FillHoles3D;
 import mcib3d.image3d.processing.Flood3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
@@ -471,13 +473,19 @@ public class Object3DVoxels extends Object3D {
         Voxel3D se = this.getFirstVoxel();
         se.translate(-seg.offsetX, -seg.offsetY, -seg.offsetZ);
         Flood3D.flood3d26(seg, se.getRoundX(), se.getRoundY(), se.getRoundZ(), 2);
-        if (seg.hasOneValueInt(1)) {
-            return false;
-        } else {
-            return true;
-        }
+        return !seg.hasOneValueInt(1);
     }
 
+    public Object3DVoxels getInterior3DFill() {
+        ImageHandler seg = createSegImageMini(255, 1);
+        ImageHandler fill = seg.duplicate();
+        FillHoles3D.process(fill, 255, 0, false);
+        ImageFloat res = fill.substractImage(seg);
+        Object3DVoxels inte = new Object3DVoxels(res, 255);
+        inte.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
+        return inte;
+    }
+    
     /**
      *
      * @param showStatus
@@ -491,6 +499,7 @@ public class Object3DVoxels extends Object3D {
      * @param ima to find the maximum value
      * @return the voxel with the max value
      */
+    @Override
     public Voxel3D getPixelMax(ImageHandler ima) {
         Voxel3D res = null;
         float pix;
@@ -826,7 +835,7 @@ public class Object3DVoxels extends Object3D {
                                 Voxel3D voxC = new Voxel3D(i + x0, j + y0, k + z0, value);
                                 contours.add(voxC);
                                 kdtreeContours.add(voxC.getArray(), voxC);
-                                 // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
+                                // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
                                 if (face == 1) {
                                     class1++;
                                 }
@@ -1384,18 +1393,18 @@ public class Object3DVoxels extends Object3D {
         return (Math.PI * 36.0 * V * V) / (S * S * S);
     }
 
-     // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
+    // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
     public double getSphericityCorrected() {
         return Math.pow(getCompactnessCorrected(), 1.0 / 3.0);
     }
 
-    
     public double getAreaPixelsCorrected() {
         if (correctedSurfaceArea == -1) {
             computeContours();
         }
         return correctedSurfaceArea;
     }
+
     /**
      *
      * @param path
