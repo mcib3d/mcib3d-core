@@ -17,6 +17,7 @@ import tango.helper.ID;
 import tango.helper.RetrieveHelp;
 import tango.mongo.MongoConnector;
 import tango.parameter.*;
+import tango.util.SystemEnvironmentVariable;
 import tango.util.utils;
 
 /**
@@ -143,10 +144,13 @@ public class Connector extends javax.swing.JPanel {
                 return;
             }
             toggleEnableButtons(true, false);
-            Prefs.set(MongoConnector.getPrefix() + "_host.String", host.getText());
+            SystemEnvironmentVariable mongoHost = new SystemEnvironmentVariable("mongoHost", host.getText());
+            boolean a = mongoHost.write(false);
             getUsers();
             if (usernames.getItemCount() > 0) {
-                String user = Prefs.get(MongoConnector.getPrefix() + "_username.String", "");
+                SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", null);
+                boolean b = mongoUser.read();
+                String user = mongoUser.value;
                 if (user.length() == 0 || !utils.contains(usernames, user, true)) {
                     user = (String) usernames.getItemAt(0);
                 }
@@ -179,7 +183,8 @@ public class Connector extends javax.swing.JPanel {
                 user.append("options_" + this.getHost(), userHost);
             }
             options.dbGet((BasicDBObject) userHost);
-            Prefs.set(MongoConnector.getPrefix() + "_username.String", usr);
+            SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", usr);
+            boolean b = mongoUser.write(false);
             core.connect();
             toggleEnableButtons(true, true);
         } else {
@@ -566,10 +571,6 @@ public class Connector extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_usernamesItemStateChanged
-    
-    public void setMongoBinDir(File binDir) {
-        Prefs.set(MongoConnector.getPrefix() + "_mongoBinPath.String", binDir.getAbsolutePath());
-    }
     
     private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
         if (Core.helper != null) {

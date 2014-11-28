@@ -5,10 +5,8 @@
 package tango.plugin.filter;
 
 import ij.IJ;
-import ij.ImagePlus;
 import java.util.TreeMap;
 import mcib3d.image3d.ImageInt;
-import mcib_plugins.segmentation.Segment3D;
 import tango.dataStructure.InputImages;
 import tango.parameter.BooleanParameter;
 import tango.parameter.Parameter;

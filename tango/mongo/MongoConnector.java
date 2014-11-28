@@ -26,6 +26,7 @@ import tango.gui.Core;
 import tango.helper.ID;
 import tango.parameter.SettingsParameter;
 import static tango.util.SystemMethods.execProcess;
+import static tango.util.SystemMethods.executeBatchScript;
 /**
  *
  **
@@ -250,57 +251,11 @@ public class MongoConnector {
     }
 
     public synchronized static boolean mongoStart() {
-        boolean r = false;
-        if (IJ.isMacOSX()) {
-            File cellar = new File("/usr/local/Cellar/mongodb");
-            ArrayList<String> commandArgs = new ArrayList<String>();
-            commandArgs.add("launchctl");
-            commandArgs.add("load");
-            commandArgs.add("~/Library/LaunchAgents/homebrew.mxcl.mongodb.plist");
-            r = execProcess(cellar, commandArgs, true);
-        } else if (IJ.isWindows()) {
-            File cellar = new File("C:\\mongodb");
-            ArrayList<String> commandArgs = new ArrayList<String>();
-            commandArgs.add("net");
-            commandArgs.add("start");
-            commandArgs.add("mongodb");
-            r = execProcess(cellar, commandArgs, true);
-        } else if (IJ.isLinux()){
-            File cellar = new File("/usr/bin");
-            ArrayList<String> commandArgs = new ArrayList<String>();
-            commandArgs.add("service");
-            commandArgs.add("mongodb");
-            commandArgs.add("start");
-            r = execProcess(cellar, commandArgs, true);
-        }
-        return r;
+        return executeBatchScript("mongoStart", true, null);
     }
     
     public synchronized static boolean mongoStop() {
-        boolean r = false;
-        if (IJ.isMacOSX()) {
-            File cellar = new File("/usr/local/Cellar/mongodb");
-            ArrayList<String> commandArgs = new ArrayList<String>();
-            commandArgs.add("launchctl");
-            commandArgs.add("unload");
-            commandArgs.add("~/Library/LaunchAgents/homebrew.mxcl.mongodb.plist");
-            r = execProcess(cellar, commandArgs, true);
-        } else if (IJ.isWindows()) {
-            File cellar = new File("C:\\mongodb");
-            ArrayList<String> commandArgs = new ArrayList<String>();
-            commandArgs.add("net");
-            commandArgs.add("stop");
-            commandArgs.add("mongodb");
-            r = execProcess(cellar, commandArgs, true);
-        } else if (IJ.isLinux()){
-            File cellar = new File("/usr/bin");
-            ArrayList<String> commandArgs = new ArrayList<String>();
-            commandArgs.add("service");
-            commandArgs.add("mongodb");
-            commandArgs.add("stop");
-            r = execProcess(cellar, commandArgs, true);
-        }
-        return r;
+        return executeBatchScript("mongoStop", true, null);
     }
 
     public boolean mongoDumpProject(String projectName, String outputPath, boolean inputImages, boolean outputImages) {
@@ -334,7 +289,7 @@ public class MongoConnector {
         commandArgs.add(collectionName);
         commandArgs.add("-o");
         commandArgs.add(outputPath);
-        return execProcess(cellar, commandArgs, true);
+        return execProcess(cellar, commandArgs);
     }
     
     public boolean mongoDumpSettings(String outputPath) {
@@ -362,7 +317,7 @@ public class MongoConnector {
         commandArgs.add(collectionName);
         if(drop) commandArgs.add("--drop");
         commandArgs.add(inputPath);
-        return execProcess(cellar, commandArgs, true);
+        return execProcess(cellar, commandArgs);
     }
     
     public boolean mongoRestoreProject(String dumpProjectPath, String projectName) {
