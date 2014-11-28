@@ -44,7 +44,7 @@ public class NumberFilter implements PostFilter {
     IntParameter nbMin = new IntParameter("Minimal number of objects", "nbmin", 1);
     IntParameter nbMax = new IntParameter("Maximal number of objects", "nbmax", 1000);
     BooleanParameter useMax = new BooleanParameter("Specify maxmimum number", "usemax", false);
-    ConditionalParameter useMaxCond = new ConditionalParameter(useMax);
+    ConditionalParameter useMaxCond = new ConditionalParameter("Use a constraint on maximum number of objects", useMax);
     Parameter[] parameters = new Parameter[]{nbMin, useMaxCond};
 
     public NumberFilter() {

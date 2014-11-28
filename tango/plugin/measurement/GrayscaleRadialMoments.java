@@ -217,6 +217,6 @@ public class GrayscaleRadialMoments implements MeasurementObject {
 
     @Override
     public String getHelp() {
-        return "Intensity Quantification inside or outside objects";
+        return "Computes Moments of a signal, the position of each pixel being the minimal distance to the reference structure";
     }
 }

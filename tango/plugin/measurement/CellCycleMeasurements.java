@@ -1,5 +1,6 @@
 package tango.plugin.measurement;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.PlugInFilter;
@@ -18,6 +19,7 @@ import mcib_plugins.analysis.simpleMeasure;
 import tango.dataStructure.InputCellImages;
 import tango.dataStructure.ObjectQuantifications;
 import tango.dataStructure.SegmentedCellImages;
+import tango.gui.Core;
 import tango.parameter.*;
 
 /*
@@ -28,13 +30,13 @@ import tango.parameter.*;
  *
  **
  * /**
- * Copyright (C) 2008- 2012 Thomas Boudier and others
+ * Copyright (C) 2008- 2012 Jean Ollion and others
  *
  *
  *
- * This file is part of mcib3d
+ * This file is part of TANGO
  *
- * mcib3d is free software; you can redistribute it and/or modify it under the
+ * TANGO is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
@@ -47,7 +49,7 @@ import tango.parameter.*;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
- * @author thomas
+ * @author Jean
  */
 public class CellCycleMeasurements implements MeasurementObject {
     
@@ -61,17 +63,21 @@ public class CellCycleMeasurements implements MeasurementObject {
     BooleanParameter doProlif =  new BooleanParameter("Proliferation Marker", "doProlif", false);
     ConditionalParameter condProlif = new ConditionalParameter(doProlif);
     FilteredStructureParameter proliferation = new FilteredStructureParameter("Proliferation marker:", "proliferationMarker");
+    BooleanParameter doErodeNuc =  new BooleanParameter("Erode nucleus", "doErodeNuc", false);
+    ConditionalParameter condErodeNuc = new ConditionalParameter(doErodeNuc);
+    double defRadErodeNuc=6;
+    DoubleParameter radErodeNuc = new DoubleParameter("Radius (pix)", "radErodeNuc", defRadErodeNuc, DoubleParameter.nfDEC1);
     KeyParameterObjectNumber prolif_int = new KeyParameterObjectNumber("Proliferation marker mean intensity", "proliferation_mean_intensity");
     KeyParameterObjectNumber rac2 = new KeyParameterObjectNumber("RadialAutoCorrelation rad:2", "proliferation_rac2");
-        
+    
     BooleanParameter doReplication =  new BooleanParameter("Replication Marker", "doReplication", false);
     ConditionalParameter condReplication = new ConditionalParameter(doReplication);
     FilteredStructureParameter replication = new FilteredStructureParameter("Replication Marker:", "replicationMarker");
     KeyParameterObjectNumber replication_int = new KeyParameterObjectNumber("Replication marker Mean Intensity", "replication_mean_intensity");
     KeyParameterObjectNumber rep_rac2 = new KeyParameterObjectNumber("Replication RadialAutoCorrelation rad:2", "replication_rac2");
     
-    BooleanParameter doNL =  new BooleanParameter("Compute localisation towards nucleoli and periphery?","doNL", false);
-    ConditionalParameter condNL = new ConditionalParameter(doNL);
+    BooleanParameter doNL =  new BooleanParameter("Compute?","doNL", false);
+    ConditionalParameter condNL = new ConditionalParameter("Localisation towards nucleoli and periphery", doNL);
     StructureParameter nl = new StructureParameter("Nucleoli:", "nl", -1, true);
     KeyParameterObjectNumber rep_loc = new KeyParameterObjectNumber("Replication Localization", "replication_loc");
     
@@ -82,7 +88,8 @@ public class CellCycleMeasurements implements MeasurementObject {
 
     public CellCycleMeasurements() {
         doProlif.setFireChangeOnAction();
-        condProlif.setCondition(true, new Parameter[]{proliferation});
+        condProlif.setCondition(true, new Parameter[]{proliferation, condErodeNuc});
+        condErodeNuc.setCondition(true, new Parameter[]{radErodeNuc});
         doReplication.setFireChangeOnAction();
         condReplication.setCondition(true, new Parameter[]{replication, condNL});
         doNL.setFireChangeOnAction();
@@ -108,7 +115,7 @@ public class CellCycleMeasurements implements MeasurementObject {
         }
         
         if (doReplication.isSelected()) {
-            ImageHandler rep = proliferation.getImage(raw, verbose, nCPUs);
+            ImageHandler rep = replication.getImage(raw, verbose, nCPUs);
             if (replication_int.isSelected()) {
                 quantifications.setQuantificationObjectNumber(replication_int, new double[]{nuc.getPixMeanValue(rep)});
             }           
@@ -129,13 +136,29 @@ public class CellCycleMeasurements implements MeasurementObject {
         }
         
         if (doProlif.isSelected()) {
-            ImageHandler prolif = proliferation.getImage(raw, verbose, nCPUs);//gaussian par défaut?            
+            if (doErodeNuc.isSelected()) {
+                double rad = this.radErodeNuc.getDoubleValue(defRadErodeNuc) * mask.getScaleXY();
+                ImageByte erodedMask = mask.erode((float)rad, nCPUs);
+                if (verbose) erodedMask.show("Eroded Mask: "+this.radErodeNuc.getDoubleValue(defRadErodeNuc));
+                Object3DVoxels[] obj = erodedMask.getObjects3D();
+                if (obj.length>=1) {
+                    nuc=obj[0];
+                    mask = erodedMask;
+                }
+                else {
+                    if (Core.GUIMode) IJ.log("Cell cycle measurement error: unable to erode nucleus");
+                    else System.out.println("Cell cycle measurement error: unable to erode nucleus");
+                    return;
+                }
+            }
+            
+            ImageHandler prolif = proliferation.getImage(raw, verbose, nCPUs); //gaussian par défaut?            
             double prolifMean = nuc.getPixMeanValue(prolif);
             if (prolif_int.isSelected()) quantifications.setQuantificationObjectNumber(prolif_int, new double[]{prolifMean});
             
             RadialAutoCorrelation rac=null;
             if (rac2.isSelected()) {
-                rac = new RadialAutoCorrelation(prolif, raw.getMask(), true);
+                rac = new RadialAutoCorrelation(prolif, mask, true);
                 if (rac2.isSelected()) quantifications.setQuantificationObjectNumber(rac2, new double[]{rac.getCorrelation(2)});
                 if (verbose) rac.intensityResampled.show("RAC Image");
                 if (verbose) prolif.show("prolif Image");
@@ -145,23 +168,7 @@ public class CellCycleMeasurements implements MeasurementObject {
         
     }
     
-    private double getErodedMeanValue(ImageHandler signal, ImageInt nl, Object3DVoxels[] objects, double proportion) {
-        ImageFloat edt = EDT.runEdtLabel(nl, (float)nl.getScaleXY(), (float)nl.getScaleZ(), nCPUs);
-        ImageByte erodedMap=null;
-        if (verbose) erodedMap = new ImageByte("erodedMap", signal.sizeX, signal.sizeY, signal.sizeZ);
-        double meanValue=0;
-        double count = 0;
-        for (Object3DVoxels o : objects) {
-            double thld = o.getQuantilePixValue(edt, proportion);
-            for (Voxel3D v : o.getVoxels()) if (edt.getPixel(v)>=thld) {
-                count++;
-                meanValue+=signal.getPixel(v);
-                if (verbose) erodedMap.setPixel(v, 255);
-            }
-        }
-        if (verbose) erodedMap.show();
-        return meanValue/count;
-    }
+    
 
     @Override
     public Parameter[] getParameters() {

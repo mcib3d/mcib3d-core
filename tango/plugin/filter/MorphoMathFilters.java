@@ -44,7 +44,7 @@ public class MorphoMathFilters implements PostFilter {
     int nbCPUs=1;
     static String[] methods = new String[]{"Binary Close", "Binary Open", "Fill holes 2D", "Fill Holes 3D"};
     ChoiceParameter choice = new ChoiceParameter("Method:", "mergeMethod", methods, methods[0]); 
-    ConditionalParameter cond = new ConditionalParameter(choice);
+    ConditionalParameter cond = new ConditionalParameter("MorphoMath Filter", choice);
     Parameter[] parameters=new Parameter[]{cond};
     
     BinaryClose close = new BinaryClose();
@@ -56,7 +56,7 @@ public class MorphoMathFilters implements PostFilter {
         cond.setCondition(methods[0], close.getParameters());
         cond.setCondition(methods[1], open.getParameters());
         cond.setCondition(methods[2], fh2D.getParameters());
-        cond.setCondition(methods[2], fh3D.getParameters());
+        cond.setCondition(methods[3], fh3D.getParameters());
     }
     
     @Override

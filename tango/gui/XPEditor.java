@@ -63,12 +63,12 @@ public class XPEditor extends javax.swing.JPanel implements PanelDisplayer {
     public final static DoubleParameter scalexy = new DoubleParameter("Scale XY:", "scaleXY", null, Parameter.nfDEC5);
     public final static DoubleParameter scalez = new DoubleParameter("Scale Z:", "scaleZ", null, Parameter.nfDEC5);
     public final static TextParameter unit = new TextParameter("Unit:", "unit", "µm");
-    public final static BooleanParameter useScale=new BooleanParameter("Use Global Scale:", "globalScale", false);
+    public final static BooleanParameter useScale=new BooleanParameter("Use Global Calibration?", "globalScale", false);
     private final static HashMap<Object, Parameter[]> map = new HashMap<Object, Parameter[]>(){{
         put(true, new Parameter[]{scalexy, scalez, unit}); 
         put(false, new Parameter[0]);
     }};
-    private final static ConditionalParameter globalScale = new ConditionalParameter(useScale, map);
+    private final static ConditionalParameter globalScale = new ConditionalParameter("Image Calibration", useScale, map);
     //private final static FileParameter inputFile = new FileParameter("Input Folder", "inputFolder", null);
     private final static ChoiceParameter importFileMethod = new ChoiceParameter("Import File Method:", "importFileMethod", FieldFactory.importMethod, FieldFactory.importMethod[0]);
     public static Parameter[] xpParams = new Parameter[]{globalScale, importFileMethod};
@@ -740,12 +740,16 @@ public class XPEditor extends javax.swing.JPanel implements PanelDisplayer {
         if (experiments.getSelectedIndex() >= 0) {
             String old_name = utils.getSelectedString(experiments);
             String name = JOptionPane.showInputDialog("Rename Experiment from:" + old_name + " to:", old_name);
+            //IJ.log("rename XP debug:: xp source:"+old_name+ " destination :"+name);
             if (name==null || name.equals(old_name)) return;
             if (utils.isValid(name, false) && !utils.contains(experiments, name, false)) {
+                //IJ.log("rename XP debug::process...");
                 Core.mongoConnector.renameExperiment(old_name, name);
+                //IJ.log("rename XP debug::OK");
                 getXPs();
                 experiments.setSelectedItem(name);
                 setXP(name);
+                //IJ.log("rename XP debug::SET XP");
             } else {
                 IJ.error("Invalid Name/Experiment already exists");
             }
@@ -800,12 +804,12 @@ public class XPEditor extends javax.swing.JPanel implements PanelDisplayer {
     private void duplicateExperimentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateExperimentActionPerformed
         if (experiments.getSelectedIndex() >= 0) {
             //String[] dest = TextChoiceJOptionPane.showInputDialog("Enter Name and Destination Set:", Core.mongoConnector.getProjects());
-            DuplicateXP d = DuplicateXPOptionPane.showInputDialog("Duplicate or Override Experiment:", Core.mongoConnector.getProjects(), utils.getSelectedString(experiments));
+            DuplicateXP d = DuplicateXPOptionPane.showInputDialog(core,"Duplicate Experiment:", Core.mongoConnector.getProjects(), utils.getSelectedString(experiments));
             if (d == null) {
                 return;
             }
             String source = (String) experiments.getSelectedItem();
-            if (d.set.equals(folders.getSelectedItem())) {
+            if (d.set.equals(folders.getSelectedItem())) { 
                 if (d.xp != null && d.xp.length() > 0 && !Core.mongoConnector.getExperiments().contains(d.xp)) {
                     Core.mongoConnector.duplicateExperiment(Core.mongoConnector, source, d.xp);
                     getXPs();

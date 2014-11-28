@@ -46,7 +46,7 @@ public class MergeRegions implements PostFilter {
     //static String[] methodsTesting = new String[]{"Merge All Connected", "Merge All", "Merge Sort"};
     ChoiceParameter choice = new ChoiceParameter("Method:", "mergeMethod", methods, methods[0]); 
     //ChoiceParameter choice = new ChoiceParameter("Method:", "mergeMethod", Core.TESTING?methodsTesting:methods, methods[0]); 
-    ConditionalParameter cond = new ConditionalParameter(choice);
+    ConditionalParameter cond = new ConditionalParameter("Merge method", choice);
     Parameter[] parameters=new Parameter[]{cond};
     
     SliderDoubleParameter mergeCoeff = new SliderDoubleParameter("Merge Coefficient", "mergeCoeff", 0, 1, 0.75d, 3);

@@ -53,6 +53,7 @@ public class MediatedContact implements MeasurementStructure {
     DistanceParameter distance = new  DistanceParameter("Distance used for contact", "distance","Euclidean Distance", 
             new Parameter[]{
                 new ConditionalParameter(
+                        "Contact definition",
                     new ChoiceParameter("type", "type", new String[]{"Border-Border"}, "Border-Border"), 
                     new HashMap<Object, Parameter[]>(){{
                         put("Border-Border", new Parameter[]{new ChoiceParameter("If inclusion:",  "inclusion", new String[]{"zero"}, "zero")});

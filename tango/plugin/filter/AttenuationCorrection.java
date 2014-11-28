@@ -47,8 +47,8 @@ public class AttenuationCorrection implements PreFilter {
     int nCPUs=1;
     IntParameter radius = new IntParameter("Opening Radius", "rad", 3);
     static String[] methods = new String[]{"Constant Slice Index", "Middle Slice", "Maximum Intensity"};
-    ChoiceParameter choice = new ChoiceParameter("Reference Slice:", "referenceSlice", methods, methods[2]);
-    ConditionalParameter cond = new ConditionalParameter(choice);
+    ChoiceParameter choice = new ChoiceParameter("Method:", "referenceSlice", methods, methods[2]);
+    ConditionalParameter cond = new ConditionalParameter("Reference Slice", choice);
     IntParameter referenceSlice = new IntParameter("Reference Slice", "slice", 1);
     Parameter[] parameters = new Parameter[]{radius, cond};
     

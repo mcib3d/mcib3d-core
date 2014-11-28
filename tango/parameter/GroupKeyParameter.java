@@ -54,7 +54,7 @@ public class GroupKeyParameter extends Parameter implements NestedParameter {
         
         this.lock=lock;
         this.label=new JLabel(label+"prefix:");
-        box=new CollapsiblePanel(this.label);
+        box=new CollapsiblePanel(null, this.label);
         this.parameters=parameters;
         if (parameters==null) this.parameters=new KeyParameter[0];
         mainBox = Box.createVerticalBox();
@@ -205,6 +205,10 @@ public class GroupKeyParameter extends Parameter implements NestedParameter {
             for (Parameter p : parameters) if (!p.isValidOrNotCompulsary()) return false;
             return true;
         } else return true;
+    }
+    
+    public KeyParameter getPrefix() {
+        return prefix;
     }
     
 }

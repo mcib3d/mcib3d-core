@@ -32,38 +32,40 @@ import mcib3d.image3d.ImageInt;
  */
 
 public class NormalizeDistanceMap {
-    public void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask) {
+    public void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask, ImageInt outerMask) {
         int count = 0;
-        Vox[] idx = new Vox[mask.countMaskVolume()];
-        double volume = idx.length;
+        Vox[] indicies = new Vox[mask.countMaskVolume()];
+        double volume = indicies.length;
         for (int z = 0; z<distanceMap.sizeZ; z++) {
             for (int xy=0; xy<distanceMap.sizeXY; xy++) {
                 if (mask.getPixelInt(xy, z) !=0) {
-                    idx[count]=new Vox(distanceMap.pixels[z][xy], xy, z);
+                    indicies[count]=new Vox(distanceMap.pixels[z][xy], xy, z);
                     count++;
                 }
             }
         }
-        Arrays.sort(idx);
-        for (int i = 0;i<idx.length-1;i++) {
+        Arrays.sort(indicies);
+        for (int i = 0;i<indicies.length-1;i++) {
             // gestion des repetitions
-            if (idx[i+1].distance==idx[i].distance) {
+            if (indicies[i+1].distance==indicies[i].distance) {
                 int j = i+1;
-                while (j<(idx.length-1) && idx[i].distance==idx[j].distance) j++;
+                while (j<(indicies.length-1) && indicies[i].distance==indicies[j].distance) j++;
                 double median = (i+j)/2d;
-                for (int k = i; k<=j;k++) idx[k].index=median;
+                for (int k = i; k<=j;k++) indicies[k].index=median;
                 i=j;
             } else {
-                idx[i].index=i;
+                indicies[i].index=i;
             }
         }
-        if (idx[idx.length-1].index==0) idx[idx.length-1].index = idx.length-1;
-        for (int i=0;i<idx.length;i++) {
-            distanceMap.pixels[idx[i].z][idx[i].xy]=(float)(idx[i].index/volume);
+        if (indicies[indicies.length-1].index==0) indicies[indicies.length-1].index = indicies.length-1;
+        for (int i = 0; i<indicies.length; i++)indicies[i].index/=volume;
+        for (Vox v : indicies) {
+            distanceMap.pixels[v.z][v.xy] = (float) (v.index);
         }
+        if (outerMask!=null) correctDistanceMap(outerMask, mask, distanceMap, indicies); // correction en cas d'erosion du masque du noyau
     }
     
-    public void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask, ImageHandler normalizationMap) {
+    public void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask, ImageHandler normalizationMap, ImageInt outerMask) {
         int count = 0;
         Vox[] indicies = new Vox[mask.countMaskVolume()];
         for (int z = 0; z<distanceMap.sizeZ; z++) {
@@ -87,12 +89,31 @@ public class NormalizeDistanceMap {
                 if ((i+j)%2==0) median=indicies[((i+j)/2)].index;
                 else median = (indicies[(int)((double)(i+j)/2d)].index + indicies[(int)((double)(i+j)/2d)+1].index)/2d;
                 for (int k = i; k<=j; k++) indicies[k].index=median;
-                i=j; //j+1?
+                i=j; 
             }
         }
         // apply to distance map
-        for (int i=0;i<indicies.length;i++) {
-            distanceMap.pixels[indicies[i].z][indicies[i].xy]=(float)(indicies[i].index);
+        for (Vox v : indicies) {
+            distanceMap.pixels[v.z][v.xy] = (float) (v.index);
+        }
+        if (outerMask!=null) correctDistanceMap(outerMask, mask, distanceMap, indicies);
+    }
+    
+    private void correctDistanceMap(ImageInt outerMask, ImageInt innerMask, ImageFloat distanceMap, Vox[] indicies) {
+        for (int z = 0; z<distanceMap.sizeZ; z++) {
+            for (int xy=0; xy<distanceMap.sizeXY; xy++) {
+                if (outerMask.getPixelInt(xy, z) !=0 && innerMask.getPixelInt(xy, z)==0 ) {
+                    Vox v = new Vox(distanceMap.getPixel(xy, z), xy, z);
+                    int i=Arrays.binarySearch(indicies, v);
+                    if (i>=0) distanceMap.setPixel(xy, z, (float)indicies[i].index);
+                    else {
+                        int ins = -i-1;
+                        if (ins==indicies.length) distanceMap.setPixel(xy, z, 1);
+                        else if (ins==0) distanceMap.setPixel(xy, z, 0);
+                        else distanceMap.setPixel(xy, z, (float)(indicies[ins].index+indicies[ins-1].index)/2);
+                    }
+                }
+            }
         }
     }
     

@@ -50,8 +50,9 @@ import tango.util.Progressor;
 public class Core extends JFrame implements Displayer {
     public static boolean SPATIALSTATS=true;
     public static double VERSION  = 0.84;
-    public static boolean TESTING=false;
-    public static boolean ANALYSIS = true; //Useless, // si tant que c'est en dev on va garder ça.
+    public static boolean TESTING=true;
+    public static boolean ANALYSIS = false;
+    public static boolean MONGODB = true;
     private Component[] panels, processingPanels;
     private JTabbedPane tabs,processingTabs;
     public static MongoConnector mongoConnector;

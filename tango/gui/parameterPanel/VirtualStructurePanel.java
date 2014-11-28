@@ -51,8 +51,8 @@ public class VirtualStructurePanel extends ParameterPanel {
 
     @Override
     public void getParameters() {
-        type = new ChoiceParameter("Type", "type", VirtualStructure.methods, VirtualStructure.methods[0]);
-        cond = new ConditionalParameter(type);
+        type = new ChoiceParameter("Type:", "type", VirtualStructure.methods, VirtualStructure.methods[0]);
+        cond = new ConditionalParameter("Type of Structure", type);
         // coloc
         name.setHelp("The name of the virtual structure", true);
         name.text.getDocument().addDocumentListener(this);

@@ -72,7 +72,7 @@ public class OverrideXPOptionPane extends JOptionPane {
                         }
                         dispose();
                     } else dispose();
-                }
+                } else if (ae.getSource() == panel.buttonCancel) dispose();
             }
             
             public OverrideXPElement[] getData(){

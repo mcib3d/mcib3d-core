@@ -53,7 +53,7 @@ public class BinaryClose implements PostFilter, PlugIn {
             put(true, new Parameter[0]);
         }
     };
-    ConditionalParameter cond = new ConditionalParameter(useScale, map);
+    ConditionalParameter cond = new ConditionalParameter("Z-Radius", useScale, map);
     Parameter[] parameters = new Parameter[]{radiusXY, cond};
 
     public BinaryClose() {

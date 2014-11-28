@@ -49,10 +49,11 @@ public class CollapsiblePanel extends JPanel {
     String title = "";
     TitledBorder border;  
     JLabel label;
-    public CollapsiblePanel(JLabel label_) {  
-        this.title=label_.getText();
+    public CollapsiblePanel(String title, JLabel label_) {  
+        if (title==null)  this.title=label_.getText();
+        else this.title=title;
         this.label=label_;
-        border = BorderFactory.createTitledBorder(title);  
+        border = BorderFactory.createTitledBorder(this.title);  
         this.label.addPropertyChangeListener(
             new PropertyChangeListener() {
                 @Override

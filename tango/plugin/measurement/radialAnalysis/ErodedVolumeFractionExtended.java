@@ -73,7 +73,7 @@ public class ErodedVolumeFractionExtended implements MeasurementObject {
         float[] res = new float[o.getVolumePixels()];
         ArrayList<Voxel3D> al = o.getVoxels();
         int i=0;
-        for (Voxel3D v : al) res[i++] = dm.pixels[v.getRoundZ()][v.getXYCoord(dm.sizeX)];
+        for (Voxel3D v : al) res[i++] = Math.min(1, dm.pixels[v.getRoundZ()][v.getXYCoord(dm.sizeX)]);
         Arrays.sort(res);
         return res;
     }
@@ -99,7 +99,7 @@ public class ErodedVolumeFractionExtended implements MeasurementObject {
                 distanceMap = (ImageFloat)dm.getMaskAndDistanceMap(rawImages, segmentedImages, dist, verbose, nCPUs)[1];
             }
             
-            if (key.isSelected()) r[i]=distanceMap.getPixelInterpolated(objects[i].getCenterAsPoint());
+            if (key.isSelected()) r[i]=Math.min(1, distanceMap.getPixelInterpolated(objects[i].getCenterAsPoint()));
             
             if (keyMin.isSelected() || keyMax.isSelected() || keyMean.isSelected() || keyMedian.isSelected()) {
                 float[] evf = getDistanceDistribution(distanceMap, objects[i]);

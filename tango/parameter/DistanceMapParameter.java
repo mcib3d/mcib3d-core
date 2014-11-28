@@ -44,13 +44,13 @@ public class DistanceMapParameter extends GroupParameter {
     MultiParameter referenceStructures = new MultiParameter("Reference Structures:", "refStructure", new Parameter[]{new StructureParameter("Structure:", "structure", 0, true)}, 1, 10, 1);
     BooleanParameter negativeInsideInternal = new BooleanParameter("Negative distances inside internal structures", "center", false);
     BooleanParameter onlyInsideInternal = new BooleanParameter("Only Inside Structures", "outside", false);
-    BooleanParameter normalize = new BooleanParameter("Normalize distances [0:1]", "normalize", true);
-    BooleanParameter erode = new BooleanParameter("Erode nuclear edges", "erode", false);
+    BooleanParameter normalize = new BooleanParameter("Normalize distances [0:1]?", "normalize", true);
+    BooleanParameter erode = new BooleanParameter("Erode nuclear edges?", "erode", false);
     
-    ConditionalParameter normCond = new ConditionalParameter(normalize);
+    ConditionalParameter normCond = new ConditionalParameter("Normalize distances", normalize);
     FilteredStructureParameter normStruct = new FilteredStructureParameter("Normalization map (optional):", "normMap");
     
-    ConditionalParameter erodeCond = new ConditionalParameter(erode);
+    ConditionalParameter erodeCond = new ConditionalParameter("Erode nuclear edges", erode);
     DoubleParameter erodeDist = new DoubleParameter("Erosion from periphery (unit):", "hardcoreStruct",0d, Parameter.nfDEC5);
     
     public DistanceMapParameter(String label, String id) {
@@ -95,8 +95,7 @@ public class DistanceMapParameter extends GroupParameter {
             int idx = ((StructureParameter)ps[i]).getIndex();
             if (seg.getImage(idx)!=null) {
                 if (!s.contains(idx)) s.add(idx);
-            }
-            else System.out.println("Error: distanceMap parameter structure not segmented:"+idx);
+            } else System.out.println("Error: distanceMap parameter structure not segmented or does not contain objects:"+idx);
         }
         int[] res = new int[s.size()];
         for (int i = 0;i<res.length;i++) res[i]=s.get(i);
@@ -113,6 +112,7 @@ public class DistanceMapParameter extends GroupParameter {
                 } else dm.pixels[z][xy]-=dist;
             }
         }
+        mask.setTitle(mask.getTitle()+"::eroded:"+dist);
     }
     
     private static void erodeMask(ImageInt mask, ImageFloat dm, float dist) {
@@ -121,6 +121,7 @@ public class DistanceMapParameter extends GroupParameter {
                 if (dm.pixels[z][xy]<dist) mask.setPixel(xy, z, 0);
             }
         }
+        mask.setTitle(mask.getTitle()+"::eroded:"+dist);
     }
     
     public boolean isErodeNucleus() {
@@ -153,7 +154,7 @@ public class DistanceMapParameter extends GroupParameter {
         }
         ImageFloat distanceMap;
         boolean newDM = false;
-        if (structures[0]==0) { 
+        if (structures[0]==0) { // par rapport à la periphery du noyau
             if (structures.length==1) {
                 mask=raw.getMask();
                 distanceMap = seg.getDistanceMap(0, nCPUs);
@@ -187,24 +188,29 @@ public class DistanceMapParameter extends GroupParameter {
                 distanceMap.subtract(distanceMap2);
                 newDM=true;
             }
-        } else {
+        } else { // pas par rapport à la peripherie du noyau
             if (structures.length==1) {
-                if (onlyInside) {
+                if (onlyInside) { // interieur d'une structure interne
                     mask = seg.getImage(structures[0]);
                     distanceMap=EDT.run(mask, 0, false, nCPUs);
                     newDM=true;
-                } else if (!negativeInside) { 
+                } else if (!negativeInside) { // exterieur d'une structure interne, pas negatif a l'interieur
                     distanceMap = seg.getDistanceMap(structures[0], nCPUs);
                     ImageByte m  =  raw.getMask().toMask();
+                    if (erodeDist>0) erodeMask(m, seg.getDistanceMap(0, nCPUs), erodeDist);
                     m.substractMask(seg.getImage(structures[0]));
                     mask=m;
-                } else { 
+                } else { // exterieur d'une structure interne, negatif a l'interieur
                     mask = seg.getImage(structures[0]);
                     distanceMap=EDT.run(mask, 0, true, nCPUs);
                     ImageFloat distanceMap2=EDT.run(mask, 0, false, nCPUs);
                     distanceMap.subtract(distanceMap2);
                     newDM=true;
                     mask = raw.getMask();
+                    if (erodeDist>0) {
+                        mask=mask.toMask();
+                        erodeMask(mask, seg.getDistanceMap(0, nCPUs), erodeDist);
+                    }
                 }
             }
             else if (!negativeInside || onlyInside) {
@@ -215,6 +221,7 @@ public class DistanceMapParameter extends GroupParameter {
                 newDM=true;
                 if (!onlyInside) { 
                     ImageByte mask2 = raw.getMask().toMask();
+                    if (erodeDist>0) erodeMask(mask2, seg.getDistanceMap(0, nCPUs), erodeDist);
                     mask2.substractMask(m);
                     mask=mask2;
                 }
@@ -226,10 +233,14 @@ public class DistanceMapParameter extends GroupParameter {
                 distanceMap.subtract(distanceMap2);
                 newDM=true;
                 mask=raw.getMask();
+                if (erodeDist>0) {
+                    mask = mask.toMask();
+                    erodeMask(mask, seg.getDistanceMap(0, nCPUs), erodeDist);
+                }
             }
         }
         if (verbose) {
-            mask.show("mask");
+            mask.show("mask (eroded:"+erodeDist+")");
             distanceMap.showDuplicate("distanceMap");
         }
 
@@ -238,8 +249,12 @@ public class DistanceMapParameter extends GroupParameter {
             NormalizeDistanceMap nm= new NormalizeDistanceMap();
             if (!newDM) distanceMap = distanceMap.duplicate();
             if (normImage!=null) {
-                nm.normalizeDistanceMap(distanceMap, mask, normImage);
-            } else nm.normalizeDistanceMap(distanceMap, mask);
+                if (erodeDist==0) nm.normalizeDistanceMap(distanceMap, mask, normImage, null);
+                else nm.normalizeDistanceMap(distanceMap, mask, normImage, raw.getMask());
+            } else {
+                if (erodeDist==0) nm.normalizeDistanceMap(distanceMap, mask, null);
+                else nm.normalizeDistanceMap(distanceMap, mask, raw.getMask());
+            }
             if (verbose) distanceMap.show("normalized distanceMap");
         }
         

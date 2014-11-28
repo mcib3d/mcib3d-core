@@ -48,7 +48,7 @@ public class IJ3dViewerParameters {
             put(false, new Parameter[]{}); 
             put(true, parameters);
         }};
-        ij3d = new ConditionalParameter(display, map);
+        ij3d = new ConditionalParameter(null, display, map);
         ij3d.toggleVisibility(false);
     }
     

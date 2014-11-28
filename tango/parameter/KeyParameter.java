@@ -41,7 +41,7 @@ public abstract class KeyParameter extends Parameter {
     public JCheckBox checkbox;
     String prefix="";
     int type;
-    // TODO donnot allow "." in keys...
+
     public KeyParameter(String label, String id, String defaultValue, boolean selected, int type) {
         super(id);
         box = Box.createHorizontalBox();
@@ -136,6 +136,10 @@ public abstract class KeyParameter extends Parameter {
     
     public void addPrefix(String prefix) {
         this.prefix=prefix;
+    }
+    
+    public void setText(String text) {
+        this.key.setText(text);
     }
     
     public static boolean isOneKeySelected(Parameter[] keys) {

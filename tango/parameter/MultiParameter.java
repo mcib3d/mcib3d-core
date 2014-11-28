@@ -56,13 +56,13 @@ public class MultiParameter extends Parameter implements ChangeListener, NestedP
         this.defaultParameters=defaultParameters;
         mainBox = Box.createVerticalBox();
         mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
-        nb=new SpinnerParameter("nb of "+label, "nb", minNb, maxNb, defaultNb);
+        nb=new SpinnerParameter("number:", "nb", minNb, maxNb, defaultNb);
         this.label=this.nb.label;
         curNb=nb.getValue();
         nb.spinner.addChangeListener(this);
         nb.addToContainer(mainBox);
         nb.setParent(this);
-        box=new CollapsiblePanel(this.label);
+        box=new CollapsiblePanel(label, this.label);
         box.add(mainBox);
         this.majPanel();
         setColor();

@@ -5,8 +5,11 @@ import ij.gui.GenericDialog;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import tango.gui.util.Refreshable;
 import tango.util.utils;
 
 /**
@@ -34,9 +37,10 @@ import tango.util.utils;
  *
  * @author Jean Ollion
  */
-public class TextParameter extends Parameter{
+public class TextParameter extends Parameter  { //implements ActionnableParameter
     public JTextField text;
     boolean allowSpecial=false;
+    //Refreshable r;
     public TextParameter(String label, String id, String defaultValue) {
         super(label, id);
         this.text=new JTextField();
@@ -119,5 +123,56 @@ public class TextParameter extends Parameter{
         }
         setColor();
     }
+    /*
+    @Override
+    public void setRefreshOnAction(Refreshable r_) {
+        this.r=r_;
+        text.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent de) {
+                
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                
+            }
+            @Override
+            public void changedUpdate(DocumentEvent de) {
+                if (r!=null) r.refresh();
+            }
+        });
+    }
+
+    @Override
+    public Parameter getParameter() {
+        return this;
+    }
+
+    @Override
+    public Object getValue() {
+        return getText();
+    }
+
+    @Override
+    public void setFireChangeOnAction() {
+        text.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent de) {
+                fireChange();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent de) {
+                fireChange();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent de) {
+                fireChange();
+            }
+        });
+    }
+    */
 
 }
