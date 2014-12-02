@@ -485,7 +485,7 @@ public class Object3DVoxels extends Object3D {
         inte.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
         return inte;
     }
-    
+
     /**
      *
      * @param showStatus
@@ -1517,7 +1517,7 @@ public class Object3DVoxels extends Object3D {
                 i = vox.getX();
                 j = vox.getY();
                 k = vox.getZ();
-                if (ima.contains(i, j, k)) {
+                if (ima.contains(vox)) {
                     pix = ima.getPixel(vox);
                     cx += i * pix;
                     cy += j * pix;
@@ -1530,6 +1530,58 @@ public class Object3DVoxels extends Object3D {
                     if (pix < pmin) {
                         pmin = pix;
                     }
+                }
+            }
+            cx /= sum;
+            cy /= sum;
+            cz /= sum;
+
+            integratedDensity = sum;
+
+            pixmin = pmin;
+            pixmax = pmax;
+
+            // standard dev
+            int vol = getVolumePixels();
+            sigma = Math.sqrt((sum2 - ((sum * sum) / vol)) / (vol - 1));
+        }
+    }
+
+    @Override
+    protected void computeMassCenter(ImageHandler ima, ImageHandler mask) {
+        if (ima != null) {
+            cx = 0;
+            cy = 0;
+            cz = 0;
+            double sum = 0;
+            double sum2 = 0;
+            double pix;
+            double pmin = Double.MAX_VALUE;
+            double pmax = -Double.MAX_VALUE;
+
+            double i, j, k;
+            Voxel3D vox;
+            Iterator it = voxels.iterator();
+            while (it.hasNext()) {
+                vox = (Voxel3D) it.next();
+                if (ima.contains(vox) && mask.contains(vox) && (mask.getPixel(vox) > 0)) {
+                    i = vox.getX();
+                    j = vox.getY();
+                    k = vox.getZ();
+
+                    pix = ima.getPixel(vox);
+                    cx += i * pix;
+                    cy += j * pix;
+                    cz += k * pix;
+                    sum += pix;
+                    sum2 += pix * pix;
+                    if (pix > pmax) {
+                        pmax = pix;
+                    }
+                    if (pix < pmin) {
+                        pmin = pix;
+                    }
+
                 }
             }
             cx /= sum;
@@ -1606,6 +1658,21 @@ public class Object3DVoxels extends Object3D {
             int x = vox.getRoundX();
             int y = vox.getRoundY();
             int z = vox.getRoundZ();
+            if (mask.contains(x, y, z)) {
+                mask.setPixel(x, y, z, col);
+            }
+        }
+    }
+
+    @Override
+    public void draw(ImageHandler mask, int col, int tx, int ty, int tz) {
+        Voxel3D vox;
+        Iterator it = voxels.iterator();
+        while (it.hasNext()) {
+            vox = (Voxel3D) it.next();
+            int x = vox.getRoundX() + tx;
+            int y = vox.getRoundY() + ty;
+            int z = vox.getRoundZ() + tz;
             if (mask.contains(x, y, z)) {
                 mask.setPixel(x, y, z, col);
             }
