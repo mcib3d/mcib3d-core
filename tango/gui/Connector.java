@@ -144,13 +144,12 @@ public class Connector extends javax.swing.JPanel {
                 return;
             }
             toggleEnableButtons(true, false);
-            SystemEnvironmentVariable mongoHost = new SystemEnvironmentVariable("mongoHost", host.getText());
+            SystemEnvironmentVariable mongoHost = new SystemEnvironmentVariable("mongoHost", host.getText(), false, false);
             boolean a = mongoHost.write(false);
             getUsers();
             if (usernames.getItemCount() > 0) {
-                SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", null);
-                boolean b = mongoUser.read();
-                String user = mongoUser.value;
+                SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", null, true, false);
+                String user = mongoUser.getValue();
                 if (user.length() == 0 || !utils.contains(usernames, user, true)) {
                     user = (String) usernames.getItemAt(0);
                 }
@@ -183,7 +182,7 @@ public class Connector extends javax.swing.JPanel {
                 user.append("options_" + this.getHost(), userHost);
             }
             options.dbGet((BasicDBObject) userHost);
-            SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", usr);
+            SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", usr, false, false);
             boolean b = mongoUser.write(false);
             core.connect();
             toggleEnableButtons(true, true);

@@ -44,12 +44,12 @@ public class SystemMethods {
     public static String getBatchPath(){
         String platform = "";
         String arch = "32";
-        if(ij.IJ.is64Bit()){
+        if(IJ.is64Bit()){
             arch = "64";
         }
-        if(ij.IJ.isWindows()) platform = "Win";
-        if(ij.IJ.isLinux()) platform = "Linux";
-        if(ij.IJ.isMacOSX()) platform = "Mac";
+        if(IJ.isWindows()) platform = "Win";
+        if(IJ.isLinux()) platform = "Linux";
+        if(IJ.isMacOSX()) platform = "Mac";
         return IJ.getDirectory("startup")+File.separator+"lib"+File.separator+platform+arch;
     }
     
@@ -93,27 +93,27 @@ public class SystemMethods {
     public static boolean executeBatchScript(String scriptName, boolean interact, File directory){
         String ext = "";
         String prefix = "";
-        if(ij.IJ.isWindows()){
+        if(IJ.isWindows()){
             ext = ".bat";
         }
-        if(ij.IJ.isLinux()){
+        if(IJ.isLinux()){
             ext = ".sh";
             prefix = "./";
         }
-        if(ij.IJ.isMacOSX()){
+        if(IJ.isMacOSX()){
             ext = ".command";
             prefix = "./";
         }
         if(directory==null) directory = new File(getBatchPath());
         ArrayList<String> commandArgs = new ArrayList<String>();
-        if(ij.IJ.isWindows()){
+        if(IJ.isWindows()){
             commandArgs.add("start");
         }
-        if(ij.IJ.isLinux()){
+        if(IJ.isLinux()){
             commandArgs.add("xterm");
             commandArgs.add("-e");
         }
-        if(ij.IJ.isMacOSX()){
+        if(IJ.isMacOSX()){
             commandArgs.add("open");
             commandArgs.add("-a");
             commandArgs.add("Terminal");
@@ -124,17 +124,24 @@ public class SystemMethods {
         return execProcess(directory, commandArgs);
     }
     
+    public static boolean executeInteractiveCommandInDirectory(File directory, String command){
+        ArrayList<String> commandArgs = new ArrayList<String>();
+        commandArgs.add(directory.getAbsolutePath());
+        commandArgs.add(command);
+        return executeBatchScriptWithParameters("runTerminal" ,commandArgs , null);
+    }
+    
     public static boolean executeBatchScriptWithParameters(String scriptName, ArrayList<String> scriptArgs, File directory){
         String ext = "";
         String prefix = "";
-        if(ij.IJ.isWindows()){
+        if(IJ.isWindows()){
             ext = ".bat";
         }
-        if(ij.IJ.isLinux()){
+        if(IJ.isLinux()){
             ext = ".sh";
             prefix = "./";
         }
-        if(ij.IJ.isMacOSX()){
+        if(IJ.isMacOSX()){
             ext = ".command";
             prefix = "./";
         }
@@ -146,6 +153,8 @@ public class SystemMethods {
         return execProcess(directory, commandArgs);
     }
     
+    
+    
     public static boolean executeRScript(String script){
         File d = new File(getRPath());
         ArrayList<String> commandArgs = new ArrayList<String>();
@@ -154,79 +163,42 @@ public class SystemMethods {
         return execProcess(d, commandArgs);
     }
     
-    public static boolean getVersion(String command, SystemEnvironmentVariable sev){
-        String newcommand;
-        if(!IJ.isWindows()){
-            newcommand = "./"+command;
-        }else{
-            newcommand = command+".exe";
-        }
-        ArrayList<String> commandArgs = new ArrayList<String>();
-        File d = sev.getDirectory();
-        commandArgs.add(newcommand);
-        commandArgs.add("--version");
-        boolean c = execProcess(d, commandArgs);
-        if(!c){
-            commandArgs.clear();
-            commandArgs.add(command); 
-            commandArgs.add("--version");
-            d = new File(getBatchPath());
-            c = execProcess(d, commandArgs);
-            if(c){
-                sev.value = "";
-                sev.write(false);
-            }
-        }else{
-            sev.write(true);
-        }
-        return c;
-    }
+    
     
     public static boolean checkR(){
         String path=null;
-        if(ij.IJ.isWindows()){
-            path = "null";
-        }
-        if(ij.IJ.isLinux()){
+        if(IJ.isWindows()){
             path = null;
         }
-        if(ij.IJ.isMacOSX()){
+        if(IJ.isLinux()){
+            path = "/usr/bin";
+        }
+        if(IJ.isMacOSX()){
             path = "/usr/local/bin";
         }
-        SystemEnvironmentVariable rBin = new SystemEnvironmentVariable("R_BIN", null);
+        SystemEnvironmentVariable rBin = new SystemEnvironmentVariable("R_BIN", path, true, true);
         String command = "R";
-        return getVersion(command, rBin);
+        return rBin.getVersion(command);
         }
     
     public static int checkMongoDB(){
-        String path=null;
-        if(ij.IJ.isWindows()){
-            path = "null";
-        }
-        if(ij.IJ.isLinux()){
-            path = null;
-        }
-        if(ij.IJ.isMacOSX()){
-            path = "/usr/local/bin";
-        }
-        SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", path);
+        SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", null, true, true);
         int k = 0;
         String[] bins = {"mongod","mongodump","mongorestore"};
         for(int i=0;i<3;i++){
-            if(getVersion(bins[i],mongoBinPath)) k = k+1;
+            if(mongoBinPath.getVersion(bins[i])) k = k+1;;
         }
         return k;
         }
     
     public static boolean checkChocolatey(){
-        SystemEnvironmentVariable chocolateyBinPath = new SystemEnvironmentVariable("ChocolateyInstall", null);
-        chocolateyBinPath.read();
-        return getVersion("choco",chocolateyBinPath);
+        SystemEnvironmentVariable chocolateyBinPath = new SystemEnvironmentVariable("ChocolateyInstall", null, true, true);
+        return chocolateyBinPath.exists();
     }
     
     public static boolean checkHomebrew(){
-        SystemEnvironmentVariable homeBrewBinPath = new SystemEnvironmentVariable("homeBrewBinPath", "/usr/local/bin");
-        return getVersion("brew",homeBrewBinPath);
+        SystemEnvironmentVariable homeBrewBinPath = new SystemEnvironmentVariable("homeBrewBinPath", null, true, true);
+        return homeBrewBinPath.exists();
     }
 
     public static void askAboutR() {
@@ -273,11 +245,11 @@ public class SystemMethods {
     public static boolean installSoftware(String softwareName, boolean interact){ 
         boolean isAdmin = false;
         boolean installManager = false;
-        if(ij.IJ.isLinux()){
+        if(IJ.isLinux()){
             isAdmin = true;
             installManager = true;
         }
-        if(ij.IJ.isWindows()){
+        if(IJ.isWindows()){
             if(!checkChocolatey()){
                 int n = askAboutChocolatey();
                 if(n==0){
@@ -289,7 +261,7 @@ public class SystemMethods {
                 }
             }else installManager = true;
         }
-        if(ij.IJ.isMacOSX()){
+        if(IJ.isMacOSX()){
             if(!checkHomebrew()){
                 int n = askAboutHomebrew();
                 if(n==0){
@@ -322,16 +294,19 @@ public class SystemMethods {
         if(rhome==null){
             a = executeBatchScript("setREnv", false, null);
         }
-        SystemEnvironmentVariable rHome = new SystemEnvironmentVariable("R_HOME", rhome);
-        boolean b = rHome.read();
+        SystemEnvironmentVariable rHome = new SystemEnvironmentVariable("R_HOME", rhome, true, true);
         String binpath = null;
-        if(ij.IJ.isWindows()) binpath = rHome.getPath("bin"+File.separator+"x64");
-        else binpath = rHome.getPath("bin");
-        SystemEnvironmentVariable rBin = new SystemEnvironmentVariable("R_BIN", binpath);
-        boolean c = rBin.read();
-        boolean d = rHome.write(true);
-        boolean e = rBin.write(true);
-        return a && b && c && d && e;
+        File rhd = rHome.getDirectory();
+        if(rhd!=null){
+            if(IJ.isWindows()) binpath = rhd.getAbsolutePath()+File.separator+"bin"+File.separator+"x64";
+            else binpath = rhd.getAbsolutePath()+File.separator+"bin";
+            SystemEnvironmentVariable rBin = new SystemEnvironmentVariable("R_BIN", binpath, true, true);
+            return a && rHome.exists() && rBin.exists();
+        }
+        else{
+            warnAboutR();
+            return false;
+        }
     }
 
     public static boolean setMongoDBEnv(String binpath, String confpath) {
@@ -339,13 +314,9 @@ public class SystemMethods {
         if(binpath==null || confpath==null){
             a = executeBatchScript("setMongoDBEnv", false, null);
         }
-        SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", binpath);
-        SystemEnvironmentVariable mongoConfPath = new SystemEnvironmentVariable("mongoConfPath", confpath);
-        boolean b = mongoBinPath.read();
-        boolean c = mongoConfPath.read();
-        boolean d = mongoBinPath.write(true);
-        boolean e = mongoConfPath.write(true);
-        return a && b && c && d && e;
+        SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", binpath, true, true);
+        SystemEnvironmentVariable mongoConfPath = new SystemEnvironmentVariable("mongoConfPath", confpath, true, true);
+        return a && mongoBinPath.exists() && mongoConfPath.exists();
     }
 
     public static String locateFile(String title) {
@@ -375,5 +346,9 @@ public class SystemMethods {
             dp = locateFile("Browse to MongoDB conf file");
         }
         return setMongoDBEnv(bp,dp);
+    }
+
+    private static void warnAboutR() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

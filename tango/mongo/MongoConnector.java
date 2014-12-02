@@ -25,6 +25,7 @@ import tango.dataStructure.Selection;
 import tango.gui.Core;
 import tango.helper.ID;
 import tango.parameter.SettingsParameter;
+import tango.util.SystemEnvironmentVariable;
 import static tango.util.SystemMethods.execProcess;
 import static tango.util.SystemMethods.executeBatchScript;
 /**
@@ -71,6 +72,7 @@ public class MongoConnector {
     public static String[] collectionsSettings=new String[] {"nucleus", "channel"};
     ObjectId userId;
     Thread mongod;
+    private final boolean interactive=false;
     
     public MongoConnector(String host_DB) {
         boolean r;
@@ -270,26 +272,28 @@ public class MongoConnector {
         return r;
     }
     
+    private static SystemEnvironmentVariable getMongoBinPath(){
+        return new SystemEnvironmentVariable("mongoBinPath", null, true, true);
+    }
+    
     private boolean dumpCollection(String projectDBName, String collectionName, String outputPath) {
-        File cellar = null;
-        if (IJ.isMacOSX()) {
-            cellar = new File("/usr/local/Cellar/mongodb/bin");
-        } else if (IJ.isWindows()) {
-            cellar = new File("C:\\mongodb/bin");
-        } else if (IJ.isLinux()){
-            cellar = new File("/usr/bin");
+        SystemEnvironmentVariable mongoBinPath = getMongoBinPath();
+        if(interactive){
+            String cmd = "mongodump --host "+host+" --db "+projectDBName+" --collection "+collectionName+" -o "+outputPath;
+            return mongoBinPath.executeInteractiveProcess(cmd);
+        }else{
+            String command = "mongodump";
+            ArrayList<String> commandArgs = new ArrayList<String>();
+            commandArgs.add("--host");
+            commandArgs.add(host);
+            commandArgs.add("--db");
+            commandArgs.add(projectDBName);
+            commandArgs.add("--collection");
+            commandArgs.add(collectionName);
+            commandArgs.add("-o");
+            commandArgs.add(outputPath);
+            return mongoBinPath.executeProcess(command, commandArgs);
         }
-        ArrayList<String> commandArgs = new ArrayList<String>();
-        commandArgs.add("mongodump");
-        commandArgs.add("--host");
-        commandArgs.add(host);
-        commandArgs.add("--db");
-        commandArgs.add(projectDBName);
-        commandArgs.add("--collection");
-        commandArgs.add(collectionName);
-        commandArgs.add("-o");
-        commandArgs.add(outputPath);
-        return execProcess(cellar, commandArgs);
     }
     
     public boolean mongoDumpSettings(String outputPath) {
@@ -299,25 +303,25 @@ public class MongoConnector {
     }
     
     private boolean restoreCollection(String projectDBName, String collectionName, String inputPath, boolean drop) {
-        File cellar = null;
-        if (IJ.isMacOSX()) {
-            cellar = new File("/usr/local/Cellar/mongodb/bin");
-        } else if (IJ.isWindows()) {
-            cellar = new File("C:\\mongodb/bin");
-        } else if (IJ.isLinux()){
-            cellar = new File("/usr/bin");
+        SystemEnvironmentVariable mongoBinPath = getMongoBinPath();
+        if(interactive){
+            String cmd = "mongorestore --host "+host+" --db "+projectDBName+" --collection "+collectionName;
+            if(drop) cmd += " --drop";
+            cmd += " "+inputPath;
+            return mongoBinPath.executeInteractiveProcess(cmd);
+        }else{
+            String command = "mongorestore";
+            ArrayList<String> commandArgs = new ArrayList<String>();
+            commandArgs.add("--host");
+            commandArgs.add(host);
+            commandArgs.add("--db");
+            commandArgs.add(projectDBName);
+            commandArgs.add("--collection");
+            commandArgs.add(collectionName);
+            if(drop) commandArgs.add("--drop");
+            commandArgs.add(inputPath);
+            return execProcess(mongoBinPath.getDirectory(), commandArgs);
         }
-        ArrayList<String> commandArgs = new ArrayList<String>();
-        commandArgs.add("mongorestore");
-        commandArgs.add("--host");
-        commandArgs.add(host);
-        commandArgs.add("--db");
-        commandArgs.add(projectDBName);
-        commandArgs.add("--collection");
-        commandArgs.add(collectionName);
-        if(drop) commandArgs.add("--drop");
-        commandArgs.add(inputPath);
-        return execProcess(cellar, commandArgs);
     }
     
     public boolean mongoRestoreProject(String dumpProjectPath, String projectName) {
