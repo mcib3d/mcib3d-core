@@ -1,5 +1,6 @@
 package mcib3d.image3d.distanceMap3d;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import java.util.ArrayList;
@@ -43,11 +44,12 @@ public class EDT {
         }
         return null;
     }
-
+    
     public static ImageFloat run(ImageHandler ip, float thresh, boolean inverse, int nbCPUs) {
+        //IJ.log("EDT scale " + ip.getScaleXY() + " " + ip.getScaleZ());
         return run(ip, thresh, (float) ip.getScaleXY(), (float) ip.getScaleZ(), inverse, nbCPUs);
     }
-
+    
     public static ImageFloat run_includeInside(ImageHandler ip, int thresh, float scaleXY, float scaleZ, boolean absolute, int nbCPUs) { //negative inside objects, positive outide
         ImageFloat ihdm1 = run(ip, thresh, scaleXY, scaleZ, true, nbCPUs);
         ImageFloat ihdm2 = run(ip, thresh, scaleXY, scaleZ, false, nbCPUs);
@@ -70,11 +72,11 @@ public class EDT {
         }
         return ihdm1;
     }
-
+    
     public static ImageFloat run_includeInside(ImageHandler ip, int thresh, boolean absolute, int nbCPUs) { //negative inside objects, positive outide
         return run_includeInside(ip, thresh, (float) ip.getScaleXY(), (float) ip.getScaleZ(), absolute, nbCPUs);
     }
-
+    
     public static ImageFloat localThickness(ImageHandler in, ImageInt mask, float thld, float radiusXY, float radiusZ, boolean inside, int nbCPUs) {
         ImageFloat edm = EDT.run(in, thld, radiusXY, radiusZ, inside, nbCPUs);
         if (mask != null) {
@@ -94,7 +96,7 @@ public class EDT {
         distRidge.flush();
         return (ImageFloat) ImageFloat.wrap(localThickness);
     }
-
+    
     public static ImageFloat localThickness(ImageHandler in, ImageInt mask, float thld, boolean inside, int nbCPUs) {
         return localThickness(in, mask, thld, (float) in.getScaleXY(), (float) in.getScaleZ(), inside, nbCPUs);
     }
@@ -119,7 +121,7 @@ public class EDT {
         }
         return null;
     }
-
+    
     public static void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask, boolean excludeZeros) {
         // int count = 0;
         ArrayList<VoxEVF> idxList = new ArrayList<VoxEVF>();
