@@ -1,0 +1,11 @@
+Title,Labels,Points,Who suggested,Who is doing,Start,Done,Comments
+Separate templates from Save/Test in processing chain,interface,2,Thomas,,,,
+Add time in Log,interface,1,Thomas,,,,
+Filters name when testing in processing chain,interface,1,Thomas,,,,
+Dilatation but keeping intact inside holes,processing,2,Thomas,,,,
+Redesign MiscFilters,processing,2,Thomas,,,,
+"Icons instead of ""edit"" ""delete"" and ""test"" for processing chains and tootips",interface,3,Thomas,,,,
+Move up and down filters,interface,3,Thomas,,,,
+Documentation for shell analysis,documentation,1,Thomas,,,,
+Multi-layer analysis (merge with shell analysis?),measurement,1,Thomas,,,,
+Shell Analysis individual for each object ,measurement,2,Thomas,,,,
