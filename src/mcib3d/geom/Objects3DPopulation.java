@@ -140,7 +140,7 @@ public class Objects3DPopulation {
 
         // first point
         P = getRandomPointInMask();
-        v = new Voxel3D(P.getX(), P.getY(), P.getZ(), 0);
+        v = new Voxel3D(P.getX(), P.getY(), P.getZ(), 1);
         voxlist = new ArrayList(1);
         voxlist.add(v);
         Object3DVoxels ob = new Object3DVoxels(voxlist);
@@ -153,7 +153,7 @@ public class Objects3DPopulation {
                 closest = closestCenter(P);
                 dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
             }
-            v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) i);
+            v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) (i+1));
             voxlist = new ArrayList(1);
             voxlist.add(v);
             ob = new Object3DVoxels(voxlist);
