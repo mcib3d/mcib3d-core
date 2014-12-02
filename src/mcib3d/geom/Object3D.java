@@ -18,9 +18,12 @@ import marchingcubes.MCCube;
 import mcib3d.Jama.EigenvalueDecomposition;
 import mcib3d.Jama.Matrix;
 import mcib3d.image3d.ImageByte;
+import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
+import mcib3d.image3d.distanceMap3d.EDT;
+import mcib3d.image3d.legacy.IntImage3D;
 import mcib3d.image3d.processing.BinaryMorpho;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
@@ -458,6 +461,8 @@ public abstract class Object3D {
      */
     protected abstract void computeMassCenter(ImageHandler ima);
 
+    protected abstract void computeMassCenter(ImageHandler ima, ImageHandler mask);
+
     /**
      * Gets the list of values inside an image as an array
      *
@@ -656,8 +661,8 @@ public abstract class Object3D {
 
         return new double[]{J1, J2, J3, I1, I2};
     }
-    
-    public static int getNbMoments3D(){
+
+    public static int getNbMoments3D() {
         return 5;
     }
 
@@ -778,6 +783,8 @@ public abstract class Object3D {
      * @param col the color(grey level)
      */
     public abstract void draw(ImageHandler mask, int col);
+
+    public abstract void draw(ImageHandler mask, int col, int tx, int ty, int tz);
 
     /**
      * Drawing inside an image, with default value = object value
@@ -1018,6 +1025,13 @@ public abstract class Object3D {
             computeMassCenter(ima);
             currentQuantifImage = ima;
         }
+        return integratedDensity;
+    }
+
+    public double getIntegratedDensity(ImageHandler ima, ImageHandler mask) {
+        computeMassCenter(ima, mask);
+        currentQuantifImage = null;
+
         return integratedDensity;
     }
 
@@ -2633,6 +2647,14 @@ public abstract class Object3D {
         return pixmax;
     }
 
+    public double getPixCenterValue(ImageHandler ima) {
+        if (ima.contains(getCenterX(), getCenterY(), getCenterZ())) {
+            return ima.getPixel(getCenterAsPoint());
+        } else {
+            return Double.NaN;
+        }
+    }
+
     /**
      * Gets the pixMinValue attribute of the Object3D object
      *
@@ -2965,6 +2987,7 @@ public abstract class Object3D {
         //segImage2.show("segimage 2");
         Object3DVoxels objMorpho = new Object3DVoxels(segImage2, value);
         objMorpho.translate(segImage2.offsetX, segImage2.offsetY, segImage2.offsetZ);
+        objMorpho.setCalibration(resXY, resZ, units);
         if (createLabelImage) {
             ImageInt labelDilated = objMorpho.createSegImage();
             objMorpho.setLabelImage(labelDilated);
@@ -3084,6 +3107,36 @@ public abstract class Object3D {
         obMax.substractObject(obMin);
 
         return obMax;
+    }
+
+    public Object3DVoxels getLayerEVFObject(ImageInt mask, float ratio) {
+        ImageHandler dup = mask.createSameDimensions();
+        this.draw(dup, 255);
+        ImageFloat edt = EDT.run(dup, 128, (float) resXY, (float) resZ, true, 0);
+        EDT.normalizeDistanceMap(edt, mask, true);
+        ImageByte th = edt.thresholdRangeInclusive(0, ratio);
+        Object3DVoxels res = new Object3DVoxels(th, 255);
+        res.setCalibration(resXY, resZ, units);
+
+        return res;
+    }
+
+    public Object3DVoxels getLayerEVFObject(Object3D mask, float ratio) {
+        // mask should include this
+        if (!mask.includesBox(this)) {
+            return null;
+        }
+        ImageInt img = mask.createSegImageMini(255, 1);
+        ImageHandler dup = img.createSameDimensions();
+        this.draw(dup, 255, -img.offsetX, -img.offsetY, -img.offsetZ);
+        ImageFloat edt = EDT.run(dup, 128, (float) resXY, (float) resZ, true, 0);
+        EDT.normalizeDistanceMap(edt, img, true);
+        ImageByte th = edt.thresholdRangeInclusive(0, ratio);
+        Object3DVoxels res = new Object3DVoxels(th, 255);
+        res.setCalibration(resXY, resZ, units);
+        res.translate(img.offsetX, img.offsetY, img.offsetZ);
+
+        return res;
     }
 
     /**
