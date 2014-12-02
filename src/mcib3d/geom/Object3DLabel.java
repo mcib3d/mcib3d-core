@@ -266,7 +266,7 @@ public class Object3DLabel extends Object3D {
         double XX = resXY * resXY;
         areaNbVoxels = 0;
         areaContactUnit = 0;
-        areaContactVoxels=0;
+        areaContactVoxels = 0;
 
         for (int k = zmin; k <= zmax; k++) {
             for (int j = ymin; j <= ymax; j++) {
@@ -459,9 +459,57 @@ public class Object3DLabel extends Object3D {
         }
     }
 
+    @Override
+    protected void computeMassCenter(ImageHandler ima, ImageHandler mask) {
+        if (ima != null) {
+            cx = 0;
+            cy = 0;
+            cz = 0;
+            double sum = 0;
+            double sum2 = 0;
+            double pix;
+            double pmin = Double.MAX_VALUE;
+            double pmax = -Double.MAX_VALUE;
+            for (int k = zmin; k <= zmax; k++) {
+                for (int j = ymin; j <= ymax; j++) {
+                    for (int i = xmin; i <= xmax; i++) {
+                        if ((labelImage.getPixel(i, j, k) == value) && mask.contains(i, j, k) && (mask.getPixel(i, j, k) > 0)) {
+                            pix = ima.getPixel(i, j, k);
+                            cx += i * pix;
+                            cy += j * pix;
+                            cz += k * pix;
+                            sum += pix;
+                            sum2 += pix * pix;
+                            if (pix > pmax) {
+                                pmax = pix;
+                            }
+                            if (pix < pmin) {
+                                pmin = pix;
+                            }
+                        }
+                    }
+                }
+            }
+            cx /= sum;
+            cy /= sum;
+            cz /= sum;
+
+            integratedDensity = sum;
+
+            pixmin = pmin;
+            pixmax = pmax;
+
+            // standard dev
+            int vol = getVolumePixels();
+            sigma = Math.sqrt((sum2 - ((sum * sum) / vol)) / (vol - 1));
+        }
+    }
+
     /**
      * Computation of the dispersion tensor with units value
+     * @param normalize
      */
+    @Override
     public void computeMoments2(boolean normalize) {
         s200 = 0;
         s110 = 0;
@@ -504,6 +552,7 @@ public class Object3DLabel extends Object3D {
         eigen = null;
     }
 
+    @Override
     public void computeMoments3() {
         s300 = s030 = s003 = 0;
         s210 = s201 = s120 = s021 = s102 = s012 = s111 = 0;
@@ -958,7 +1007,21 @@ public class Object3DLabel extends Object3D {
             }
         }
 
-
         return list;
+    }
+
+    @Override
+    public void draw(ImageHandler mask, int col, int tx, int ty, int tz) {
+        for (int z = zmin; z <= zmax; z++) {
+            for (int x = xmin; x <= xmax; x++) {
+                for (int y = ymin; y <= ymax; y++) {
+                    if (labelImage.getPixel(x, y, z) == value) {
+                        if (mask.contains(x + tx, y + ty, z + tz)) {
+                            mask.setPixel(x + tx, y + ty, z + tz, col);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
