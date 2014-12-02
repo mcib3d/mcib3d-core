@@ -465,7 +465,8 @@ public class ImageFloat extends ImageHandler {
         return new IntImage3D(img.getImageStack());
     }
 
-    public ImageByte thresholdRange(float min, float max) {
+    @Override
+    public ImageByte thresholdRangeInclusive(float min, float max) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
         res.offsetX = offsetX;
         res.offsetY = offsetY;
@@ -480,6 +481,24 @@ public class ImageFloat extends ImageHandler {
         }
         return res;
     }
+    
+     @Override
+    public ImageByte thresholdRangeExclusive(float min, float max) {
+        ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
+        res.offsetX = offsetX;
+        res.offsetY = offsetY;
+        res.offsetZ = offsetZ;
+
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if ((pixels[z][xy] > min) && (pixels[z][xy] < max)) {
+                    res.pixels[z][xy] = (byte) 255;
+                }
+            }
+        }
+        return res;
+    }
+    
 
     @Override
     public ImageByte threshold(float thld, boolean keepUnderThld, boolean strict) {

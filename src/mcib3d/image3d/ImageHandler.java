@@ -125,10 +125,12 @@ public abstract class ImageHandler {
     }
 
     public boolean sameDimentions(ImageHandler other) {
+        if(other==null) return false;
         return (sizeX == other.sizeX && sizeY == other.sizeY && sizeZ == other.sizeZ);
     }
 
     public boolean sameDimentions(ImagePlus other) {
+         if(other==null) return false;
         return (sizeX == other.getWidth() && sizeY == other.getHeight() && sizeZ == other.getNSlices());
     }
 
@@ -1341,8 +1343,10 @@ public abstract class ImageHandler {
         return (x == 0 || y == 0 || z == 0 || x == (sizeX - 1) || y == (sizeY - 1) || (z == sizeZ - 1));
     }
 
-    public abstract ImageByte thresholdRange(float min, float max);
-
+    public abstract ImageByte thresholdRangeInclusive(float min, float max);
+    
+     public abstract ImageByte thresholdRangeExclusive(float min, float max);  
+    
     public abstract ImageByte threshold(float thld, boolean keepUnderThld, boolean strict);
 
     public ImageByte thresholdAboveInclusive(float thld) {
