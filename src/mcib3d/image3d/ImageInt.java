@@ -233,10 +233,10 @@ public abstract class ImageInt extends ImageHandler {
         return null;
     }
 
-    public Object3DVoxels[] getObjects3D(boolean computeContours) {
+    public Object3DVoxels[] getObjects3D() {
         try {
             Object3DFactory oc = new Object3DFactory(this);
-            return oc.getObjects(computeContours);
+            return oc.getObjects(false);
         } catch (Exception e) {
             exceptionPrinter.print(e, "", false);
         }
@@ -245,7 +245,7 @@ public abstract class ImageInt extends ImageHandler {
 
     public Objects3DPopulation getObjects3DPopulation() {
         // build new population
-        return new Objects3DPopulation(this.getObjects3D(false), this.getCalibration());
+        return new Objects3DPopulation(this.getObjects3D(), this.getCalibration());
     }
 
     public Object3DVoxels getObject3DBackground(ImageInt mask) {
@@ -447,7 +447,7 @@ public abstract class ImageInt extends ImageHandler {
         ImageByte res = new ImageByte("mask", this.sizeX, this.sizeY, this.sizeZ);
         res.setScale(this);
         res.setOffset(this);
-        Object3DVoxels[] os = this.getObjects3D(false);
+        Object3DVoxels[] os = this.getObjects3D();
         for (Object3DVoxels o:os) res.setPixel(o.getCenterAsPoint(), 255);
         return res;
     }
