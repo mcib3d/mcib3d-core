@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 import static tango.util.SystemMethods.execProcess;
-import static tango.util.SystemMethods.executeBatchScriptWithParameters;
+import static tango.util.SystemMethods.setInteractiveEnvironmentVar;
 import static tango.util.SystemMethods.executeInteractiveCommandInDirectory;
 import static tango.util.SystemMethods.getBatchPath;
 
@@ -22,27 +22,24 @@ import static tango.util.SystemMethods.getBatchPath;
  */
 public class SystemEnvironmentVariable {
     public final static String prefix = "tango";
-    public boolean realValue = false;
+    public boolean real = false;
     public boolean writeToSystem;
     public String key;
     public String value;
-    public ArrayList<String> paths;
-    public ArrayList<String> bins;
-    private boolean isDirectory;
+    public ArrayList<String> paths = new ArrayList<String>();
+    public ArrayList<String> bins = new ArrayList<String>();
+    public boolean isBinDirectory;
     
-    public SystemEnvironmentVariable(String key, String value, boolean check, boolean writeToSystem){
+    public SystemEnvironmentVariable(String key, String value, boolean check, boolean writeToSystem, boolean isBinDirectory){
         this.key = key;
         this.value = value;
         this.writeToSystem = writeToSystem;
-        if(check){
-            boolean a = this.read();
-            if(!a) IJ.log(key+" environment variable has no real value.");
-            else realValue = true;
-        }
+        this.isBinDirectory = isBinDirectory;
+        this.read(check);
     }
     
     public boolean exists(){
-        return this.realValue;
+        return this.real;
     }
     
     public String getValue(){
@@ -52,33 +49,118 @@ public class SystemEnvironmentVariable {
     public String getPrefsKey(){
         return prefix + "_" + key + ".String";
     }
-
-    public final boolean read() {
-        if(isDirectory){
-            scanPathsAndBins();
-            boolean b = extractRealValue();
-            if(!b){
-                this.value = null;
-                this.realValue = false;
-            }else{
-                this.realValue = true;
+    
+    public void parseCsvLine(String line){
+        String[] lineElements = line.split(";");
+        String k = lineElements[0];
+        String p = lineElements[1];
+        String b = lineElements[2];
+        if(k.equals(key)){
+            String[] usualPaths = p.split(":");
+            for(String usualPath : usualPaths){
+                IJ.log(usualPath+" has been added to possible locations for "+key);
+                paths.add(usualPath);
             }
-        }else{
-            if(value==null) value = readFromPrefs();
-            if(writeToSystem){
-                if(value==null) value = readFromSystem();
-                if(value==null) value = readFromEnv();
+            String[] usualBins = b.split(":");
+            for(String bin : usualBins){
+                IJ.log(bin+" has been added to sub elements to check for "+key);
+                bins.add(bin);
             }
-            if(value==null) this.realValue = false;
         }
-        return this.realValue;
     }
     
-    public boolean write(boolean toSystem){
+    public void scanPathsAndBins(){
+        IJ.log("Parsing CSV file "+getBatchPath()+File.separator+"SystemEnvironmentVariables.csv");
+        try {
+            Scanner scanner = new Scanner(new File(getBatchPath()+File.separator+"SystemEnvironmentVariables.csv"));
+            scanner.useDelimiter(System.getProperty("line.separator"));
+            while (scanner.hasNext())
+            {
+                String line = scanner.next();
+                parseCsvLine(line);
+            }
+            scanner.close();
+        } catch (FileNotFoundException ex) {
+            paths = null;
+            bins = null;
+        }
+    }
+    
+    public void checkSubElements(String path){
+        boolean p = true;
+        String firstValue = value;
+        boolean firstRealValue = real;
+        if(path!=null){
+            if(IJ.isWindows()){
+                if(value!="") value = System.getenv("SystemDrive")+File.separator+path;
+            }
+            else value = path;
+        }
+        if(value==null) real=false;
+        else{
+            IJ.log("Moving to "+value+" Directory:");
+            for(String bin : bins){
+                boolean a = check(bin);
+                if(a) IJ.log(value+" Directory has an element "+bin);
+                //else break;
+                p = p & a;
+            }
+            if(p){
+                IJ.log(value+" Directory has all elements");
+                real = true;
+            }else{
+                IJ.log(value+" Directory does not have all elements");
+                value = firstValue;
+                real = firstRealValue;
+            }
+        }
+    }
+    
+    public void extractValueFromPathsAndBins(){
+        scanPathsAndBins();
+        if(paths == null || bins == null) real=false;
+        else{
+            checkSubElements(null); //On vérifie l'ancienne valeur
+            if(!real) checkSubElements("");//On vérifie si le path fonctionne
+            if(!real){
+                for(String path : paths){
+                    checkSubElements(path);
+                    if(real) break;
+                }
+            }
+        }
+    }
+
+    public final void read(boolean check) {
+        if(value==null) value = readFromPrefs();
+        if(writeToSystem){
+            if(value==null) value = readFromSystem();
+            if(value==null) value = readFromEnv();
+        }
+        if(check){
+            if(isBinDirectory){
+                IJ.log("Checking sub elements of Directory "+key);
+                extractValueFromPathsAndBins();
+                if(!real){
+                    this.value = null;
+                }
+            }else{
+                if(value==null) real = false;
+                else real = true;
+            }
+            write();
+        }else{
+            if(value==null) real = false;
+            else real = true;
+        }
+        if(!real) IJ.log(key+" environment variable is not real.");
+    }
+    
+    public boolean write(){
         if(value != null){
             IJ.log("Environment variable "+key+" will be set to value "+value);
             writeToPrefs();
-            if(toSystem){
+            if(writeToSystem){
                 writeToSystem();
                 return writeToEnv();
             }
@@ -113,37 +195,31 @@ public class SystemEnvironmentVariable {
     }
     
     private boolean writeToEnv(){
-        return setEnvironmentVar(key, value);
+        return setInteractiveEnvironmentVar(key, value);
     }
     
     public boolean check(String subElementName){
-        if(value==null || "".equals(subElementName)) return getVersion(subElementName);
+        IJ.log("Checking if "+value+" path has an element "+subElementName); // commentaire de jeannot si subElementName==null ça bug pas?
+        if(value==null) return false;
+        if("".equals(value)) return getVersion(subElementName); // commentaire de jeannot: ne pas executer si subElementName == null ou =="" 
         else{
             String v = null;
-            if(subElementName != null && !"".equals(subElementName)) v = v+File.pathSeparator+subElementName;
+            if(subElementName != null && !"".equals(subElementName)) v = value+File.separator+subElementName;
             else v = value;
             File d = new File(v);
-            return d.isDirectory() || d.isFile();
+            IJ.log("Checking if "+d.getAbsolutePath()+" exists");
+            return d.isDirectory() || d.isFile() ; // commentaire de jeannot: d.exists() ? 
         }
-    }
-    
-    public static boolean setEnvironmentVar(String key, String value){
-        String scriptName = "setEnvVarFromKeyAndValue";
-        boolean interact = true;
-        ArrayList<String> scriptArgs = new ArrayList<String>();
-        scriptArgs.add(key);
-        scriptArgs.add(value);
-        if(IJ.isWindows()) interact = false;
-        else scriptArgs.add("--system-wide");
-        return executeBatchScriptWithParameters(scriptName, scriptArgs, null);
     }
 
     public String getCommand(String command) {
-        if(!check(command)) return command;
-        else{
-            if(!IJ.isWindows()) return command;
-            else return "./"+command;
-        }
+        if(value!=null && !"".equals(value)) {
+            if(!check(command)) return command;
+            else{
+                if(IJ.isWindows()) return command;
+                else return "./"+command;
+            }
+        }else return command;
     }
 
     public File getDirectory() {
@@ -162,71 +238,9 @@ public class SystemEnvironmentVariable {
         return executeInteractiveCommandInDirectory(getDirectory() ,getCommand(command));
     }
     
-    public void scanPathsAndBins(){
-        ArrayList<String> allPaths = new ArrayList<String>();
-        String v1 = readFromPrefs();
-        if(v1!=null) allPaths.add(v1);
-        String v2 = readFromSystem();
-        if(v2!=null) allPaths.add(v2);
-        String v3 = readFromEnv();
-        if(v3!=null) allPaths.add(v3);
-        try {
-            Scanner scanner = new Scanner(new File(getBatchPath()+File.separator+"SystemEnvironmentVariables.csv"));
-            scanner.useDelimiter(";");
-            while (scanner.hasNext())
-            {
-                if(scanner.next().equals(key)){
-                    String[] usualPaths = scanner.next().split(":");
-                    for(String usualPath : usualPaths){
-                        allPaths.add(usualPath);
-                    }
-                    paths = allPaths;
-                    for(String bin : scanner.next().split(":")){
-                        bins.add(bin);
-                    }
-                }
-            }
-            scanner.close();
-        } catch (FileNotFoundException ex) {
-            paths = null;
-            bins = null;
-        }
-    }
-    
-    public boolean extractValueFromPathsAndBins(){
-        if(paths == null || bins == null) return false;
-        else{
-            for(String path : paths){
-                boolean p = true;
-                if(IJ.isWindows()) value = System.getenv("SystemDrive")+File.separator+path;
-                else value = path;
-                for(String bin : bins){
-                    p = p & check(bin);
-                }
-                if(p){
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    public final boolean extractRealValue(){
-        if(value!=null){
-            boolean v = true;
-            for(String bin : bins){
-                v = v & check(bin);
-            }
-            if(v) return true;
-            else{
-                return extractValueFromPathsAndBins();
-            }
-        }else{
-            return extractValueFromPathsAndBins();
-        }
-    }
-    
     public boolean getVersion(String command){
+        if(value=="") IJ.log("Path is empty");
+        IJ.log("Retrieving "+command+" version");
         ArrayList<String> commandArgs = new ArrayList<String>();
         commandArgs.add("--version");
         return executeProcess(command, commandArgs);

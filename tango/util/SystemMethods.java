@@ -28,12 +28,8 @@ public class SystemMethods {
     }
     
     public static void configureMongoDB(){
-        int n = checkMongoDB();
-        if(n==3){
-             ij.IJ.log("MongoDB is Installed! Congratulations!");
-        }else{
-            askAboutMongoDB();
-        }
+        if(!checkMongoDB()) askAboutMongoDB();
+        else IJ.log("MongoDB is Installed! Congratulations!");
     }
     
     public static String getRPath(){
@@ -106,32 +102,51 @@ public class SystemMethods {
         }
         if(directory==null) directory = new File(getBatchPath());
         ArrayList<String> commandArgs = new ArrayList<String>();
-        if(IJ.isWindows()){
-            commandArgs.add("start");
+        if(interact){
+            commandArgs.add(directory.getAbsolutePath());
+            commandArgs.add(prefix+scriptName+ext);
+            chmodBatchScript(scriptName, ext, directory);
+            return executeCommandWithParameters("runTerminal" ,commandArgs , null);
+        }else{
+            commandArgs.add(prefix+scriptName+ext);
+            chmodBatchScript(scriptName, ext, directory);
+            return execProcess(directory, commandArgs);
         }
-        if(IJ.isLinux()){
-            commandArgs.add("xterm");
-            commandArgs.add("-e");
-        }
-        if(IJ.isMacOSX()){
-            commandArgs.add("open");
-            commandArgs.add("-a");
-            commandArgs.add("Terminal");
-            prefix = "./";
-        }
-        commandArgs.add(prefix+scriptName+ext);
-        chmodBatchScript(scriptName, ext, directory);
-        return execProcess(directory, commandArgs);
     }
     
     public static boolean executeInteractiveCommandInDirectory(File directory, String command){
         ArrayList<String> commandArgs = new ArrayList<String>();
         commandArgs.add(directory.getAbsolutePath());
         commandArgs.add(command);
-        return executeBatchScriptWithParameters("runTerminal" ,commandArgs , null);
+        return executeCommandWithParameters("runTerminal" ,commandArgs , null);
     }
     
-    public static boolean executeBatchScriptWithParameters(String scriptName, ArrayList<String> scriptArgs, File directory){
+    public static boolean setInteractiveEnvironmentVar(String key, String value){
+        String ext = "";
+        String prefix = "";
+        if(IJ.isWindows()){
+            ext = ".bat";
+        }
+        if(IJ.isLinux()){
+            ext = ".sh";
+            prefix = "./";
+        }
+        if(IJ.isMacOSX()){
+            ext = ".command";
+            prefix = "./";
+        }
+        String scriptName = "setEnvVarFromKeyAndValue";
+        String command = prefix+scriptName+ext;
+        command += " "+key;
+        if(!IJ.isWindows()){
+            command += " "+value;
+            command += " --system-wide";
+        }
+        File d = new File(getBatchPath());
+        return executeInteractiveCommandInDirectory(d, command);
+    }
+    
+    public static boolean executeCommandWithParameters(String scriptName, ArrayList<String> scriptArgs, File directory){
         String ext = "";
         String prefix = "";
         if(IJ.isWindows()){
@@ -166,38 +181,23 @@ public class SystemMethods {
     
     
     public static boolean checkR(){
-        String path=null;
-        if(IJ.isWindows()){
-            path = null;
-        }
-        if(IJ.isLinux()){
-            path = "/usr/bin";
-        }
-        if(IJ.isMacOSX()){
-            path = "/usr/local/bin";
-        }
-        SystemEnvironmentVariable rBin = new SystemEnvironmentVariable("R_BIN", path, true, true);
+        SystemEnvironmentVariable rBin = new SystemEnvironmentVariable("R_BIN", null, true, false, true);
         String command = "R";
-        return rBin.getVersion(command);
+        return rBin.exists();
         }
     
-    public static int checkMongoDB(){
-        SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", null, true, true);
-        int k = 0;
-        String[] bins = {"mongod","mongodump","mongorestore"};
-        for(int i=0;i<3;i++){
-            if(mongoBinPath.getVersion(bins[i])) k = k+1;;
-        }
-        return k;
+    public static boolean checkMongoDB(){
+        SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", null, true, false, true);
+        return mongoBinPath.exists();
         }
     
     public static boolean checkChocolatey(){
-        SystemEnvironmentVariable chocolateyBinPath = new SystemEnvironmentVariable("ChocolateyInstall", null, true, true);
+        SystemEnvironmentVariable chocolateyBinPath = new SystemEnvironmentVariable("ChocolateyInstall", null, true, false, true);
         return chocolateyBinPath.exists();
     }
     
     public static boolean checkHomebrew(){
-        SystemEnvironmentVariable homeBrewBinPath = new SystemEnvironmentVariable("homeBrewBinPath", null, true, true);
+        SystemEnvironmentVariable homeBrewBinPath = new SystemEnvironmentVariable("homeBrewBinPath", null, true, false, true);
         return homeBrewBinPath.exists();
     }
 
@@ -214,7 +214,6 @@ public class SystemMethods {
         int n = JOptionPane.showConfirmDialog(null, "Do you want to install MongoDB?","TANGO INSTALLER", JOptionPane.YES_NO_OPTION);
         if(n==0){
             installMongoDB();
-            setMongoDBEnv(null, null);
         }
         else locateMongoDB();
     }
@@ -225,21 +224,6 @@ public class SystemMethods {
     
     public static int askAboutHomebrew(){
         return JOptionPane.showConfirmDialog(null, "Do you want to install Homebrew?Otherwise you will have to install system dependencies on your own.","TANGO INSTALLER", JOptionPane.YES_NO_OPTION);
-    }
-    
-    public static boolean installR() {
-        return installSoftware("R", true);
-    }
-    
-    public static boolean installMongoDB() {
-        boolean a = installSoftware("MongoDB", true);
-        if(a){
-            boolean b = executeBatchScript("configureMongoDB" , true, null);
-            boolean c = executeBatchScript("installMongoDBAsAService" , true, null);
-            return b && c;
-        }else{
-            return false;
-        }
     }
     
     public static boolean installSoftware(String softwareName, boolean interact){ 
@@ -265,7 +249,7 @@ public class SystemMethods {
             if(!checkHomebrew()){
                 int n = askAboutHomebrew();
                 if(n==0){
-                    if(installHomebrew()) ij.IJ.showMessage("Please restart Fiji and re-run the install command");
+                    if(installHomebrew()) IJ.showMessage("Please restart Fiji and re-run the install command");
                     installManager = false;
                 }else{
                     ij.IJ.showMessage("Can't install software, package manager Homebrew is missing");
@@ -277,12 +261,32 @@ public class SystemMethods {
         else return executeBatchScript("install"+softwareName, interact, null);
     }
     
+    public static boolean installR() {
+        boolean a = installSoftware("R", true);
+        if(a)  IJ.showMessage("R has been installed. Please re-run the configuration command");
+        return a;
+    }
+    
+    public static boolean installMongoDB() {
+        boolean a = installSoftware("MongoDB", true);
+        if(a)  IJ.showMessage("MongoDB has been installed. Please re-run the configuration command");
+        return a;
+    }
+    
     public static boolean installChocolatey() {
-        return executeBatchScript("installChocolatey", true, null);
+        boolean a = executeBatchScript("installChocolatey", true, null);
+        if(a)  IJ.showMessage("Chocolatey has been installed. Please re-run the configuration command");
+        return a;
     }
     
     public static boolean installHomebrew() {
-        return executeBatchScript("installHomebrew", true, null);
+        boolean a = executeBatchScript("installHomebrew", true, null);
+        if(a)  IJ.showMessage("HomeBrew has been installed. Please re-run the configuration command");
+        return a;
+    }
+    
+    public static boolean createMongoDBService(){
+        return executeBatchScript("installMongoDBAsAService", true, null);
     }
     
     public static boolean installRTango(){
@@ -294,13 +298,13 @@ public class SystemMethods {
         if(rhome==null){
             a = executeBatchScript("setREnv", false, null);
         }
-        SystemEnvironmentVariable rHome = new SystemEnvironmentVariable("R_HOME", rhome, true, true);
+        SystemEnvironmentVariable rHome = new SystemEnvironmentVariable("R_HOME", rhome, true, true, true);
         String binpath = null;
         File rhd = rHome.getDirectory();
         if(rhd!=null){
             if(IJ.isWindows()) binpath = rhd.getAbsolutePath()+File.separator+"bin"+File.separator+"x64";
             else binpath = rhd.getAbsolutePath()+File.separator+"bin";
-            SystemEnvironmentVariable rBin = new SystemEnvironmentVariable("R_BIN", binpath, true, true);
+            SystemEnvironmentVariable rBin = new SystemEnvironmentVariable("R_BIN", binpath, true, true, true);
             return a && rHome.exists() && rBin.exists();
         }
         else{
@@ -314,8 +318,8 @@ public class SystemMethods {
         if(binpath==null || confpath==null){
             a = executeBatchScript("setMongoDBEnv", false, null);
         }
-        SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", binpath, true, true);
-        SystemEnvironmentVariable mongoConfPath = new SystemEnvironmentVariable("mongoConfPath", confpath, true, true);
+        SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", binpath, true, true, true);
+        SystemEnvironmentVariable mongoConfPath = new SystemEnvironmentVariable("mongoConfPath", confpath, true, true, true);
         return a && mongoBinPath.exists() && mongoConfPath.exists();
     }
 
@@ -349,6 +353,6 @@ public class SystemMethods {
     }
 
     private static void warnAboutR() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        IJ.showMessage("R_HOME is not set correctly, you should run its configuration again");
     }
 }
