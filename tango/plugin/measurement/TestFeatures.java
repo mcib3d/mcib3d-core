@@ -23,6 +23,7 @@ import tango.dataStructure.ObjectQuantifications;
 import tango.dataStructure.SegmentedCellImages;
 import tango.gui.Core;
 import tango.parameter.*;
+import tango.plugin.filter.LaplacianOfGaussian3D;
 import tango.plugin.filter.Misc_3DFilters;
 
 /*
@@ -59,9 +60,9 @@ public class TestFeatures implements MeasurementObject {
     int nCPUs = 1;
     boolean verbose;
     StructureParameter structureSignal = new StructureParameter("Signal:", "structureSignal", -1, false);
-    ChoiceParameter doErodeNuc =  new ChoiceParameter("Perform", "doErodeNuc", new String[]{"No Erosion", "Constant Radius", "Proportion of Volume"}, "No Erosion");
+    ChoiceParameter doErodeNuc =  new ChoiceParameter("Perform", "doErodeNuc", new String[]{"No Erosion", "Constant Radius"}, "No Erosion"); //, "Proportion of Volume"
     ConditionalParameter condErodeNuc = new ConditionalParameter("Erode nucleus", doErodeNuc);
-    double defRadErodeNuc=3;
+    double defRadErodeNuc=4;
     DoubleParameter radErodeNuc = new DoubleParameter("Radius (pix)", "radErodeNuc", defRadErodeNuc, DoubleParameter.nfDEC1);
     SliderDoubleParameter perErodeNuc = new SliderDoubleParameter("Proportion of nuclear volume:", "perErodeNuc", 0d, 1d, 0.3d, 2);
     
@@ -135,13 +136,17 @@ public class TestFeatures implements MeasurementObject {
     BooleanParameter doHM = new BooleanParameter("Perform", "doHM", true);
     ConditionalParameter condHM = new ConditionalParameter("Max eigen value of Hessian transform", doHM);
     IntParameter HMMinRad = new IntParameter("Min. Radius (pix)", "HMMinRad", 1);
-    IntParameter HMMaxRad = new IntParameter("Max. Radius (pix)", "HMMaxRad", 4);
-    TextParameter HMprefix = new TextParameter("Prefix", "HMprefix", "hessian");
-    PreFilterParameter HMFilter = new PreFilterParameter("De-noising", "HMdenoising", "Fast Filters 3D");
-    BooleanParameter doHMDenoising = new BooleanParameter("Perform", "doHMDenoising", true);
-    ConditionalParameter condHMDenoising = new ConditionalParameter("De-noising",doHMDenoising);
+    IntParameter HMMaxRad = new IntParameter("Max. Radius (pix)", "HMMaxRad", 6);
+    TextParameter HMprefix = new TextParameter("Prefix", "HMprefix", "hessian_max");
     
-    final static int STRUCTURE=9;
+    final static int CURV=9;
+    BooleanParameter doCurv = new BooleanParameter("Perform", "doCurv", true);
+    ConditionalParameter condCurv = new ConditionalParameter("Curvature", doCurv);
+    IntParameter CurvMinRad = new IntParameter("Min. Radius (pix)", "CurvMinRad", 1);
+    IntParameter CurvMaxRad = new IntParameter("Max. Radius (pix)", "CurvMaxRad", 6);
+    TextParameter Curvprefix = new TextParameter("Prefix", "Curvprefix", "curvature");
+    
+    final static int STRUCTURE=10;
     BooleanParameter doStruct = new BooleanParameter("Perform", "doStruct", true);
     ConditionalParameter condStruct = new ConditionalParameter("Max eigen value of Inertia transform", doStruct);
     IntParameter structMinRad = new IntParameter("Min. Radius (pix)", "structMinRad", 1);
@@ -149,8 +154,8 @@ public class TestFeatures implements MeasurementObject {
     TextParameter structPrefix = new TextParameter("Prefix", "structPrefix", "inertia");
     DoubleParameter structSmooth = new DoubleParameter("Smoothing", "structSmooth", 1d, DoubleParameter.nfDEC1);
     
-    GroupKeyParameter[][] allKeysMatrix = new GroupKeyParameter[10][];
-    Parameter[] parameters = new Parameter[]{structureSignal, prefix, condRaw, condCustom, condGauss, condDOG, condLOG, condOpen, condTH, condGrad, condHM, condStruct}; //,condErodeNuc
+    GroupKeyParameter[][] allKeysMatrix = new GroupKeyParameter[11][];
+    Parameter[] parameters = new Parameter[]{structureSignal, prefix, condErodeNuc, condRaw, condCustom, condGauss, condDOG, condLOG, condOpen, condTH, condGrad, condHM, condCurv, condStruct}; //,condErodeNuc
 
     
     // Histogram Moments [0-3]
@@ -178,7 +183,9 @@ public class TestFeatures implements MeasurementObject {
     KeyParameterObjectNumber rac4 = new KeyParameterObjectNumber("Radial autocorrelation radius 4", "rac4", "rac4", true);
     KeyParameterObjectNumber rac5 = new KeyParameterObjectNumber("Radial autocorrelation radius 5", "rac5", "rac5", true);
     KeyParameterObjectNumber rac6 = new KeyParameterObjectNumber("Radial autocorrelation radius 6", "rac6", "rac6", true);
-    int idxRAC = 6+ idxSpaMom;
+    KeyParameterObjectNumber rac7 = new KeyParameterObjectNumber("Radial autocorrelation radius 7", "rac7", "rac7", true);
+    KeyParameterObjectNumber rac8 = new KeyParameterObjectNumber("Radial autocorrelation radius 8", "rac8", "rac8", true);
+    int idxRAC = 8+ idxSpaMom;
     
     // Texture parameters
     KeyParameterObjectNumber tex_corr1 = new KeyParameterObjectNumber("Texture: Correlation radius 1", "tex_corr1", "tex_corr1", true);
@@ -190,22 +197,52 @@ public class TestFeatures implements MeasurementObject {
     KeyParameterObjectNumber tex_asm2 = new KeyParameterObjectNumber("Texture: ASM radius 2", "tex_asm2", "tex_asm2", true);
     KeyParameterObjectNumber tex_contrast2 = new KeyParameterObjectNumber("Texture: Contrast radius 2", "tex_contrast2", "tex_contrast2", true);
     KeyParameterObjectNumber tex_entropy2 = new KeyParameterObjectNumber("Texture: Entropy radius 2", "tex_entropy2", "tex_entropy2", true);
-    KeyParameterObjectNumber tex_idm2 = new KeyParameterObjectNumber("Texture: IDM radius 3", "tex_idm2", "tex_idm2", true);
+    KeyParameterObjectNumber tex_idm2 = new KeyParameterObjectNumber("Texture: IDM radius 2", "tex_idm2", "tex_idm2", true);
     KeyParameterObjectNumber tex_corr3 = new KeyParameterObjectNumber("Texture: Correlation radius 3", "tex_corr3", "tex_corr3", true);
     KeyParameterObjectNumber tex_asm3 = new KeyParameterObjectNumber("Texture: ASM radius 3", "tex_asm3", "tex_asm3", true);
     KeyParameterObjectNumber tex_contrast3 = new KeyParameterObjectNumber("Texture: Contrast radius 3", "tex_contrast3", "tex_contrast3", true);
     KeyParameterObjectNumber tex_entropy3 = new KeyParameterObjectNumber("Texture: Entropy radius 3", "tex_entropy3", "tex_entropy3", true);
     KeyParameterObjectNumber tex_idm3 = new KeyParameterObjectNumber("Texture: IDM radius 3", "tex_idm3", "tex_idm3", true);
+    KeyParameterObjectNumber tex_corr4 = new KeyParameterObjectNumber("Texture: Correlation radius 4", "tex_corr4", "tex_corr4", true);
+    KeyParameterObjectNumber tex_asm4 = new KeyParameterObjectNumber("Texture: ASM radius 4", "tex_asm4", "tex_asm4", true);
+    KeyParameterObjectNumber tex_contrast4 = new KeyParameterObjectNumber("Texture: Contrast radius 4", "tex_contrast4", "tex_contrast4", true);
+    KeyParameterObjectNumber tex_entropy4 = new KeyParameterObjectNumber("Texture: Entropy radius 4", "tex_entropy4", "tex_entropy4", true);
+    KeyParameterObjectNumber tex_idm4 = new KeyParameterObjectNumber("Texture: IDM radius 4", "tex_idm4", "tex_idm4", true);
+    KeyParameterObjectNumber tex_corr5 = new KeyParameterObjectNumber("Texture: Correlation radius 5", "tex_corr5", "tex_corr5", true);
+    KeyParameterObjectNumber tex_asm5 = new KeyParameterObjectNumber("Texture: ASM radius 5", "tex_asm5", "tex_asm5", true);
+    KeyParameterObjectNumber tex_contrast5 = new KeyParameterObjectNumber("Texture: Contrast radius 5", "tex_contrast5", "tex_contrast5", true);
+    KeyParameterObjectNumber tex_entropy5 = new KeyParameterObjectNumber("Texture: Entropy radius 5", "tex_entropy5", "tex_entropy5", true);
+    KeyParameterObjectNumber tex_idm5 = new KeyParameterObjectNumber("Texture: IDM radius 5", "tex_idm5", "tex_idm5", true);
+    KeyParameterObjectNumber tex_corr6 = new KeyParameterObjectNumber("Texture: Correlation radius 6", "tex_corr6", "tex_corr6", true);
+    KeyParameterObjectNumber tex_asm6 = new KeyParameterObjectNumber("Texture: ASM radius 6", "tex_asm6", "tex_asm6", true);
+    KeyParameterObjectNumber tex_contrast6 = new KeyParameterObjectNumber("Texture: Contrast radius 6", "tex_contrast6", "tex_contrast6", true);
+    KeyParameterObjectNumber tex_entropy6 = new KeyParameterObjectNumber("Texture: Entropy radius 6", "tex_entropy6", "tex_entropy6", true);
+    KeyParameterObjectNumber tex_idm6 = new KeyParameterObjectNumber("Texture: IDM radius 6", "tex_idm6", "tex_idm6", true);
+    KeyParameterObjectNumber tex_corr7 = new KeyParameterObjectNumber("Texture: Correlation radius 7", "tex_corr7", "tex_corr7", true);
+    KeyParameterObjectNumber tex_asm7 = new KeyParameterObjectNumber("Texture: ASM radius 7", "tex_asm7", "tex_asm7", true);
+    KeyParameterObjectNumber tex_contrast7 = new KeyParameterObjectNumber("Texture: Contrast radius 7", "tex_contrast7", "tex_contrast7", true);
+    KeyParameterObjectNumber tex_entropy7 = new KeyParameterObjectNumber("Texture: Entropy radius 7", "tex_entropy7", "tex_entropy7", true);
+    KeyParameterObjectNumber tex_idm7 = new KeyParameterObjectNumber("Texture: IDM radius 7", "tex_idm7", "tex_idm7", true);
+    KeyParameterObjectNumber tex_corr8 = new KeyParameterObjectNumber("Texture: Correlation radius 8", "tex_corr8", "tex_corr8", true);
+    KeyParameterObjectNumber tex_asm8 = new KeyParameterObjectNumber("Texture: ASM radius 8", "tex_asm8", "tex_asm8", true);
+    KeyParameterObjectNumber tex_contrast8 = new KeyParameterObjectNumber("Texture: Contrast radius 8", "tex_contrast8", "tex_contrast8", true);
+    KeyParameterObjectNumber tex_entropy8 = new KeyParameterObjectNumber("Texture: Entropy radius 8", "tex_entropy8", "tex_entropy8", true);
+    KeyParameterObjectNumber tex_idm8 = new KeyParameterObjectNumber("Texture: IDM radius 8", "tex_idm8", "tex_idm8", true);
     
     GroupKeyParameter defaultKeys = new GroupKeyParameter("Keys for pre-filter:1 ", "keys1", "", true, 
             new KeyParameterObjectNumber[]{
                 hist_mean, hist_sd, hist_skewness, hist_kurtosis, hist_sdmu, //histogram moments
                 hist_quantile1000, hist_quantile1, hist_quantile10, hist_quantile50, //quantiles
                 spa_sd, spa_skewness, spa_kurtosis, // spatial moments
-                rac1, rac2, rac3, rac4, rac5, rac6, // RAC
+                rac1, rac2, rac3, rac4, rac5, rac6, rac7, rac8, // RAC
                 tex_corr1, tex_asm1, tex_contrast1, tex_entropy1, tex_idm1, // tex 1
                 tex_corr2, tex_asm2, tex_contrast2, tex_entropy2, tex_idm2, // tex 2
-                tex_corr3, tex_asm3, tex_contrast3, tex_entropy3, tex_idm3 // tex 3
+                tex_corr3, tex_asm3, tex_contrast3, tex_entropy3, tex_idm3, // tex 3
+                tex_corr4, tex_asm4, tex_contrast4, tex_entropy4, tex_idm4, // tex 4
+                tex_corr5, tex_asm5, tex_contrast5, tex_entropy5, tex_idm5, // tex 5
+                tex_corr6, tex_asm6, tex_contrast6, tex_entropy6, tex_idm6, // tex 6
+                tex_corr7, tex_asm7, tex_contrast7, tex_entropy7, tex_idm7, // tex 7
+                tex_corr8, tex_asm8, tex_contrast8, tex_entropy8, tex_idm8 // tex 8
             }, 
             false);
     
@@ -220,14 +257,14 @@ public class TestFeatures implements MeasurementObject {
         condOpen.setCondition(true, new Parameter[]{openPrefix, openMinRad, openMaxRad, condOpenDenoising});
         condCustom.setCondition(true, new Parameter[]{customPrefix, prefSeq});
         condLOG.setCondition(true, new Parameter[]{LOGPrefix, LOGMinRad, LOGMaxRad});
-        condHM.setCondition(true, new Parameter[]{HMprefix, HMMinRad, HMMaxRad, condHMDenoising});
+        condHM.setCondition(true, new Parameter[]{HMprefix, HMMinRad, HMMaxRad});
+        condCurv.setCondition(true, new Parameter[]{Curvprefix, CurvMinRad, CurvMaxRad});
         condGrad.setCondition(true, new Parameter[]{gradPrefix, gradMinRad, gradMaxRad, condGradDenoising});
         condStruct.setCondition(true, new Parameter[]{structPrefix, structMinRad, structMaxRad, structSmooth});
         condRaw.setCondition(true, new Parameter[]{rawPrefix});
         
         condTHDenoising.setCondition(true, new Parameter[]{THFilter});
         condOpenDenoising.setCondition(true, new Parameter[]{openFilter});
-        condHMDenoising.setCondition(true, new Parameter[]{HMFilter});
         condGradDenoising.setCondition(true, new Parameter[]{gradFilter});
         
         gaussPrefix.allowSpecialCharacter(false);
@@ -237,6 +274,7 @@ public class TestFeatures implements MeasurementObject {
         customPrefix.allowSpecialCharacter(false);
         LOGPrefix.allowSpecialCharacter(false);
         HMprefix.allowSpecialCharacter(false);
+        Curvprefix.allowSpecialCharacter(false);
         gradPrefix.allowSpecialCharacter(false);
         structPrefix.allowSpecialCharacter(false);
         rawPrefix.allowSpecialCharacter(false);
@@ -250,9 +288,33 @@ public class TestFeatures implements MeasurementObject {
 
     @Override
     public void getMeasure(InputCellImages raw, SegmentedCellImages seg, ObjectQuantifications quantifications) {
-        ImageInt mask = raw.getMask();
-        // TODO: erode mask
-        Object3DVoxels nuc = seg.getObjects(0)[0]; // regénerer si erode nucleus
+        ImageInt mask;
+        Object3DVoxels nuc;
+        
+        if (doErodeNuc.getSelectedIndex()==1) { // constant radius
+            float erodeRad = radErodeNuc.getFloatValue(3) * (float)raw.getMask().getScaleXY();
+            mask = raw.getMask().erode(erodeRad, nCPUs);
+            Object3DVoxels[]  os = mask.getObjects3D();
+            if (verbose) {
+                mask.showDuplicate("Eroded Mask: rad::"+erodeRad);
+                IJ.log("nb objects:"+os.length);
+            }
+            if (os.length==1) nuc=os[0];
+            else {
+                if (Core.GUIMode) IJ.log("TestFeature error: nucleus erode: nb objects after erosion:"+os.length);
+                return;
+            }
+        } //else if (doErodeNuc.getSelectedIndex()==2) {
+            
+        //} 
+        else {
+            mask = raw.getMask();
+            nuc = seg.getObjects(0)[0];
+        }   
+        
+        
+        
+        
         double Zfactor = mask.getScaleXY()/mask.getScaleZ();
         ImageHandler rawSignal  = structureSignal.getImage(raw, false);
         ImageHandler[] filteredImages;
@@ -261,7 +323,7 @@ public class TestFeatures implements MeasurementObject {
             filteredImages[0]=rawSignal;
             performMeasures(allKeysMatrix[RAW], filteredImages, quantifications, mask, nuc);
         }
-        if (this.doCustom.isSelected()) {
+        if (this.doCustom.isSelected() && isOneKeySelected(CUSTOM, 0)) {
             filteredImages = new ImageHandler[1];
             filteredImages[0] = this.prefSeq.runPreFilterSequence(structureSignal.getIndex(), rawSignal, raw, nCPUs, verbose);
             performMeasures(allKeysMatrix[CUSTOM], filteredImages, quantifications, mask, nuc);
@@ -270,7 +332,8 @@ public class TestFeatures implements MeasurementObject {
             filteredImages = new ImageHandler[allKeysMatrix[GAUSS].length];
             int idx = 0;
             for (int i = this.gaussMinRad.getIntValue(1); i<=this.gaussMaxRad.getIntValue(10); i++) {
-                filteredImages[idx++] = rawSignal.gaussianSmooth(i, i*Zfactor, nCPUs);
+                if (isOneKeySelected(GAUSS, idx)) filteredImages[idx] = rawSignal.gaussianSmooth(i, i*Zfactor, nCPUs);
+                idx++;
             }
             performMeasures(allKeysMatrix[GAUSS], filteredImages, quantifications, mask, nuc);
         }
@@ -279,9 +342,12 @@ public class TestFeatures implements MeasurementObject {
             int idx = 0;
             for (int s = this.DOGMinRadS.getIntValue(1); s<=this.DOGMaxRadS.getIntValue(2); s++) {
                 for (int l = Math.max(s+1, this.DOGMinRadL.getIntValue(2)); l<=this.DOGMaxRadL.getIntValue(10); l++) {
-                    ImageFloat gaussSmall = rawSignal.gaussianSmooth(s, s*Zfactor, nCPUs);
-                    ImageFloat gaussLarge = rawSignal.gaussianSmooth(l, l*Zfactor, nCPUs);
-                    filteredImages[idx++] = gaussSmall.substractImage(gaussLarge);
+                    if (isOneKeySelected(DOG, idx)) {
+                        ImageFloat gaussSmall = rawSignal.gaussianSmooth(s, s*Zfactor, nCPUs);
+                        ImageFloat gaussLarge = rawSignal.gaussianSmooth(l, l*Zfactor, nCPUs);
+                        filteredImages[idx] = gaussSmall.substractImage(gaussLarge);
+                    }
+                    idx++;
                 }
             }
             performMeasures(allKeysMatrix[DOG], filteredImages, quantifications, mask, nuc);
@@ -290,7 +356,8 @@ public class TestFeatures implements MeasurementObject {
             filteredImages = new ImageHandler[allKeysMatrix[LOG].length];
             int idx = 0;
             for (int i = this.LOGMinRad.getIntValue(1); i<=this.LOGMaxRad.getIntValue(4); i++) {
-                filteredImages[idx++] = Misc_3DFilters.LOG(rawSignal, i, i*Zfactor);
+                if (isOneKeySelected(LOG, idx)) filteredImages[idx] =LaplacianOfGaussian3D.LOG(rawSignal, i, i*Zfactor);
+                idx++;
             }
             performMeasures(allKeysMatrix[LOG], filteredImages, quantifications, mask, nuc);
         }
@@ -301,7 +368,8 @@ public class TestFeatures implements MeasurementObject {
             else filtered = rawSignal;
             int idx = 0;
             for (int i = this.openMinRad.getIntValue(1); i<=this.openMaxRad.getIntValue(10); i++) {
-                filteredImages[idx++] = FastFilters3D.filterImage(filtered, FastFilters3D.OPENGRAY, (float)i, (float)i, (float)(i*Zfactor), nCPUs, false);
+                if (isOneKeySelected(OPEN, idx)) filteredImages[idx] = FastFilters3D.filterImage(filtered, FastFilters3D.OPENGRAY, (float)i, (float)i, (float)(i*Zfactor), nCPUs, false);
+                idx++;
             }
             performMeasures(allKeysMatrix[OPEN], filteredImages, quantifications, mask, nuc);
         }
@@ -312,7 +380,8 @@ public class TestFeatures implements MeasurementObject {
             else filtered = rawSignal;
             int idx = 0;
             for (int i = this.THMinRad.getIntValue(1); i<=this.THMaxRad.getIntValue(10); i++) {
-                filteredImages[idx++] = FastFilters3D.filterImage(filtered, FastFilters3D.TOPHAT, (float)i, (float)i, (float)(i*Zfactor), nCPUs, false);
+                if (isOneKeySelected(TH, idx)) filteredImages[idx] = FastFilters3D.filterImage(filtered, FastFilters3D.TOPHAT, (float)i, (float)i, (float)(i*Zfactor), nCPUs, false);
+                idx++;
             }
             performMeasures(allKeysMatrix[TH], filteredImages, quantifications, mask, nuc);
         }
@@ -323,29 +392,61 @@ public class TestFeatures implements MeasurementObject {
             else filtered = rawSignal;
             int idx = 0;
             for (int i = this.gradMinRad.getIntValue(1); i<=this.gradMaxRad.getIntValue(4); i++) {
-                filteredImages[idx++] = filtered.getGradient(i, nCPUs);
+                if (isOneKeySelected(GRAD, idx)) filteredImages[idx] = filtered.getGradient(i, nCPUs);
+                idx++;
             }
             performMeasures(allKeysMatrix[GRAD], filteredImages, quantifications, mask, nuc);
         }
         if (this.doHM.isSelected()) {
             filteredImages = new ImageHandler[allKeysMatrix[HM].length];
-            ImageHandler filtered;
-            if (this.doHMDenoising.isSelected()) filtered = this.HMFilter.preFilter(structureSignal.getIndex(), rawSignal, raw, nCPUs, verbose);
-            else filtered = rawSignal;
+            ImageHandler filtered = rawSignal;
             int idx = 0;
             for (int i = this.HMMinRad.getIntValue(1); i<=this.HMMaxRad.getIntValue(4); i++) {
-                filteredImages[idx++] = filtered.getHessian(i, nCPUs)[0];
+                if (isOneKeySelected(HM, idx)) {
+                    filteredImages[idx] = filtered.getHessian(i, nCPUs)[0];
+                    ((ImageFloat)filteredImages[idx]).opposite();
+                }
+                idx++;
             }
             performMeasures(allKeysMatrix[HM], filteredImages, quantifications, mask, nuc);
+        }
+        if (this.doCurv.isSelected()) {
+            filteredImages = new ImageHandler[allKeysMatrix[CURV].length];
+            ImageHandler filtered = rawSignal;
+            int idx = 0;
+            for (int i = this.CurvMinRad.getIntValue(1); i<=this.CurvMaxRad.getIntValue(4); i++) {
+                if (isOneKeySelected(CURV, idx)) {
+                    ImageFloat[] hess = filtered.getHessian(i, nCPUs);
+                    ImageFloat res = ImageFloat.newBlankImageFloat("Curvature", filtered);
+                    int sizeZ = hess[0].sizeZ;
+                    int sizeXY = hess[0].sizeXY;
+                    for (int z= 0; z<sizeZ; z++) {
+                        for (int xy= 0; xy<sizeXY; xy++) {
+                            res.pixels[z][xy]=(float) ( Math.pow( Math.abs( filtered.getPixel(xy, z) * hess[0].pixels[z][xy] * hess[1].pixels[z][xy] * hess[2].pixels[z][xy] ) , 0.25d ) );
+                        }
+                    }
+                    filteredImages[idx] = res;
+                }
+                idx++;
+            }
+            performMeasures(allKeysMatrix[CURV], filteredImages, quantifications, mask, nuc);
         }
         if (this.doStruct.isSelected()) {
             filteredImages = new ImageHandler[allKeysMatrix[STRUCTURE].length];
             int idx = 0;
             for (int i = this.structMinRad.getIntValue(1); i<=this.structMaxRad.getIntValue(4); i++) {
-                filteredImages[idx++] = rawSignal.getInertia(structSmooth.getDoubleValue(1), i, nCPUs)[0];
+                if (isOneKeySelected(STRUCTURE, idx)) filteredImages[idx] = rawSignal.getInertia(structSmooth.getDoubleValue(1), i, nCPUs)[0];
+                idx++;
             }
             performMeasures(allKeysMatrix[STRUCTURE], filteredImages, quantifications, mask, nuc);
         }
+    }
+    
+    private boolean isOneKeySelected(int measureIdx, int idx) {
+        for (KeyParameter k : allKeysMatrix[measureIdx][idx].getKeys()) {
+            if (k.isSelected()) return true;
+        }
+        return false;
     }
     
     private ArrayList<String> getPrefixEnd(int measureIdx) {
@@ -380,6 +481,9 @@ public class TestFeatures implements MeasurementObject {
             case HM:
                 if (doHM.isSelected()) for (int i = this.HMMinRad.getIntValue(1); i<=this.HMMaxRad.getIntValue(4); i++) res.add(HMprefix.getText()+i+"_");
                 break;
+            case CURV:
+                if (doCurv.isSelected()) for (int i = this.CurvMinRad.getIntValue(1); i<=this.CurvMaxRad.getIntValue(4); i++) res.add(Curvprefix.getText()+i+"_");
+                break;
             case GRAD:
                 if (doGrad.isSelected()) for (int i = this.gradMinRad.getIntValue(1); i<=this.gradMaxRad.getIntValue(4); i++) res.add(gradPrefix.getText()+i+"_");
                 break;
@@ -392,45 +496,51 @@ public class TestFeatures implements MeasurementObject {
     
     private void performMeasures(GroupKeyParameter[] allKeys, ImageHandler[] filteredImages, ObjectQuantifications quantifications, ImageInt mask, Object3D nuc) {    
         for (int i = 0; i<filteredImages.length; i++) {
-            // Histogram Moments & quantiles
-            double[] moments = computeHistogramMoments(filteredImages[i], nuc);
-            for (int m=0;m<4;m++) quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[m], new double[]{moments[m]});
-            // sd/mean
-            if (moments[0]!=0) quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[4], new double[]{moments[1]/moments[0]});
-            
-            //Quantiles
-            double[] quantiles = Quantiles.getQuantiles(nuc, filteredImages[i], new double[]{0.0001, 0.001, 0.1, 0.5});
-            for (int q=0;q<4;q++) {
-                quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxHistMoments+q], new double[]{quantiles[q]});
-            }
-            
-            // spatial moments
-            double[][] Spamoments = GrayscaleSpatialMoments.computeMoments(filteredImages[i], mask);
-            // variance
-            quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxQuantiles], new double[]{Math.sqrt(Spamoments[1][0]+Spamoments[1][1]+Spamoments[1][2])});
-            // skewness
-            quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxQuantiles+1], new double[]{Spamoments[2][0]+Spamoments[2][1]+Spamoments[2][2]});
-            // kurtosis
-            quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxQuantiles+2], new double[]{Spamoments[3][0]+Spamoments[3][1]+Spamoments[3][2]});
-            
-            // RAC
-            RadialAutoCorrelation rac = new RadialAutoCorrelation(filteredImages[i], mask, true);
-            for (int r=0;r<(idxRAC-idxSpaMom);r++) {
-                quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxSpaMom+r], new double[]{rac.getCorrelation(r+1)});
-                //if (this.verbose) ij.IJ.log("rac :"+(r+1)+ allKeys[i].getKeys()[idxSpaMom+r].getLabel());
-            }
-            
-            // texture
-            GLCMTexture3D tex = new GLCMTexture3D(rac.intensityResampled, rac.maskResampled, false, true);
-            for (int r=0; r<3; r++) {
-                tex.computeMatrix(r+1);
-                int idx = idxRAC+r*5;
-                quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idx], new double[]{tex.getCorrelation()});
-                quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idx+1], new double[]{tex.getASM()});
-                quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idx+2], new double[]{tex.getContrast()});
-                quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idx+3], new double[]{tex.getEntropy()});
-                quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idx+4], new double[]{tex.getIDM()});
-                //if (this.verbose) ij.IJ.log("tex sum:"+ allKeys[i].getKeys()[idx+5].getLabel());
+            if (filteredImages[i]!=null) {
+                // Histogram Moments & quantiles
+                double[] moments = computeHistogramMoments(filteredImages[i], nuc);
+                for (int m=0;m<4;m++) quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[m], new double[]{moments[m]});
+                // sd/mean
+                if (moments[0]!=0) quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[4], new double[]{moments[1]/moments[0]});
+
+                //Quantiles
+                double[] quantiles = Quantiles.getQuantiles(nuc, filteredImages[i], new double[]{0.0001, 0.001, 0.1, 0.5});
+                for (int q=0;q<4;q++) {
+                    quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxHistMoments+q], new double[]{quantiles[q]});
+                }
+
+                // spatial moments
+                double[][] Spamoments = GrayscaleSpatialMoments.computeMoments(filteredImages[i], mask);
+                // variance
+                double var=Spamoments[1][0]+Spamoments[1][1]+Spamoments[1][2];
+                if (var<0) var = -Math.sqrt(-var);
+                else var=Math.sqrt(var);
+                quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxQuantiles], new double[]{var});
+                // skewness
+                quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxQuantiles+1], new double[]{Spamoments[2][0]+Spamoments[2][1]+Spamoments[2][2]});
+                // kurtosis
+                quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxQuantiles+2], new double[]{Spamoments[3][0]+Spamoments[3][1]+Spamoments[3][2]});
+
+                // RAC
+                RadialAutoCorrelation rac = new RadialAutoCorrelation(filteredImages[i], mask, 2);
+                for (int r=0;r<(idxRAC-idxSpaMom);r++) {
+                    quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxSpaMom+r], new double[]{rac.getCorrelation(r+1)});
+                    //if (this.verbose) ij.IJ.log("rac :"+(r+1)+ allKeys[i].getKeys()[idxSpaMom+r].getLabel());
+                }
+
+                // texture
+                GLCMTexture3D tex = new GLCMTexture3D(rac.intensityResampled, rac.maskResampled, 256, false);
+                for (int r=0; r<8; r++) {
+                    tex.computeMatrix(r+1);
+                    int idx = idxRAC+r*5;
+                    /*quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idx], new double[]{tex.getCorrelation()});
+                    quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idx+1], new double[]{tex.getASM()});
+                    quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idx+2], new double[]{tex.getContrast()});
+                    quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idx+3], new double[]{tex.getEntropy()});
+                    quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idx+4], new double[]{tex.getIDM()});
+                    */
+                    //if (this.verbose) ij.IJ.log("tex sum:"+ allKeys[i].getKeys()[idx+5].getLabel());
+                }
             }
         }
         
