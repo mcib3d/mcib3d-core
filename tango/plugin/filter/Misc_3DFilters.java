@@ -4,9 +4,7 @@ import filters.Bandpass3D;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.WindowManager;
 import ij.measure.Calibration;
-import ij.plugin.Duplicator;
 import ij.process.ByteProcessor;
 import ij.process.ImageConverter;
 import ij.process.ImageProcessor;
@@ -14,7 +12,6 @@ import ij.process.ShortProcessor;
 import imageware.Builder;
 import imageware.ImageWare;
 import java.util.HashMap;
-import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib_plugins.processing.LoG3D;
 import tango.dataStructure.InputImages;
@@ -60,7 +57,7 @@ public class Misc_3DFilters implements PreFilter {
     int mins = 2;
     int maxs = 10;
     int filter = 0;
-    String[] filters = {"Gaussian 3D (IJ)", "LoG 3D (BIG)", "PureDenoise (BIG)", "BandPass (Droplet)"};
+    String[] filters = {"Gaussian 3D (IJ)", "LoG 3D (BIG)", /*"PureDenoise (BIG)",*/ "BandPass (Droplet)"};
     ChoiceParameter filter_P = new ChoiceParameter("Choose Filter: ", "filter", filters, null);
     DoubleParameter voisXY_P = new DoubleParameter("VoisXY: ", "voisXY", (double) voisx, Parameter.nfDEC1);
     DoubleParameter voisZ_P = new DoubleParameter("VoisZ: ", "voisZ", (double) voisz, Parameter.nfDEC1);
@@ -74,7 +71,7 @@ public class Misc_3DFilters implements PreFilter {
             put(filters[GAUSSIAN], new Parameter[]{voisXY_P, condScale});
             put(filters[LOG], new Parameter[]{voisXY_P, condScale});
             //put(filters[DENOISE], new Parameter[]{voisXY_P, condScale, iteration_P});
-            //put(filters[BANDPASS], new Parameter[]{mins_P, maxs_P});
+            put(filters[BANDPASS], new Parameter[]{mins_P, maxs_P});
         }
     };
     ConditionalParameter cond = new ConditionalParameter("Filter", filter_P, map);
@@ -86,7 +83,7 @@ public class Misc_3DFilters implements PreFilter {
     // contructor for Tango
 
     public Misc_3DFilters() {
-        filter_P.setHelp("Availabe filters are : " + gauss3DHelp + log3DHelp + denoiseHelp + BPHelp, true);
+        filter_P.setHelp("Availabe filters are : " + gauss3DHelp + log3DHelp + /*denoiseHelp +*/ BPHelp, true);
         voisXY_P.setHelp("The radius in <em>X</em> and <em>Y</em> direction", true);
         voisZ_P.setHelp("The radius in <em>Z</em> direction", true);
         iteration_P.setHelp("Number of iterations for PureDenoise", true);
@@ -109,6 +106,8 @@ public class Misc_3DFilters implements PreFilter {
 
         } else if (filter == DENOISE) {
             // TODO ne pas utiliser le window manager car en general process en batch
+            // OK, mais alors le supprimer de la liste, 
+            // et reflechir a comment l´utiliser car tres performant
             /*
             if(!imp.isVisible())imp.show();
             int nb = WindowManager.getImageCount();

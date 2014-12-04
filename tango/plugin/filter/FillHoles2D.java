@@ -1,19 +1,12 @@
 package tango.plugin.filter;
 
 import mcib3d.utils.exceptionPrinter;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.gui.GenericDialog;
-import ij.plugin.PlugIn;
-import java.util.HashMap;
 import java.util.TreeMap;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
-import mcib3d.image3d.ImageShort;
 import tango.dataStructure.InputImages;
 import tango.parameter.*;
-import tango.plugin.filter.PostFilter;
 
 /**
  *
@@ -41,14 +34,17 @@ import tango.plugin.filter.PostFilter;
  * @author Jean Ollion
  */
 public class FillHoles2D implements PostFilter {
+
     boolean debug;
-    int nbCPUs=1;
-    
-    Parameter[] parameters = new Parameter[] {};
+    int nbCPUs = 1;
+
+    BooleanParameter useInterior = new BooleanParameter("Use interior as object", "useInterior", false);
+    Parameter[] parameters = new Parameter[]{useInterior};
+
     public FillHoles2D() {
-        
+        useInterior.setHelp("If checked, the segmented object will only be the filled interior, useful for membrane labelling.", true);
     }
-    
+
     @Override
     public Parameter[] getParameters() {
         return parameters;
@@ -56,40 +52,44 @@ public class FillHoles2D implements PostFilter {
 
     @Override
     public void setVerbose(boolean debug) {
-        this.debug=debug;
+        this.debug = debug;
     }
 
     @Override
     public ImageInt runPostFilter(int currentStructureIdx, ImageInt input, InputImages images) {
         try {
+            ImageInt fill = input;
             TreeMap<Integer, int[]> bounds = input.getBounds(true);
-            if (bounds.size()>1) {
+            if (bounds.size() > 1) {
                 ImageByte[] masks = input.crop3DBinary(bounds);
-                for (int i = 0; i<masks.length; i++) {
-                    tango.util.FillHoles2D.fill(masks[i], 255, 0);
+                for (ImageByte mask : masks) {
+                    tango.util.FillHoles2D.fill(mask, 255, 0);
                 }
-                return ImageHandler.merge3DBinary(masks, input.sizeX, input.sizeY, input.sizeZ);
-            } else if (bounds.size()==1){
+                fill = ImageHandler.merge3DBinary(masks, input.sizeX, input.sizeY, input.sizeZ);
+            } else if (bounds.size() == 1) {
                 ImageByte ib = new ImageByte(input, true);
                 tango.util.FillHoles2D.fill(ib, 255, 0);
-                return ib;
+                fill = ib;
             }
-            
-            
+            //  interior = filled - original
+            if (useInterior.isSelected()) {
+                fill = fill.substractImage(input);
+            }
+            return fill;
         } catch (Exception e) {
-            exceptionPrinter.print(e,"", true);
-        } return input;
+            exceptionPrinter.print(e, "", true);
+        }
+        return input;
     }
 
     @Override
     public void setMultithread(int nbCPUs) {
-        this.nbCPUs=nbCPUs;
+        this.nbCPUs = nbCPUs;
     }
-
 
     @Override
     public String getHelp() {
         return "2D fill holes from ImageJ. Algorithm by Gabriel Landini";
     }
-    
+
 }

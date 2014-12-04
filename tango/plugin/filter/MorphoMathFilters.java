@@ -56,7 +56,7 @@ public class MorphoMathFilters implements PostFilter {
         cond.setCondition(methods[0], close.getParameters());
         cond.setCondition(methods[1], open.getParameters());
         cond.setCondition(methods[2], fh2D.getParameters());
-        cond.setCondition(methods[2], fh3D.getParameters());
+        cond.setCondition(methods[3], fh3D.getParameters());
     }
     
     @Override
