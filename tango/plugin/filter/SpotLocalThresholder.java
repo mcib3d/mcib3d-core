@@ -113,7 +113,7 @@ public abstract class SpotLocalThresholder {
         limY=segMap.sizeY-1;
         limZ=segMap.sizeZ-1;
         sizeX=segMap.sizeX;
-        spots=segMap.getObjects3D(false);
+        spots=segMap.getObjects3D();
         shiftIndexes();
         currentLabel=spots.length+1;
         globalMin = intensityMap.getMin(mask);

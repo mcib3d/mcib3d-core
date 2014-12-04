@@ -159,7 +159,7 @@ public class CellCycleMeasurements implements MeasurementObject {
                 double rad = this.radErodeNuc.getDoubleValue(defRadErodeNuc) * mask.getScaleXY();
                 ImageByte erodedMask = mask.erode((float)rad, nCPUs);
                 if (verbose) erodedMask.show("Eroded Mask: "+this.radErodeNuc.getDoubleValue(defRadErodeNuc));
-                Object3DVoxels[] obj = erodedMask.getObjects3D(false);
+                Object3DVoxels[] obj = erodedMask.getObjects3D();
                 if (obj.length>=1) {
                     nuc=obj[0];
                     mask = erodedMask;
@@ -204,8 +204,8 @@ public class CellCycleMeasurements implements MeasurementObject {
                     maskNL.show("Nucleloi mask");
                     maskOutsideNL.show("Outside nucleoli mask");
                 }
-                Object3DVoxels[] nlsAr=maskNL.getObjects3D(false);
-                Object3DVoxels[] onlsAr=maskOutsideNL.getObjects3D(false);
+                Object3DVoxels[] nlsAr=maskNL.getObjects3D();
+                Object3DVoxels[] onlsAr=maskOutsideNL.getObjects3D();
                 if (nlsAr.length==1 && onlsAr.length==1) {
                     Object3DVoxels nls=nlsAr[0];
                     Object3DVoxels onls=onlsAr[0];

@@ -143,7 +143,7 @@ public class Simple_MeasureStatistics implements PlugInFilter, MeasurementObject
         if (outside.isSelected() && channel1.getIndex()!=0) {
             ImageInt structure = seg.getImage(channel1.getIndex());
             ImageInt mask = structure.invertMask(raw.getMask());
-            os = mask.getObjects3D(false);
+            os = mask.getObjects3D();
         } else {
             os = seg.getObjects(channel1.getIndex());
         }

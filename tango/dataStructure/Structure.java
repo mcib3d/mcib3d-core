@@ -81,7 +81,7 @@ public class Structure extends AbstractStructure {
             try {
                 ImageFloat pm = cell.segImages.getProbabilityMap(idx);
                 if (pm!=null) cell.segImages.setObjects(S.getObjects3D(pm, 0.5f), idx); 
-                else cell.segImages.setObjects(S.getObjects3D(false), idx); 
+                else cell.segImages.setObjects(S.getObjects3D(), idx); 
                 return;
             } catch (Exception e) {
                 exceptionPrinter.print(e, "", Core.GUIMode);
