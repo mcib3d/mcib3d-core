@@ -944,6 +944,61 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
+    protected void computeMassCenter(ImageHandler ima, ImageHandler mask) {
+        // using voxels
+
+        if (ima != null) {
+            cx = 0;
+            cy = 0;
+            cz = 0;
+            double sum = 0;
+            double sum2 = 0;
+            double pix;
+            double pmin = Double.MAX_VALUE;
+            double pmax = -Double.MAX_VALUE;
+
+            double i, j, k;
+            Voxel3D vox;
+            Iterator it = getVoxels().iterator();
+            while (it.hasNext()) {
+                vox = (Voxel3D) it.next();
+                if (ima.contains(vox) && mask.contains(vox) && (mask.getPixel(vox) > 0)) {
+
+                    i = vox.getX();
+                    j = vox.getY();
+                    k = vox.getZ();
+
+                    pix = ima.getPixel(vox);
+
+                    cx += i * pix;
+                    cy += j * pix;
+                    cz += k * pix;
+                    sum += pix;
+                    sum2 += pix * pix;
+                    if (pix > pmax) {
+                        pmax = pix;
+                    }
+                    if (pix < pmin) {
+                        pmin = pix;
+                    }
+                }
+            }
+            cx /= sum;
+            cy /= sum;
+            cz /= sum;
+
+            integratedDensity = sum;
+
+            pixmin = pmin;
+            pixmax = pmax;
+
+            // standard dev
+            int vol = getVolumePixels();
+            sigma = Math.sqrt((sum2 - ((sum * sum) / vol)) / (vol - 1));
+        }
+    }
+
+    @Override
     protected void computeBounding() {
         xmin = Integer.MAX_VALUE;
         xmax = 0;
@@ -1813,7 +1868,24 @@ public class Object3DSurface extends Object3D {
     @Override
     public void draw(ImageHandler mask, int col) {
         for (Voxel3D vox : this.getVoxels()) {
-            mask.setPixel((int) (Math.round(vox.getX())), (int) (Math.round(vox.getY())), (int) (Math.round(vox.getY())), col);
+            int px = (int) Math.round(vox.getX());
+            int py = (int) Math.round(vox.getX());
+            int pz = (int) Math.round(vox.getZ());
+            if (mask.contains(px, py, pz)) {
+                mask.setPixel(px, py, pz, col);
+            }
+        }
+    }
+
+    @Override
+    public void draw(ImageHandler mask, int col, int tx, int ty, int tz) {
+        for (Voxel3D vox : this.getVoxels()) {
+            int px = (int) Math.round(vox.getX()) + tx;
+            int py = (int) Math.round(vox.getX()) + ty;
+            int pz = (int) Math.round(vox.getZ()) + tz;
+            if (mask.contains(px, py, pz)) {
+                mask.setPixel(px, py, pz, col);
+            }
         }
     }
 

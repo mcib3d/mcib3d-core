@@ -41,12 +41,12 @@ import mcib3d.utils.KDTreeC.Item;
  */
 public class Objects3DPopulation {
 
-    private ArrayList<Object3D> objects;
-    private Object3D mask = null;
+    private final ArrayList<Object3D> objects;
+    private Object3D mask = null; // usually a object3dlabel
     private Calibration calibration = null;
     private KDTreeC kdtree = null;
     // link between values and index
-    private HashMap<Integer, Integer> hash;
+    private final HashMap<Integer, Integer> hash;
     //private ImageInt labelImage = null;
 
     /**
@@ -144,6 +144,7 @@ public class Objects3DPopulation {
         voxlist = new ArrayList(1);
         voxlist.add(v);
         Object3DVoxels ob = new Object3DVoxels(voxlist);
+        ob.setCalibration(calibration);
         addObject(ob);
         for (int i = 1; i < nb; i++) {
             dist = -1;
@@ -156,8 +157,8 @@ public class Objects3DPopulation {
             voxlist = new ArrayList(1);
             voxlist.add(v);
             ob = new Object3DVoxels(voxlist);
+            ob.setCalibration(calibration);
             addObject(ob);
-
         }
     }
 
@@ -203,7 +204,7 @@ public class Objects3DPopulation {
             ob.draw(ima, col);
         }
     }
-    
+
     public void draw(ImageHandler ima, int col) {
         Object3D ob;
         Iterator it = objects.iterator();
@@ -212,8 +213,6 @@ public class Objects3DPopulation {
             ob.draw(ima, col);
         }
     }
-    
-    
 
     public void draw(ImageStack ima) {
         Object3D ob;
@@ -250,9 +249,9 @@ public class Objects3DPopulation {
     }
 
     public final void addObjects(Object3D[] objs) {
-        for (int i = 0; i < objs.length; i++) {
+        for (Object3D obj : objs) {
             //objs[i].setCalibration(calibration);
-            addObject(objs[i]);
+            addObject(obj);
         }
         // update kdtree if available // FIXME UPDATE kdtree
         if (kdtree != null) {
@@ -261,9 +260,9 @@ public class Objects3DPopulation {
     }
 
     public void addObjects(ArrayList<Object3D> list) {
-        for (int i = 0; i < list.size(); i++) {
+        for (Object3D list1 : list) {
             //objs[i].setCalibration(calibration);
-            addObject(list.get(i));
+            addObject(list1);
         }
         // update kdtree if available // FIXME UPDATE kdtree
         if (kdtree != null) {
@@ -478,7 +477,7 @@ public class Objects3DPopulation {
         int zmin = mask.getZmin();
         int zmax = mask.getZmax();
 
-        // FIXME NO CALIBRATION   !!!
+        // FIXME NO CALIBRATION   !!! ???
         double x = (Math.random() * (xmax - xmin) + xmin);
         double y = (Math.random() * (ymax - ymin) + ymin);
         double z = (Math.random() * (zmax - zmin) + zmin);
@@ -855,10 +854,10 @@ public class Objects3DPopulation {
 
     /**
      *
-     * @param x
-     * @param y
-     * @param z
-     * @return
+     * @param x x coordinate in pixel
+     * @param y y coordinate in pixel
+     * @param z z coordinate in pixel
+     * @return closest object (using calibrated distance)
      */
     public Object3D closestCenter(double x, double y, double z) {
         if (kdtree == null) {
@@ -917,6 +916,46 @@ public class Objects3DPopulation {
         return res;
     }
 
+    public Object3D closestBorder(Object3D O, int[] allowed, double dist) {
+        double distmin = Double.MAX_VALUE;
+        Object3D res = null;
+        if (allowed.length == 0) {
+            return null;
+        }
+        //for (it = objects.iterator(); it.hasNext();) {
+        for (int ob : allowed) {
+            Object3D tmp = getObject(ob);
+            double d = O.distBorderUnit(tmp);
+            if (d > dist) {
+                if (d < distmin) {
+                    distmin = d;
+                    res = tmp;
+                }
+            }
+        }
+        return res;
+    }
+
+    public Object3D closestCenter(Object3D O, int[] allowed, double dist) {
+        double distmin = Double.MAX_VALUE;
+        Object3D res = null;
+        if (allowed.length == 0) {
+            return null;
+        }
+        //for (it = objects.iterator(); it.hasNext();) {
+        for (int ob : allowed) {
+            Object3D tmp = getObject(ob);
+            double d = O.distCenterUnit(tmp);
+            if (d > dist) {
+                if (d < distmin) {
+                    distmin = d;
+                    res = tmp;
+                }
+            }
+        }
+        return res;
+    }
+
     /**
      * Get the closest object in the population from given object Center to
      * center distance
@@ -929,6 +968,10 @@ public class Objects3DPopulation {
         return kClosestCenter(obj, 1, excludeInputObject);
     }
 
+    public Object3D closestCenter(Object3D obj, int[] allowed, boolean excludeInputObject) {
+        return closestCenter(obj, allowed, 0);
+    }
+
     /**
      * Get the closest object in the population from given object Border to
      * border distance
@@ -939,6 +982,10 @@ public class Objects3DPopulation {
      */
     public Object3D closestBorder(Object3D O) {
         return closestBorder(O, 0);
+    }
+
+    public Object3D closestBorder(Object3D O, int[] allowed) {
+        return closestBorder(O, allowed, 0);
     }
 
     public Object3D kClosestCenter(Object3D ob, int k, boolean excludeInputObject) {
@@ -1072,7 +1119,7 @@ public class Objects3DPopulation {
         for (int i = 0; i < si; i++) {
             idx.addValue(i, i);
         }
-        idx.randomize();
+        idx.shuffle();
         double dx = mask.getXmax() - mask.getXmin();
         double dy = mask.getYmax() - mask.getYmin();
         double dz = mask.getZmax() - mask.getZmin();
@@ -1112,11 +1159,7 @@ public class Objects3DPopulation {
             }
         }
 
-        if (c == 1000) {
-            return false;
-        } else {
-            return true;
-        }
+        return c != 1000;
     }
 
     int[] k_Means(int k) {

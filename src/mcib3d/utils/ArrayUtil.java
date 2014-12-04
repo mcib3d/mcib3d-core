@@ -102,6 +102,15 @@ public class ArrayUtil {
             return Double.NaN;
         }
     }
+    
+    public int getValueInt(int pos) {
+        if (pos < size) {
+            return (int)values[pos];
+        } else {
+            return 0;
+        }
+    }
+    
 
     /**
      * get the number of elements
@@ -145,6 +154,13 @@ public class ArrayUtil {
             this.putValue(i, val);
         }
         sorted = false;
+    }
+
+    public void fillRange(int start, int end, int step) {
+        int c = 0;
+        for (int i = start; i < end; i += step) {
+            values[c++] = i;
+        }
     }
 
     /**
@@ -1030,7 +1046,7 @@ public class ArrayUtil {
     /**
      * random mix of the values
      */
-    public void randomize() {
+    public void shuffle() {
         sorted = false;
         for (int i = 0; i < size - 1; i++) {
             int pos = (int) Math.round(Math.random() * (size - 1 - i) + i);
@@ -1256,7 +1272,7 @@ public class ArrayUtil {
     public int getModeNonZero() {
         return (int) getIntegerHistogram().getMaximumStarting(1)[1];
     }
-    
+
     /**
      * Fit a gaussian to the values (radial distribution)
      *
