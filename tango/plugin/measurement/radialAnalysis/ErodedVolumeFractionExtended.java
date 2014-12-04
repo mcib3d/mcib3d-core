@@ -80,6 +80,7 @@ public class ErodedVolumeFractionExtended implements MeasurementObject {
 
     @Override
     public void getMeasure(InputCellImages rawImages, SegmentedCellImages segmentedImages, ObjectQuantifications quantifications) {
+        if (!key.isSelected() && !keyMin.isSelected() && !keyMax.isSelected() && !keyMean.isSelected() && !keyMedian.isSelected()) return;
         ImageFloat distanceMap = null;
         if (!dm.isErodeNucleus()) distanceMap = (ImageFloat)dm.getMaskAndDistanceMap(rawImages, segmentedImages, 0, verbose, nCPUs)[1];
         

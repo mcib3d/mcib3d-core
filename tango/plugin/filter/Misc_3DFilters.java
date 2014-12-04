@@ -105,7 +105,7 @@ public class Misc_3DFilters implements PreFilter {
             img2.setTitle(ih.getTitle() + "::Gauss3D");
             return img2;
         } else if (filter == LOG) {
-            return LOG(ih, voisx, voisz);
+            return LaplacianOfGaussian3D.LOG(ih, voisx, voisz);
 
         } else if (filter == DENOISE) {
             // TODO ne pas utiliser le window manager car en general process en batch
@@ -165,19 +165,6 @@ public class Misc_3DFilters implements PreFilter {
             return ImageHandler.wrap(impOut);
         }
         return null;
-    }
-    
-    public static ImageHandler LOG(ImageHandler imp, double radX, double radZ) {
-        ImageWare in = Builder.create(imp.getImagePlus(), 3);
-            LoG3D localLoG3D = new LoG3D(false);
-            ImageWare res;
-            if (imp.sizeZ > 1) {
-                res = localLoG3D.doLoG(in, radX, radX, radZ);
-            } else {
-                res = localLoG3D.doLoG(in, radX, radX);
-            }
-            res.invert();
-        return ImageHandler.wrap(res.buildImageStack());
     }
 
     @Override

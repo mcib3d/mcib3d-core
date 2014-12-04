@@ -151,7 +151,9 @@ public class GrayscaleSpatialMoments implements MeasurementObject {
             // normalize skewness
             // source: Farrell et al, 1994, Water Resources Research, 30(11):3213-3223
             for (int i = 0; i<3; i++) {
-                skewness[i]/=( sum * Math.pow(variance[i], 3.0/2.0));
+                if (variance[i]<0) {
+                    skewness[i]/=-( sum * Math.pow(-variance[i], 3.0/2.0));
+                } else skewness[i]/=( sum * Math.pow(variance[i], 3.0/2.0));
             }
             // normalize kurtosis
             // source: Farrell et al, 1994, Water Resources Research, 30(11):3213-3223

@@ -39,7 +39,7 @@ public class Hessian implements PreFilter {
 
     boolean debug;
     int nbCPUs = 1;
-    DoubleParameter scale = new DoubleParameter("Integration Scale (Pix)", "scale", 1d, Parameter.nfDEC3);
+    DoubleParameter scale = new DoubleParameter("Integration Scale (Pix)", "scale", 2d, Parameter.nfDEC3);
     BooleanParameter useScale = new BooleanParameter("Use Image Scale", "useImageScale", true);
     ChoiceParameter choice = new ChoiceParameter("Compute", "compute", new String[]{"max", "mid", "min", "det", "cur"}, "max");
     BooleanParameter invert = new BooleanParameter("Invert values", "invert_hessian", false);
@@ -73,7 +73,7 @@ public class Hessian implements PreFilter {
         } // curvature = det * itensity
         else if (cho == 4) {
             res = input.getHessianDeterminant(scale.getFloatValue(1), nbCPUs, true);
-            //res = (ImageFloat) res.multiplyImage(input, 1);
+            res = (ImageFloat) res.multiplyImage(input, 1);
         }
         if (!useScale.isSelected()) {
             res.setScale(scaleXY, scaleZ, unit);
