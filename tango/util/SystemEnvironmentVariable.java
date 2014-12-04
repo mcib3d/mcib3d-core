@@ -148,11 +148,11 @@ public class SystemEnvironmentVariable {
                 if(value==null) real = false;
                 else real = true;
             }
-            write();
         }else{
             if(value==null) real = false;
             else real = true;
         }
+        write();
         if(!real) IJ.log(key+" environment variable is not real.");
     }
     
