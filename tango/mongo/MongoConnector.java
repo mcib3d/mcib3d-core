@@ -70,9 +70,10 @@ public class MongoConnector {
     public final static int MASKS=-2;
     public static String[] collections=new String[] {"experiment", "field", "nucleus", "object3d", "selection", "structureMeasurement", "nucleusThumbnail.files", "nucleusThumbnail.chunks", "fieldThumbnail.files", "fieldThumbnail.chunks"};
     public static String[] collectionsSettings=new String[] {"nucleus", "channel"};
+    public static SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", null, true, false, true);
     ObjectId userId;
     Thread mongod;
-    private final boolean interactive=false;
+    private final boolean interactive=true;
     
     public MongoConnector(String host_DB) {
         boolean r;
@@ -272,12 +273,7 @@ public class MongoConnector {
         return r;
     }
     
-    private static SystemEnvironmentVariable getMongoBinPath(){
-        return new SystemEnvironmentVariable("mongoBinPath", null, true, true);
-    }
-    
     private boolean dumpCollection(String projectDBName, String collectionName, String outputPath) {
-        SystemEnvironmentVariable mongoBinPath = getMongoBinPath();
         if(interactive){
             String cmd = "mongodump --host "+host+" --db "+projectDBName+" --collection "+collectionName+" -o "+outputPath;
             return mongoBinPath.executeInteractiveProcess(cmd);
@@ -303,7 +299,6 @@ public class MongoConnector {
     }
     
     private boolean restoreCollection(String projectDBName, String collectionName, String inputPath, boolean drop) {
-        SystemEnvironmentVariable mongoBinPath = getMongoBinPath();
         if(interactive){
             String cmd = "mongorestore --host "+host+" --db "+projectDBName+" --collection "+collectionName;
             if(drop) cmd += " --drop";
