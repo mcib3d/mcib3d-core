@@ -62,7 +62,7 @@ public class IntensityFilter_legacy implements PostFilter {
     public ImageInt runPostFilter(int currentStructureIdx, ImageInt in, InputImages images) {
         // TODO au lieu d'ecrire sur l'image, faire directement l'histogramme
         if (!useIntensity.isSelected() && !useHess.isSelected()) useIntensity.setSelected(true);
-        Object3D[] objects = in.getObjects3D();
+        Object3D[] objects = in.getObjects3D(false);
         ImageHandler input = images.getFilteredImage(currentStructureIdx);
         ImageFloat map = null;
         if (debug || !useConstantThld.isSelected()) map = new ImageFloat("intensity filter map", input.sizeX, input.sizeY, input.sizeZ);

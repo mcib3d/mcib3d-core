@@ -62,7 +62,7 @@ public class RadialAutoCorrelation3D_legacy implements MeasurementStructure {
         ImageHandler input = (filtered.isSelected())? rawImages.getFilteredImage(structure.getIndex()):rawImages.getImage(structure.getIndex());
         ImageHandler filteredImage = filters.runPreFilterSequence(structure.getIndex(), input, rawImages, nbCPUs, false);
         
-        RadialAutoCorrelation rac = new RadialAutoCorrelation(filteredImage, rawImages.getMask(), resample.isSelected());
+        RadialAutoCorrelation rac = new RadialAutoCorrelation(filteredImage, rawImages.getMask(), resample.isSelected()?2:0);
         int min = 1;
         int max = radiusMax.getIntValue(10);
         int step = Math.max(1, radiusIncrement.getIntValue(1));

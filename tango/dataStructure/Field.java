@@ -504,7 +504,7 @@ public class Field implements ObjectStructure, StructureContainer {
     
     @Override
     public void createObjects() {
-        objects = getSegmented().getObjects3D();
+        objects = getSegmented().getObjects3D(false);
     }
 
     @Override

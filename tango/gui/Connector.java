@@ -149,10 +149,9 @@ public class Connector extends javax.swing.JPanel {
             if (usernames.getItemCount() > 0) {
                 SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", null, true, false, false);
                 String user = mongoUser.getValue();
-                if (user==null || user.length() == 0 || !utils.contains(usernames, user, true)) {
-                    user = (String) usernames.getItemAt(0);
+                if (user!=null && user.length() != 0 && utils.contains(usernames, user, true)) {
+                    setUser(user);
                 }
-                setUser(user);
             }
         } catch (Exception e) {
             exceptionPrinter.print(e, "", Core.GUIMode);

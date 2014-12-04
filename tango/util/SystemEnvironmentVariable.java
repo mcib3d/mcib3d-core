@@ -46,6 +46,10 @@ public class SystemEnvironmentVariable {
         return this.value;
     }
     
+    public void setValue(String value) {
+        this.value=value;
+    }
+    
     public String getPrefsKey(){
         return prefix + "_" + key + ".String";
     }
@@ -158,9 +162,9 @@ public class SystemEnvironmentVariable {
     
     public boolean write(){
         if(value != null){
-            IJ.log("Environment variable "+key+" will be set to value "+value);
             writeToPrefs();
             if(writeToSystem){
+                IJ.log("Environment variable "+key+" will be set to value "+value);
                 writeToSystem();
                 return writeToEnv();
             }

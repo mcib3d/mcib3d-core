@@ -1,9 +1,11 @@
 package tango.plugin.measurement;
 
+import ij.IJ;
 import ij.gui.Plot;
 import java.util.HashMap;
 import mcib3d.image3d.ImageHandler;
 import tango.dataStructure.InputCellImages;
+import tango.dataStructure.ObjectQuantifications;
 import tango.dataStructure.SegmentedCellImages;
 import tango.dataStructure.StructureQuantifications;
 import tango.gui.Core;
@@ -34,87 +36,74 @@ import tango.parameter.*;
  *
  * @author Jean Ollion
  */
-public class Texture3D implements MeasurementStructure {
+public class Texture3D implements MeasurementObject {
     boolean verbose;
     int nbCPUs=1;
     StructureParameter structure = new StructureParameter("Structure:", "structure", -1, false);
+    ChoiceParameter undersample = new ChoiceParameter("Number of gray values (undersampling):", "numberofGrayValues", new String[]{"256", "128", "64", "32"}, "256");
     PreFilterSequenceParameter filters = new PreFilterSequenceParameter("Filters: ", "filters");
-    BooleanParameter filtered = new BooleanParameter("Use filtered image:", "filtered", true);
+    BooleanParameter filtered = new BooleanParameter("Use filtered image:", "filtered", false);
     BooleanParameter resample = new BooleanParameter("Make isotropic:", "resample", true);
-    
-    IntParameter radiusMax = new IntParameter("Max. Radius:", "maxRadius", 10);
+    BooleanParameter normalize = new BooleanParameter("Normalize by 0-displacement values:", "normalize", true);
+    IntParameter radius = new IntParameter("Radius:", "radius", 1);
     IntParameter radiusIncrement = new IntParameter("Radius Increment:", "increment", 1);
-    Parameter[] parameters = new Parameter[]{structure, filtered, resample, filters, radiusMax, radiusIncrement};
-    KeyParameterStructureArray x = new KeyParameterStructureArray("TextrureRadius:", "radius", "textureRadius", true);
-    KeyParameterStructureArray K_asm = new KeyParameterStructureArray("ASM",  "glcm_asm");
-    KeyParameterStructureArray K_contrast = new KeyParameterStructureArray("Contrast", "glcm_contrast");
-    KeyParameterStructureArray K_corr = new KeyParameterStructureArray("Correlation",  "glcm_correlation");
-    KeyParameterStructureArray K_entropy = new KeyParameterStructureArray("Entropy",  "glcm_entropy");
-    KeyParameterStructureArray K_idm = new KeyParameterStructureArray("IDM",  "glcm_idm");
-    KeyParameterStructureArray K_sum = new KeyParameterStructureArray("Sum",  "glcm_sum");
-    KeyParameter[] keys = {x, K_asm, K_contrast, K_corr, K_entropy, K_idm, K_sum};
+    Parameter[] parameters = new Parameter[]{structure, filtered, resample, filters, radius, undersample, normalize};
+    
+    KeyParameterObjectNumber K_asm = new KeyParameterObjectNumber("Angular 2nd moment",  "asm");
+    KeyParameterObjectNumber K_contrast = new KeyParameterObjectNumber("Contrast",  "contrast");
+    KeyParameterObjectNumber K_corr = new KeyParameterObjectNumber("Correlation",  "correlation");
+    KeyParameterObjectNumber K_var = new KeyParameterObjectNumber("Variance",  "variance");
+    KeyParameterObjectNumber K_idm = new KeyParameterObjectNumber("Inverse Difference Moment",  "idm");
+    KeyParameterObjectNumber K_sa = new KeyParameterObjectNumber("Sum Average",  "sumAvg");
+    KeyParameterObjectNumber K_sv = new KeyParameterObjectNumber("Sum Variance",  "sumVar");
+    KeyParameterObjectNumber K_sumEnt = new KeyParameterObjectNumber("Sum Entropy",  "sumEntropy");
+    KeyParameterObjectNumber K_ent = new KeyParameterObjectNumber("Entropy",  "entropy");
+    KeyParameterObjectNumber K_dv = new KeyParameterObjectNumber("Difference Variance",  "diffVar");
+    KeyParameterObjectNumber K_de = new KeyParameterObjectNumber("Difference Entropy",  "de");
+    KeyParameterObjectNumber K_imc1 = new KeyParameterObjectNumber("Information Measures of Correlation 1",  "imc1");
+    KeyParameterObjectNumber K_imc2 = new KeyParameterObjectNumber("Information Measures of Correlation 2",  "imc2");
+    //KeyParameterObjectNumber K_mcc = new KeyParameterObjectNumber("Maximum Correlation Coefficient",  "mcc");
+    
+    KeyParameter[] keys = {K_asm, K_contrast, K_corr, K_var, K_idm, K_sa, K_sv, K_sumEnt, K_ent, K_dv, K_de, K_imc1, K_imc2};
     
     
     GroupKeyParameter groupKeys = new GroupKeyParameter("", "texture", "", true, keys, false);
+    
     @Override
-    public int[] getStructures() {
-        return new int[]{structure.getIndex()};
+    public int getStructure() {
+        return 0;
     }
 
     @Override
-    public void getMeasure(InputCellImages rawImages, SegmentedCellImages segmentedImages, StructureQuantifications quantifs) {
+    public void getMeasure(InputCellImages rawImages, SegmentedCellImages segmentedImages, ObjectQuantifications quantifs) {
         if (structure.getIndex()==-1) {
             ij.IJ.log("Texture 3D measurement: no structure selected!");
             return;
         }
         ImageHandler input = (filtered.isSelected())? rawImages.getFilteredImage(structure.getIndex()):rawImages.getImage(structure.getIndex());
         ImageHandler filteredImage = filters.runPreFilterSequence(structure.getIndex(), input, rawImages, nbCPUs, false);
+        if (verbose) filteredImage.showDuplicate("filtered image");
+        GLCMTexture3D tex = new GLCMTexture3D(filteredImage, rawImages.getMask(), Integer.parseInt(undersample.getSelectedItem()), resample.isSelected());
+        if (verbose) tex.intensityResampled.showDuplicate("after resample");
+        tex.computeMatrix(radius.getIntValue(1));
         
-        GLCMTexture3D tex = new GLCMTexture3D(filteredImage, rawImages.getMask(), resample.isSelected(), true);
-        int min = 1;
-        int max = radiusMax.getIntValue(10);
-        int step = Math.max(1, radiusIncrement.getIntValue(1));
-        double[] rads = new double[(max-min+1)/step];
-        double[] asm = new double[rads.length];
-        double[] contrast = new double[rads.length];
-        double[] corr = new double[rads.length];
-        double[] entropy = new double[rads.length];
-        double[] idm = new double[rads.length];
-        double[] sum = new double[rads.length];
+        double[] features = tex.computeTextureParameters(normalize.isSelected());
         
-        int curRad = min;
-        for (int i =0; i<rads.length; i++) {
-            tex.computeMatrix(curRad);
-            corr[i] = tex.getCorrelation();
-            asm[i] = tex.getASM();
-            contrast[i] = tex.getContrast();
-            entropy[i] = tex.getEntropy();
-            idm[i] = tex.getIDM();
-            sum[i] = tex.getSum();
-            rads[i]=curRad;
-            curRad+=step;
-        }
-        
-        if (Core.debug) {
-            Plot p = new Plot ("Texture 3D:", "Radius", "Correlation", rads, corr);
-            p.setLimits(min, max, 0, 1);
-            p.show();
-            tex.intensityResampled.showDuplicate("Intensity resampled");
-            tex.maskResampled.showDuplicate("Mask resampled");
-            (new Plot ("Texture 3D:", "Radius", "ASM", rads, asm)).show();
-            (new Plot ("Texture 3D:", "Radius", "Contrast", rads, contrast)).show();
-            (new Plot ("Texture 3D:", "Radius", "Entropy", rads, entropy)).show();
-            (new Plot ("Texture 3D:", "Radius", "idm", rads, idm)).show();
-            (new Plot ("Texture 3D:", "Radius", "Sum", rads, sum)).show();
-        }
-        quantifs.setQuantificationStructureArray(K_asm, asm);
-        quantifs.setQuantificationStructureArray(K_contrast, contrast);
-        quantifs.setQuantificationStructureArray(K_entropy, entropy);
-        quantifs.setQuantificationStructureArray(K_idm, idm);
-        quantifs.setQuantificationStructureArray(K_sum, sum);
-        quantifs.setQuantificationStructureArray(K_corr, corr);
-        
-        quantifs.setQuantificationStructureArray(x, rads);
+        if (K_asm.isSelected()) quantifs.setQuantificationObjectNumber(K_asm, new double[]{features[0]});
+        if (K_contrast.isSelected()) quantifs.setQuantificationObjectNumber(K_contrast, new double[]{features[1]});
+        if (K_corr.isSelected()) quantifs.setQuantificationObjectNumber(K_corr, new double[]{features[2]});
+        if (K_var.isSelected()) quantifs.setQuantificationObjectNumber(K_var, new double[]{features[3]});
+        if (K_idm.isSelected()) quantifs.setQuantificationObjectNumber(K_idm, new double[]{features[4]});
+        if (K_sa.isSelected()) quantifs.setQuantificationObjectNumber(K_sa, new double[]{features[5]});
+        if (K_sv.isSelected()) quantifs.setQuantificationObjectNumber(K_sv, new double[]{features[6]});
+        if (K_sumEnt.isSelected()) quantifs.setQuantificationObjectNumber(K_sumEnt, new double[]{features[7]});
+        if (K_ent.isSelected()) quantifs.setQuantificationObjectNumber(K_ent, new double[]{features[8]});
+        if (K_dv.isSelected()) quantifs.setQuantificationObjectNumber(K_dv, new double[]{features[9]});
+        if (K_de.isSelected()) quantifs.setQuantificationObjectNumber(K_de, new double[]{features[10]});
+        if (K_imc1.isSelected()) quantifs.setQuantificationObjectNumber(K_imc1, new double[]{features[11]});
+        if (K_imc2.isSelected()) quantifs.setQuantificationObjectNumber(K_imc2, new double[]{features[12]});
+        //if (K_mcc.isSelected()) quantifs.setQuantificationObjectNumber(K_mcc, new double[]{features[13]});
+
     }
 
     @Override
@@ -139,7 +128,7 @@ public class Texture3D implements MeasurementStructure {
 
     @Override
     public String getHelp() {
-        return "Anisotropic 3D Texture coefficients";
+        return "Anisotropic 3D Texture coefficients (averaged in all directions). Adapted from JFeatureLib by Franz Gray: https://JFeatureLib.googlecode.com ";
     }
     
 }
