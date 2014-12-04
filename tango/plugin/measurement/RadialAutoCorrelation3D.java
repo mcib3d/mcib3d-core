@@ -41,8 +41,9 @@ public class RadialAutoCorrelation3D implements MeasurementObject {
     StructureParameter structure = new StructureParameter("Structure:", "structure", -1, false);
     PreFilterSequenceParameter filters = new PreFilterSequenceParameter("Filters: ", "filters");
     BooleanParameter filtered = new BooleanParameter("Use filtered image:", "filtered", true);
-    BooleanParameter resample = new BooleanParameter("Make isotropic:", "resample", true);
-    MultiParameter radii = new MultiParameter("Radius:", "radiusMP", new Parameter[]{new SliderParameter("Radius", "radius", 1, 20, 1)}, 0, 20, 0);
+    //BooleanParameter resample = new BooleanParameter("Make isotropic:", "resample", true);
+    ChoiceParameter resample = new ChoiceParameter("Z-Anisotropy correction method", "resampleChoice", new String[]{"Do nothing", "Use image scale for Z radius", "Make image isotropic (bilinear interpolation)", "Make image isotropic (bicubic interpolation)"}, "Make image isotropic (bilinear interpolation)" );
+    MultiParameter radii = new MultiParameter("Radial Autocorrelation Radii:", "radiusMP", new Parameter[]{new SliderParameter("Radius", "radius", 1, 20, 1)}, 0, 20, 0);
     Parameter[] parameters = new Parameter[]{structure, filtered, resample, filters, radii};
     
     KeyParameterObjectNumber[] keys = new KeyParameterObjectNumber[0];
@@ -65,14 +66,19 @@ public class RadialAutoCorrelation3D implements MeasurementObject {
         }
         ImageHandler input = (filtered.isSelected())? rawImages.getFilteredImage(structure.getIndex()):rawImages.getImage(structure.getIndex());
         ImageHandler filteredImage = filters.runPreFilterSequence(structure.getIndex(), input, rawImages, nbCPUs, false);
-        
-        RadialAutoCorrelation rac = new RadialAutoCorrelation(filteredImage, rawImages.getMask(), resample.isSelected()?2:0);
+        int resampleMeth = 0;
+        if (resample.getSelectedIndex()==2) resampleMeth=1;
+        else if (resample.getSelectedIndex()==3) resampleMeth=2;
+        RadialAutoCorrelation rac = new RadialAutoCorrelation(filteredImage, rawImages.getMask(), resampleMeth);
         Parameter[] radParam = radii.getParameters();
         double[] rads = new double[radParam.length];
         double[] corrs = new double[radParam.length];
+        float ZFactor = 1;
+        if (resample.getSelectedIndex()==1) ZFactor = (float) (rawImages.getMask().getScaleXY() / rawImages.getMask().getScaleZ());
         for (int i =0; i<radParam.length; i++) {
             int curRad = ((SliderParameter)radParam[i]).getValue();
-            corrs[i] = rac.getCorrelation(curRad);
+            float radZ=curRad * ZFactor;
+            corrs[i] = rac.getCorrelation(curRad, radZ);
             rads[i]=curRad;
             quantifs.setQuantificationObjectNumber(keys[i], new double[]{corrs[i]});
         }

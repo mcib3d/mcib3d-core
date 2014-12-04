@@ -73,7 +73,7 @@ public class GLCMTexture3D {
                         int value = intensityResampled.getPixelInt(xy, z);
                         if (numberOfGrayValues!=256) value = (int) (value * factor);
                         meanGrayValue+=value;
-                        for (int i = 0; i<neighbor.length; i++) {
+                        for (int i = 0; i<neighbor[0].length; i++) {
                             zz = z + neighbor[2][i];
                             if (zz<maskResampled.sizeZ) {
                                 xx= neighbor[0][i]+x;

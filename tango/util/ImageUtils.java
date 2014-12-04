@@ -3,6 +3,7 @@ package tango.util;
 import i5d.Image5D;
 import i5d.cal.ChannelDisplayProperties;
 import i5d.gui.ChannelControl;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.ImageCanvas;
 import java.awt.*;
@@ -149,6 +150,7 @@ public class ImageUtils {
     }
     
     public static int[][] getNeigh(float radius, float radiusZ, float thickness, boolean onlyPositive) {
+        if (radiusZ>0 && radiusZ<1) radiusZ=1;
         float r = (float) radius / radiusZ;
         int rad = (int) (radius + 0.5f);
         int radZ = (int) (radiusZ + 0.5f);
@@ -156,7 +158,7 @@ public class ImageUtils {
         //float[] tempDist = new float[temp[0].length];
         int count = 0;
         float rad2 = radius * radius;
-        float radMin = (float)Math.pow(radius-thickness, 2);
+        float radMin = (radius>=thickness) ? (float)Math.pow(radius-thickness, 2) : 0;
         int startZ = onlyPositive?0:-radZ;
         int startXY = onlyPositive?0:-rad;
         for (int zz = startZ; zz <= radZ; zz++) {
@@ -168,6 +170,7 @@ public class ImageUtils {
                         temp[1][count] = yy;
                         temp[2][count] = zz;
                         //tempDist[count] = (float) Math.sqrt(d2);
+                        //IJ.log("neigh: X:"+xx+" Y:"+yy+ " Z:"+zz);
                         count++;
                     }
                 }

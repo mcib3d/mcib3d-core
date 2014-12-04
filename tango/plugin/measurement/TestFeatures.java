@@ -524,7 +524,7 @@ public class TestFeatures implements MeasurementObject {
                 // RAC
                 RadialAutoCorrelation rac = new RadialAutoCorrelation(filteredImages[i], mask, 2);
                 for (int r=0;r<(idxRAC-idxSpaMom);r++) {
-                    quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxSpaMom+r], new double[]{rac.getCorrelation(r+1)});
+                    quantifications.setQuantificationObjectNumber((KeyParameterObjectNumber)allKeys[i].getKeys()[idxSpaMom+r], new double[]{rac.getCorrelation(r+1, r+1)});
                     //if (this.verbose) ij.IJ.log("rac :"+(r+1)+ allKeys[i].getKeys()[idxSpaMom+r].getLabel());
                 }
 

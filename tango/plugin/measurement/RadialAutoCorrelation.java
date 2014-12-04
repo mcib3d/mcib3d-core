@@ -55,8 +55,8 @@ public class RadialAutoCorrelation {
         sigma2 = Math.pow(stats.getStandardDeviation(), 2);
     }
     
-    public double getCorrelation(int radius) {
-        int[][] neighbor=ImageUtils.getNeigh(radius, radius, 1, true);
+    public double getCorrelation(float radius, float radiusZ) {
+        int[][] neighbor=ImageUtils.getNeigh(radius, radiusZ, (float)Math.sqrt(2), true);
         double sum=0;
         double count=0;
         int zz, xx, yy, xy2;
@@ -66,7 +66,7 @@ public class RadialAutoCorrelation {
                     int xy = x+y*maskResampled.sizeX;
                     if (maskResampled.getPixel(xy, z)!=0) {
                         double value = intensityResampled.getPixel(xy, z)-meanValue;
-                        for (int i = 0; i<neighbor.length; i++) {
+                        for (int i = 0; i<neighbor[0].length; i++) {
                             zz = z + neighbor[2][i];
                             if (zz<maskResampled.sizeZ) {
                                 xx= neighbor[0][i]+x;
