@@ -89,7 +89,7 @@ public class Granulometry implements MeasurementStructure {
         //ImageHandler temp = ImageHandler.newBlankImageHandler("temp", input);
         //ImageHandler open = ImageHandler.newBlankImageHandler("open", input);
         ImageHandler current = input;
-        Object3DVoxels maskObject = mask.getObjects3D(false)[0];
+        Object3DVoxels maskObject = mask.getObjects3D()[0];
         double[] qts = new double[quantiles.getNbParameters()];
         int idx = 0;
         for (Parameter p : quantiles.getParameters()) {

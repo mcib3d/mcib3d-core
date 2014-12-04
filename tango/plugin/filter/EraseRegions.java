@@ -92,7 +92,7 @@ public class EraseRegions implements PostFilter {
     }
     
     protected void eraseRegions(ImageInt input, ImageHandler intensityMap, ImageHandler intensityMap2, InputImages images, boolean uniformBackground, boolean useOriginalMap) {
-        Object3D[] objects   = input.getObjects3D(false);
+        Object3D[] objects   = input.getObjects3D();
         double[] values = getObjectValues(objects, intensityMap, intensityMap2);
         ImageHandler map;
         if (intensityMap2!=null) useOriginalMap=false;
