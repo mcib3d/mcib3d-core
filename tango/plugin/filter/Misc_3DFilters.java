@@ -57,7 +57,7 @@ public class Misc_3DFilters implements PreFilter {
     int mins = 2;
     int maxs = 10;
     int filter = 0;
-    String[] filters = {"Gaussian 3D (IJ)", "LoG 3D (BIG)", /*"PureDenoise (BIG)",*/ "BandPass (Droplet)"};
+    String[] filters = {"Gaussian 3D (IJ)", "LoG 3D (BIG)", "PureDenoise (BIG)", "BandPass (Droplet)"};
     ChoiceParameter filter_P = new ChoiceParameter("Choose Filter: ", "filter", filters, null);
     DoubleParameter voisXY_P = new DoubleParameter("VoisXY: ", "voisXY", (double) voisx, Parameter.nfDEC1);
     DoubleParameter voisZ_P = new DoubleParameter("VoisZ: ", "voisZ", (double) voisz, Parameter.nfDEC1);
@@ -70,7 +70,7 @@ public class Misc_3DFilters implements PreFilter {
         {
             put(filters[GAUSSIAN], new Parameter[]{voisXY_P, condScale});
             put(filters[LOG], new Parameter[]{voisXY_P, condScale});
-            //put(filters[DENOISE], new Parameter[]{voisXY_P, condScale, iteration_P});
+            put(filters[DENOISE], new Parameter[]{voisXY_P, condScale, iteration_P});
             put(filters[BANDPASS], new Parameter[]{mins_P, maxs_P});
         }
     };
