@@ -99,7 +99,7 @@ public class Object3DFactory {
         return null;
     }
     
-    public Object3DVoxels[] getObjects() {
+    public Object3DVoxels[] getObjects(boolean computeContours) {
         objects = new TreeMap<Integer, HashMap<Integer, Voxel3D>>();
         for (int z = 0; z < sizeZ; z++) {
             for (int xy = 0; xy < sizeXY; xy++) {
@@ -112,23 +112,25 @@ public class Object3DFactory {
         for (int label : objects.keySet()) {
             Object3DVoxels o = new Object3DVoxels(new ArrayList<Voxel3D>(objects.get(label).values()));
             o.setValue(label);
-            HashMap<Integer, Voxel3D> curVoxels = objects.get(label);
-            ArrayList<Voxel3D> contours = new ArrayList<Voxel3D>();
-            double surf = 0;
-            double s;
-            for (Voxel3D vox : curVoxels.values()) {
-                s = getContourSurface(vox, label);
-                if (s > 0) {
-                    surf += s;
-                    contours.add(vox);
+                if (computeContours) {
+                    HashMap<Integer, Voxel3D> curVoxels = objects.get(label);
+                    ArrayList<Voxel3D> contours = new ArrayList<Voxel3D>();
+                    double surf = 0;
+                    double s;
+                    for (Voxel3D vox : curVoxels.values()) {
+                        s = getContourSurface(vox, label);
+                        if (s > 0) {
+                            surf += s;
+                            contours.add(vox);
+                        }
+                    }
+                    o.setContours(contours, surf);
                 }
-            }
-            o.setContours(contours, surf);
-            
             o.setResXY(scaleXY);
             o.setResZ(scaleZ);
             o.setLabelImage(S);
             res.add(o);
+            
         }
         Object3DVoxels[] resArray = new Object3DVoxels[res.size()];
         resArray = res.toArray(resArray);

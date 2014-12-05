@@ -236,7 +236,7 @@ public abstract class ImageInt extends ImageHandler {
     public Object3DVoxels[] getObjects3D() {
         try {
             Object3DFactory oc = new Object3DFactory(this);
-            return oc.getObjects();
+            return oc.getObjects(false);
         } catch (Exception e) {
             exceptionPrinter.print(e, "", false);
         }
