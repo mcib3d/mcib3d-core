@@ -63,12 +63,29 @@ public class CellCycleMeasurements implements MeasurementObject {
     BooleanParameter doProlif =  new BooleanParameter("Proliferation Marker", "doProlif", false);
     ConditionalParameter condProlif = new ConditionalParameter(doProlif);
     FilteredStructureParameter proliferation = new FilteredStructureParameter("Proliferation marker:", "proliferationMarker");
+    
+    BooleanParameter doNLProlif =  new BooleanParameter("Compute?","doNLProlif", false);
+    ConditionalParameter condNLProlif = new ConditionalParameter("Estimation of Proliferation signal within nucleoli", doNLProlif);
+    StructureParameter nlProlif = new StructureParameter("Nucleoli:", "nlProlif", -1, true);
+    KeyParameterObjectNumber prolif_nl_inside_mean = new KeyParameterObjectNumber("Proliferation: mean intensity inside NL", "prolif_nl_inside_mean");
+    KeyParameterObjectNumber prolif_nl_inside_med = new KeyParameterObjectNumber("Proliferation: median intensity inside NL", "prolif_nl_inside_med");
+    KeyParameterObjectNumber prolif_nl_inside_sd = new KeyParameterObjectNumber("Proliferation: standard deviation of intensity inside NL", "prolif_nl_inside_sd");
+    KeyParameterObjectNumber prolif_nl_outside_mean = new KeyParameterObjectNumber("Proliferation: mean intensity outside NL", "prolif_nl_outside_mean");
+    KeyParameterObjectNumber prolif_nl_outside_med = new KeyParameterObjectNumber("Proliferation: median intensity outside NL", "prolif_nl_outside_med");
+    KeyParameterObjectNumber prolif_nl_outside_sd = new KeyParameterObjectNumber("Proliferation: standard deviation of intensity outside NL", "prolif_nl_outside_sd");
+    KeyParameterObjectNumber prolif_nl_snr = new KeyParameterObjectNumber("Proliferation: SNR", "prolif_nl_snr");
+    KeyParameterObjectNumber prolif_nl_ttest_statistic = new KeyParameterObjectNumber("Proliferation: t-test statistic", "prolif_nl_ttest_statistic");
+    
     BooleanParameter doErodeNuc =  new BooleanParameter("Erode nucleus", "doErodeNuc", false);
     ConditionalParameter condErodeNuc = new ConditionalParameter(doErodeNuc);
     double defRadErodeNuc=6;
     DoubleParameter radErodeNuc = new DoubleParameter("Radius (pix)", "radErodeNuc", defRadErodeNuc, DoubleParameter.nfDEC1);
     KeyParameterObjectNumber prolif_int = new KeyParameterObjectNumber("Proliferation marker mean intensity", "proliferation_mean_intensity");
-    KeyParameterObjectNumber rac2 = new KeyParameterObjectNumber("RadialAutoCorrelation rad:2", "proliferation_rac2");
+    KeyParameterObjectNumber prolif_rac1 = new KeyParameterObjectNumber("Proliferation RadialAutoCorrelation rad:1", "proliferation_rac1");
+    KeyParameterObjectNumber prolif_rac1_iso = new KeyParameterObjectNumber("Proliferation RadialAutoCorrelation rad:1 iso", "proliferation_rac1_iso");
+    KeyParameterObjectNumber prolif_rac1_iso_bilin = new KeyParameterObjectNumber("Proliferation RadialAutoCorrelation rad:1 iso bili", "proliferation_rac1_iso_bilin");
+    KeyParameterObjectNumber prolif_sd = new KeyParameterObjectNumber("Proliferation: standard deviation", "proliferation_sd");
+    
     
     BooleanParameter doReplication =  new BooleanParameter("Replication Marker", "doReplication", false);
     ConditionalParameter condReplication = new ConditionalParameter(doReplication);
@@ -76,9 +93,9 @@ public class CellCycleMeasurements implements MeasurementObject {
     KeyParameterObjectNumber replication_int = new KeyParameterObjectNumber("Replication marker Mean Intensity", "replication_mean_intensity");
     KeyParameterObjectNumber rep_rac2 = new KeyParameterObjectNumber("Replication RadialAutoCorrelation rad:2", "replication_rac2");
     
-    BooleanParameter doNL =  new BooleanParameter("Compute?","doNL", false);
-    ConditionalParameter condNL = new ConditionalParameter("Localisation towards nucleoli and periphery", doNL);
-    StructureParameter nl = new StructureParameter("Nucleoli:", "nl", -1, true);
+    BooleanParameter doNLRep =  new BooleanParameter("Compute?","doNL", false);
+    ConditionalParameter condNLRep = new ConditionalParameter("Localisation towards nucleoli and periphery", doNLRep);
+    StructureParameter nlRep = new StructureParameter("Nucleoli:", "nl", -1, true);
     KeyParameterObjectNumber rep_loc = new KeyParameterObjectNumber("Replication Localization", "replication_loc");
     
     
@@ -88,12 +105,14 @@ public class CellCycleMeasurements implements MeasurementObject {
 
     public CellCycleMeasurements() {
         doProlif.setFireChangeOnAction();
-        condProlif.setCondition(true, new Parameter[]{proliferation, condErodeNuc});
+        condProlif.setCondition(true, new Parameter[]{proliferation, condErodeNuc}); //condNLProlif
+        doNLProlif.setFireChangeOnAction();
+        condNLProlif.setCondition(true, new Parameter[]{nlProlif});
         condErodeNuc.setCondition(true, new Parameter[]{radErodeNuc});
         doReplication.setFireChangeOnAction();
-        condReplication.setCondition(true, new Parameter[]{replication, condNL});
-        doNL.setFireChangeOnAction();
-        condNL.setCondition(true, new Parameter[]{nl});
+        condReplication.setCondition(true, new Parameter[]{replication, condNLRep});
+        doNLRep.setFireChangeOnAction();
+        condNLRep.setCondition(true, new Parameter[]{nlRep});
     }
 
     @Override
@@ -121,13 +140,13 @@ public class CellCycleMeasurements implements MeasurementObject {
             }           
             RadialAutoCorrelation rac=null;
             if (rep_rac2.isSelected()) {
-                rac = new RadialAutoCorrelation(rep, raw.getMask(), true);
+                rac = new RadialAutoCorrelation(rep, mask, 2);
                 if (rep_rac2.isSelected()) quantifications.setQuantificationObjectNumber(rep_rac2, new double[]{rac.getCorrelation(2)});
                 if (verbose) rac.intensityResampled.show("RAC Image");
                 if (verbose) rep.show("prolif Image");
             }
-            if (this.doNL.isSelected() && rep_loc.isSelected()) {// grayscale radial moment
-                ImageHandler dm = DistanceMapParameter.getMaskAndDistanceMap(raw,  seg, 0, new int[] {0, nl.getIndex()}, true, false, false, null, verbose, nCPUs)[1];
+            if (this.doNLRep.isSelected() && rep_loc.isSelected()) {// grayscale radial moment
+                ImageHandler dm = DistanceMapParameter.getMaskAndDistanceMap(raw,  seg, 0, new int[] {0, nlRep.getIndex()}, true, false, false, null, verbose, nCPUs)[1];
                 GrayscaleRadialMoments grm = new GrayscaleRadialMoments();
                 grm.computeMoments(rep, mask, (ImageFloat)dm);
                 quantifications.setQuantificationObjectNumber(rep_loc, new double[]{grm.getMean()});                    
@@ -155,20 +174,72 @@ public class CellCycleMeasurements implements MeasurementObject {
             ImageHandler prolif = proliferation.getImage(raw, verbose, nCPUs); //gaussian par défaut?            
             double prolifMean = nuc.getPixMeanValue(prolif);
             if (prolif_int.isSelected()) quantifications.setQuantificationObjectNumber(prolif_int, new double[]{prolifMean});
+            double prolifSd = nuc.getPixStdDevValue(prolif);
+            if (prolif_sd.isSelected()) quantifications.setQuantificationObjectNumber(prolif_sd, new double[]{prolifSd});
+            
             
             RadialAutoCorrelation rac=null;
-            if (rac2.isSelected()) {
-                rac = new RadialAutoCorrelation(prolif, mask, true);
-                if (rac2.isSelected()) quantifications.setQuantificationObjectNumber(rac2, new double[]{rac.getCorrelation(2)});
-                if (verbose) rac.intensityResampled.show("RAC Image");
+            if (prolif_rac1.isSelected()) {
+                rac = new RadialAutoCorrelation(prolif, mask, 0);
+                if (prolif_rac1.isSelected()) quantifications.setQuantificationObjectNumber(prolif_rac1, new double[]{rac.getCorrelation(1)});
+            }
+            if (prolif_rac1_iso.isSelected()) {
+                rac = new RadialAutoCorrelation(prolif, mask, 2);
+                if (prolif_rac1_iso.isSelected()) quantifications.setQuantificationObjectNumber(prolif_rac1_iso, new double[]{rac.getCorrelation(1)});
+                if (verbose) rac.intensityResampled.show("RAC Image bicub");
                 if (verbose) prolif.show("prolif Image");
             }
+            if (prolif_rac1_iso_bilin.isSelected()) {
+                rac = new RadialAutoCorrelation(prolif, mask, 1);
+                if (prolif_rac1_iso_bilin.isSelected()) quantifications.setQuantificationObjectNumber(prolif_rac1_iso_bilin, new double[]{rac.getCorrelation(1)});
+                if (verbose) rac.intensityResampled.show("RAC Image bilin");
+                if (verbose) prolif.show("prolif Image");
+            }
+            
+            if (this.doNLProlif.isSelected()) {
+                ImageByte maskNL = seg.getImage(nlProlif.getIndex()).toMask();
+                ImageByte maskOutsideNL = mask.toMask();
+                maskOutsideNL.substractMask(maskNL);
+                if (verbose) {
+                    maskNL.show("Nucleloi mask");
+                    maskOutsideNL.show("Outside nucleoli mask");
+                }
+                Object3DVoxels[] nlsAr=maskNL.getObjects3D();
+                Object3DVoxels[] onlsAr=maskOutsideNL.getObjects3D();
+                if (nlsAr.length==1 && onlsAr.length==1) {
+                    Object3DVoxels nls=nlsAr[0];
+                    Object3DVoxels onls=onlsAr[0];
+                    
+                    // mean
+                    double inMean = nls.getPixMeanValue(prolif);
+                    quantifications.setQuantificationObjectNumber(prolif_nl_inside_mean, new double[]{inMean});
+                    double outMean = onls.getPixMeanValue(prolif);
+                    quantifications.setQuantificationObjectNumber(prolif_nl_outside_mean, new double[]{outMean});
+                    // sd
+                    double inSd = nls.getPixStdDevValue(prolif);
+                    quantifications.setQuantificationObjectNumber(prolif_nl_inside_sd, new double[]{inSd});
+                    double outSd = onls.getPixStdDevValue(prolif);
+                    quantifications.setQuantificationObjectNumber(prolif_nl_outside_sd, new double[]{outSd});
+                    //med
+                    quantifications.setQuantificationObjectNumber(prolif_nl_inside_med, new double[]{Quantiles.getQuantiles(nls, prolif, new double[]{0.5})[0]});
+                    quantifications.setQuantificationObjectNumber(prolif_nl_outside_med, new double[]{Quantiles.getQuantiles(onls, prolif, new double[]{0.5})[0]});
+                    
+                    if (outSd!=0) quantifications.setQuantificationObjectNumber(prolif_nl_snr, new double[]{(inMean-outMean)/outSd});
+                    double outN = onls.getVolumePixels();
+                    double inN = nls.getVolumePixels();
+                    if (outSd!=0 && inSd!=0 && outN!=0 && inN!=0) quantifications.setQuantificationObjectNumber(prolif_nl_ttest_statistic, new double[]{(inMean-outMean)/Math.sqrt(outSd*outSd/outN + inSd*inSd/inN)});
+                
+                } else {
+                    //erreurs
+                    if (nlsAr.length==0) System.out.println("Cell Cycle Measurement error, no nucleoli found in image:"+seg.getImage(nlProlif.getIndex()).getTitle());
+                    if (onlsAr.length==0) System.out.println("Cell Cycle Measurement error, no nucleus found in image:"+seg.getImage(0).getTitle());
+                }
+                                    
+            }  
             
         }
         
     }
-    
-    
 
     @Override
     public Parameter[] getParameters() {
@@ -178,29 +249,43 @@ public class CellCycleMeasurements implements MeasurementObject {
     @Override
     public Parameter[] getKeys() {
         int nbKeys = 2;
-        if (doProlif.isSelected()) nbKeys+=2;
+        if (doProlif.isSelected()) nbKeys+=5;
+        if (doNLProlif.isSelected()) nbKeys+=8;
         if (doReplication.isSelected()) nbKeys+=2;
-        if (doNL.isSelected()) nbKeys+=1;
+        if (doNLRep.isSelected()) nbKeys+=1;
         KeyParameter[] keys = new KeyParameter[nbKeys];
         keys[0]= this.nuc_int;
         keys[1] = this.nuc_vol;
         int count=2;
         if (doProlif.isSelected()) {
             keys[count++] = prolif_int;
-            keys[count++] = rac2;
+            keys[count++] = prolif_sd;
+            keys[count++] = prolif_rac1;
+            keys[count++] = prolif_rac1_iso;
+            keys[count++] = prolif_rac1_iso_bilin;
+        }
+        if (doNLProlif.isSelected()) {
+            keys[count++] = prolif_nl_inside_mean;
+            keys[count++] = prolif_nl_inside_med;
+            keys[count++] = prolif_nl_inside_sd;
+            keys[count++] = prolif_nl_outside_mean;
+            keys[count++] = prolif_nl_outside_med;
+            keys[count++] = prolif_nl_outside_sd;
+            keys[count++] = prolif_nl_snr;
+            keys[count++] = prolif_nl_ttest_statistic;
         }
         if (doReplication.isSelected()) {
             keys[count++] = replication_int;
             keys[count++] = rep_rac2;
         }
-        if (doNL.isSelected()) {
+        if (doNLRep.isSelected()) {
             keys[count++] = rep_loc;
         }
         
         allKeys.setKeys(keys);
         return new Parameter[]{allKeys};
     }
-    
+
     @Override
     public String getHelp() {
         return "";

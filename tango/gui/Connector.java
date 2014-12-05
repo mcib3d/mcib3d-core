@@ -144,16 +144,14 @@ public class Connector extends javax.swing.JPanel {
                 return;
             }
             toggleEnableButtons(true, false);
-            SystemEnvironmentVariable mongoHost = new SystemEnvironmentVariable("mongoHost", host.getText(), false, false);
-            boolean a = mongoHost.write(false);
+            SystemEnvironmentVariable mongoHost = new SystemEnvironmentVariable("mongoHost", host.getText(), true, false, false);
             getUsers();
             if (usernames.getItemCount() > 0) {
-                SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", null, true, false);
+                SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", null, true, false, false);
                 String user = mongoUser.getValue();
-                if (user.length() == 0 || !utils.contains(usernames, user, true)) {
-                    user = (String) usernames.getItemAt(0);
+                if (user!=null && user.length() != 0 && utils.contains(usernames, user, true)) {
+                    setUser(user);
                 }
-                setUser(user);
             }
         } catch (Exception e) {
             exceptionPrinter.print(e, "", Core.GUIMode);
@@ -182,8 +180,7 @@ public class Connector extends javax.swing.JPanel {
                 user.append("options_" + this.getHost(), userHost);
             }
             options.dbGet((BasicDBObject) userHost);
-            SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", usr, false, false);
-            boolean b = mongoUser.write(false);
+            SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", usr, true, false, false);
             core.connect();
             toggleEnableButtons(true, true);
         } else {

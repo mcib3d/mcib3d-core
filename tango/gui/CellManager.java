@@ -151,7 +151,7 @@ public class CellManager implements  ListSelectionListener, AdjustmentListener, 
         setSortKeys();
         layout.setStructures(xp.getStructureNames(false));
         if (selectionManager!=null) selectionManager.update();
-        this.windowPos=new ImageWindowPosition(xp.getNBStructures(false), xp.getNBStructures(true));
+        this.windowPos=new ImageWindowPosition(xp.getNBFiles(), xp.getNBStructures(true));
         //for (String c : core.getChannels(false)) listChannelModel.addElement(c);
     }
     

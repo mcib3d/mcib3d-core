@@ -66,7 +66,7 @@ public class RadialAutoCorrelation3D implements MeasurementObject {
         ImageHandler input = (filtered.isSelected())? rawImages.getFilteredImage(structure.getIndex()):rawImages.getImage(structure.getIndex());
         ImageHandler filteredImage = filters.runPreFilterSequence(structure.getIndex(), input, rawImages, nbCPUs, false);
         
-        RadialAutoCorrelation rac = new RadialAutoCorrelation(filteredImage, rawImages.getMask(), resample.isSelected());
+        RadialAutoCorrelation rac = new RadialAutoCorrelation(filteredImage, rawImages.getMask(), resample.isSelected()?2:0);
         Parameter[] radParam = radii.getParameters();
         double[] rads = new double[radParam.length];
         double[] corrs = new double[radParam.length];

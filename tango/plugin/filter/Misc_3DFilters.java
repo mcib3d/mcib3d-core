@@ -57,7 +57,7 @@ public class Misc_3DFilters implements PreFilter {
     int mins = 2;
     int maxs = 10;
     int filter = 0;
-    String[] filters = {"Gaussian 3D (IJ)", "LoG 3D (BIG)", /*"PureDenoise (BIG)",*/ "BandPass (Droplet)"};
+    String[] filters = {"Gaussian 3D (IJ)", "LoG 3D (BIG)", "PureDenoise (BIG)", "BandPass (Droplet)"};
     ChoiceParameter filter_P = new ChoiceParameter("Choose Filter: ", "filter", filters, null);
     DoubleParameter voisXY_P = new DoubleParameter("VoisXY: ", "voisXY", (double) voisx, Parameter.nfDEC1);
     DoubleParameter voisZ_P = new DoubleParameter("VoisZ: ", "voisZ", (double) voisz, Parameter.nfDEC1);
@@ -70,7 +70,7 @@ public class Misc_3DFilters implements PreFilter {
         {
             put(filters[GAUSSIAN], new Parameter[]{voisXY_P, condScale});
             put(filters[LOG], new Parameter[]{voisXY_P, condScale});
-            //put(filters[DENOISE], new Parameter[]{voisXY_P, condScale, iteration_P});
+            put(filters[DENOISE], new Parameter[]{voisXY_P, condScale, iteration_P});
             put(filters[BANDPASS], new Parameter[]{mins_P, maxs_P});
         }
     };
@@ -102,7 +102,7 @@ public class Misc_3DFilters implements PreFilter {
             img2.setTitle(ih.getTitle() + "::Gauss3D");
             return img2;
         } else if (filter == LOG) {
-            return LOG(ih, voisx, voisz);
+            return LaplacianOfGaussian3D.LOG(ih, voisx, voisz);
 
         } else if (filter == DENOISE) {
             // TODO ne pas utiliser le window manager car en general process en batch
@@ -164,19 +164,6 @@ public class Misc_3DFilters implements PreFilter {
             return ImageHandler.wrap(impOut);
         }
         return null;
-    }
-    
-    public static ImageHandler LOG(ImageHandler imp, double radX, double radZ) {
-        ImageWare in = Builder.create(imp.getImagePlus(), 3);
-            LoG3D localLoG3D = new LoG3D(false);
-            ImageWare res;
-            if (imp.sizeZ > 1) {
-                res = localLoG3D.doLoG(in, radX, radX, radZ);
-            } else {
-                res = localLoG3D.doLoG(in, radX, radX);
-            }
-            res.invert();
-        return ImageHandler.wrap(res.buildImageStack());
     }
 
     @Override

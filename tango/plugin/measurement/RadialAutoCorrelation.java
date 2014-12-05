@@ -37,15 +37,15 @@ public class RadialAutoCorrelation {
     double sigma2;
     double meanValue;
     
-    public RadialAutoCorrelation(ImageHandler intensity, ImageInt mask, boolean resample) {
+    public RadialAutoCorrelation(ImageHandler intensity, ImageInt mask, int resample) {
         init(intensity, mask, resample);
     }
      
-    protected void init(ImageHandler intensity, ImageInt mask, boolean resample) {
-        if (resample) {
+    protected void init(ImageHandler intensity, ImageInt mask, int resample) {
+        if (resample>0) {
             int newZ = (int)(mask.sizeZ * mask.getScaleZ()/mask.getScaleXY()+0.5);
             maskResampled=mask.resample(newZ, ij.process.ImageProcessor.NEAREST_NEIGHBOR);
-            intensityResampled=intensity.resample(newZ, ij.process.ImageProcessor.BICUBIC);
+            intensityResampled=intensity.resample(newZ, resample==1? ij.process.ImageProcessor.BILINEAR : ij.process.ImageProcessor.BICUBIC);
         } else {
             maskResampled=mask;
             intensityResampled=intensity;
