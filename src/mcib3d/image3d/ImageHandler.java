@@ -125,12 +125,16 @@ public abstract class ImageHandler {
     }
 
     public boolean sameDimentions(ImageHandler other) {
-        if(other==null) return false;
+        if (other == null) {
+            return false;
+        }
         return (sizeX == other.sizeX && sizeY == other.sizeY && sizeZ == other.sizeZ);
     }
 
     public boolean sameDimentions(ImagePlus other) {
-         if(other==null) return false;
+        if (other == null) {
+            return false;
+        }
         return (sizeX == other.getWidth() && sizeY == other.getHeight() && sizeZ == other.getNSlices());
     }
 
@@ -889,8 +893,8 @@ public abstract class ImageHandler {
 
         return res;
     }
-    
-     public ImageHandler addImage(ImageHandler image, int s1, int s2) {
+
+    public ImageHandler addImage(ImageHandler image, int s1, int s2) {
         if (!this.sameDimentions(image)) {
             return null;
         }
@@ -902,8 +906,6 @@ public abstract class ImageHandler {
 
         return res;
     }
-    
-    
 
     /**
      * Compute the operation coeff*this*other;
@@ -1344,9 +1346,9 @@ public abstract class ImageHandler {
     }
 
     public abstract ImageByte thresholdRangeInclusive(float min, float max);
-    
-     public abstract ImageByte thresholdRangeExclusive(float min, float max);  
-    
+
+    public abstract ImageByte thresholdRangeExclusive(float min, float max);
+
     public abstract ImageByte threshold(float thld, boolean keepUnderThld, boolean strict);
 
     public ImageByte thresholdAboveInclusive(float thld) {
@@ -1491,6 +1493,17 @@ public abstract class ImageHandler {
 
     public void invert() {
         invert(null);
+    }
+
+    // value for bckg values, 0 for non-backg values, 
+    public void invertBackground(float bckg, float value) {
+        for (int i = 0; i < sizeXYZ; i++) {
+            if (getPixel(i) == bckg) {
+                setPixel(i, value);
+            } else {
+                setPixel(i, 0);
+            }
+        }
     }
 
     //from FeatureJ
@@ -1838,7 +1851,7 @@ public abstract class ImageHandler {
         }
         return mini;
     }
-    
+
     public float getMaxBelowValue(float value) {
         float mini = Float.MIN_VALUE;
         float pix;
@@ -1850,8 +1863,6 @@ public abstract class ImageHandler {
         }
         return mini;
     }
-    
-    
 
     /**
      * Radial distribution of pixels mean values in layers

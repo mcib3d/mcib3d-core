@@ -927,6 +927,8 @@ public class ImageShort extends ImageInt {
         return res;
     }
 
+    // remove parameter mask ??
+    // see invertMask ??
     @Override
     public void invert(ImageInt mask) {
         for (int z = 0; z < sizeZ; z++) {
