@@ -1,16 +1,11 @@
 package tango.plugin.sampler;
 
 import mcib3d.geom.Object3D;
-import mcib3d.geom.Point3D;
 import tango.spatialStatistics.StochasticProcess.RandomPoint3DGenerator;
-import tango.spatialStatistics.StochasticProcess.RandomPoint3DGeneratorProbaMap;
 import tango.spatialStatistics.StochasticProcess.RandomPoint3DGeneratorUniform;
-import mcib3d.image3d.ImageHandler;
 import tango.dataStructure.InputCellImages;
 import tango.dataStructure.SegmentedCellImages;
-import tango.dataStructure.Structure;
 import tango.parameter.*;
-import tango.plugin.sampler.Sampler;
 /**
  *
  **
