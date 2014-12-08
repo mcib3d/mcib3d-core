@@ -3,7 +3,11 @@ package tango.plugin.measurement.radialAnalysis;
 import ij.gui.Plot;
 import java.util.HashMap;
 import mcib3d.geom.Object3D;
+import mcib3d.geom.Object3DVoxels;
 import mcib3d.image3d.ImageByte;
+import mcib3d.image3d.ImageHandler;
+import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.ImageShort;
 import tango.dataStructure.InputCellImages;
 import tango.dataStructure.ObjectQuantifications;
 import tango.dataStructure.SegmentedCellImages;
@@ -38,67 +42,100 @@ import tango.plugin.measurement.MeasurementStructure;
  * @author Jean Ollion
  */
 
-public class ShellAnalysis implements MeasurementStructure {
+public class ShellAnalysis implements MeasurementObject {
 
-    StructureParameter structure = new StructureParameter("Structure:", "structure", -1, true);
-    BooleanParameter segmented = new BooleanParameter("Use segmented objects", "segmented", true);
+    StructureParameter structure = new StructureParameter("Intensity:", "structure", -1, true);
+    BooleanParameter segmented = new BooleanParameter("Measure proprotion of segmented signal", "segmented", false);
     StructureParameter structureMask = new StructureParameter("Distance From structure:", "structureMask", 0, true);
+    BooleanParameter object = new BooleanParameter("Perform around each obect separately", "objects", false);
+    ConditionalParameter referenceObjectCond = new ConditionalParameter("Refence for distance calculation:", structureMask);
     //IntParameter nbShells = new IntParameter("Number of Shells", "nbShells", 5);
     SpinnerParameter nbShells = new SpinnerParameter("Number of Shells", "nbShells", 2, 100, 5);
     BooleanParameter normalize = new BooleanParameter("Normalize with nucleus Signal", "normalize", false);
-    Parameter[] parameters = new Parameter[]{structure, segmented, structureMask, nbShells, normalize};
+    
+    Parameter[] parameters = new Parameter[]{structure, segmented, referenceObjectCond, nbShells, normalize};
     GroupKeyParameter group = new GroupKeyParameter("Shells", "shell", "shell_", true, new KeyParameterObjectNumber[0], true);
     //KeyParameterObjectNumber key = new KeyParameterObjectNumber("Shell", "shell", "shell", true);
-    KeyParameterStructureNumber[] keys = new KeyParameterStructureNumber[0];
+    KeyParameterObjectNumber[] keys = new KeyParameterObjectNumber[0];
     Parameter[] allKeys = new Parameter[]{group};
     int nCPUs=1;
     boolean verbose;
     
     public ShellAnalysis() {
         nbShells.setFireChangeOnAction();
+        referenceObjectCond.setDefaultParameter(new Parameter[]{object});
+        referenceObjectCond.setCondition(0 , new Parameter[]{});
     }
     
     @Override
-    public int[] getStructures() {
-        return new int[] {structure.getIndex()};
+    public int getStructure() {
+        if (structureMask.getIndex()!=0 && !object.isSelected()) return 0;
+        else return structureMask.getIndex();
     }
 
     @Override
-    public void getMeasure(InputCellImages rawImages, SegmentedCellImages segmentedImages, StructureQuantifications quantifications) {
+    public void getMeasure(InputCellImages rawImages, SegmentedCellImages segmentedImages, ObjectQuantifications quantifications) {
         if (!group.isSelected()) return;
-        ShellAnalysisCore shell = new ShellAnalysisCore(rawImages.getMask(), segmentedImages.getImage(structureMask.getIndex()), structureMask.getIndex()==0, nCPUs, false);
-        int nbShell = nbShells.getValue();
-        int[] indexes = (normalize.isSelected()) ? shell.getShellIndexesNormalized(nbShell, rawImages.getImage(0)) : shell.getShellIndexes(nbShell);
-        double[] shells;
-        if (segmented.isSelected()) shells = shell.getShellRepartitionMask(segmentedImages.getImage(structure.getIndex()), indexes);
-        else shells = shell.getShellRepartition(rawImages.getImage(structure.getIndex()), indexes);
-        if (verbose) ij.IJ.log("Shell Analysis: ");
-        for (int i = 0; i<shells.length; i++) {
-            quantifications.setQuantificationStructureNumber(keys[i], shells[i]);
-            if (verbose) ij.IJ.log(keys[i].getKey()+":"+shells[i]);
+        ImageHandler intensity = (segmented.isSelected()) ? segmentedImages.getImage(structure.getIndex()) : rawImages.getImage(structure.getIndex());
+        if (segmented.isSelected() && intensity==null) {
+            if (verbose) ij.IJ.log("Measure proprotion of segmented signal is selected, but no segmented image found for structure:"+structure.getIndex());
+            return;
         }
+        if (object.isSelected()) {
+            Object3DVoxels[] obs = segmentedImages.getObjects(this.structureMask.getIndex());
+            double[][] shells = new double[nbShells.getValue()][obs.length];
+            ImageInt image = (ImageInt)ImageShort.newBlankImageHandler("object", segmentedImages.getImage(this.structureMask.getIndex()));
+            for (int i = 0; i<obs.length; i++) {
+                Object3DVoxels o = obs[i];
+                o.draw(image, o.getValue());
+                double[] shellsO = getShells(rawImages.getMask(), image, intensity, rawImages.getImage(0));
+                for (int s = 0; s<shellsO.length; s++ ) shells[s][i]=shellsO[s];
+                o.draw(image, 0);
+            }
+            for (int i = 0; i<shells.length; i++) {
+                quantifications.setQuantificationObjectNumber( keys[i], shells[i]);
+            }
+        } else {
+            double[] shells = getShells(rawImages.getMask(), segmentedImages.getImage(structureMask.getIndex()), intensity, rawImages.getImage(0));
+            for (int i = 0; i<shells.length; i++) {
+                quantifications.setQuantificationObjectNumber( keys[i], new double[]{shells[i]});
+                if (verbose) ij.IJ.log(keys[i].getKey()+":"+shells[i]);
+            }
+        }
+    }
+    
+    protected double[] getShells(ImageInt nuc, ImageInt ref, ImageHandler intensity, ImageHandler intensityRef) {
+        ShellAnalysisCore shell = new ShellAnalysisCore(nuc, ref, ref==nuc, nCPUs, false);
+        int nbShell = nbShells.getValue();
+        int[] indexes = (normalize.isSelected()) ? shell.getShellIndexesNormalized(nbShell, intensityRef) : shell.getShellIndexes(nbShell);
+        double[] shells;
+        if (segmented.isSelected()) shells = shell.getShellRepartitionMask((ImageInt)intensity, indexes);
+        else shells = shell.getShellRepartition(intensity, indexes);
+        
         if (verbose) {
             shell.getShellMap(indexes).show();
             double[] shellIdx = new double[shells.length];
             for (int i = 0; i<shells.length; i++) shellIdx[i]=i+1;
-            Plot p = (new Plot("Shell Analysis", "Shell Index", "% of fluorescence signal", shellIdx, shells));
+            String title = "Shell Analysis";
+            if (object.isSelected()) title  += " for object: "+ ref.getMax();
+            Plot p = (new Plot(title, "Shell Index", "% of fluorescence signal", shellIdx, shells));
             p.setLimits(1 , shellIdx.length, 0, 1);
             p.show();
         }
-        
+        return shells;
     }
 
     @Override
     public Parameter[] getKeys() {
         if (nbShells.getValue()!=keys.length) {
-            KeyParameterStructureNumber[] newKeys = new KeyParameterStructureNumber[nbShells.getValue()];
+            KeyParameterObjectNumber[] newKeys = new KeyParameterObjectNumber[nbShells.getValue()];
             if (newKeys.length>0) {
                 if (nbShells.getValue()<keys.length) {
                     if (keys.length>0) System.arraycopy(keys, 0, newKeys, 0, newKeys.length);
                 } else {
                     if (keys.length>0) System.arraycopy(keys, 0, newKeys, 0, keys.length);
                     for (int i = keys.length ; i<newKeys.length; i++ ) {
-                        newKeys[i]=new KeyParameterStructureNumber("Shell "+(i+1)+ ":", "shell"+(i+1), ""+(i+1), true);
+                        newKeys[i]=new KeyParameterObjectNumber("Shell "+(i+1)+ ":", "shell"+(i+1), ""+(i+1), true);
                     }
                 }
             }
