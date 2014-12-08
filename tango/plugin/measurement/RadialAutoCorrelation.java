@@ -1,5 +1,6 @@
 package tango.plugin.measurement;
 
+import ij.IJ;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageStats;
@@ -56,7 +57,7 @@ public class RadialAutoCorrelation {
     }
     
     public double getCorrelation(float radius, float radiusZ) {
-        int[][] neighbor=ImageUtils.getNeigh(radius, radiusZ, (float)Math.sqrt(2), true);
+        int[][] neighbor=ImageUtils.getHalfNeighbourhood(radius, radiusZ, 1);
         double sum=0;
         double count=0;
         int zz, xx, yy, xy2;
@@ -68,11 +69,11 @@ public class RadialAutoCorrelation {
                         double value = intensityResampled.getPixel(xy, z)-meanValue;
                         for (int i = 0; i<neighbor[0].length; i++) {
                             zz = z + neighbor[2][i];
-                            if (zz<maskResampled.sizeZ) {
+                            if (zz<maskResampled.sizeZ && zz>=0) {
                                 xx= neighbor[0][i]+x;
-                                if (xx<maskResampled.sizeX) {
+                                if (xx<maskResampled.sizeX && xx>=0) {
                                     yy= neighbor[1][i]+y;
-                                    if (yy<maskResampled.sizeY) {
+                                    if (yy<maskResampled.sizeY && yy>=0) {
                                         xy2 = xx+yy*maskResampled.sizeX;
                                         if (maskResampled.getPixel(xy2, zz)!=0) {
                                             sum += value * (intensityResampled.getPixel(xy2, zz)-meanValue);

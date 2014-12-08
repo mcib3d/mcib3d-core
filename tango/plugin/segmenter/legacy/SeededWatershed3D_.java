@@ -199,7 +199,7 @@ public class SeededWatershed3D_ implements SpotSegmenter  {
     // seed = over thldHigh, under thldHessian if hessain not null && verify isSeed
     protected ArrayList<Vox3D> getSeeds() {
         final HashMap<Integer, ArrayList<Vox3D>> seedThread = new HashMap<Integer, ArrayList<Vox3D>>();
-        final int[][] neigh = ImageUtils.getNeigh(seedRadXY, seedRadZ);
+        final int[][] neigh = ImageUtils.getNeighbourhood(seedRadXY, seedRadZ);
         final ThreadRunner tr = new ThreadRunner(0, input.sizeZ, nCPUs);
         for (int i = 0; i<tr.threads.length; i++) {
             final ArrayList<Vox3D> s = new ArrayList<Vox3D>();

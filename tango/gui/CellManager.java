@@ -476,7 +476,7 @@ public class CellManager implements  ListSelectionListener, AdjustmentListener, 
                             for (int cidx = tr.ai.getAndIncrement(); cidx<tr.end; cidx = tr.ai.getAndIncrement()) {
                                 try {
                                     System.out.println("Mesurements: "+(cidx+1)+"/"+tr.end + " nbThreads:"+tr.threads.length);
-                                    if (cells[cidx]!=null) {
+                                    if (cells[cidx]!=null && cells[cidx].getTag().getTag()>=0) {
                                         cells[cidx].setVerbose(false);
                                         cells[cidx].setNbCPUs(1); // TODO more CPUs if less cells at the same time
                                         cells[cidx].mesure(override);
@@ -491,7 +491,9 @@ public class CellManager implements  ListSelectionListener, AdjustmentListener, 
                                         f.closeOutputImages();
                                     }
                                 }
-                                catch (Exception e) { exceptionPrinter.print(e, "mesure cell:"+cidx, Core.GUIMode);}
+                                catch (Exception e) { 
+                                    exceptionPrinter.print(e, "mesure:"+cidx+ " " + ((cells[cidx]!=null) ? cells[cidx].getFieldName()+"::"+cells[cidx].getName() : "cell==null"), Core.GUIMode);
+                                }
                             }
                         }
                     }
@@ -558,7 +560,7 @@ public class CellManager implements  ListSelectionListener, AdjustmentListener, 
                                 //if (progressMonitor!=null && progressMonitor.isCanceled()) return;
                                 try {
                                     System.out.println("Structure Process: "+(cidx+1)+"/"+tr.end + " nbThreads:"+tr.threads.length);
-                                    if (cells[cidx]!=null) {
+                                    if (cells[cidx]!=null && cells[cidx].getTag().getTag()>=0) {
                                         cells[cidx].setVerbose(false);
                                         cells[cidx].setNbCPUs(1); // TODO more CPUs if less cells at the same time
                                         cells[cidx].process(processChannels);
@@ -573,7 +575,7 @@ public class CellManager implements  ListSelectionListener, AdjustmentListener, 
                                     }
                                 }
                                 catch (Exception e) { 
-                                    exceptionPrinter.print(e, "mesure cell:"+cidx, Core.GUIMode);
+                                    exceptionPrinter.print(e, "process cell:"+cidx+ " " + ((cells[cidx]!=null) ? cells[cidx].getFieldName()+"::"+cells[cidx].getName() : "cell==null"), Core.GUIMode);
                                 }
                             }
                         }

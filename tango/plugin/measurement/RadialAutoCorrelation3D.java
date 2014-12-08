@@ -40,7 +40,7 @@ public class RadialAutoCorrelation3D implements MeasurementObject {
     int nbCPUs=1;
     StructureParameter structure = new StructureParameter("Structure:", "structure", -1, false);
     PreFilterSequenceParameter filters = new PreFilterSequenceParameter("Filters: ", "filters");
-    BooleanParameter filtered = new BooleanParameter("Use filtered image:", "filtered", true);
+    BooleanParameter filtered = new BooleanParameter("Use filtered image:", "filtered", false);
     //BooleanParameter resample = new BooleanParameter("Make isotropic:", "resample", true);
     ChoiceParameter resample = new ChoiceParameter("Z-Anisotropy correction method", "resampleChoice", new String[]{"Do nothing", "Use image scale for Z radius", "Make image isotropic (bilinear interpolation)", "Make image isotropic (bicubic interpolation)"}, "Make image isotropic (bilinear interpolation)" );
     MultiParameter radii = new MultiParameter("Radial Autocorrelation Radii:", "radiusMP", new Parameter[]{new SliderParameter("Radius", "radius", 1, 20, 1)}, 0, 20, 0);

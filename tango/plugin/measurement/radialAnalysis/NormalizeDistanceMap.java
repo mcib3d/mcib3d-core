@@ -46,7 +46,7 @@ public class NormalizeDistanceMap {
         }
         Arrays.sort(indicies);
         for (int i = 0;i<indicies.length-1;i++) {
-            // gestion des repetitions
+            // gestion des repetitions : valeur médiane
             if (indicies[i+1].distance==indicies[i].distance) {
                 int j = i+1;
                 while (j<(indicies.length-1) && indicies[i].distance==indicies[j].distance) j++;
@@ -57,7 +57,7 @@ public class NormalizeDistanceMap {
                 indicies[i].index=i;
             }
         }
-        if (indicies[indicies.length-1].index==0) indicies[indicies.length-1].index = indicies.length-1;
+        if (indicies.length>=1 && indicies[indicies.length-1].index==0) indicies[indicies.length-1].index = indicies.length-1;
         for (int i = 0; i<indicies.length; i++)indicies[i].index/=volume;
         for (Vox v : indicies) {
             distanceMap.pixels[v.z][v.xy] = (float) (v.index);

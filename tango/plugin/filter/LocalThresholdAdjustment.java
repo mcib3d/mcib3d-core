@@ -62,7 +62,7 @@ public class LocalThresholdAdjustment extends SpotLocalThresholder {
     public void postInitialize() {
         double radXY = radius.getIntValue(10);
         double radZ = radXY * intensityMap.getScaleXY()/intensityMap.getScaleZ();
-        neigh = ImageUtils.getNeigh((float)radXY, (float)radZ);
+        neigh = ImageUtils.getNeighbourhood((float)radXY, (float)radZ);
     }
      
     @Override
