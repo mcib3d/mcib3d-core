@@ -174,21 +174,23 @@ public class MeasurementSequence {
             try {
                 int channel = m.getStructure();
                 HashMap<Integer, BasicDBObject> objects = channelObjects.get(channel);
-
+                boolean onKeySelected = true;
                 if (!override && objects != null && !objects.isEmpty()) {
-                    setIgnoredKeys(objects.values(), m.getKeys());
+                    onKeySelected = setIgnoredKeys(objects.values(), m.getKeys());
                 }
-                m.setVerbose(cell.getVerbose());
-                m.setMultithread(cell.getNbCPUs());
-                ObjectQuantifications quantifs = mes.get(channel);
-                if (quantifs == null) {
-                    Object3D[] os = seg.getObjects(channel);
-                    if (os!=null) {
-                        quantifs = new ObjectQuantifications(os.length);
-                        mes.put(channel, quantifs);
-                    } 
+                if (onKeySelected) {
+                    m.setVerbose(cell.getVerbose());
+                    m.setMultithread(cell.getNbCPUs());
+                    ObjectQuantifications quantifs = mes.get(channel);
+                    if (quantifs == null) {
+                        Object3D[] os = seg.getObjects(channel);
+                        if (os!=null) {
+                            quantifs = new ObjectQuantifications(os.length);
+                            mes.put(channel, quantifs);
+                        } 
+                    }
+                    if (quantifs!=null) m.getMeasure(raw, seg, quantifs);
                 }
-                if (quantifs!=null) m.getMeasure(raw, seg, quantifs);
                 
             } catch (Exception e) {
                 exceptionPrinter.print(e, "measure Object cell:"+cell.getName(), Core.GUIMode);
@@ -352,9 +354,10 @@ public class MeasurementSequence {
         return (mO == null || mO.isEmpty()) && (mS == null || mS.isEmpty());
     }
 
-    private void setIgnoredKeys(BasicDBObject o, Parameter[] keys) {
+    private boolean setIgnoredKeys(BasicDBObject o, Parameter[] keys) {
+        boolean oneKeySelected = false;
         for (Parameter p : keys) {
-            if (p instanceof KeyParameter) setIgnoredKey(o, (KeyParameter)p);
+            if (p instanceof KeyParameter) if (setIgnoredKey(o, (KeyParameter)p)) oneKeySelected=true;
             else if (p instanceof GroupKeyParameter) {
                 if (((GroupKeyParameter)p).isLocked()) {
                     boolean doAll=false;
@@ -362,27 +365,33 @@ public class MeasurementSequence {
                         setIgnoredKey(o, key);
                         if (key.isSelected()) {
                             doAll=true;
+                            oneKeySelected=true;
                             break;
                         }
                     }
                     ((GroupKeyParameter)p).setSelected(doAll);
-                } else for (KeyParameter key : ((GroupKeyParameter)p).getKeys()) setIgnoredKey(o, key);
+                } else for (KeyParameter key : ((GroupKeyParameter)p).getKeys()) if(setIgnoredKey(o, key)) oneKeySelected=true;
             }
         }
+        return oneKeySelected;
     }
     
-    private void setIgnoredKey(BasicDBObject o, KeyParameter key) {
+    private boolean setIgnoredKey(BasicDBObject o, KeyParameter key) {
         if (key.isSelected()) {
             if (o.containsField(key.getKey())) {
                 key.setSelected(false);
+                return false;
                 //IJ.log("measurement sequence set ignored keys objects: "+keys[i].getKey()+ " "+false);
-            }
-        }
+            } else return true;
+        } else return false;
     }
     
-    private void setIgnoredKeys(Collection<BasicDBObject> os, Parameter[] keys) {
+    private boolean setIgnoredKeys(Collection<BasicDBObject> os, Parameter[] keys) {
+        boolean oneKeySelected = false;
         for (Parameter p : keys) {
-            if (p instanceof KeyParameter) setIgnoredKey(os, (KeyParameter)p);
+            if (p instanceof KeyParameter) {
+                if (setIgnoredKey(os, (KeyParameter)p)) oneKeySelected=true;
+            }
             else if (p instanceof GroupKeyParameter) {
                 if (((GroupKeyParameter)p).isLocked()) {
                     boolean doAll=false;
@@ -390,16 +399,20 @@ public class MeasurementSequence {
                         setIgnoredKey(os, key);
                         if (key.isSelected()) {
                             doAll=true;
+                            oneKeySelected=true;
                             break;
                         }
                     }
                     ((GroupKeyParameter)p).setSelected(doAll);
-                } else for (KeyParameter key : ((GroupKeyParameter)p).getKeys()) setIgnoredKey(os, key);
+                } else for (KeyParameter key : ((GroupKeyParameter)p).getKeys()) {
+                    if (setIgnoredKey(os, key)) oneKeySelected=true;
+                }
             }
         }
+        return oneKeySelected;
     }    
     
-    private void setIgnoredKey(Collection<BasicDBObject> os, KeyParameter key) {
+    private boolean setIgnoredKey(Collection<BasicDBObject> os, KeyParameter key) {
         if (key.isSelected()) {
             boolean doMeas = false;
             String k = key.getKey();
@@ -410,7 +423,8 @@ public class MeasurementSequence {
                 }
             }
             key.setSelected(doMeas);
-        }
+            return doMeas;
+        } else return false;
     }
     
     
