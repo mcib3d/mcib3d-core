@@ -1,5 +1,4 @@
 package tango.util;
-import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.*;
 import mcib3d.image3d.ImageByte;

@@ -9,3 +9,4 @@ Move up and down filters,interface,3,Thomas,,,,
 Documentation for shell analysis,documentation,1,Thomas,,,,
 Multi-layer analysis (merge with shell analysis?),measurement,1,Thomas,,,,
 Shell Analysis individual for each object ,measurement,2,Thomas,,,,
+"NO SEGMENTATION does not  work, uses segmentation",bug,1,Thomas,Thomas,,, add a no segmentation plugin segmenter ?

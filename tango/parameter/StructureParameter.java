@@ -44,12 +44,13 @@ import tango.gui.util.Refreshable;
  *
  * @author Jean Ollion
  */
-public class StructureParameter extends Parameter implements Refreshable {
+public class StructureParameter extends Parameter implements Refreshable, ActionnableParameter {
 
     JComboBox choice;
     private static String[] structures, virtualStructures;
     private boolean allowVirtual;
-
+    Refreshable r;
+    
     public StructureParameter(String label, String id, int defaultValue, boolean allowVirtual) {
         super(label, id);
         this.allowVirtual = allowVirtual;
@@ -265,6 +266,40 @@ public class StructureParameter extends Parameter implements Refreshable {
     @Override
     public boolean sameContent(Parameter p) {
         return p instanceof StructureParameter && ((StructureParameter)p).getIndex()==getIndex();
+    }
+
+    @Override
+    public void setRefreshOnAction(Refreshable r_) {
+        this.r=r_;
+        choice.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent ie) {
+                if (ie.getStateChange()==ItemEvent.DESELECTED) return;
+                if (r!=null) r.refresh();
+            }
+        });
+    }
+
+    @Override
+    public StructureParameter getParameter() {
+        return this;
+    }
+
+    @Override
+    public Object getValue() {
+        return getIndex();
+    }
+
+    @Override
+    public void setFireChangeOnAction() {
+        choice.addItemListener(
+            new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent itemEvent) {
+                    if (itemEvent.getStateChange()==ItemEvent.SELECTED) fireChange();
+                }
+            }
+        );
     }
 
     private class StructureParameterCellRenderer extends DefaultListCellRenderer {

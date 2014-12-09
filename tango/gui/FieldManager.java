@@ -531,19 +531,27 @@ public class FieldManager implements ListSelectionListener {
                 for (int i  = 0; i<fields.length; i++) {
                     if (Core.GUIMode) Core.getProgressor().setAction("Processing field");
                     if (Core.GUIMode) IJ.log("segment field:"+fields[i]);
-                    IJ.showStatus("Nuclei segmentation: "+(i+1)+"/"+fields.length);
+                    if (Core.GUIMode) IJ.showStatus("Nuclei segmentation: "+(i+1)+"/"+fields.length);
                     System.out.println("Nuclei segmentation: "+(i+1)+"/"+fields.length);
-                    Field field = (Field)fields[i];
-                    field.setVerbose(false);
-                    field.hide();
-                    tags[i]=field.processNucleus();
-                    field.saveOutput();
+                        Field field = (Field)fields[i];
+                        field.setVerbose(false);
+                        field.hide();
+                        try {
+                            tags[i]=field.processNucleus();
+                            field.saveOutput();
+                        } catch (Exception e) {
+                            exceptionPrinter.print(e, "process field error: " + field.getName() , Core.GUIMode);
+                        }
                     if (crop) {
                         if (Core.GUIMode) Core.getProgressor().setAction("Cropping field");
                         if (Core.GUIMode) IJ.log ("crop field:"+fields[i]);
                         if (Core.GUIMode) IJ.showStatus("Nuclei cropping: "+(i+1)+"/"+fields.length);
                         System.out.println("Nuclei cropping: "+(i+1)+"/"+fields.length);
-                        field.cropCells(tags[i]);
+                        try {
+                            field.cropCells(tags[i]);
+                        } catch (Exception e) {
+                            exceptionPrinter.print(e, "crop field error: " + field.getName() , Core.GUIMode);
+                        }
                     }
                     field.closeInputImages();
                     field.closeOutputImages();
@@ -566,7 +574,7 @@ public class FieldManager implements ListSelectionListener {
             }
         }
         catch (Exception e) {
-            exceptionPrinter.print(e, "run error :: ", Core.GUIMode);
+            exceptionPrinter.print(e, "process field error::", Core.GUIMode);
         }
     }
     

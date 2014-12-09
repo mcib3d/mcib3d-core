@@ -1,21 +1,11 @@
 package tango.plugin.measurement;
 
 import ij.IJ;
-import ij.ImagePlus;
-import ij.measure.ResultsTable;
-import ij.plugin.filter.PlugInFilter;
-import ij.process.ImageProcessor;
-import java.util.ArrayList;
-import java.util.Iterator;
-import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
-import mcib3d.image3d.distanceMap3d.EDT;
-import mcib_plugins.analysis.simpleMeasure;
 import tango.dataStructure.InputCellImages;
 import tango.dataStructure.ObjectQuantifications;
 import tango.dataStructure.SegmentedCellImages;
@@ -82,8 +72,6 @@ public class CellCycleMeasurements implements MeasurementObject {
     DoubleParameter radErodeNuc = new DoubleParameter("Radius (pix)", "radErodeNuc", defRadErodeNuc, DoubleParameter.nfDEC1);
     KeyParameterObjectNumber prolif_int = new KeyParameterObjectNumber("Proliferation marker mean intensity", "proliferation_mean_intensity");
     KeyParameterObjectNumber prolif_rac1 = new KeyParameterObjectNumber("Proliferation RadialAutoCorrelation rad:1", "proliferation_rac1");
-    KeyParameterObjectNumber prolif_rac1_iso = new KeyParameterObjectNumber("Proliferation RadialAutoCorrelation rad:1 iso", "proliferation_rac1_iso");
-    KeyParameterObjectNumber prolif_rac1_iso_bilin = new KeyParameterObjectNumber("Proliferation RadialAutoCorrelation rad:1 iso bili", "proliferation_rac1_iso_bilin");
     KeyParameterObjectNumber prolif_sd = new KeyParameterObjectNumber("Proliferation: standard deviation", "proliferation_sd");
     
     
@@ -141,7 +129,7 @@ public class CellCycleMeasurements implements MeasurementObject {
             RadialAutoCorrelation rac=null;
             if (rep_rac2.isSelected()) {
                 rac = new RadialAutoCorrelation(rep, mask, 2);
-                if (rep_rac2.isSelected()) quantifications.setQuantificationObjectNumber(rep_rac2, new double[]{rac.getCorrelation(2)});
+                if (rep_rac2.isSelected()) quantifications.setQuantificationObjectNumber(rep_rac2, new double[]{rac.getCorrelation(2, 2)});
                 if (verbose) rac.intensityResampled.show("RAC Image");
                 if (verbose) rep.show("prolif Image");
             }
@@ -180,20 +168,8 @@ public class CellCycleMeasurements implements MeasurementObject {
             
             RadialAutoCorrelation rac=null;
             if (prolif_rac1.isSelected()) {
-                rac = new RadialAutoCorrelation(prolif, mask, 0);
-                if (prolif_rac1.isSelected()) quantifications.setQuantificationObjectNumber(prolif_rac1, new double[]{rac.getCorrelation(1)});
-            }
-            if (prolif_rac1_iso.isSelected()) {
                 rac = new RadialAutoCorrelation(prolif, mask, 2);
-                if (prolif_rac1_iso.isSelected()) quantifications.setQuantificationObjectNumber(prolif_rac1_iso, new double[]{rac.getCorrelation(1)});
-                if (verbose) rac.intensityResampled.show("RAC Image bicub");
-                if (verbose) prolif.show("prolif Image");
-            }
-            if (prolif_rac1_iso_bilin.isSelected()) {
-                rac = new RadialAutoCorrelation(prolif, mask, 1);
-                if (prolif_rac1_iso_bilin.isSelected()) quantifications.setQuantificationObjectNumber(prolif_rac1_iso_bilin, new double[]{rac.getCorrelation(1)});
-                if (verbose) rac.intensityResampled.show("RAC Image bilin");
-                if (verbose) prolif.show("prolif Image");
+                if (prolif_rac1.isSelected()) quantifications.setQuantificationObjectNumber(prolif_rac1, new double[]{rac.getCorrelation(1, 1)});
             }
             
             if (this.doNLProlif.isSelected()) {
@@ -249,7 +225,7 @@ public class CellCycleMeasurements implements MeasurementObject {
     @Override
     public Parameter[] getKeys() {
         int nbKeys = 2;
-        if (doProlif.isSelected()) nbKeys+=5;
+        if (doProlif.isSelected()) nbKeys+=3;
         if (doNLProlif.isSelected()) nbKeys+=8;
         if (doReplication.isSelected()) nbKeys+=2;
         if (doNLRep.isSelected()) nbKeys+=1;
@@ -261,8 +237,6 @@ public class CellCycleMeasurements implements MeasurementObject {
             keys[count++] = prolif_int;
             keys[count++] = prolif_sd;
             keys[count++] = prolif_rac1;
-            keys[count++] = prolif_rac1_iso;
-            keys[count++] = prolif_rac1_iso_bilin;
         }
         if (doNLProlif.isSelected()) {
             keys[count++] = prolif_nl_inside_mean;

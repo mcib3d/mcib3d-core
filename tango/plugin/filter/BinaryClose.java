@@ -6,12 +6,13 @@ import ij.ImagePlus;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 import java.util.HashMap;
+import java.util.TreeMap;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.processing.BinaryMorpho;
 import tango.dataStructure.InputImages;
 import tango.parameter.*;
-import tango.plugin.filter.PostFilter;
 
 /**
  *
@@ -46,6 +47,7 @@ public class BinaryClose implements PostFilter, PlugIn {
     DoubleParameter radiusXY = new DoubleParameter("XY-radius: ", "radiusXY", 1d, Parameter.nfDEC1);
     DoubleParameter radiusZ = new DoubleParameter("Z-radius: ", "radiusZ", 1d, Parameter.nfDEC1);
     BooleanParameter useScale = new BooleanParameter("Use Image Scale for Z radius: ", "useScale", true);
+    BooleanParameter keepHoles = new BooleanParameter("Keep holes", "keepHoles", false);
     //BooleanParameter dilate = new BooleanParameter("Dilate: ", "dilate", false);
     HashMap<Object, Parameter[]> map = new HashMap<Object, Parameter[]>() {
         {
@@ -61,6 +63,7 @@ public class BinaryClose implements PostFilter, PlugIn {
         radiusZ.setHelp("Radius in Z direction (pixels)", true);
         useScale.setHelp("If selected, the radius in Z direction will be computed according to the image anisotropy", true);
         useScale.setHelp("If selected, radiusZ = radiusXY * scaleXY / scaleZ", false);
+        keepHoles.setHelp("Keep holes (if any) intacts. Inside holes may disappear due to closing.", true);
         //dilate.setHelp("If selected a dilatation of one voxel is applied to the nucleus mask (after operation)", true);
     }
 
@@ -87,15 +90,40 @@ public class BinaryClose implements PostFilter, PlugIn {
             if (debug) {
                 IJ.log("binaryClose: radius XY" + radXY + " radZ:" + radZ + " nbCPUs:" + nbCPUs);
             }
-            return mcib3d.image3d.processing.BinaryMorpho.binaryCloseMultilabel(input, radXY, radZ, nbCPUs);
+            ImageInt res = BinaryMorpho.binaryCloseMultilabel(input, radXY, radZ, nbCPUs);
+
+            // Keep holes
+            if (keepHoles.isSelected()) {
+                // copied from FillHoles2D --> do a class
+                ImageInt fill = input;
+                TreeMap<Integer, int[]> bounds = input.getBounds(true);
+                if (bounds.size() > 1) {
+                    ImageByte[] masks = input.crop3DBinary(bounds);
+                    for (ImageByte mask : masks) {
+                        tango.util.FillHoles2D.fill(mask, 255, 0);
+                    }
+                    fill = ImageHandler.merge3DBinary(masks, input.sizeX, input.sizeY, input.sizeZ);
+                } else if (bounds.size() == 1) {
+                    ImageByte ib = new ImageByte(input, true);
+                    tango.util.FillHoles2D.fill(ib, 255, 0);
+                    fill = ib;
+                }
+                //  holes = filled - original
+                ImageInt holes = fill.substractImage(input);
+                holes.invertBackground(0, 1);
+                // intersect with close
+                res.intersectMask(holes);
+            }
+
+            return res;
             // option dilate enlevée car plus d'interêt de l'inclure si on ne le fait pas en même temps que la fermeture, ça complique le plugin.
             /*if (dilate.isSelected()) {
-                return mcib3d.image3d.processing.BinaryMorpho.binaryDilateMultilabel(input, 1, 1, nbCPUs);
-            } else {
-                return close;
-            }
-            */
-            
+             return mcib3d.image3d.processing.BinaryMorpho.binaryDilateMultilabel(input, 1, 1, nbCPUs);
+             } else {
+             return close;
+             }
+             */
+
         } catch (Exception e) {
             exceptionPrinter.print(e, "", true);
         }

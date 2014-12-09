@@ -1,9 +1,7 @@
 package tango.spatialStatistics.StochasticProcess;
 
-import ij.IJ;
 import mcib3d.image3d.ImageHandler;
 import java.util.Random;
-import java.util.TreeMap;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DPoint;
 import mcib3d.geom.Object3DVoxels;
@@ -53,6 +51,7 @@ public abstract class RandomPoint3DGenerator {
     public Point3D[] points;
     public boolean verbose;
     int nCPUs=1;
+    
     public RandomPoint3DGenerator(ImageInt mask, int maxSize, int nCPUs, boolean verbose) {
         this.randomGenerator=new Random();
         this.mask=mask;

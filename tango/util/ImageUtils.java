@@ -3,6 +3,7 @@ package tango.util;
 import i5d.Image5D;
 import i5d.cal.ChannelDisplayProperties;
 import i5d.gui.ChannelControl;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.ImageCanvas;
 import java.awt.*;
@@ -107,7 +108,7 @@ public class ImageUtils {
         rc.addKeyListener(kl);
     }
     
-    public static int[][] getNeigh(float radius, float radiusZ) {
+    public static int[][] getNeighbourhood(float radius, float radiusZ) {
         float r = (float) radius / radiusZ;
         int rad = (int) (radius + 0.5f);
         int radZ = (int) (radiusZ + 0.5f);
@@ -119,7 +120,7 @@ public class ImageUtils {
             for (int yy = -rad; yy <= rad; yy++) {
                 for (int xx = -rad; xx <= rad; xx++) {
                     float d2 = zz * r * zz * r + yy * yy + xx * xx;
-                    if (d2 <= rad2 && !((xx == 0) && (yy == 0) && (zz == 0))) {	//exclusion du point
+                    if (d2 <= rad2 && d2>0) {	//exclusion du point central
                         temp[0][count] = xx;
                         temp[1][count] = yy;
                         temp[2][count] = zz;
@@ -148,7 +149,9 @@ public class ImageUtils {
         return res;
     }
     
-    public static int[][] getNeigh(float radius, float radiusZ, float thickness, boolean onlyPositive) {
+    public static int[][] getNeighbourhood(float radius, float radiusZ, float thickness) {
+        if (radiusZ>0 && radiusZ<1) radiusZ=1;
+        //IJ.log("neigh: XY:"+radius+" Z:"+radiusZ+ " Thickness:"+thickness);
         float r = (float) radius / radiusZ;
         int rad = (int) (radius + 0.5f);
         int radZ = (int) (radiusZ + 0.5f);
@@ -156,35 +159,55 @@ public class ImageUtils {
         //float[] tempDist = new float[temp[0].length];
         int count = 0;
         float rad2 = radius * radius;
-        float radMin = (float)Math.pow(radius-thickness, 2);
-        int startZ = onlyPositive?0:-radZ;
-        int startXY = onlyPositive?0:-rad;
-        for (int zz = startZ; zz <= radZ; zz++) {
-            for (int yy = startXY; yy <= rad; yy++) {
-                for (int xx = startXY; xx <= rad; xx++) {
+        float radMin = (radius>=thickness) ? (float)Math.pow(radius-thickness, 2) : Float.MIN_VALUE; //:exclusion du point central
+        for (int zz = -radZ; zz <= radZ; zz++) {
+            for (int yy = -rad; yy <= rad; yy++) {
+                for (int xx = -rad; xx <= rad; xx++) {
                     float d2 = zz * r * zz * r + yy * yy + xx * xx;
-                    if (d2 <= rad2 && d2>radMin && !((xx == 0) && (yy == 0) && (zz == 0))) {	//exclusion du point
+                    if (d2 <= rad2 && d2>radMin && !((xx == 0) && (yy == 0) && (zz == 0))) {	
                         temp[0][count] = xx;
                         temp[1][count] = yy;
                         temp[2][count] = zz;
                         //tempDist[count] = (float) Math.sqrt(d2);
+                        //IJ.log("neigh: X:"+xx+" Y:"+yy+ " Z:"+zz);
                         count++;
                     }
                 }
             }
         }
-
-        //distances = new float[count];
-        //System.arraycopy(tempDist, 0, distances, 0, count);
-
-        /*
-         * Integer[] order = new Integer[distances.length]; for (int i = 0; i <
-         * order.length; i++) order[i]=i; Arrays.sort(order, new
-         * ComparatorDistances()); Arrays.sort(distances); for (int i = 0;
-         * i<count; i++) { vois[0][i]=temp[0][order[i]];
-         * vois[1][i]=temp[1][order[i]]; vois[2][i]=temp[2][order[i]]; }
-         *
-         */
+        int [][] res = new int[3][count];
+        System.arraycopy(temp[0], 0, res[0], 0, count);
+        System.arraycopy(temp[1], 0, res[1], 0, count);
+        System.arraycopy(temp[2], 0, res[2], 0, count);
+        //ij.IJ.log("Neigbor: Radius:"+radius+ " radiusZ"+radiusZ+ " count:"+count);
+        return res;
+    }
+    public static int[][] getHalfNeighbourhood(float radius, float radiusZ, float thickness) {
+        if (radiusZ>0 && radiusZ<1) radiusZ=1;
+        //IJ.log("neigh: XY:"+radius+" Z:"+radiusZ+ " Thickness:"+thickness);
+        float r = (float) radius / radiusZ;
+        int rad = (int) (radius + 0.5f);
+        int radZ = (int) (radiusZ + 0.5f);
+        int[][] temp = new int[3][(2 * rad + 1) * (2 * rad + 1) * (2 * radZ + 1)];
+        //float[] tempDist = new float[temp[0].length];
+        int count = 0;
+        float rad2 = radius * radius;
+        float radMin = (radius>=thickness) ? (float)Math.pow(radius-thickness, 2) : Float.MIN_VALUE; //exclusion du point central
+        for (int zz = 0; zz <= radZ; zz++) {
+            for (int yy = (zz==0)? 0 : -rad; yy <= rad; yy++) {
+                for (int xx = (zz==0 && yy==0)? -rad+1 : -rad; xx <= rad; xx++) {
+                    float d2 = zz * r * zz * r + yy * yy + xx * xx;
+                    if (d2 <= rad2 && d2>radMin) {	
+                        temp[0][count] = xx;
+                        temp[1][count] = yy;
+                        temp[2][count] = zz;
+                        //tempDist[count] = (float) Math.sqrt(d2);
+                        //IJ.log("neigh: X:"+xx+" Y:"+yy+ " Z:"+zz);
+                        count++;
+                    }
+                }
+            }
+        }
         int [][] res = new int[3][count];
         System.arraycopy(temp[0], 0, res[0], 0, count);
         System.arraycopy(temp[1], 0, res[1], 0, count);

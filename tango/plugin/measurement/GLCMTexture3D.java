@@ -59,7 +59,7 @@ public class GLCMTexture3D {
     }
     
     public void computeMatrix(int radius) {
-        int[][] neighbor=ImageUtils.getNeigh(radius, radius, 1, true);
+        int[][] neighbor=ImageUtils.getHalfNeighbourhood(radius, radius, 1);
         double count=0;
         int zz, xx, yy, xy2;
         double factor =  numberOfGrayValues / 256d;
@@ -73,13 +73,13 @@ public class GLCMTexture3D {
                         int value = intensityResampled.getPixelInt(xy, z);
                         if (numberOfGrayValues!=256) value = (int) (value * factor);
                         meanGrayValue+=value;
-                        for (int i = 0; i<neighbor.length; i++) {
+                        for (int i = 0; i<neighbor[0].length; i++) {
                             zz = z + neighbor[2][i];
-                            if (zz<maskResampled.sizeZ) {
+                            if (zz<maskResampled.sizeZ && zz>=0) {
                                 xx= neighbor[0][i]+x;
-                                if (xx<maskResampled.sizeX) {
+                                if (xx<maskResampled.sizeX && xx>=0) {
                                     yy= neighbor[1][i]+y;
-                                    if (yy<maskResampled.sizeY) {
+                                    if (yy<maskResampled.sizeY && yy>=0) {
                                         xy2 = xx+yy*maskResampled.sizeX;
                                         if (maskResampled.getPixel(xy2, zz)!=0) {
                                             int value2 = intensityResampled.getPixelInt(xy2, zz);

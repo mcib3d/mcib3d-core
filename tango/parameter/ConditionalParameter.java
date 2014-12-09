@@ -43,6 +43,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
     ActionnableParameter actionnableParameter;
     protected HashMap<Object, Parameter[]> parameters;
     Parameter[] currentParameters;
+    Parameter[] defaultParameters;
     Box mainBox;
     
     public ConditionalParameter(String title, ActionnableParameter actionnableParameter, HashMap<Object, Parameter[]> parameters) {
@@ -80,7 +81,20 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         ((CollapsiblePanel)box).toggleVisibility(visible);
     }
     
+    public void setDefaultParameter(Parameter[] parameters) {
+        if (parameters==null) return;
+        this.defaultParameters=parameters;
+        for (Parameter p : parameters) {
+            p.setParent(this);
+        }
+        if (currentParameters==null) {
+            currentParameters=defaultParameters;
+            for (Parameter p : currentParameters) p.addToContainer(mainBox);
+        }
+    }
+    
     public void setCondition(Object condition, Parameter[] parameters) {
+        if (condition==null) return;
         this.parameters.put(condition, parameters);
         if (parameters!=null) {
             for (Parameter p : parameters) {
@@ -118,7 +132,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         BasicDBObject subDBO=(BasicDBObject)dbo.get(id);
         if (subDBO!=null) actionnableParameter.getParameter().dbGet(subDBO);
         if (currentParameters!=null) for (Parameter p : currentParameters) p.removeFromContainer(mainBox);
-        currentParameters=parameters.get(actionnableParameter.getValue());
+        currentParameters=getCurrentParameters();
         if (currentParameters!=null) for (Parameter p : currentParameters) {
             if (subDBO!=null) p.dbGet(subDBO);
             p.addToContainer(mainBox);
@@ -143,16 +157,28 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         for (Object key : parameters.keySet()) {
             newParameters.put(key, Parameter.duplicateArray(parameters.get(key)));
         }
-        return new ConditionalParameter( newLabel ,(ActionnableParameter)actionnableParameter.getParameter().duplicate(actionnableParameter.getParameter().getLabel(), newId), newParameters);
+        ConditionalParameter res=  new ConditionalParameter( newLabel ,(ActionnableParameter)actionnableParameter.getParameter().duplicate(actionnableParameter.getParameter().getLabel(), newId), newParameters);
+        res.setDefaultParameter(Parameter.duplicateArray(defaultParameters));
+        return res;
     }
 
+    private Parameter[] getCurrentParameters() {
+        Parameter[] res = parameters.get(actionnableParameter.getValue());
+        if (res==null) return defaultParameters;
+        else return res;
+    }
+    
+    public Parameter[] getDefaultParameters() {
+        return defaultParameters;
+    }
+    
     @Override
     public void refresh() {
         if (currentParameters!=null) {
             for (Parameter p : currentParameters) p.removeFromContainer(mainBox);
             if (ml!=null) unRegister();
         }
-        this.currentParameters=parameters.get(actionnableParameter.getValue());
+        this.currentParameters=getCurrentParameters();
         if (currentParameters!=null) {
             for (Parameter p : currentParameters) p.addToContainer(mainBox);
             if (ml!=null) register();
@@ -227,6 +253,9 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
                             array[i].setTemplate(e.getValue()[i]);
                         }
                     }
+                }
+                if (defaultParameters!=null && cpt.getDefaultParameters()!=null && cpt.getDefaultParameters().length==defaultParameters.length) {
+                    for (int i = 0; i<defaultParameters.length; i++) defaultParameters[i].setTemplate(cpt.getDefaultParameters()[i]);
                 }
                 getActionnableParameter().setTemplate(cpt.getActionnableParameter());
             }

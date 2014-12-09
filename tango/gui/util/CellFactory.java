@@ -37,7 +37,7 @@ import tango.gui.Core;
  * @author Jean Ollion
  */
 public class CellFactory {
-    public static Cell[] getCells(Experiment xp) {
+    /*public static Cell[] getCells(Experiment xp) {
         DBCursor cur = xp.getConnector().getXPNuclei(xp.getName());
         Cell[] res = new Cell[cur.count()];
         for (int i = 0; i<res.length; i++) {
@@ -46,7 +46,7 @@ public class CellFactory {
         }
         cur.close();
         return res;
-    }
+    }*/
     
     public static Cell[] getCells(Field[] fields) {
         int count = 0;
