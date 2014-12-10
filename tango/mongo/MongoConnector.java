@@ -276,6 +276,7 @@ public class MongoConnector {
     private boolean dumpCollection(String projectDBName, String collectionName, String outputPath) {
         if(interactive){
             String cmd = "mongodump --host "+host+" --db "+projectDBName+" --collection "+collectionName+" -o "+outputPath;
+            IJ.log("Dump command is "+cmd);
             return mongoBinPath.executeInteractiveProcess(cmd);
         }else{
             String command = "mongodump";

@@ -152,7 +152,6 @@ public class SystemEnvironmentVariable {
                 if(value==null) real = false;
                 else real = true;
             }
-            write();
         }else{
             if(value==null) real = false;
             else real = true;
@@ -218,11 +217,8 @@ public class SystemEnvironmentVariable {
 
     public String getCommand(String command) {
         if(value!=null && !"".equals(value)) {
-            if(!check(command)) return command;
-            else{
-                if(IJ.isWindows()) return command;
-                else return "./"+command;
-            }
+           if(IJ.isWindows()) return command;
+           else return "./"+command;
         }else return command;
     }
 

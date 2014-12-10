@@ -1,12 +1,14 @@
 package tango.spatialStatistics.StochasticProcess;
 
-import mcib3d.image3d.ImageHandler;
 import java.util.Random;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DPoint;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Point3D;
-import mcib3d.image3d.*;
+import mcib3d.image3d.ImageByte;
+import mcib3d.image3d.ImageHandler;
+import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.ImageShort;
 import tango.dataStructure.AbstractStructure;
 import tango.dataStructure.Cell;
 import tango.spatialStatistics.util.KDTreeC;

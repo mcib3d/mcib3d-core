@@ -117,7 +117,8 @@ public class SystemMethods {
     public static boolean executeInteractiveCommandInDirectory(File directory, String command){
         ArrayList<String> commandArgs = new ArrayList<String>();
         commandArgs.add(directory.getAbsolutePath());
-        commandArgs.add(command);
+        if(IJ.isWindows()) commandArgs.add("\""+command+"\"");
+        else commandArgs.add(command);
         return executeCommandWithParameters("runTerminal" ,commandArgs , null);
     }
     

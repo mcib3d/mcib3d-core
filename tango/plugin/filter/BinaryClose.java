@@ -1,6 +1,5 @@
 package tango.plugin.filter;
 
-import mcib3d.utils.exceptionPrinter;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.GenericDialog;
@@ -11,8 +10,12 @@ import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.processing.BinaryMorpho;
+import mcib3d.utils.exceptionPrinter;
 import tango.dataStructure.InputImages;
-import tango.parameter.*;
+import tango.parameter.BooleanParameter;
+import tango.parameter.ConditionalParameter;
+import tango.parameter.DoubleParameter;
+import tango.parameter.Parameter;
 
 /**
  *
@@ -56,7 +59,7 @@ public class BinaryClose implements PostFilter, PlugIn {
         }
     };
     ConditionalParameter cond = new ConditionalParameter("Z-Radius", useScale, map);
-    Parameter[] parameters = new Parameter[]{radiusXY, cond};
+    Parameter[] parameters = new Parameter[]{radiusXY, cond, keepHoles};
 
     public BinaryClose() {
         radiusXY.setHelp("Radius in XY direction (pixels)", true);
@@ -94,8 +97,9 @@ public class BinaryClose implements PostFilter, PlugIn {
 
             // Keep holes
             if (keepHoles.isSelected()) {
-                // copied from FillHoles2D --> do a class
-                ImageInt fill = input;
+                ImageInt holes=null;
+                // copied from FillHoles2D --> do a class ?
+                ImageInt fill;
                 TreeMap<Integer, int[]> bounds = input.getBounds(true);
                 if (bounds.size() > 1) {
                     ImageByte[] masks = input.crop3DBinary(bounds);
@@ -103,14 +107,15 @@ public class BinaryClose implements PostFilter, PlugIn {
                         tango.util.FillHoles2D.fill(mask, 255, 0);
                     }
                     fill = ImageHandler.merge3DBinary(masks, input.sizeX, input.sizeY, input.sizeZ);
+                    holes=fill.substractImage(input);
+                    holes.invertBackground(0, 1);
                 } else if (bounds.size() == 1) {
                     ImageByte ib = new ImageByte(input, true);
                     tango.util.FillHoles2D.fill(ib, 255, 0);
                     fill = ib;
-                }
-                //  holes = filled - original
-                ImageInt holes = fill.substractImage(input);
-                holes.invertBackground(0, 1);
+                    holes=fill.substractImage(input.thresholdAboveExclusive(0));
+                    holes.invertBackground(0, 1);                    
+                }                
                 // intersect with close
                 res.intersectMask(holes);
             }
