@@ -112,7 +112,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         this.actionnableParameter=actionnableParameter;
         actionnableParameter.setRefreshOnAction(this);
         mainBox = Box.createVerticalBox();
-        mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        //mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         actionnableParameter.getParameter().addToContainer(mainBox);
         box.add(mainBox);
         actionnableParameter.getParameter().setParent(this);
@@ -158,7 +158,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
             newParameters.put(key, Parameter.duplicateArray(parameters.get(key)));
         }
         ConditionalParameter res=  new ConditionalParameter( newLabel ,(ActionnableParameter)actionnableParameter.getParameter().duplicate(actionnableParameter.getParameter().getLabel(), newId), newParameters);
-        res.setDefaultParameter(Parameter.duplicateArray(defaultParameters));
+        if (defaultParameters!=null) res.setDefaultParameter(Parameter.duplicateArray(defaultParameters));
         return res;
     }
 
