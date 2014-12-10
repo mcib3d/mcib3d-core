@@ -152,7 +152,8 @@ public class SystemEnvironmentVariable {
                 if(value==null) real = false;
                 else real = true;
             }
-        }else{
+            if (real) write();
+        } else{
             if(value==null) real = false;
             else real = true;
         }
