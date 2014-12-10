@@ -1,20 +1,21 @@
 package tango.plugin.measurement.radialAnalysis;
 
 import ij.gui.Plot;
-import java.util.HashMap;
-import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
-import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 import tango.dataStructure.InputCellImages;
 import tango.dataStructure.ObjectQuantifications;
 import tango.dataStructure.SegmentedCellImages;
-import tango.dataStructure.StructureQuantifications;
-import tango.parameter.*;
+import tango.parameter.BooleanParameter;
+import tango.parameter.ConditionalParameter;
+import tango.parameter.GroupKeyParameter;
+import tango.parameter.KeyParameterObjectNumber;
+import tango.parameter.Parameter;
+import tango.parameter.SpinnerParameter;
+import tango.parameter.StructureParameter;
 import tango.plugin.measurement.MeasurementObject;
-import tango.plugin.measurement.MeasurementStructure;
 
 /**
  *
@@ -45,10 +46,10 @@ import tango.plugin.measurement.MeasurementStructure;
 public class ShellAnalysis implements MeasurementObject {
 
     StructureParameter structure = new StructureParameter("Intensity:", "structure", -1, true);
-    BooleanParameter segmented = new BooleanParameter("Measure proprotion of segmented signal", "segmented", false);
+    BooleanParameter segmented = new BooleanParameter("Measure proportion of segmented signal", "segmented", false);
     StructureParameter structureMask = new StructureParameter("Distance From structure:", "structureMask", 0, true);
     BooleanParameter object = new BooleanParameter("Perform around each obect separately", "objects", false);
-    ConditionalParameter referenceObjectCond = new ConditionalParameter("Refence for distance calculation:", structureMask);
+    ConditionalParameter referenceObjectCond = new ConditionalParameter("Reference for distance calculation:", structureMask);
     //IntParameter nbShells = new IntParameter("Number of Shells", "nbShells", 5);
     SpinnerParameter nbShells = new SpinnerParameter("Number of Shells", "nbShells", 2, 100, 5);
     BooleanParameter normalize = new BooleanParameter("Normalize with nucleus Signal", "normalize", false);
@@ -65,6 +66,13 @@ public class ShellAnalysis implements MeasurementObject {
         nbShells.setFireChangeOnAction();
         referenceObjectCond.setDefaultParameter(new Parameter[]{object});
         referenceObjectCond.setCondition(0 , new Parameter[]{});
+        structure.setHelp("Signal to measure, either raw signal or segmented signal.", true);
+        segmented.setHelp("If unchecked measure percentage of fluorescence in each shell, if checked percentage of segmented voxels.", true);
+        structureMask.setHelp("Shells are created from this reference structure, either inside if nucleus or outside if other structure.", true);
+        object.setHelp("If checked shells are build around each object, if unchecked shells are build around the whole population of objects.", true);
+        referenceObjectCond.setHelp("The structure around which perform shell analysis.", true);
+        nbShells.setHelp("The number of shells.", true);
+        normalize.setHelp("If checked shell of constant intensity, if unchecked shells of constant volume.", true);        
     }
     
     @Override
@@ -78,7 +86,7 @@ public class ShellAnalysis implements MeasurementObject {
         if (!group.isSelected()) return;
         ImageHandler intensity = (segmented.isSelected()) ? segmentedImages.getImage(structure.getIndex()) : rawImages.getImage(structure.getIndex());
         if (segmented.isSelected() && intensity==null) {
-            if (verbose) ij.IJ.log("Measure proprotion of segmented signal is selected, but no segmented image found for structure:"+structure.getIndex());
+            if (verbose) ij.IJ.log("Measure proportion of segmented signal is selected, but no segmented image found for structure:"+structure.getIndex());
             return;
         }
         if (object.isSelected()) {
