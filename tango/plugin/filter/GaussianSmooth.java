@@ -57,10 +57,11 @@ public class GaussianSmooth implements PreFilter {
         voisx=voisXY_P.getDoubleValue(voisx);
         if (useScale.isSelected()) voisz=voisx * images.getMask().getScaleXY() / images.getMask().getScaleZ();
         else voisz=voisZ_P.getDoubleValue(voisz);
-        ImageHandler img2 = input.duplicate();
-        ij.plugin.GaussianBlur3D.blur(img2.getImagePlus(), voisx, voisx, voisz);
-        img2.setTitle(input.getTitle() + "::Gauss3D");
-        return img2;
+        ImageHandler res = input.duplicate();
+        ij.plugin.GaussianBlur3D.blur(res.getImagePlus(), voisx, voisx, voisz);
+        //ImageHandler res = input.gaussianSmooth(voisx, voisz, nbCPUs);
+        res.setTitle(input.getTitle() + "::Gauss3D");
+        return res;
     }
 
     

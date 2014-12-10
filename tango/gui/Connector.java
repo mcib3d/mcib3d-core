@@ -144,14 +144,16 @@ public class Connector extends javax.swing.JPanel {
                 return;
             }
             toggleEnableButtons(true, false);
-            SystemEnvironmentVariable mongoHost = new SystemEnvironmentVariable("mongoHost", host.getText(), true, false, false);
+            SystemEnvironmentVariable mongoHost = new SystemEnvironmentVariable("mongoHost", host.getText(), false, false, false);
+            mongoHost.writeToPrefs();
             getUsers();
             if (usernames.getItemCount() > 0) {
-                SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", null, true, false, false);
+                SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", null, false, false, false);
                 String user = mongoUser.getValue();
                 if (user!=null && user.length() != 0 && utils.contains(usernames, user, true)) {
                     setUser(user);
                 }
+                mongoUser.writeToPrefs();
             }
         } catch (Exception e) {
             exceptionPrinter.print(e, "", Core.GUIMode);
@@ -180,7 +182,8 @@ public class Connector extends javax.swing.JPanel {
                 user.append("options_" + this.getHost(), userHost);
             }
             options.dbGet((BasicDBObject) userHost);
-            SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", usr, true, false, false);
+            SystemEnvironmentVariable mongoUser = new SystemEnvironmentVariable("mongoUser", usr, false, false, false);
+            mongoUser.writeToPrefs();
             core.connect();
             toggleEnableButtons(true, true);
         } else {
@@ -236,10 +239,15 @@ public class Connector extends javax.swing.JPanel {
 
         hostLabel.setText("Host:");
 
-        host.setText((String) Prefs.get(tango.mongo.MongoConnector.getPrefix() + "_host.String", tango.mongo.MongoConnector.defaultHost_DB));
+        host.setText((String) Prefs.get(tango.mongo.MongoConnector.getPrefix() + "_mongoHost.String", tango.mongo.MongoConnector.defaultHost_DB));
         host.setMaximumSize(new java.awt.Dimension(152, 25));
         host.setMinimumSize(new java.awt.Dimension(152, 25));
         host.setPreferredSize(new java.awt.Dimension(152, 25));
+        host.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hostActionPerformed(evt);
+            }
+        });
 
         connect.setText("Connect");
         connect.addActionListener(new java.awt.event.ActionListener() {
@@ -594,6 +602,10 @@ public class Connector extends javax.swing.JPanel {
             Logger.getLogger(Connector.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void hostActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hostActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_hostActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ExportImportPanel;

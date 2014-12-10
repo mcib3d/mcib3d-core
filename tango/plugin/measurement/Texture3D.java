@@ -3,6 +3,7 @@ package tango.plugin.measurement;
 import ij.IJ;
 import ij.gui.Plot;
 import java.util.HashMap;
+import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageHandler;
 import tango.dataStructure.InputCellImages;
 import tango.dataStructure.ObjectQuantifications;
@@ -39,15 +40,15 @@ import tango.parameter.*;
 public class Texture3D implements MeasurementObject {
     boolean verbose;
     int nbCPUs=1;
-    StructureParameter structure = new StructureParameter("Structure:", "structure", -1, false);
+    StructureParameter structure = new StructureParameter("Signal:", "structure", -1, false);
     ChoiceParameter undersample = new ChoiceParameter("Number of gray values (undersampling):", "numberofGrayValues", new String[]{"256", "128", "64", "32"}, "256");
     PreFilterSequenceParameter filters = new PreFilterSequenceParameter("Filters: ", "filters");
     BooleanParameter filtered = new BooleanParameter("Use filtered image:", "filtered", false);
-    BooleanParameter resample = new BooleanParameter("Make isotropic:", "resample", true);
+    ChoiceParameter resample = new ChoiceParameter("Z-Anisotropy correction method", "resampleChoice", new String[]{"None", "Use image scale for Z radius", "Make isotropic (bilinear interpolation)", "Make isotropic (bicubic interpolation)"}, "Make isotropic (bilinear interpolation)" );
+    BooleanParameter filterAfterResample = new BooleanParameter("Process pre-filters after resampling:", "filtersAfterResample", false);
     BooleanParameter normalize = new BooleanParameter("Normalize by 0-displacement values:", "normalize", true);
-    IntParameter radius = new IntParameter("Radius:", "radius", 1);
-    IntParameter radiusIncrement = new IntParameter("Radius Increment:", "increment", 1);
-    Parameter[] parameters = new Parameter[]{structure, filtered, resample, filters, radius, undersample, normalize};
+    IntParameter displacement = new IntParameter("Displacement:", "radius", 1);
+    Parameter[] parameters = new Parameter[]{structure, filtered, resample, filters, filterAfterResample, displacement, undersample, normalize};
     
     KeyParameterObjectNumber K_asm = new KeyParameterObjectNumber("Angular 2nd moment",  "asm");
     KeyParameterObjectNumber K_contrast = new KeyParameterObjectNumber("Contrast",  "contrast");
@@ -77,15 +78,27 @@ public class Texture3D implements MeasurementObject {
     @Override
     public void getMeasure(InputCellImages rawImages, SegmentedCellImages segmentedImages, ObjectQuantifications quantifs) {
         if (structure.getIndex()==-1) {
-            ij.IJ.log("Texture 3D measurement: no structure selected!");
+            if (Core.GUIMode) ij.IJ.log("Texture 3D measurement: no structure selected!");
+            else System.out.println("Texture 3D measurement: no structure selected!");
             return;
         }
-        ImageHandler input = (filtered.isSelected())? rawImages.getFilteredImage(structure.getIndex()):rawImages.getImage(structure.getIndex());
-        ImageHandler filteredImage = filters.runPreFilterSequence(structure.getIndex(), input, rawImages, nbCPUs, false);
+        ImageHandler filteredImage = (filtered.isSelected())? rawImages.getFilteredImage(structure.getIndex()):rawImages.getImage(structure.getIndex());
+        
+        if (!filterAfterResample.isSelected()) filteredImage = filters.runPreFilterSequence(structure.getIndex(), filteredImage, rawImages, nbCPUs, false);
         if (verbose) filteredImage.showDuplicate("filtered image");
-        GLCMTexture3D tex = new GLCMTexture3D(filteredImage, rawImages.getMask(), Integer.parseInt(undersample.getSelectedItem()), resample.isSelected());
+        int resampleMeth = 0;
+        if (resample.getSelectedIndex()==2) resampleMeth=1;
+        else if (resample.getSelectedIndex()==3) resampleMeth=2;
+        float ZFactor = 1;
+        if (resample.getSelectedIndex()==1) ZFactor = (float) (rawImages.getMask().getScaleXY() / rawImages.getMask().getScaleZ());
+        GLCMTexture3D tex = new GLCMTexture3D(filteredImage, rawImages.getMask(), Integer.parseInt(undersample.getSelectedItem()), resampleMeth, ZFactor);
         if (verbose) tex.intensityResampled.showDuplicate("after resample");
-        tex.computeMatrix(radius.getIntValue(1));
+        if (filterAfterResample.isSelected()) {
+            ImageHandler f = filters.runPreFilterSequence(structure.getIndex(), tex.intensityResampled, rawImages, nbCPUs, false); // potentially unstable because doesn't have the same Z-size
+            if (!(f instanceof ImageByte)) tex.intensityResampled = new ImageByte(f, true);
+            else tex.intensityResampled = (ImageByte)f;
+        }
+        tex.computeMatrix(displacement.getIntValue(1));
         
         double[] features = tex.computeTextureParameters(normalize.isSelected());
         

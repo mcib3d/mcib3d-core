@@ -529,7 +529,7 @@ public class TestFeatures implements MeasurementObject {
                 }
 
                 // texture
-                GLCMTexture3D tex = new GLCMTexture3D(rac.intensityResampled, rac.maskResampled, 256, false);
+                GLCMTexture3D tex = new GLCMTexture3D(rac.intensityResampled, rac.maskResampled, 256, 0, 1);
                 for (int r=0; r<8; r++) {
                     tex.computeMatrix(r+1);
                     int idx = idxRAC+r*5;

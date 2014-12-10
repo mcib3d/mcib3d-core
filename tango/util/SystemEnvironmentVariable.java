@@ -157,7 +157,7 @@ public class SystemEnvironmentVariable {
             if(value==null) real = false;
             else real = true;
         }
-        if(!real) IJ.log(key+" environment variable is not real.");
+        if(!real) IJ.log(key+" environment variable is not consistent.");
     }
     
     public boolean write(){

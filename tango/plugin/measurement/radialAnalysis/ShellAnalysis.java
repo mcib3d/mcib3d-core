@@ -44,7 +44,7 @@ import tango.plugin.measurement.MeasurementStructure;
 
 public class ShellAnalysis implements MeasurementObject {
 
-    StructureParameter structure = new StructureParameter("Intensity:", "structure", -1, true);
+    StructureParameter structure = new StructureParameter("Signal:", "structure", -1, true);
     BooleanParameter segmented = new BooleanParameter("Measure proprotion of segmented signal", "segmented", false);
     StructureParameter structureMask = new StructureParameter("Distance From structure:", "structureMask", 0, true);
     BooleanParameter object = new BooleanParameter("Perform around each obect separately", "objects", false);

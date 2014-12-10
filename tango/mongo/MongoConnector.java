@@ -70,7 +70,7 @@ public class MongoConnector {
     public final static int MASKS=-2;
     public static String[] collections=new String[] {"experiment", "field", "nucleus", "object3d", "selection", "structureMeasurement", "nucleusThumbnail.files", "nucleusThumbnail.chunks", "fieldThumbnail.files", "fieldThumbnail.chunks"};
     public static String[] collectionsSettings=new String[] {"nucleus", "channel"};
-    public static SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", null, true, false, true);
+    public static SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", null, false, false, true);
     ObjectId userId;
     Thread mongod;
     private final boolean interactive=true;
