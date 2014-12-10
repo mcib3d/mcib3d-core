@@ -30,7 +30,7 @@ public class Fast_Filters3D implements PreFilter, PostFilter {
     ChoiceParameter filter_P = new ChoiceParameter("Choose Filter: ", "filter", filters, "Median");
     DoubleParameter voisXY_P = new DoubleParameter("RadXY: ", "voisXY", (double) voisx, Parameter.nfDEC1);
     DoubleParameter voisZ_P = new DoubleParameter("RadZ: ", "voisZ", (double) voisz, Parameter.nfDEC1);
-    BooleanParameter useUnits = new BooleanParameter("Size in calibrated units:", "useUnits", false);
+    BooleanParameter useUnits = new BooleanParameter("Size in calibrated units: ", "useUnits", false);
     Parameter[] parameters = new Parameter[]{filter_P, voisXY_P, voisZ_P, useUnits};
 
     // contructor for Tango
@@ -49,7 +49,7 @@ public class Fast_Filters3D implements PreFilter, PostFilter {
                 + "<ul><li><strong>Adaptive</strong> filtering, a 3D version of Nagao filter. 6 areas are defined (left, right, up, down, front, back), takes the mean of the area that has the smallest variation.</li></ul>", false);
         voisXY_P.setHelp("The radius in <em>X</em> and <em>Y</em> direction (in pixels).", true);
         voisZ_P.setHelp("The radius in <em>Z</em> direction (in pixels).", true);
-        useUnits.setHelp("The values for sizes are in calibrated units instead of pixels. Use calibration XY for radius XY and calibraation Z for radius Z", true);
+        useUnits.setHelp("The values for sizes are in calibrated units instead of pixels. Use calibration XY for radius XY and calibraation Z for radius Z.", true);
 
     }
 
@@ -96,6 +96,6 @@ public class Fast_Filters3D implements PreFilter, PostFilter {
 
     @Override
     public String getHelp() {
-        return "Fast filters 3D allows you to perform various 3D filtering";
+        return "Fast filters 3D allows you to perform various 3D filtering.";
     }
 }
