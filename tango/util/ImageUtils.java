@@ -11,7 +11,15 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.ColorModel;
+import java.util.ArrayList;
+import java.util.Collections;
+import mcib3d.geom.Object3DVoxels;
+import mcib3d.geom.Voxel3D;
+import mcib3d.image3d.ImageByte;
+import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
+import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.ImageShort;
 /**
  *
  **
@@ -106,6 +114,61 @@ public class ImageUtils {
         KeyListener[] kls = rc.getKeyListeners();
         for (KeyListener kll : kls) rc.removeKeyListener(kll);
         rc.addKeyListener(kl);
+    }
+    
+    public static Object3DVoxels[][] getObjectLayers(ImageFloat dm, Object3DVoxels[] objects, double[][] layers, int nbCPUs, boolean verbose) {
+        /*if (objects==null && objectMap!=null) objects = objectMap.getObjects3D();
+        else if (objects!=null && objectMap==null) {
+            // get bounding box
+            int zMax=0, yMax=0, xMax=0;
+            for (Object3DVoxels o : objects) {
+                if (o.getXmax()>xMax) xMax=o.getXmax();
+                if (o.getYmax()>yMax) yMax=o.getYmax();
+                if (o.getZmax()>zMax) zMax=o.getZmax();
+            }
+            ImageByte om = new ImageByte("objectMax", xMax+1, yMax+1, zMax+1);
+            objectMap = om;
+            for (Object3DVoxels o : objects) o.draw(om, 255);
+        }
+        ImageFloat dm = objectMap.getDistanceMapInsideMask(nbCPUs);
+        */
+        Object3DVoxels[][] res = new Object3DVoxels[objects.length][layers.length];
+        for (int i = 0; i<objects.length; i++) res[i] = getLayers(dm, objects[i], layers);
+        
+        if (verbose) {
+            dm.showDuplicate("objectLayers distance map");
+            ImageShort om = new ImageShort("object Layers", dm.sizeX, dm.sizeY, dm.sizeZ);
+            for (int o = 0; o<objects.length; o++) {
+                objects[o].draw(om, 1);
+                for (int l = 0; l<layers.length; l++) {
+                    res[o][l].draw(om, l+2);
+                }
+            }
+            om.show();
+        }
+        
+        return res;
+    }
+    
+    public static Object3DVoxels[] getLayers(ImageFloat dm, Object3DVoxels object, double[][] layers) {
+        Object3DVoxels[] objectLayers = new Object3DVoxels[layers.length];
+        ArrayList<Voxel3D> vox = object.getVoxels();
+        for (Voxel3D v : vox) v.setValue((double)dm.pixels[(int)v.z][v.getXYCoord(dm.sizeX)]);
+        Collections.sort(vox);
+        for (int i = 0; i<layers.length; i++) {
+            int idxStart = (int)(layers[i][0] * vox.size() + 0.5);
+            int idxStop = (int)(layers[i][1] * vox.size() + 0.5);
+            ArrayList<Voxel3D> voxObj = new ArrayList<Voxel3D>(idxStop-idxStart+1);
+            for (int j = idxStart; j<idxStop; j++) voxObj.add(vox.get(j));
+            if (voxObj.isEmpty()) {
+                if (idxStop<vox.size()) voxObj.add(vox.get(idxStop));
+                else if (idxStart>0) voxObj.add(vox.get(idxStart-1));
+                else voxObj = vox;
+            }
+            objectLayers[i] = new Object3DVoxels(voxObj);
+            objectLayers[i].setValue(object.getValue());
+        }
+        return objectLayers;
     }
     
     public static int[][] getNeighbourhood(float radius, float radiusZ) {
