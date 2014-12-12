@@ -1449,28 +1449,15 @@ public class Object3DVoxels extends Object3D {
         voxels = new ArrayList();
         try {
             bf = new BufferedReader(new FileReader(path + name));
-            data = bf.readLine();
+            data = loadInfo(bf);
             while (data != null) {
-                // calibration
-                if (data.startsWith("cal=")) {
-                    coord = data.split("\t");
-                    resXY = Double.parseDouble(coord[1]);
-                    resZ = Double.parseDouble(coord[2]);
-                    units = coord[3];
-                } else if (data.startsWith("comment=")) {
-                    coord = data.split("\t");
-                    comment = coord[1];
-                } else if (data.startsWith("type=")) {
-                    coord = data.split("\t");
-                    type = Integer.parseInt(coord[1]);
-                } else {
-                    coord = data.split("\t");
-                    dx = Double.parseDouble(coord[1]);
-                    dy = Double.parseDouble(coord[2]);
-                    dz = Double.parseDouble(coord[3]);
-                    v = (int) Double.parseDouble(coord[4]);
-                    voxels.add(new Voxel3D(dx, dy, dz, v));
-                }
+                coord = data.split("\t");
+                dx = Double.parseDouble(coord[1]);
+                dy = Double.parseDouble(coord[2]);
+                dz = Double.parseDouble(coord[3]);
+                v = (int) Double.parseDouble(coord[4]);
+                voxels.add(new Voxel3D(dx, dy, dz, v));
+
                 data = bf.readLine();
             }
             bf.close();

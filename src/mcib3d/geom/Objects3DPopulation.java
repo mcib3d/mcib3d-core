@@ -337,6 +337,8 @@ public class Objects3DPopulation {
     /**
      *
      * @param seg
+     * @param threshold
+     * @param cali
      */
     public void addImage(ImageInt seg, int threshold, Calibration cali) {
         int min = (int) seg.getMinAboveValue(0);
@@ -372,6 +374,8 @@ public class Objects3DPopulation {
             if (!objectstmp[i].isEmpty()) {
                 Object3DVoxels ob = new Object3DVoxels(objectstmp[i]);
                 ob.setLabelImage(seg);
+                ob.setCalibration(cali);
+                ob.setName("Obj"+(i+1));
                 addObject(ob);
                 //IJ.log("adding ob " + ob.getValue() + " " + ob.getCenterAsPoint());
             }
@@ -1305,13 +1309,16 @@ public class Objects3DPopulation {
         addImage(plus);
     }
 
-    public boolean saveObjects(String path, int[] indexes) {
-        //OpenDialog op = new OpenDialog("Save RoiSet3D", "");
-        //String path = op.getDirectory();
-        //String filename = op.getFileName();
-        Object3D obj;
-        // only one object selected 
+    public boolean saveObjects(String path) {
+        int[] indexes = new int[getNbObjects()];
+        for (int i = 0; i < indexes.length; i++) {
+            indexes[i] = i;
+        }
+        return saveObjects(path, indexes);
+    }
 
+    public boolean saveObjects(String path, int[] indexes) {
+        Object3D obj;
         String name;
         File f = new File(path);
         String dir = f.getParent();
@@ -1319,7 +1326,7 @@ public class Objects3DPopulation {
 
         for (int i : indexes) {
             obj = this.getObject(i);
-            obj.saveObject(dir + fs);            
+            obj.saveObject(dir + fs);
         }
         byte[] buf = new byte[1024];
         ZipOutputStream zip;
@@ -1329,7 +1336,7 @@ public class Objects3DPopulation {
         try {
             //  ZIP           
             zip = new ZipOutputStream(new FileOutputStream(path));
-            for (int i : indexes) {                
+            for (int i : indexes) {
                 name = this.getObject(i).getName();
                 file = new File(dir + fs + name + ".3droi");
                 in = new FileInputStream(file);
@@ -1344,9 +1351,9 @@ public class Objects3DPopulation {
             zip.close();
 
         } catch (IOException ex) {
-           IJ.log("Pb saving population "+ex);
-           return false;
-        }     
+            IJ.log("Pb saving population " + ex);
+            return false;
+        }
 
         return true;
     }

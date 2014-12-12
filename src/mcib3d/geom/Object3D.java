@@ -9,6 +9,7 @@ import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij3d.Volume;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -2859,17 +2860,46 @@ public abstract class Object3D {
      * @param path
      */
     public abstract void saveObject(String path);
-    
-    protected void saveInfo(BufferedWriter bf) throws IOException{
-         // calibration
-            bf.write("cal=\t" + resXY + "\t" + resZ + "\t" + "\t" + units + "\n");
-            // comments
-            bf.write("commment=\t"+comment);
-            // type
-            bf.write("type=\t"+type);
+
+    protected void saveInfo(BufferedWriter bf) throws IOException {
+        // calibration
+        bf.write("cal=\t" + resXY + "\t" + resZ + "\t" + units + "\n");
+        // comments
+        if (!comment.isEmpty()) {
+            bf.write("commment=\t" + comment + "\n");
+        }
+        // type
+        if (type > 0) {
+            bf.write("type=\t" + type + "\n");
+        }
+    }
+
+    protected String loadInfo(BufferedReader bf) throws IOException {
+        String data = bf.readLine();
+        String[] coord;
+        while (data != null) {
+            // calibration
+            if (data.startsWith("cal=")) {
+                coord = data.split("\t");
+                resXY = Double.parseDouble(coord[1]);
+                resZ = Double.parseDouble(coord[2]);
+                units = coord[3];
+            } else if (data.startsWith("comment=")) {
+                coord = data.split("\t");
+                comment = coord[1];
+            } else if (data.startsWith("type=")) {
+                coord = data.split("\t");
+                type = Integer.parseInt(coord[1]);
+            } else {
+                break;
+            }
+            data = bf.readLine();
+        }
+        return data;
     }
 
     // code copied from ImageJ 3D Viewer MCTriangulator
+
     /**
      *
      * @param calibrated
