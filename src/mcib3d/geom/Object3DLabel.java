@@ -14,7 +14,6 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Iterator;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.utils.ArrayUtil;
@@ -175,7 +174,49 @@ public class Object3DLabel extends Object3D {
      *
      * @return array of listed values (with coordinates)
      */
+    @Override
     public ArrayList listVoxels(ImageHandler ima, double threshold) {
+//        ArrayList<Voxel3D> list = new ArrayList();
+//        Voxel3D pixel;
+//        int xmin0;
+//        int ymin0;
+//        int zmin0;
+//        int xmax0;
+//        int ymax0;
+//        int zmax0;
+//
+//        xmin0 = getXmin();
+//        ymin0 = getYmin();
+//        zmin0 = getZmin();
+//        xmax0 = getXmax();
+//        ymax0 = getYmax();
+//        zmax0 = getZmax();
+//
+//        float val;
+//
+//        for (int k = zmin0; k <= zmax0; k++) {
+//            for (int j = ymin0; j <= ymax0; j++) {
+//                for (int i = xmin0; i <= xmax0; i++) {
+//                    if (labelImage.getPixel(i, j, k) == value) {
+//                        if (ima != null) {
+//                            val = ima.getPixel(i, j, k);
+//                        } else {
+//                            val = value;
+//                        }
+//                        if (val > threshold) {
+//                            pixel = new Voxel3D(i, j, k, val);
+//                            list.add(pixel);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+
+        return listVoxels(ima, threshold, Double.POSITIVE_INFINITY);
+    }
+
+    @Override
+    public ArrayList listVoxels(ImageHandler ima, double threshold1, double threshold2) {
         ArrayList<Voxel3D> list = new ArrayList();
         Voxel3D pixel;
         int xmin0;
@@ -203,7 +244,7 @@ public class Object3DLabel extends Object3D {
                         } else {
                             val = value;
                         }
-                        if (val > threshold) {
+                        if ((val > threshold1) && (val < threshold2)) {
                             pixel = new Voxel3D(i, j, k, val);
                             list.add(pixel);
                         }
@@ -507,6 +548,7 @@ public class Object3DLabel extends Object3D {
 
     /**
      * Computation of the dispersion tensor with units value
+     *
      * @param normalize
      */
     @Override
@@ -867,7 +909,7 @@ public class Object3DLabel extends Object3D {
      * @param path
      */
     @Override
-    public void writeVoxels(String path) {
+    public void saveObject(String path) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

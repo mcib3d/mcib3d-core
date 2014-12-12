@@ -26,9 +26,15 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.utils.ArrayUtil;
@@ -153,7 +159,7 @@ public class Objects3DPopulation {
                 closest = closestCenter(P);
                 dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
             }
-            v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) (i+1));
+            v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) (i + 1));
             voxlist = new ArrayList(1);
             voxlist.add(v);
             ob = new Object3DVoxels(voxlist);
@@ -1298,12 +1304,58 @@ public class Objects3DPopulation {
     private void addImagePlus(ImagePlus plus) {
         addImage(plus);
     }
-//    public ImageInt getLabelImage() {
+
+    public boolean saveObjects(String path, int[] indexes) {
+        //OpenDialog op = new OpenDialog("Save RoiSet3D", "");
+        //String path = op.getDirectory();
+        //String filename = op.getFileName();
+        Object3D obj;
+        // only one object selected 
+
+        String name;
+        File f = new File(path);
+        String dir = f.getParent();
+        String fs = File.separator;
+
+        for (int i : indexes) {
+            obj = this.getObject(i);
+            obj.saveObject(dir + fs);            
+        }
+        byte[] buf = new byte[1024];
+        ZipOutputStream zip;
+        FileInputStream in;
+        File file;
+        int len;
+        try {
+            //  ZIP           
+            zip = new ZipOutputStream(new FileOutputStream(path));
+            for (int i : indexes) {                
+                name = this.getObject(i).getName();
+                file = new File(dir + fs + name + ".3droi");
+                in = new FileInputStream(file);
+                zip.putNextEntry(new ZipEntry(name + ".3droi"));
+                while ((len = in.read(buf)) > 0) {
+                    zip.write(buf, 0, len);
+                }
+                zip.closeEntry();
+                in.close();
+                file.delete();
+            }
+            zip.close();
+
+        } catch (IOException ex) {
+           IJ.log("Pb saving population "+ex);
+           return false;
+        }     
+
+        return true;
+    }
+
+    //    public ImageInt getLabelImage() {
 //        return labelImage;
 //    }
 //
 //    public void setLabelImage(ImageInt labelImage) {
 //        this.labelImage = labelImage;
 //    }
-
 }

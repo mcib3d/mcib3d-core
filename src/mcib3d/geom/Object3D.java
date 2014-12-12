@@ -9,6 +9,8 @@ import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij3d.Volume;
+import java.io.BufferedWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,7 +25,6 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 import mcib3d.image3d.distanceMap3d.EDT;
-import mcib3d.image3d.legacy.IntImage3D;
 import mcib3d.image3d.processing.BinaryMorpho;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
@@ -677,7 +678,7 @@ public abstract class Object3D {
     /**
      * gets the list of all pixels within an image as an ArrayList
      *
-     * @param the image
+     * @param ima the image with signal
      * @return the list of voxels
      */
     public ArrayList<Voxel3D> listVoxels(ImageHandler ima) {
@@ -689,11 +690,36 @@ public abstract class Object3D {
     /**
      * List voxels in the image with values > threshold
      *
-     * @param the image
-     * @param the threshold
+     * @param ima The image with values
+     * @param thresh the threshold
      * @return the list of voxels with values > threshold
      */
     public abstract ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh);
+
+    public abstract ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thres1);
+
+    public ArrayList<Voxel3D> listVoxelsByDistance(Point3D P0, double dist0, double dist1, boolean contourOnly) {
+        ArrayList<Voxel3D> res = new ArrayList<Voxel3D>();
+        ArrayList<Voxel3D> list;
+        if (contourOnly) {
+            if (contours == null) {
+                computeContours();
+            }
+            list = contours;
+        } else {
+            list = getVoxels();
+        }
+        for (Voxel3D Vox : list) {
+            double dist = Vox.distance(P0, resXY, resZ);
+            if ((dist > dist0) && (dist < dist1)) {
+                Voxel3D V = new Voxel3D(Vox);
+                V.setValue(dist);
+                res.add(V);
+            }
+        }
+
+        return res;
+    }
 
     /**
      * Convert the object to voxels (if necessary)
@@ -2832,7 +2858,16 @@ public abstract class Object3D {
      *
      * @param path
      */
-    public abstract void writeVoxels(String path);
+    public abstract void saveObject(String path);
+    
+    protected void saveInfo(BufferedWriter bf) throws IOException{
+         // calibration
+            bf.write("cal=\t" + resXY + "\t" + resZ + "\t" + "\t" + units + "\n");
+            // comments
+            bf.write("commment=\t"+comment);
+            // type
+            bf.write("type=\t"+type);
+    }
 
     // code copied from ImageJ 3D Viewer MCTriangulator
     /**

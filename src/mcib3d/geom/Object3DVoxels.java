@@ -10,7 +10,11 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import java.awt.Color;
 import java.awt.Rectangle;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -1410,16 +1414,15 @@ public class Object3DVoxels extends Object3D {
      * @param path
      */
     @Override
-    public void writeVoxels(String path) {
+    public void saveObject(String path) {
         Voxel3D pixel;
         BufferedWriter bf;
         int c = 0;
 
         try {
             bf = new BufferedWriter(new FileWriter(path + name + ".3droi"));
+            saveInfo(bf);
             Iterator it = voxels.iterator();
-            // calibration
-            bf.write("cal=\t" + resXY + "\t" + resZ + "\t" + "\t" + units + "\n");
             while (it.hasNext()) {
                 c++;
                 pixel = new Voxel3D((Voxel3D) it.next());
@@ -1436,7 +1439,7 @@ public class Object3DVoxels extends Object3D {
      * @param path
      * @param name
      */
-    public void loadVoxels(String path, String name) {
+    public void loadObject(String path, String name) {
         BufferedReader bf;
         String data;
         String[] coord;
@@ -1454,6 +1457,12 @@ public class Object3DVoxels extends Object3D {
                     resXY = Double.parseDouble(coord[1]);
                     resZ = Double.parseDouble(coord[2]);
                     units = coord[3];
+                } else if (data.startsWith("comment=")) {
+                    coord = data.split("\t");
+                    comment = coord[1];
+                } else if (data.startsWith("type=")) {
+                    coord = data.split("\t");
+                    type = Integer.parseInt(coord[1]);
                 } else {
                     coord = data.split("\t");
                     dx = Double.parseDouble(coord[1]);
@@ -1601,6 +1610,29 @@ public class Object3DVoxels extends Object3D {
 
     @Override
     public ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh) {
+//        ArrayList<Voxel3D> list = new ArrayList();
+//        Voxel3D voxel, newVoxel;
+//
+//        Iterator<Voxel3D> it = voxels.iterator();
+//        float pixvalue;
+//
+//        while (it.hasNext()) {
+//            voxel = it.next();
+//            if (ima.contains(voxel.getX(), voxel.getY(), voxel.getZ())) {
+//                pixvalue = ima.getPixel(voxel);
+//                if (pixvalue > thresh) {
+//                    newVoxel = new Voxel3D(voxel);
+//                    newVoxel.setValue(pixvalue);
+//                    list.add(newVoxel);
+//                }
+//            }
+//        }
+
+        return listVoxels(ima, thresh, Double.POSITIVE_INFINITY);
+    }
+
+    @Override
+    public ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thresh1) {
         ArrayList<Voxel3D> list = new ArrayList();
         Voxel3D voxel, newVoxel;
 
@@ -1611,7 +1643,7 @@ public class Object3DVoxels extends Object3D {
             voxel = it.next();
             if (ima.contains(voxel.getX(), voxel.getY(), voxel.getZ())) {
                 pixvalue = ima.getPixel(voxel);
-                if (pixvalue > thresh) {
+                if ((pixvalue > thresh0) && (pixvalue < thresh1)) {
                     newVoxel = new Voxel3D(voxel);
                     newVoxel.setValue(pixvalue);
                     list.add(newVoxel);
