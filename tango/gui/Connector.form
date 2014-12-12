@@ -138,7 +138,7 @@
         <Component class="javax.swing.JTextField" name="host">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="(String) Prefs.get(tango.mongo.MongoConnector.getPrefix() + &quot;_host.String&quot;, tango.mongo.MongoConnector.defaultHost_DB)" type="code"/>
+              <Connection code="(String) Prefs.get(tango.mongo.MongoConnector.getPrefix() + &quot;_mongoHost.String&quot;, tango.mongo.MongoConnector.defaultHost_DB)" type="code"/>
             </Property>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[152, 25]"/>
@@ -150,6 +150,9 @@
               <Dimension value="[152, 25]"/>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hostActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JButton" name="connect">
           <Properties>

@@ -46,6 +46,7 @@ public class Main_ implements PlugIn {
             IJ.log("currentImageJ version: "+IJ.getVersion()+" requiered: "+ req +". please update ImageJ");
             return;
         }
+        if (Core.TESTING) IJ.log("TANGO::TESTING == TRUE");
         IJ.showStatus("TANGO.. checking installation...");
         IJ.log("TANGO VERSION:"+Core.VERSION);
         IJ.log("TANGO.. checking installation...");

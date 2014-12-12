@@ -49,7 +49,7 @@ public class GroupParameter extends Parameter implements NestedParameter{
         
         
         mainBox = Box.createVerticalBox();
-        mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        //mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         //Box subBox = Box.createHorizontalBox();
         //subBox.add(this.label);
         //mainBox.add(subBox);
@@ -74,7 +74,7 @@ public class GroupParameter extends Parameter implements NestedParameter{
         
         //this.parameters=parameters;
         mainBox = Box.createVerticalBox();
-        mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        //mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         /*for (Parameter p : parameters) {
             p.setParent(this);
             p.addToContainer(mainBox);

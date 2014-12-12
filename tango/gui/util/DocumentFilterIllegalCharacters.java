@@ -33,10 +33,12 @@ import javax.swing.text.DocumentFilter;
 public class DocumentFilterIllegalCharacters extends DocumentFilter {
 
 
-    private char[] ILLEGAL_CHARACTERS = {'/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':', '.', ';', ',', ' '};
+    private char[] ILLEGAL_CHARACTERS = {'/', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', '\\', '<', '>', '|', '\"', ':', '.', ';', ',', ' ', '-'};
+    private char[] ILLEGAL_CHARACTERS_START = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
     
-    public DocumentFilterIllegalCharacters(char[] illegalCharacters) {
+    public DocumentFilterIllegalCharacters(char[] illegalCharacters, char[] illegalCharactersStart) {
         if (illegalCharacters!=null) ILLEGAL_CHARACTERS=illegalCharacters;
+        if (illegalCharactersStart!=null) ILLEGAL_CHARACTERS_START=illegalCharactersStart;
     }
     
     public DocumentFilterIllegalCharacters() {
@@ -46,18 +48,22 @@ public class DocumentFilterIllegalCharacters extends DocumentFilter {
     @Override
     public void insertString (DocumentFilter.FilterBypass fb, int offset, String text, AttributeSet attr) throws BadLocationException
     {
-        fb.insertString (offset, fixText(text).toUpperCase(), attr);
+        fb.insertString (offset, fixText(offset, text).toUpperCase(), attr);
     }
     @Override
     public void replace (DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attr) throws BadLocationException
     {
-        fb.replace(offset, length, fixText(text), attr);
+        fb.replace(offset, length, fixText(offset, text), attr);
     }
 
-    private String fixText (String s)
+    private String fixText (int offset, String s)
     {
         StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < s.length(); ++i)
+        if (offset==0) {
+        if (!isIllegalFileNameCharStart(s.charAt(0)) && !isIllegalFileNameChar (s.charAt (0)))
+                sb.append (s.charAt (0));
+        }
+        for(int i = offset==0?1:0; i < s.length(); ++i)
         {
             if (!isIllegalFileNameChar (s.charAt (i)))
                 sb.append (s.charAt (i));
@@ -70,6 +76,16 @@ public class DocumentFilterIllegalCharacters extends DocumentFilter {
         for (int i = 0; i < ILLEGAL_CHARACTERS.length; i++)
         {
             if (c == ILLEGAL_CHARACTERS[i])
+                return true;
+        }
+
+        return false;
+    }
+    private boolean isIllegalFileNameCharStart (char c)
+    {
+        for (int i = 0; i < ILLEGAL_CHARACTERS_START.length; i++)
+        {
+            if (c == ILLEGAL_CHARACTERS_START[i])
                 return true;
         }
 

@@ -83,7 +83,11 @@ public class SelectionManager extends javax.swing.JPanel implements ListSelectio
         ArrayList<Selection> sels = Core.mongoConnector.getSelections(xp.getId());
         populatingSelections=true;
         listModel.removeAllElements();
-        if (sels!=null) for (Selection s : sels ) listModel.addElement(s);
+        //System.out.println("populating selections...");
+        if (sels!=null) for (Selection s : sels ) {
+            listModel.addElement(s);
+            //System.out.println(s);
+        }
         populatingSelections=false;
     }
     

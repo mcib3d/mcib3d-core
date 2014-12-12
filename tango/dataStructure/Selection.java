@@ -71,7 +71,13 @@ public class Selection extends BasicDBObject {
                 return currentNuc;
             } else return null;
         } else {
-            return (BasicDBObject)nuclei.get(id.toStringMongod());
+            Object o = nuclei.get(id.toStringMongod());
+            if (o instanceof BasicDBObject) return (BasicDBObject)o;
+            else if (create) {
+                BasicDBObject currentNuc = new BasicDBObject();
+                nuclei.append(id.toStringMongod(), currentNuc);
+                return currentNuc;
+            } else return null;
         }
     }
     

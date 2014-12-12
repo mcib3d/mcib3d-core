@@ -58,7 +58,7 @@ public class GroupKeyParameter extends Parameter implements NestedParameter {
         this.parameters=parameters;
         if (parameters==null) this.parameters=new KeyParameter[0];
         mainBox = Box.createVerticalBox();
-        mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        //mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         this.prefix=new KeyParameterObjectNumber(label+"prefix:", id, prefix, selected);
         this.prefix.addToContainer(mainBox);
         if (lock) {

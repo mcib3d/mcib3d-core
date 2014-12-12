@@ -45,21 +45,23 @@ public class GLCMTexture3D {
     public boolean verbose = false;
     double[][] glcm0;
     int numberOfGrayValues=256;
-    public GLCMTexture3D(ImageHandler intensity, ImageInt mask, int numberofGrayValues, boolean resample) {
+    float ZFactor;
+    public GLCMTexture3D(ImageHandler intensity, ImageInt mask, int numberofGrayValues, int Zresample, float ZFactor) {
+        this.ZFactor=ZFactor;
         this.numberOfGrayValues=numberofGrayValues;
         if (!(intensity instanceof ImageByte)) intensityResampled = new ImageByte(intensity, true);
         else intensityResampled = (ImageByte)intensity;
-        if (resample) {
+        if (Zresample>0) {
             int newZ = (int)(mask.sizeZ * mask.getScaleZ()/mask.getScaleXY()+0.5);
             maskResampled=mask.resample(newZ, ij.process.ImageProcessor.NEAREST_NEIGHBOR);
-            intensityResampled=intensityResampled.resample(newZ, ij.process.ImageProcessor.BICUBIC);
+            intensityResampled=intensityResampled.resample(newZ, Zresample==1 ? ij.process.ImageProcessor.BILINEAR : ij.process.ImageProcessor.BICUBIC);
         } else {
             maskResampled=mask;
         }
     }
     
     public void computeMatrix(int radius) {
-        int[][] neighbor=ImageUtils.getHalfNeighbourhood(radius, radius, 1);
+        int[][] neighbor=ImageUtils.getHalfNeighbourhood(radius, radius * ZFactor, 1);
         double count=0;
         int zz, xx, yy, xy2;
         double factor =  numberOfGrayValues / 256d;
@@ -292,15 +294,20 @@ public class GLCMTexture3D {
             features[11] = (features[8] - hxy1) / maxhxhy;
         }
         features[12] = Math.sqrt(1 - Math.exp(-2 * (hxy2 - features[8])));
+        
         for (int i = 0; i < 2 * numberOfGrayValues - 1; i++) {
             features[5] += i * p_x_plus_y[i];
             features[7] += p_x_plus_y[i] * log(p_x_plus_y[i]);
 
-            double sum_j_p_x_plus_y = 0;
+            /*double sum_j_p_x_plus_y = 0;
             for (int j = 0; j < 2 * numberOfGrayValues - 1; j++) {
                 sum_j_p_x_plus_y += j * p_x_plus_y[j];
             }
             features[6] += (i - sum_j_p_x_plus_y) * (i - sum_j_p_x_plus_y) * p_x_plus_y[i];
+            */
+        }
+        for (int i = 0; i < 2 * numberOfGrayValues - 1; i++) {
+            features[6] += (i - features[5]) * (i - features[5]) * p_x_plus_y[i];
         }
 
         features[7] *= -1;
@@ -333,10 +340,7 @@ public class GLCMTexture3D {
      * @return the logarithm of the specified value
      */
     private double log(double value) {
-        double log = Math.log(value);
-        if (log == Double.NEGATIVE_INFINITY) {
-            log = 0;
-        }
-        return log;
+        if (value<=0) return 0;
+        else return Math.log(value);
     }
 }

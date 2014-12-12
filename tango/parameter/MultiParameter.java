@@ -55,7 +55,7 @@ public class MultiParameter extends Parameter implements ChangeListener, NestedP
         super(id);
         this.defaultParameters=defaultParameters;
         mainBox = Box.createVerticalBox();
-        mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        //mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         nb=new SpinnerParameter("number:", "nb", minNb, maxNb, defaultNb);
         this.label=this.nb.label;
         curNb=nb.getValue();

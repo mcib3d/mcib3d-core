@@ -209,7 +209,7 @@ public class Core extends JFrame implements Displayer {
     }
 
     private void init() {
-        IJ.showStatus("TANGO: updating...");
+        IJ.showStatus("TANGO: checking plugins...");
         PluginFactory.findPlugins();
         IJ.showStatus("TANGO: initializing GUI...");
         WindowManager.addWindow(this);

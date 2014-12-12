@@ -57,6 +57,7 @@ public class CellCycleMeasurements implements MeasurementObject {
     BooleanParameter doNLProlif =  new BooleanParameter("Compute?","doNLProlif", false);
     ConditionalParameter condNLProlif = new ConditionalParameter("Estimation of Proliferation signal within nucleoli", doNLProlif);
     StructureParameter nlProlif = new StructureParameter("Nucleoli:", "nlProlif", -1, true);
+    SliderParameter smoothProlif = new SliderParameter("Smoothing radius for proliferation signal:", "smoothProlif", 0, 10, 1);
     KeyParameterObjectNumber prolif_nl_inside_mean = new KeyParameterObjectNumber("Proliferation: mean intensity inside NL", "prolif_nl_inside_mean");
     KeyParameterObjectNumber prolif_nl_inside_med = new KeyParameterObjectNumber("Proliferation: median intensity inside NL", "prolif_nl_inside_med");
     KeyParameterObjectNumber prolif_nl_inside_sd = new KeyParameterObjectNumber("Proliferation: standard deviation of intensity inside NL", "prolif_nl_inside_sd");
@@ -84,6 +85,7 @@ public class CellCycleMeasurements implements MeasurementObject {
     BooleanParameter doNLRep =  new BooleanParameter("Compute?","doNL", false);
     ConditionalParameter condNLRep = new ConditionalParameter("Localisation towards nucleoli and periphery", doNLRep);
     StructureParameter nlRep = new StructureParameter("Nucleoli:", "nl", -1, true);
+    
     KeyParameterObjectNumber rep_loc = new KeyParameterObjectNumber("Replication Localization", "replication_loc");
     
     
@@ -93,7 +95,7 @@ public class CellCycleMeasurements implements MeasurementObject {
 
     public CellCycleMeasurements() {
         doProlif.setFireChangeOnAction();
-        condProlif.setCondition(true, new Parameter[]{proliferation, condErodeNuc}); //condNLProlif
+        condProlif.setCondition(true, new Parameter[]{proliferation, condErodeNuc, smoothProlif}); //condNLProlif
         doNLProlif.setFireChangeOnAction();
         condNLProlif.setCondition(true, new Parameter[]{nlProlif});
         condErodeNuc.setCondition(true, new Parameter[]{radErodeNuc});
@@ -130,11 +132,10 @@ public class CellCycleMeasurements implements MeasurementObject {
             if (rep_rac2.isSelected()) {
                 rac = new RadialAutoCorrelation(rep, mask, 2);
                 if (rep_rac2.isSelected()) quantifications.setQuantificationObjectNumber(rep_rac2, new double[]{rac.getCorrelation(2, 2)});
-                if (verbose) rac.intensityResampled.show("RAC Image");
-                if (verbose) rep.show("prolif Image");
+                if (verbose) rac.intensityResampled.show("RAC replication Image");
             }
             if (this.doNLRep.isSelected() && rep_loc.isSelected()) {// grayscale radial moment
-                ImageHandler dm = DistanceMapParameter.getMaskAndDistanceMap(raw,  seg, 0, new int[] {0, nlRep.getIndex()}, true, false, false, null, verbose, nCPUs)[1];
+                ImageHandler dm = DistanceMapParameter.getMaskAndDistanceMap(raw,  seg, 0, new int[] {0, nlRep.getIndex()}, true, true, false, null, verbose, nCPUs)[1];
                 GrayscaleRadialMoments grm = new GrayscaleRadialMoments();
                 grm.computeMoments(rep, mask, (ImageFloat)dm);
                 quantifications.setQuantificationObjectNumber(rep_loc, new double[]{grm.getMean()});                    
@@ -160,6 +161,7 @@ public class CellCycleMeasurements implements MeasurementObject {
             }
             
             ImageHandler prolif = proliferation.getImage(raw, verbose, nCPUs); //gaussian par défaut?            
+            if (this.smoothProlif.getValue()>0) prolif = prolif.gaussianSmooth(smoothProlif.getValue(), smoothProlif.getValue() * raw.getMask().getScaleXY() / raw.getMask().getScaleZ(), nCPUs);
             double prolifMean = nuc.getPixMeanValue(prolif);
             if (prolif_int.isSelected()) quantifications.setQuantificationObjectNumber(prolif_int, new double[]{prolifMean});
             double prolifSd = nuc.getPixStdDevValue(prolif);

@@ -51,7 +51,6 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         init(title, actionnableParameter);
         this.parameters=parameters;
         currentParameters=parameters.get(actionnableParameter.getValue());
-        if (currentParameters!=null) for (Parameter p : currentParameters) p.addToContainer(mainBox);       
         for (Map.Entry<Object, Parameter[]> e : parameters.entrySet()) {
             Parameter[] array = parameters.get(e.getKey());
             if (array!=null) {
@@ -60,8 +59,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
                 }
             }
         }
-        
-        setColor();
+        updateCurretParameters();
     }
     
     public ConditionalParameter(String title, ActionnableParameter actionnableParameter) {
@@ -87,10 +85,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         for (Parameter p : parameters) {
             p.setParent(this);
         }
-        if (currentParameters==null) {
-            currentParameters=defaultParameters;
-            for (Parameter p : currentParameters) p.addToContainer(mainBox);
-        }
+        updateCurretParameters();
     }
     
     public void setCondition(Object condition, Parameter[] parameters) {
@@ -101,7 +96,12 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
                 p.setParent(this);
             }
         }
-        currentParameters=this.parameters.get(actionnableParameter.getValue());
+        updateCurretParameters();
+    }
+    
+    protected void updateCurretParameters() {
+        if (currentParameters!=null) for (Parameter p : currentParameters) p.removeFromContainer(mainBox);
+        currentParameters=getCurrentParameters();
         if (currentParameters!=null) for (Parameter p : currentParameters) p.addToContainer(mainBox);
         setColor();
     }
@@ -112,7 +112,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         this.actionnableParameter=actionnableParameter;
         actionnableParameter.setRefreshOnAction(this);
         mainBox = Box.createVerticalBox();
-        mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        //mainBox.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         actionnableParameter.getParameter().addToContainer(mainBox);
         box.add(mainBox);
         actionnableParameter.getParameter().setParent(this);
@@ -158,7 +158,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
             newParameters.put(key, Parameter.duplicateArray(parameters.get(key)));
         }
         ConditionalParameter res=  new ConditionalParameter( newLabel ,(ActionnableParameter)actionnableParameter.getParameter().duplicate(actionnableParameter.getParameter().getLabel(), newId), newParameters);
-        res.setDefaultParameter(Parameter.duplicateArray(defaultParameters));
+        if (defaultParameters!=null) res.setDefaultParameter(Parameter.duplicateArray(defaultParameters));
         return res;
     }
 
