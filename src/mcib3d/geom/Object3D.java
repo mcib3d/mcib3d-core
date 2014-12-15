@@ -151,7 +151,7 @@ public abstract class Object3D {
     /**
      * Value (grey-level)
      */
-    protected int value;
+    protected int value=0;
     /**
      * Contours pixels
      */
@@ -2866,12 +2866,14 @@ public abstract class Object3D {
         bf.write("cal=\t" + resXY + "\t" + resZ + "\t" + units + "\n");
         // comments
         if (!comment.isEmpty()) {
-            bf.write("commment=\t" + comment + "\n");
+            bf.write("comment=\t" + comment + "\n");
         }
         // type
         if (type > 0) {
             bf.write("type=\t" + type + "\n");
         }
+        // value
+        bf.write("value=\t"+value+"\n");
     }
 
     protected String loadInfo(BufferedReader bf) throws IOException {
@@ -2890,7 +2892,11 @@ public abstract class Object3D {
             } else if (data.startsWith("type=")) {
                 coord = data.split("\t");
                 type = Integer.parseInt(coord[1]);
-            } else {
+            } else if (data.startsWith("value=")) {
+                coord = data.split("\t");
+                value = Integer.parseInt(coord[1]);
+            } 
+            else {
                 break;
             }
             data = bf.readLine();

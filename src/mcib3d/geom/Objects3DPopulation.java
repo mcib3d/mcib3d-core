@@ -28,12 +28,14 @@ import ij.ImageStack;
 import ij.measure.Calibration;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
@@ -52,7 +54,8 @@ public class Objects3DPopulation {
     private Calibration calibration = null;
     private KDTreeC kdtree = null;
     // link between values and index
-    private final HashMap<Integer, Integer> hash;
+    private final HashMap<Integer, Integer> hashValue;
+    private final HashMap<String, Integer> hashName;
     //private ImageInt labelImage = null;
 
     /**
@@ -60,20 +63,23 @@ public class Objects3DPopulation {
      */
     public Objects3DPopulation() {
         objects = new ArrayList();
-        hash = new HashMap();
+        hashValue = new HashMap<Integer, Integer>();
+        hashName = new HashMap<String, Integer>();
         calibration = new Calibration();
     }
 
     public Objects3DPopulation(Object3D[] objs) {
         objects = new ArrayList();
-        hash = new HashMap();
+        hashValue = new HashMap<Integer, Integer>();
+        hashName = new HashMap<String, Integer>();
         calibration = new Calibration();
         this.addObjects(objs);
     }
 
     public Objects3DPopulation(Object3D[] objs, Calibration cal) {
         objects = new ArrayList();
-        hash = new HashMap();
+        hashValue = new HashMap<Integer, Integer>();
+        hashName = new HashMap<String, Integer>();
         if (cal != null) {
             calibration = cal;
         } else {
@@ -84,13 +90,15 @@ public class Objects3DPopulation {
 
     public Objects3DPopulation(ImagePlus plus) {
         objects = new ArrayList();
-        hash = new HashMap();
+        hashValue = new HashMap<Integer, Integer>();
+        hashName = new HashMap<String, Integer>();
         addImagePlus(plus);
     }
 
     public Objects3DPopulation(ImageInt plus) {
         objects = new ArrayList();
-        hash = new HashMap();
+        hashValue = new HashMap<Integer, Integer>();
+        hashName = new HashMap<String, Integer>();
         Calibration cal = plus.getCalibration();
         if (cal == null) {
             cal = new Calibration();
@@ -100,7 +108,8 @@ public class Objects3DPopulation {
 
     public Objects3DPopulation(ImageInt plus, int threshold) {
         objects = new ArrayList();
-        hash = new HashMap();
+        hashValue = new HashMap<Integer, Integer>();
+        hashName = new HashMap<String, Integer>();
         Calibration cal = plus.getCalibration();
         if (cal == null) {
             cal = new Calibration();
@@ -246,7 +255,8 @@ public class Objects3DPopulation {
     public void addObject(Object3D obj) {
         obj.setCalibration(calibration);
         objects.add(obj);
-        hash.put(obj.getValue(), objects.size() - 1);
+        hashValue.put(obj.getValue(), objects.size() - 1);
+        hashName.put(obj.getName(), objects.size() - 1);
         // update kdtree if available // FIXME UPDATE kdtree
         if (kdtree != null) {
             createKDTreeCenters();
@@ -277,7 +287,8 @@ public class Objects3DPopulation {
     }
 
     public void removeObject(int i) {
-        hash.remove(objects.get(i));
+        hashValue.remove(objects.get(i).getValue());
+        hashName.remove(objects.get(i).getName());
         objects.remove(i);
     }
 
@@ -375,7 +386,7 @@ public class Objects3DPopulation {
                 Object3DVoxels ob = new Object3DVoxels(objectstmp[i]);
                 ob.setLabelImage(seg);
                 ob.setCalibration(cali);
-                ob.setName("Obj"+(i+1));
+                ob.setName("Obj" + (i + 1));
                 addObject(ob);
                 //IJ.log("adding ob " + ob.getValue() + " " + ob.getCenterAsPoint());
             }
@@ -430,11 +441,20 @@ public class Objects3DPopulation {
     }
 
     public Object3D getObjectByValue(int val) {
-        return objects.get(hash.get(val));
+        return objects.get(hashValue.get(val));
     }
 
+    public Object3D getObjectByName(String name) {
+        return objects.get(hashName.get(name));
+    }
+    
+    public int getIndexFromName(String name) {
+        return hashName.get(name);
+    }
+    
+
     public int getIndexFromValue(int val) {
-        return hash.get(val);
+        return hashValue.get(val);
     }
 
     public int getIndexOf(Object3D ob) {
@@ -1356,6 +1376,60 @@ public class Objects3DPopulation {
         }
 
         return true;
+    }
+
+    public void loadObjects(String path) {
+        //ImagePlus plus = this.getImage();
+        ZipInputStream zipinputstream;
+        ZipEntry zipentry;
+        FileOutputStream fileoutputstream;
+        int n;
+        byte[] buf = new byte[1024];
+        File file;
+        Object3DVoxels obj;
+        IJ.log("Loading objects from " + path);
+        File f = new File(path);
+        String dir = f.getParent();
+        String fs = File.separator;
+        try {
+            zipinputstream = new ZipInputStream(new FileInputStream(path));
+            zipentry = zipinputstream.getNextEntry();
+            while (zipentry != null) {
+                //for each entry to be extracted
+                String entryName = zipentry.getName();
+                //IJ.log("entryname=" + entryName);
+                fileoutputstream = new FileOutputStream(dir + fs + entryName);
+                file = new File(dir + fs + entryName);
+                while ((n = zipinputstream.read(buf, 0, 1024)) > -1) {
+                    fileoutputstream.write(buf, 0, n);
+                }
+                fileoutputstream.close();
+                zipinputstream.closeEntry();
+                zipentry = zipinputstream.getNextEntry();
+                // create object
+                obj = new Object3DVoxels();
+                obj.setValue(0);
+                obj.loadObject(dir + fs, entryName);
+                obj.setName(entryName.substring(0, entryName.length() - 6));
+
+                Calibration cal = new Calibration();
+                cal.pixelWidth = obj.getResXY();
+                cal.pixelHeight = obj.getResXY();
+                cal.pixelDepth = obj.getResZ();
+                cal.setUnit(obj.getUnits());
+
+                addObject(obj);
+
+                // take first calibration as general calibration
+                // TODO each object should have its own calibration <-> conflict with objects3DPopulation
+                file.delete();
+            }
+            zipinputstream.close();
+        } catch (FileNotFoundException ex) {
+            IJ.log("Pb loading " + ex);
+        } catch (IOException e) {
+            IJ.log("Pb loading " + e);
+        }
     }
 
     //    public ImageInt getLabelImage() {

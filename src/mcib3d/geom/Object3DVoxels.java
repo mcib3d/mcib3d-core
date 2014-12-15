@@ -1456,8 +1456,7 @@ public class Object3DVoxels extends Object3D {
                 dy = Double.parseDouble(coord[2]);
                 dz = Double.parseDouble(coord[3]);
                 v = (int) Double.parseDouble(coord[4]);
-                voxels.add(new Voxel3D(dx, dy, dz, v));
-
+                voxels.add(new Voxel3D(dx, dy, dz, v));                
                 data = bf.readLine();
             }
             bf.close();
