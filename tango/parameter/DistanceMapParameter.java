@@ -249,11 +249,11 @@ public class DistanceMapParameter extends GroupParameter {
             NormalizeDistanceMap nm= new NormalizeDistanceMap();
             if (!newDM) distanceMap = distanceMap.duplicate();
             if (normImage!=null) {
-                if (erodeDist==0) nm.normalizeDistanceMap(distanceMap, mask, normImage, null);
-                else nm.normalizeDistanceMap(distanceMap, mask, normImage, raw.getMask());
+                if (erodeDist==0) nm.normalizeDistanceMap(distanceMap, mask, normImage, null, false);
+                else nm.normalizeDistanceMap(distanceMap, mask, normImage, raw.getMask(), structures[0]!=0);
             } else {
-                if (erodeDist==0) nm.normalizeDistanceMap(distanceMap, mask, null);
-                else nm.normalizeDistanceMap(distanceMap, mask, raw.getMask());
+                if (erodeDist==0) nm.normalizeDistanceMap(distanceMap, mask, null, structures[0]!=0);
+                else nm.normalizeDistanceMap(distanceMap, mask, raw.getMask(), structures[0]!=0);
             }
             if (verbose) distanceMap.show("normalized distanceMap");
         }

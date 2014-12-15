@@ -32,7 +32,7 @@ import mcib3d.image3d.ImageInt;
  */
 
 public class NormalizeDistanceMap {
-    public void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask, ImageInt outerMask) {
+    public void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask, ImageInt outerMask, boolean interpolationErodedArea) {
         int count = 0;
         Vox[] indicies = new Vox[mask.countMaskVolume()];
         double volume = indicies.length;
@@ -62,10 +62,10 @@ public class NormalizeDistanceMap {
         for (Vox v : indicies) {
             distanceMap.pixels[v.z][v.xy] = (float) (v.index);
         }
-        if (outerMask!=null) correctDistanceMap(outerMask, mask, distanceMap, indicies); // correction en cas d'erosion du masque du noyau
+        if (outerMask!=null) correctDistanceMap(outerMask, mask, distanceMap, indicies, interpolationErodedArea); // correction en cas d'erosion du masque du noyau
     }
     
-    public void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask, ImageHandler normalizationMap, ImageInt outerMask) {
+    public void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask, ImageHandler normalizationMap, ImageInt outerMask, boolean interpolationErodedArea) {
         int count = 0;
         Vox[] indicies = new Vox[mask.countMaskVolume()];
         for (int z = 0; z<distanceMap.sizeZ; z++) {
@@ -96,21 +96,31 @@ public class NormalizeDistanceMap {
         for (Vox v : indicies) {
             distanceMap.pixels[v.z][v.xy] = (float) (v.index);
         }
-        if (outerMask!=null) correctDistanceMap(outerMask, mask, distanceMap, indicies);
+        if (outerMask!=null) correctDistanceMap(outerMask, mask, distanceMap, indicies, interpolationErodedArea);
     }
     
-    private void correctDistanceMap(ImageInt outerMask, ImageInt innerMask, ImageFloat distanceMap, Vox[] indicies) {
-        for (int z = 0; z<distanceMap.sizeZ; z++) {
-            for (int xy=0; xy<distanceMap.sizeXY; xy++) {
-                if (outerMask.getPixelInt(xy, z) !=0 && innerMask.getPixelInt(xy, z)==0 ) {
-                    Vox v = new Vox(distanceMap.getPixel(xy, z), xy, z);
-                    int i=Arrays.binarySearch(indicies, v);
-                    if (i>=0) distanceMap.setPixel(xy, z, (float)indicies[i].index);
-                    else {
-                        int ins = -i-1;
-                        if (ins==indicies.length) distanceMap.setPixel(xy, z, 1);
-                        else if (ins==0) distanceMap.setPixel(xy, z, 0);
-                        else distanceMap.setPixel(xy, z, (float)(indicies[ins].index+indicies[ins-1].index)/2);
+    private void correctDistanceMap(ImageInt outerMask, ImageInt innerMask, ImageFloat distanceMap, Vox[] indicies, boolean interpolationErodedArea) {
+        if (interpolationErodedArea) {
+            for (int z = 0; z<distanceMap.sizeZ; z++) {
+                for (int xy=0; xy<distanceMap.sizeXY; xy++) {
+                    if (outerMask.getPixelInt(xy, z) !=0 && innerMask.getPixelInt(xy, z)==0 ) {
+                        Vox v = new Vox(distanceMap.getPixel(xy, z), xy, z);
+                        int i=Arrays.binarySearch(indicies, v);
+                        if (i>=0) distanceMap.setPixel(xy, z, (float)indicies[i].index);
+                        else {
+                            int ins = -i-1;
+                            if (ins==indicies.length) distanceMap.setPixel(xy, z, 1);
+                            else if (ins==0) distanceMap.setPixel(xy, z, 0);
+                            else distanceMap.setPixel(xy, z, (float)(indicies[ins].index+indicies[ins-1].index)/2);
+                        }
+                    }
+                }
+            }
+        } else {
+            for (int z = 0; z<distanceMap.sizeZ; z++) {
+                for (int xy=0; xy<distanceMap.sizeXY; xy++) {
+                    if (outerMask.getPixelInt(xy, z) !=0 && innerMask.getPixelInt(xy, z)==0 ) {
+                        distanceMap.setPixel(xy, z, 0);
                     }
                 }
             }
