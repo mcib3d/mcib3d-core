@@ -13,7 +13,11 @@ import ij.process.ImageProcessor;
 import ij3d.Content;
 import ij3d.Image3DUniverse;
 import java.awt.Color;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3f;
@@ -1726,6 +1730,12 @@ public class Object3DSurface extends Object3D {
 
     @Override
     public ArrayList listVoxels(ImageHandler ima, double threshold) {
+
+        return listVoxels(ima, threshold, Double.POSITIVE_INFINITY);
+    }
+
+    @Override
+    public ArrayList listVoxels(ImageHandler ima, double threshold1, double threshold2) {
         ArrayList vector = new ArrayList();
         Voxel3D pixel;
         float pixvalue;
@@ -1735,7 +1745,7 @@ public class Object3DSurface extends Object3D {
         while (it.hasNext()) {
             pixel = new Voxel3D((Voxel3D) it.next());
             pixvalue = ima.getPixel(pixel);
-            if (pixvalue > threshold) {
+            if ((pixvalue > threshold1) && (pixvalue < threshold2)) {
                 pixel.setValue(pixvalue);
                 vector.add(pixel);
             }
@@ -2027,7 +2037,7 @@ public class Object3DSurface extends Object3D {
      * @param path
      */
     @Override
-    public void writeVoxels(String path) {
+    public void saveObject(String path) {
         // TODO write voxels
         throw new UnsupportedOperationException("Not supported yet.");
     }

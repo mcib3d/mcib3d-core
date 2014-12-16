@@ -339,13 +339,14 @@ public class Object3DFuzzy extends Object3DVoxels {
     }
 
     @Override
-    public void writeVoxels(String path) {
+    public void saveObject(String path) {
         Voxel3D pixel;
         java.io.BufferedWriter bf;
         int c = 0;
 
         try {
             bf = new java.io.BufferedWriter(new java.io.FileWriter(path + value + ".3droi")); //name??
+             saveInfo(bf);
             Iterator it = voxels.iterator();
             while (it.hasNext()) {
                 c++;

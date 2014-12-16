@@ -1,12 +1,13 @@
 package mcib3d.geom;
 
-import ij.*;
-import ij.measure.*;
+import ij.IJ;
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.measure.Calibration;
 import java.util.ArrayList;
-
-import mcib3d.image3d.*;
-import mcib3d.Jama.*;
-import mcib3d.image3d.legacy.Image3D;
+import mcib3d.Jama.Matrix;
+import mcib3d.image3d.ImageHandler;
+import mcib3d.image3d.ImageShort;
 
 /**
  * Copyright (C) Thomas Boudier
@@ -1219,9 +1220,6 @@ public class ObjectCreator3D {
         return new Object3DVoxels(img, val);
     }
 
-    public Image3D getImage3D() {
-        return img.getImage3D();
-    }
 
     /**
      *
