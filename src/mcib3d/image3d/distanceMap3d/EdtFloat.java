@@ -176,40 +176,35 @@ public class EdtFloat {
 			int n = w;
 			if(h > n) n = h;
 			if(d > n) n = d;
-			int noResult = 3*(n+1)*(n+1);
+			//int noResult = 3*(n+1)*(n+1);
 			boolean[] background = new boolean[n];			
 			boolean nonempty;
 			float test, min;			
 			for(int k = thread; k < d; k+=nThreads){
 				sk = s[k];
 				dk = data[k];
-                                boolean borderZ=(k==0 || k==d-1);
 				for(int j = 0; j < h; j++){
 					for (int i = 0; i < w; i++){
                                             background[i] = (dk[i+w*j] <= thresh);
                                         }
-					boolean borderY=(j==0 || j==h-1);
                                         for (int i = 0; i < w; i++){
-						min = noResult;
-						if (borderY || i==0 || i==w-1) min=1;
-                                                else {
-                                                    if (borderZ) min=scaleZ;
-                                                    for (int x = i; x < w; x++){
-                                                            if(background[x]){
-                                                                    test = i - x;
-                                                                    test *= test;
-                                                                    if(test < min)min = test;
-                                                                    break;
-                                                            }
-                                                    }
-                                                    for (int x = i-1; x >=0 ; x--){
-                                                            if(background[x]){
-                                                                    test = i - x;
-                                                                    test *= test;
-                                                                    if(test < min)min = test;
-                                                                    break;
-                                                            }
-                                                    }
+						min = Math.min(i+1, w-i); // distance minimale = distance au bord le plus proche + 1
+                                                min*=min;
+                                                for (int x = i; x < w; x++){
+                                                        if(background[x]){
+                                                                test = i - x;
+                                                                test *= test;
+                                                                if(test < min)min = test;
+                                                                break;
+                                                        }
+                                                }
+                                                for (int x = i-1; x >=0 ; x--){
+                                                        if(background[x]){
+                                                                test = i - x;
+                                                                test *= test;
+                                                                if(test < min)min = test;
+                                                                break;
+                                                        }
                                                 }
 						sk[i+w*j] = min;
 					}
@@ -233,7 +228,7 @@ public class EdtFloat {
 			int n = w;
 			if(h > n) n = h;
 			if(d > n) n = d;
-			int noResult = 3*(n+1)*(n+1);
+			//int noResult = 3*(n+1)*(n+1);
 			float[] tempInt = new float[n];
 			float[] tempS = new float[n];
 			boolean nonempty;
@@ -249,7 +244,8 @@ public class EdtFloat {
 					}
 					if(nonempty){
 						for (int j = 0; j < h; j++){
-							min = noResult;
+							min = Math.min(j+1, h-j);
+                                                        min*=min;
 							delta = j;
 							for(int y = 0; y < h; y++){
 								test = tempS[y] + delta*delta--;
@@ -288,7 +284,7 @@ public class EdtFloat {
 			int n = w;
 			if(h > n) n = h;
 			if(d > n) n = d;
-			int noResult = 3*(n+1)*(n+1);
+			//int noResult = 3*(n+1)*(n+1);
 			float[] tempInt = new float[n];
 			float[] tempS = new float[n];
 			boolean nonempty;
@@ -312,7 +308,8 @@ public class EdtFloat {
 						for(int k = 0; k < d; k++){
 							//Limit to the non-background to save time,
 							if((data[k][i+w*j] > thresh)){
-								min = noResult;
+								min=Math.min(k+1, k-d);
+                                                                min *= min * scaleZ;
 								zBegin = zStart;
 								zEnd = zStop;
 								if(zBegin > k)zBegin = k;
