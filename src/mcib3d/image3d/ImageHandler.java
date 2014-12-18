@@ -1,6 +1,5 @@
 package mcib3d.image3d;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.io.FileInfo;
@@ -10,12 +9,6 @@ import ij.io.TiffEncoder;
 import ij.measure.Calibration;
 import ij.plugin.ZProjector;
 import ij.process.ImageProcessor;
-import imagescience.feature.Differentiator;
-import imagescience.feature.Edges;
-import imagescience.feature.Hessian;
-import imagescience.feature.Structure;
-import imagescience.image.FloatImage;
-import imagescience.image.Image;
 import java.awt.image.IndexColorModel;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -23,7 +16,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -33,12 +25,7 @@ import mcib3d.geom.Vector3D;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.image3d.legacy.Image3D;
-import mcib3d.image3d.processing.FJDifferentiator3D;
-import mcib3d.image3d.processing.FJHessian3D;
-import mcib3d.image3d.processing.FJStructure3D;
-import mcib3d.image3d.processing.Thresholder;
 import mcib3d.utils.ArrayUtil;
-import mcib3d.utils.ThreadRunner;
 import mcib3d.utils.exceptionPrinter;
 
 /**
@@ -1506,26 +1493,6 @@ public abstract class ImageHandler {
         }
     }
 
-    //from FeatureJ
-    public ImageFloat gaussianSmooth(double scaleXY, double scaleZ, int nbCPUs) {
-        Image res;
-        double old_scaleXY = this.getScaleXY();
-        double old_scaleZ = this.getScaleZ();
-        this.setScale(1, scaleXY / scaleZ, this.getUnit());
-        if (nbCPUs > 0) {
-            FJDifferentiator3D differentiator = new FJDifferentiator3D();
-            res = differentiator.run(Image.wrap(img), scaleXY, 0, 0, 0, nbCPUs);
-        } else {
-            Differentiator differentiator = new Differentiator();
-            res = differentiator.run(Image.wrap(img), scaleXY, 0, 0, 0);
-        }
-        this.setScale(old_scaleXY, old_scaleZ, this.getUnit());
-        ImageFloat ihres = (ImageFloat) ImageHandler.wrap(res.imageplus());
-        ihres.setScale(old_scaleXY, old_scaleZ, this.getUnit());
-        ihres.setOffset(this);
-        return ihres;
-    }
-
     public ImageFloat substractImage(ImageHandler other) {
         ImageFloat res;
         if (!this.sameDimentions(other)) {
@@ -1539,167 +1506,6 @@ public abstract class ImageHandler {
             }
         }
 
-        return res;
-    }
-
-    public ImageFloat getGradient(double scale, int nbCPUs) {
-        return getGradient(scale, true, nbCPUs)[3];
-    }
-
-    public ImageFloat getEdges(double scale, float min_thld, float max_thld) { //retourne gradient en 0 et edges en 1
-        ImagePlus im_edge = FJEdges(img, scale, true, min_thld, max_thld);
-        ImageFloat res = new ImageFloat(im_edge);
-        res.setTitle(title + ":gradient");
-        res.offsetX = offsetX;
-        res.offsetY = offsetY;
-        res.offsetZ = offsetZ;
-        return res;
-    }
-
-    public ImageFloat[] getHessian(double scale, int nbCPUs) {
-        ImageFloat[] res = new ImageFloat[3];
-        ImagePlus[] hess = FJHessian(img, scale, nbCPUs);
-        for (int i = 0; i < 3; i++) {
-            res[i] = new ImageFloat(hess[i]);
-            res[i].setTitle(title + ":hessian" + (i + 1));
-            res[i].offsetX = offsetX;
-            res[i].offsetY = offsetY;
-            res[i].offsetZ = offsetZ;
-        }
-        return res;
-    }
-
-    public ImageFloat getHessianDeterminant(double scale, int nbCPUs, boolean allNegative) {
-        ImageFloat res, res0, res1, res2;
-        ImagePlus[] hess = FJHessian(img, scale, nbCPUs);
-
-        res = new ImageFloat(hess[0]);
-        res = (ImageFloat) res.multiplyImage(new ImageFloat(hess[1]), 1);
-        res = (ImageFloat) res.multiplyImage(new ImageFloat(hess[2]), 1);
-        if (allNegative) {
-            // test if all values are negative
-            res0 = new ImageFloat(hess[0]);
-            res1 = new ImageFloat(hess[1]);
-            res2 = new ImageFloat(hess[2]);
-            for (int i = 0; i < res0.sizeXYZ; i++) {
-                if ((res0.getPixel(i) >= 0) || (res1.getPixel(i) >= 0) || (res2.getPixel(i) >= 0)) {
-                    res.setPixel(i, 0);
-                }
-            }
-        }
-        return res;
-    }
-
-    public ImageFloat[] getInertia(double smoothScale, double integrationScale, int nbCPUs) {
-        ImageFloat[] res = new ImageFloat[3];
-        ImagePlus[] hess = FJInertia(img, smoothScale, integrationScale, nbCPUs);
-        for (int i = 0; i < 3; i++) {
-            res[i] = new ImageFloat(hess[i]);
-            res[i].setTitle(title + ":intertia" + (i + 1));
-            res[i].offsetX = offsetX;
-            res[i].offsetY = offsetY;
-            res[i].offsetZ = offsetZ;
-        }
-        return res;
-    }
-
-    public ImageFloat[] getGradient(double scale, boolean computeMagnitude, int nbCPUs) {
-        final ImageFloat[] res = new ImageFloat[computeMagnitude ? 4 : 3];
-        Image imw = Image.wrap(img);
-        final Image Ix, Iy, Iz;
-        scale *= (double) getScaleXY(); // FIXME scaleZ?
-        if (nbCPUs > 1) {
-            final FJDifferentiator3D differentiator = new FJDifferentiator3D();
-            Ix = differentiator.run(imw.duplicate(), scale, 1, 0, 0, nbCPUs);
-            Iy = differentiator.run(imw.duplicate(), scale, 0, 1, 0, nbCPUs);
-            Iz = differentiator.run(imw.duplicate(), scale, 0, 0, 1, nbCPUs);
-        } else {
-            final Differentiator differentiator = new Differentiator();
-            Ix = differentiator.run(imw.duplicate(), scale, 1, 0, 0);
-            Iy = differentiator.run(imw.duplicate(), scale, 0, 1, 0);
-            Iz = differentiator.run(imw.duplicate(), scale, 0, 0, 1);
-        }
-        res[0] = new ImageFloat(Ix.imageplus());
-        res[1] = new ImageFloat(Iy.imageplus());
-        res[2] = new ImageFloat(Iz.imageplus());
-        if (computeMagnitude) {
-            res[3] = new ImageFloat(title + "_gradientMagnitude", sizeX, sizeY, sizeZ);
-            final ThreadRunner tr = new ThreadRunner(0, sizeZ, nbCPUs);
-            for (int i = 0; i < tr.threads.length; i++) {
-                tr.threads[i] = new Thread(
-                        new Runnable() {
-                            public void run() {
-                                for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
-                                    for (int xy = 0; xy < sizeXY; xy++) {
-                                        res[3].pixels[z][xy] = (float) Math.sqrt(res[0].pixels[z][xy] * res[0].pixels[z][xy] + res[1].pixels[z][xy] * res[1].pixels[z][xy] + res[2].pixels[z][xy] * res[2].pixels[z][xy]);
-                                    }
-                                }
-                            }
-                        });
-            }
-            tr.startAndJoin();
-        }
-        return res;
-    }
-
-    private ImagePlus FJEdges(ImagePlus imp, double scaleval, boolean edge, double lowval, double highval) {
-        Image imw = Image.wrap(imp);
-        Calibration cal = imp.getCalibration();
-        if (cal.scaled()) {
-            scaleval *= cal.pixelWidth; //scaleval*=Math.pow(cal.pixelWidth*cal.pixelHeight*cal.pixelDepth, 0.3332);
-        }
-        Image newimg = new FloatImage(imw);
-        Edges edges = new Edges();
-        newimg = edges.run(newimg, scaleval, edge);
-        if (edge && (lowval > 0) && (highval > 0)) {
-            Thresholder thres = new Thresholder();
-            thres.hysteresis(newimg, lowval, highval);
-        }
-        ImagePlus res = newimg.imageplus();
-        return res;
-    }
-
-    private ImagePlus[] FJHessian(ImagePlus imp, double scaleval, int nbCPUs) {
-        Image image = Image.wrap(imp);
-        Calibration cal = imp.getCalibration();
-        if (cal.scaled()) {
-            scaleval *= cal.pixelWidth; //scaleval*=Math.pow(cal.pixelWidth*cal.pixelHeight*cal.pixelDepth, 0.3332);
-        }
-        Vector vector;
-        if (nbCPUs > 1) {
-            FJHessian3D hessian = new FJHessian3D();
-            vector = hessian.run(new FloatImage(image), scaleval, nbCPUs);
-        } else {
-            Hessian hessian = new Hessian();
-            vector = hessian.run(new FloatImage(image), scaleval, false);
-        }
-        ImagePlus[] res = new ImagePlus[3];
-        res[0] = ((Image) vector.get(0)).imageplus();
-        res[1] = ((Image) vector.get(1)).imageplus();
-        res[2] = ((Image) vector.get(2)).imageplus();
-        return res;
-    }
-
-    private ImagePlus[] FJInertia(ImagePlus imp, double smoothScale, double integrationScale, int nbCPUs) {
-        Image image = Image.wrap(imp);
-        Calibration cal = imp.getCalibration();
-        double sscale = smoothScale;
-        double iscale = integrationScale;
-        if (cal.scaled()) {
-            sscale *= cal.pixelWidth;
-            iscale *= cal.pixelWidth;
-        }
-        Vector vector;
-        if (nbCPUs > 1) {
-            vector = (new FJStructure3D()).run(image, sscale, iscale, nbCPUs);
-        } else {
-            vector = (new Structure()).run(image, sscale, iscale);
-        }
-
-        ImagePlus[] res = new ImagePlus[3];
-        res[0] = ((Image) vector.get(0)).imageplus();
-        res[1] = ((Image) vector.get(1)).imageplus();
-        res[2] = ((Image) vector.get(2)).imageplus();
         return res;
     }
 
@@ -1773,16 +1579,6 @@ public abstract class ImageHandler {
         }
         if ((image instanceof ImageFloat)) {
             image = ((ImageFloat) image).convertToByte(true);
-        }
-    }
-
-    public void hysteresis(double lowval, double highval, boolean lowConnectivity) {
-        final Image imp = Image.wrap(img);
-        final Thresholder thres = new Thresholder();
-        if (lowConnectivity) {
-            thres.hysteresisLowConnectivity(imp, lowval, highval);
-        } else {
-            thres.hysteresis(imp, lowval, highval);
         }
     }
 
