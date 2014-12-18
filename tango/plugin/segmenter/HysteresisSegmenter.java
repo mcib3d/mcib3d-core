@@ -11,6 +11,7 @@ import tango.parameter.BooleanParameter;
 import tango.parameter.Parameter;
 import tango.parameter.StructureParameter;
 import tango.parameter.ThresholdParameter;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 
 /**
  *
@@ -77,7 +78,7 @@ public class HysteresisSegmenter implements NucleusSegmenter, SpotSegmenter {
             maskres = input.threshold((float)thldLow, false, false);
         } else {
             maskres = input.duplicate();
-            maskres.hysteresis(thldLow, thldHigh, lowConnectivity);
+            ImageFeaturesCore.hysteresis(maskres, thldLow, thldHigh, lowConnectivity);
             // FIXME : si pixels > thldHigh hors du mask -> incoherence...
         }
         if (mask!=null && !(mask instanceof BlankMask)) maskres.intersectMask(mask);

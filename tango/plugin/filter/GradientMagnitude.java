@@ -7,6 +7,7 @@ import tango.parameter.BooleanParameter;
 import tango.parameter.ChoiceParameter;
 import tango.parameter.DoubleParameter;
 import tango.parameter.Parameter;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 import tango.plugin.filter.PreFilter;
 /**
  *
@@ -55,7 +56,7 @@ public class GradientMagnitude implements PreFilter {
         double scaleXY = input.getScaleXY();
         String unit = input.getUnit();
         if (!useScale.isSelected()) input.setScale(scaleXY, scaleXY, unit);
-        ImageHandler res =  input.getGradient(Math.max(iscale.getFloatValue(1), 1), nbCPUs);
+        ImageHandler res =  ImageFeaturesCore.getGradient(input, Math.max(iscale.getFloatValue(1), 1), nbCPUs);
         if (!useScale.isSelected()) {
             res.setScale(scaleXY, scaleZ, unit);
             input.setScale(scaleXY, scaleZ, unit);

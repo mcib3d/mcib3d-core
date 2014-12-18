@@ -242,6 +242,7 @@ public class ProcessingSequenceEditor  implements ActionListener {
     protected void record() {
         
         Core.getExperiment().save();
+        if (Core.GUIMode) IJ.log("XP saved!");
     }
     
     private void setStructure(int structureIdx) {

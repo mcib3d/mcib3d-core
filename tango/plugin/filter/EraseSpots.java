@@ -78,7 +78,7 @@ public class EraseSpots implements PostFilter {
         ArrayList<Parameter[]> alCrit = criteria.getParametersArrayList();
         Object3DVoxels[] objectsArray = in.getObjects3D();
         ArrayList<Object3DVoxels> objects = new ArrayList<Object3DVoxels>(Arrays.asList(objectsArray));
-        ImageFloat dm=null;
+        boolean isDistanceToPeripherySet=false;
         for (Parameter[] p : alCrit) {
             ConditionalParameter crit =  (ConditionalParameter)p[0];
             int idx = ((ChoiceParameter)crit.getActionnableParameter()).getSelectedIndex();
@@ -92,14 +92,17 @@ public class EraseSpots implements PostFilter {
                 double erode = -1;
                 if (sig==2) erode = ((SliderDoubleParameter)signalCond.getParameters()[1]).getValue();
                 else erode = ((SliderDoubleParameter)signalCond.getParameters()[0]).getValue();
-                if (erode>0 && erode<1 && dm==null) dm=in.getDistanceMapInsideMask(nbCPUs);
+                if (erode>0 && erode<1 && !isDistanceToPeripherySet) {
+                    for (Object3DVoxels o : objects) ImageUtils.setObjectDistancesToPeriphery(o, nbCPUs);
+                    isDistanceToPeripherySet=true;
+                }
                 ConditionalParameter dilCond = (ConditionalParameter)crit.getParameters()[2];
                 int bck = ((ChoiceParameter)dilCond.getActionnableParameter()).getSelectedIndex();
                 int dilate = 0;
                 if (bck==0) dilate=-1;
                 else if (bck==2) dilate = ((IntParameter)dilCond.getParameters()[0]).getIntValue(1);
                
-                eraseObjectsSNR(objects, in, dilate, images.getMask(), intensityMap, quant, snr.getDoubleValue(2), dm, erode);
+                eraseObjectsSNR(objects, in, dilate, images.getMask(), intensityMap, quant, snr.getDoubleValue(2), erode);
             } else if (idx==1) { //intensity
                 ConditionalParameter signalCond = (ConditionalParameter)crit.getParameters()[0];
                 int sig = ((ChoiceParameter)signalCond.getActionnableParameter()).getSelectedIndex();
@@ -109,17 +112,21 @@ public class EraseSpots implements PostFilter {
                 double erode = -1;
                 if (sig==2) erode = ((SliderDoubleParameter)signalCond.getParameters()[1]).getValue();
                 else erode = ((SliderDoubleParameter)signalCond.getParameters()[0]).getValue();
-                if (erode>0 && erode<1 && dm==null) dm=in.getDistanceMapInsideMask(nbCPUs);
+                if (erode>0 && erode<1 && !isDistanceToPeripherySet) {
+                    for (Object3DVoxels o : objects) ImageUtils.setObjectDistancesToPeriphery(o, nbCPUs);
+                    isDistanceToPeripherySet=true;
+                }
                 ThresholdParameter thld = (ThresholdParameter)crit.getParameters()[1];
                 double thldValue = thld.getThreshold(intensityMap, images, nbCPUs, debug);
-                objects = eraseObjectsIntensity(objects, in, intensityMap, quant, thldValue, dm, erode);
+                objects = eraseObjectsIntensity(objects, in, intensityMap, quant, thldValue, erode);
             }
         }
+        if (debug) in.showDuplicate("erase spots output");
         return in;
     }
     
     
-    public void eraseObjectsSNR(ArrayList<Object3DVoxels> objects, ImageInt in, int dilate, ImageInt mask, ImageHandler intensity, double quantile, double thld, ImageFloat dm, double erode) {
+    public void eraseObjectsSNR(ArrayList<Object3DVoxels> objects, ImageInt in, int dilate, ImageInt mask, ImageHandler intensity, double quantile, double thld, double erode) {
         if (objects.isEmpty()) return;
         // get noise
         Object3DVoxels bcg;
@@ -140,8 +147,9 @@ public class EraseSpots implements PostFilter {
         double sigma = bcg.getPixStdDevValue(intensity);
         double mean = bcg.getPixMeanValue(intensity);
         int count = 0;
+        int nbInit=objects.size();
         Object3DVoxels[][] eroded=null;
-        if (erode>0 && erode<1) eroded = ImageUtils.getObjectLayers(dm, objects.toArray(new Object3DVoxels[objects.size()]), new double[][]{{0, 1-erode}}, nbCPUs, debug);
+        if (erode>0 && erode<1) eroded = ImageUtils.getObjectLayers(objects.toArray(new Object3DVoxels[objects.size()]), new double[][]{{0, 1-erode}}, nbCPUs, debug);
         Iterator<Object3DVoxels> it = objects.iterator();
         while(it.hasNext()) {
             Object3DVoxels o = it.next();
@@ -156,19 +164,20 @@ public class EraseSpots implements PostFilter {
                 
             }
             double snrValue = (I-mean) / sigma;
-            if (debug) ij.IJ.log("EraseSpots::SNR::spot:"+o.getValue()+ " snr:"+snrValue+ " thld:"+thld+ (snrValue<thld?"erased":""));
+            if (debug) ij.IJ.log("EraseSpots::SNR::spot:"+o.getValue()+ " snr:"+snrValue+ " thld:"+thld+ (snrValue<thld?" erased":""));
             if (snrValue<thld) {
                 o.draw(in, 0);
                 it.remove();
             }
             count++;
         }
+        if (debug) ij.IJ.log("erase spots: remaining objects: "+objects.size()+"/"+nbInit);
     }
     
-    public ArrayList<Object3DVoxels> eraseObjectsIntensity(ArrayList<Object3DVoxels> objects, ImageInt in, ImageHandler intensity, double quantile, double thld, ImageFloat dm, double erode) {
+    public ArrayList<Object3DVoxels> eraseObjectsIntensity(ArrayList<Object3DVoxels> objects, ImageInt in, ImageHandler intensity, double quantile, double thld, double erode) {
         if (objects.isEmpty()) return objects;
         Object3DVoxels[][] eroded=null;
-        if (erode>0 && erode<1) eroded = ImageUtils.getObjectLayers(dm, objects.toArray(new Object3DVoxels[objects.size()]), new double[][]{{0, 1-erode}}, nbCPUs, debug);
+        if (erode>0 && erode<1) eroded = ImageUtils.getObjectLayers(objects.toArray(new Object3DVoxels[objects.size()]), new double[][]{{0, 1-erode}}, nbCPUs, debug);
         if (debug) ij.IJ.log("EraseSpots::nb objects:"+objects.size());
         Iterator<Object3DVoxels> it = objects.iterator();
         int count = 0;
@@ -210,7 +219,7 @@ public class EraseSpots implements PostFilter {
 
     @Override
     public String getHelp() {
-        return "Erase Objects according to their signal-to-noise ratio or their mean intensity.";
+        return "Erase Objects according to their signal-to-noise ratio or their mean intensity. If the eroded value is positive, spots will be eroded of user-defined proportion for signal calculation";
     }
     
 }

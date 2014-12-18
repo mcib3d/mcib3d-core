@@ -8,6 +8,7 @@ import tango.parameter.BooleanParameter;
 import tango.parameter.ConditionalParameter;
 import tango.parameter.DoubleParameter;
 import tango.parameter.Parameter;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 /**
  *
  **
@@ -61,7 +62,7 @@ public class SubtractGaussian implements PreFilter {
     }
     
     private ImageHandler getBackground(ImageHandler input) {
-        return input.gaussianSmooth(voisx, voisz, nbCPUs);
+        return ImageFeaturesCore.gaussianSmooth(input, voisx, voisz, nbCPUs);
     }
 
     @Override

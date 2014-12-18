@@ -23,6 +23,7 @@ import tango.dataStructure.ObjectQuantifications;
 import tango.dataStructure.SegmentedCellImages;
 import tango.gui.Core;
 import tango.parameter.*;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 import tango.plugin.filter.LaplacianOfGaussian3D;
 import tango.plugin.filter.Misc_3DFilters;
 
@@ -332,7 +333,7 @@ public class TestFeatures implements MeasurementObject {
             filteredImages = new ImageHandler[allKeysMatrix[GAUSS].length];
             int idx = 0;
             for (int i = this.gaussMinRad.getIntValue(1); i<=this.gaussMaxRad.getIntValue(10); i++) {
-                if (isOneKeySelected(GAUSS, idx)) filteredImages[idx] = rawSignal.gaussianSmooth(i, i*Zfactor, nCPUs);
+                if (isOneKeySelected(GAUSS, idx)) filteredImages[idx] = ImageFeaturesCore.gaussianSmooth(rawSignal, i, i*Zfactor, nCPUs);
                 idx++;
             }
             performMeasures(allKeysMatrix[GAUSS], filteredImages, quantifications, mask, nuc);
@@ -343,8 +344,8 @@ public class TestFeatures implements MeasurementObject {
             for (int s = this.DOGMinRadS.getIntValue(1); s<=this.DOGMaxRadS.getIntValue(2); s++) {
                 for (int l = Math.max(s+1, this.DOGMinRadL.getIntValue(2)); l<=this.DOGMaxRadL.getIntValue(10); l++) {
                     if (isOneKeySelected(DOG, idx)) {
-                        ImageFloat gaussSmall = rawSignal.gaussianSmooth(s, s*Zfactor, nCPUs);
-                        ImageFloat gaussLarge = rawSignal.gaussianSmooth(l, l*Zfactor, nCPUs);
+                        ImageFloat gaussSmall = ImageFeaturesCore.gaussianSmooth(rawSignal, s, s*Zfactor, nCPUs);
+                        ImageFloat gaussLarge = ImageFeaturesCore.gaussianSmooth(rawSignal, l, l*Zfactor, nCPUs);
                         filteredImages[idx] = gaussSmall.substractImage(gaussLarge);
                     }
                     idx++;
@@ -392,7 +393,7 @@ public class TestFeatures implements MeasurementObject {
             else filtered = rawSignal;
             int idx = 0;
             for (int i = this.gradMinRad.getIntValue(1); i<=this.gradMaxRad.getIntValue(4); i++) {
-                if (isOneKeySelected(GRAD, idx)) filteredImages[idx] = filtered.getGradient(i, nCPUs);
+                if (isOneKeySelected(GRAD, idx)) filteredImages[idx] = ImageFeaturesCore.getGradient(filtered, i, nCPUs);
                 idx++;
             }
             performMeasures(allKeysMatrix[GRAD], filteredImages, quantifications, mask, nuc);
@@ -403,7 +404,7 @@ public class TestFeatures implements MeasurementObject {
             int idx = 0;
             for (int i = this.HMMinRad.getIntValue(1); i<=this.HMMaxRad.getIntValue(4); i++) {
                 if (isOneKeySelected(HM, idx)) {
-                    filteredImages[idx] = filtered.getHessian(i, nCPUs)[0];
+                    filteredImages[idx] = ImageFeaturesCore.getHessian(filtered, i, nCPUs)[0];
                     ((ImageFloat)filteredImages[idx]).opposite();
                 }
                 idx++;
@@ -416,7 +417,7 @@ public class TestFeatures implements MeasurementObject {
             int idx = 0;
             for (int i = this.CurvMinRad.getIntValue(1); i<=this.CurvMaxRad.getIntValue(4); i++) {
                 if (isOneKeySelected(CURV, idx)) {
-                    ImageFloat[] hess = filtered.getHessian(i, nCPUs);
+                    ImageFloat[] hess = ImageFeaturesCore.getHessian(filtered, i, nCPUs);
                     ImageFloat res = ImageFloat.newBlankImageFloat("Curvature", filtered);
                     int sizeZ = hess[0].sizeZ;
                     int sizeXY = hess[0].sizeXY;
@@ -435,7 +436,7 @@ public class TestFeatures implements MeasurementObject {
             filteredImages = new ImageHandler[allKeysMatrix[STRUCTURE].length];
             int idx = 0;
             for (int i = this.structMinRad.getIntValue(1); i<=this.structMaxRad.getIntValue(4); i++) {
-                if (isOneKeySelected(STRUCTURE, idx)) filteredImages[idx] = rawSignal.getInertia(structSmooth.getDoubleValue(1), i, nCPUs)[0];
+                if (isOneKeySelected(STRUCTURE, idx)) filteredImages[idx] = ImageFeaturesCore.getInertia(rawSignal, structSmooth.getDoubleValue(1), i, nCPUs)[0];
                 idx++;
             }
             performMeasures(allKeysMatrix[STRUCTURE], filteredImages, quantifications, mask, nuc);

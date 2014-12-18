@@ -13,6 +13,7 @@ import mcib3d.image3d.*;
 import mcib3d.utils.ArrayUtil;
 import tango.dataStructure.InputImages;
 import tango.parameter.*;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 
 /**
  *
@@ -129,7 +130,7 @@ public class MaximumGradientFit extends SpotLocalThresholder implements PostFilt
         this.layerNb=nbLayer.getIntValue(layerNb);
         gScale = gScale_P.getDoubleValue(gScale);
         if (gScale<1) gScale=1;
-        this.gradient=intensityMap.getGradient((float)gScale, this.nbCPUs);
+        this.gradient=ImageFeaturesCore.getGradient(intensityMap, (float)gScale, this.nbCPUs);
     }
     
     

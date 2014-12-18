@@ -8,6 +8,7 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 import tango.dataStructure.InputCroppedImages;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 
 /**
  *
@@ -79,7 +80,7 @@ public class WatershedEdgeDetection extends WatershedTransform3D {
     
     // mask contains on label
     public ImageInt runWatershed(ImageHandler input, ImageInt mask_, int label) {
-        ImageHandler wsMap = input.getGradient(1, nCPUs);
+        ImageHandler wsMap = ImageFeaturesCore.getGradient(input, 1, nCPUs);
         if (debug) wsMap.showDuplicate("Gradient Map");
         this.label=label;
         runWatershed(input, wsMap, mask_);

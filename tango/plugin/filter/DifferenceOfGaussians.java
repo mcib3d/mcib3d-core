@@ -8,6 +8,7 @@ import tango.parameter.BooleanParameter;
 import tango.parameter.ConditionalParameter;
 import tango.parameter.DoubleParameter;
 import tango.parameter.Parameter;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 /**
  *
  **
@@ -67,8 +68,8 @@ public class DifferenceOfGaussians implements PreFilter {
         voisx2=voisXY_2_P.getDoubleValue(voisx2);
         if (useScale_2.isSelected()) voisz2=voisx2 * images.getMask().getScaleXY() / images.getMask().getScaleZ();
         else voisz1=voisZ_2_P.getDoubleValue(voisz2);
-        ImageFloat gaussSmall = input.gaussianSmooth(voisx1, voisz1, nbCPUs);
-        ImageFloat gaussLarge = input.gaussianSmooth(voisx2, voisz2, nbCPUs);
+        ImageFloat gaussSmall = ImageFeaturesCore.gaussianSmooth(input, voisx1, voisz1, nbCPUs);
+        ImageFloat gaussLarge = ImageFeaturesCore.gaussianSmooth(input, voisx2, voisz2, nbCPUs);
         if (debug) {
             gaussSmall.show("Subtract Gaussian:: SmoothXY:"+voisx1+" SmooothZ:"+voisz1);
             gaussLarge.show("Subtract Gaussian:: SmoothXY:"+voisx2+" SmooothZ:"+voisz2);

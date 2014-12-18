@@ -181,6 +181,7 @@ public class MongoConnector {
             res.add(u.getString("name"));
         }
         cur.close();
+        Collections.sort(res);
         return res;
     }
     
@@ -437,6 +438,7 @@ public class MongoConnector {
             res.add(f.getString("name"));
         }
         cur.close();
+        Collections.sort(res);
         return res;
     }
     
@@ -556,6 +558,7 @@ public class MongoConnector {
             res.add(cur.next().get("name").toString());
         }
         cur.close();
+        Collections.sort(res);
         return res;
     }
     

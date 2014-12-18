@@ -973,4 +973,12 @@ public class CellManager implements  ListSelectionListener, AdjustmentListener, 
         }
         currentImage = null;
     }
+    
+    public void plotMeanZProfiles() {
+        Cell[] cells = getSelectedCells(false);
+        for (Cell c : cells) {
+            int sIdx = (listChannel.getSelectedIndex()==-1) ? Cell.structureThumbnail : this.listChannel.getSelectedIndex();
+            ImageUtils.plotMeanZprofile(c.getName(), c.getMask(), c.getRawImages().getImage(sIdx));
+        }
+    }
 }

@@ -111,7 +111,7 @@ public class ImageFeatures implements PreFilter {
 
     @Override
     public String getHelp() {
-        return "Compute Features from Image";
+        return "Compute Features from Image. From featureJ http://www.imagescience.org/meijering/software/featurej/";
     }
     
 }

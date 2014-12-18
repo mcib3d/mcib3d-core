@@ -14,6 +14,7 @@ import tango.dataStructure.InputCellImages;
 import tango.dataStructure.SegmentedCellImages;
 import tango.dataStructure.Structure;
 import tango.parameter.*;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 import tango.plugin.sampler.Sampler;
 /**
  *
@@ -82,7 +83,7 @@ public class ProbaPointSampler implements Sampler {
         float hard = hardcore.getFloatValue(0);
         ImageHandler pm = probaMap.getImage(raw, false);
         if (gradient.isSelected()) {
-            pm = pm.getGradient(gScale.getFloatValue(1), nbCPUs);
+            pm = ImageFeaturesCore.getGradient(pm,gScale.getFloatValue(1), nbCPUs);
         }
         rpg = new RandomPoint3DGeneratorProbaMap(seg.getImage(0), nPoints, pm, saturation.getFloatValue(0), nbCPUs, verbose);
         if (hard>0) rpg.setHardCore(hard);

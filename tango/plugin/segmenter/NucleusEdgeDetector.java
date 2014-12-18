@@ -10,6 +10,7 @@ import tango.dataStructure.InputFieldImages;
 import tango.dataStructure.InputImages;
 import tango.parameter.*;
 import tango.plugin.filter.EraseRegions;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 import tango.plugin.filter.mergeRegions.MergeRegions;
 
 /**
@@ -87,7 +88,7 @@ public class NucleusEdgeDetector implements NucleusSegmenter {
             ws.setDynamics(false, false, 0, false, 0, false, 0);
             ImageHandler in = ici.getFilteredImage(currentStructureIdx);
             
-            ImageInt segImage = ws.runWatershed(in, in.getGradient(scale, nbCPUs), croppedMask);
+            ImageInt segImage = ws.runWatershed(in, ImageFeaturesCore.getGradient(in, scale, nbCPUs), croppedMask);
             segImage.setScale(croppedMask);
             segImage.setOffset(croppedMask);
             if (debug) System.out.println("NED: erase regions...");

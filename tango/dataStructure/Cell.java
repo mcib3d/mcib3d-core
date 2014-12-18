@@ -89,7 +89,7 @@ public class Cell implements StructureContainer, Comparable<Cell> { //ObjectStru
     }
     
     private void setName() {
-        this.name= "_cell:"+Cell.df3.format(idx);
+        this.name= "cell:"+Cell.df3.format(idx);
     }
     
     public String getFieldName() {

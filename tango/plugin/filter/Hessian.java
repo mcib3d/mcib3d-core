@@ -8,6 +8,7 @@ import tango.parameter.BooleanParameter;
 import tango.parameter.ChoiceParameter;
 import tango.parameter.DoubleParameter;
 import tango.parameter.Parameter;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 import tango.plugin.filter.PreFilter;
 
 /**
@@ -40,7 +41,7 @@ public class Hessian implements PreFilter {
     boolean debug;
     int nbCPUs = 1;
     DoubleParameter scale = new DoubleParameter("Integration Scale (Pix)", "scale", 2d, Parameter.nfDEC3);
-    BooleanParameter useScale = new BooleanParameter("Use Image Scale", "useImageScale", true);
+    BooleanParameter useScale = new BooleanParameter("Use Image Scale for Z radius", "useImageScale", true);
     ChoiceParameter choice = new ChoiceParameter("Compute", "compute", new String[]{"max", "mid", "min", "det", "cur"}, "max");
     BooleanParameter invert = new BooleanParameter("Invert values", "invert_hessian", false);
     BooleanParameter clip = new BooleanParameter("Clip negative values", "clip_hessian", false);
@@ -66,13 +67,13 @@ public class Hessian implements PreFilter {
         int cho = choice.getSelectedIndex();
         // eigne values
         if (cho < 3) {
-            res = input.getHessian(scale.getFloatValue(1), nbCPUs)[choice.getSelectedIndex()];
+            res = ImageFeaturesCore.getHessian(input, scale.getFloatValue(1), nbCPUs)[choice.getSelectedIndex()];
         } // determinant
         else if (cho == 3) {
-            res = input.getHessianDeterminant(scale.getFloatValue(1), nbCPUs, false);
+            res = ImageFeaturesCore.getHessianDeterminant(input, scale.getFloatValue(1), nbCPUs, false);
         } // curvature = det * itensity
         else if (cho == 4) {
-            res = input.getHessianDeterminant(scale.getFloatValue(1), nbCPUs, true);
+            res = ImageFeaturesCore.getHessianDeterminant(input, scale.getFloatValue(1), nbCPUs, true);
             res = (ImageFloat) res.multiplyImage(input, 1);
         }
         if (!useScale.isSelected()) {

@@ -6,6 +6,7 @@ import i5d.gui.ChannelControl;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.ImageCanvas;
+import ij.gui.Plot;
 import java.awt.*;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyListener;
@@ -116,7 +117,24 @@ public class ImageUtils {
         rc.addKeyListener(kl);
     }
     
-    public static Object3DVoxels[][] getObjectLayers(ImageFloat dm, Object3DVoxels[] objects, double[][] layers, int nbCPUs, boolean verbose) {
+    public static void setObjectDistancesToPeriphery(Object3DVoxels object, int nbCPUs) {
+        ImageInt map = object.createSegImageMini(object.getValue(), 0);
+        ImageFloat dm = map.getDistanceMapInsideMask(nbCPUs);
+        /*ij.IJ.log("set dm values object:"+object.getValue());
+        if (object.getValue()==7) {
+            map.show();
+            dm.show();
+            ImageInt map2 = object.createSegImageMini(object.getValue(), 1);
+            ImageFloat dm2 = map2.getDistanceMapInsideMask(nbCPUs);
+            dm2.show("dm2");
+        }*/
+        int xMin = object.getXmin();
+        int yMin = object.getYmin();
+        int zMin = object.getZmin();
+        for (Voxel3D v : object.getVoxels()) v.setValue(dm.getPixel(v.getRoundX()-xMin, v.getRoundY()-yMin, v.getRoundZ()-zMin)); // TODO enlever border 1 lorsque bug EDT résolu
+    }
+    
+    public static Object3DVoxels[][] getObjectLayers(Object3DVoxels[] objects, double[][] layers, int nbCPUs, boolean verbose) {
         /*if (objects==null && objectMap!=null) objects = objectMap.getObjects3D();
         else if (objects!=null && objectMap==null) {
             // get bounding box
@@ -133,10 +151,19 @@ public class ImageUtils {
         ImageFloat dm = objectMap.getDistanceMapInsideMask(nbCPUs);
         */
         Object3DVoxels[][] res = new Object3DVoxels[objects.length][layers.length];
-        for (int i = 0; i<objects.length; i++) res[i] = getLayers(dm, objects[i], layers);
+        for (int i = 0; i<objects.length; i++) res[i] = getLayers(objects[i], layers);
         
         if (verbose) {
-            dm.showDuplicate("objectLayers distance map");
+            // get bounding box
+            int zMax=0, yMax=0, xMax=0;
+            for (Object3DVoxels o : objects) {
+                if (o.getXmax()>xMax) xMax=o.getXmax();
+                if (o.getYmax()>yMax) yMax=o.getYmax();
+                if (o.getZmax()>zMax) zMax=o.getZmax();
+            }
+            ImageFloat dm = new ImageFloat("distanceMap", xMax+1, yMax+1, zMax+1);
+            for (Object3DVoxels o : objects) for (Voxel3D v : o.getVoxels()) dm.setPixel(v, (float)v.getValue());
+            dm.show("objectLayers distance map");
             ImageShort om = new ImageShort("object Layers", dm.sizeX, dm.sizeY, dm.sizeZ);
             for (int o = 0; o<objects.length; o++) {
                 objects[o].draw(om, 1);
@@ -146,14 +173,12 @@ public class ImageUtils {
             }
             om.show();
         }
-        
         return res;
     }
     
-    public static Object3DVoxels[] getLayers(ImageFloat dm, Object3DVoxels object, double[][] layers) {
+    public static Object3DVoxels[] getLayers(Object3DVoxels object, double[][] layers) {
         Object3DVoxels[] objectLayers = new Object3DVoxels[layers.length];
         ArrayList<Voxel3D> vox = object.getVoxels();
-        for (Voxel3D v : vox) v.setValue((double)dm.pixels[(int)v.z][v.getXYCoord(dm.sizeX)]);
         Collections.sort(vox);
         for (int i = 0; i<layers.length; i++) {
             int idxStart = (int)(layers[i][0] * vox.size() + 0.5);
@@ -277,5 +302,25 @@ public class ImageUtils {
         System.arraycopy(temp[2], 0, res[2], 0, count);
         //ij.IJ.log("Neigbor: Radius:"+radius+ " radiusZ"+radiusZ+ " count:"+count);
         return res;
+    }
+    
+    public static void plotMeanZprofile(String title, ImageInt mask, ImageHandler intensity) {
+        if (title==null) title = intensity.getTitle();
+        double[] mean = new double[mask.sizeZ];
+        double[] slice = new double[mask.sizeZ];
+        int count;
+        for (int z = 0; z<mask.sizeZ; z++) {
+            count=0;
+            for (int xy=0; xy<mask.sizeXY; xy++) {
+                if (mask.getPixel(xy, z)!=0) {
+                    mean[z]+=intensity.getPixel(xy, z);
+                    count++;
+                }
+            }
+            if (count!=0) mean[z]/=count;
+            slice[z]=z+1;
+        }
+        Plot plot = new Plot(title, "Slice", "Mean Value", slice, mean);
+        plot.show();
     }
 }

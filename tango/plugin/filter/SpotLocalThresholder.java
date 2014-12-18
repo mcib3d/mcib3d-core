@@ -187,10 +187,12 @@ public abstract class SpotLocalThresholder {
     }
     
     //watershed from seed within spot with a given threshold. make it to floodfill3D?
+    // TODO threshol normal puis relabel
     public void localThreshold(Object3DVoxels spot, float thld, boolean rescue) {
-        if (debug) ij.IJ.log("Local Threshold: spot:"+spot.getValue()+ " thld:"+thld+ " rescue:"+rescue);
+        
         TreeSet<Vox3D> heap = new TreeSet<Vox3D>();
         Vox3D seed = getMax(spot);
+        if (debug) ij.IJ.log("Local Threshold: spot:"+spot.getValue()+ " thld:"+thld+ " max:"+seed.toString());
         heap.add(seed);
         //HashSet<Vox3D> newVox = new HashSet<Vox3D>(spot.getVoxels().size());
         //newVox.add(seed);
@@ -284,8 +286,9 @@ public abstract class SpotLocalThresholder {
         float max = 0;
         Vox3D maxVox = null;
         for (Voxel3D v : s.getVoxels()) {
-            if (intensityMap.getPixel(v.getRoundX(), v.getRoundY(), v.getRoundZ())>max) {
-                max = intensityMap.getPixel(v.getRoundX(), v.getRoundY(), v.getRoundZ());
+            float value = intensityMap.getPixel(v.getXYCoord(intensityMap.sizeX), v.getRoundZ()); 
+            if (value>max) {
+                max = value;
                 maxVox = new Vox3D(v.getRoundX(), v.getRoundY(), v.getRoundZ(), max);
             }
         }
@@ -340,7 +343,7 @@ public abstract class SpotLocalThresholder {
 
         @Override
         public String toString() {
-            return "xy:"+xy+ " z:"+z+ " value:"+value+ " label:"+segMap.getPixel(xy, z);
+            return "x:"+xy%segMap.sizeX +" y:" + xy/segMap.sizeX + " z:"+z+ " value:"+value+ " label:"+segMap.getPixel(xy, z);
         }
     }
 }

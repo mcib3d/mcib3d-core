@@ -11,6 +11,7 @@ import tango.dataStructure.InputCellImages;
 import tango.dataStructure.InputImages;
 import tango.gui.Core;
 import tango.parameter.*;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 import tango.plugin.filter.GaussianFit;
 import tango.plugin.filter.Structure;
 import tango.plugin.segmenter.SpotSegmenter;
@@ -76,7 +77,7 @@ public class SpotDetector3D extends SeededWatershed3D implements SpotSegmenter  
     public ImageInt runSpot(int currentStructureIdx, ImageHandler input, InputImages images) {
         //ImageHandler wsmap = watershedMap_P2.preFilter(0, input, images, nCPUs, debug);
         double hessianScale=Math.max(1, hessianScale_P.getDoubleValue(1));
-        ImageFloat wsmap = input.getHessian(hessianScale, nCPUs)[0];
+        ImageFloat wsmap = ImageFeaturesCore.getHessian(input, hessianScale, nCPUs)[0];
         WatershedTransform3DSeedConstraint wsT = new WatershedTransform3DSeedConstraint(wsmap, nCPUs, debug);
         double thldLow;
         Double tl = thldLow_P.getThreshold(input, images, nCPUs, debug);

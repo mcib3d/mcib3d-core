@@ -8,6 +8,7 @@ import tango.parameter.BooleanParameter;
 import tango.parameter.ChoiceParameter;
 import tango.parameter.DoubleParameter;
 import tango.parameter.Parameter;
+import tango.plugin.filter.FeatureJ.ImageFeaturesCore;
 import tango.plugin.filter.PreFilter;
 /**
  *
@@ -67,7 +68,7 @@ public class Structure implements PreFilter {
     }
     
     public ImageFloat[] getStructure(ImageHandler input, double smoothScale, double integrationScale) {
-        return input.getInertia(smoothScale, integrationScale, nbCPUs);
+        return ImageFeaturesCore.getInertia(input, smoothScale, integrationScale, nbCPUs);
     }
 
     @Override
@@ -77,7 +78,7 @@ public class Structure implements PreFilter {
     
     @Override
     public String getHelp() {
-        return "max eigen value of structure transformation from featureJ";
+        return "max eigen value of structure transformation from featureJ: http://www.imagescience.org/meijering/software/featurej/";
     }
     
 }
