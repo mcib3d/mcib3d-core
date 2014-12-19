@@ -42,7 +42,7 @@ public class Hessian implements PreFilter {
     int nbCPUs = 1;
     DoubleParameter scale = new DoubleParameter("Integration Scale (Pix)", "scale", 2d, Parameter.nfDEC3);
     BooleanParameter useScale = new BooleanParameter("Use Image Scale for Z radius", "useImageScale", true);
-    ChoiceParameter choice = new ChoiceParameter("Compute", "compute", new String[]{"max", "mid", "min", "det", "cur"}, "max");
+    ChoiceParameter choice = new ChoiceParameter("Compute", "compute", new String[]{"max", "mid", "min", "det", "cur", "det^1/3"}, "max");
     BooleanParameter invert = new BooleanParameter("Invert values", "invert_hessian", false);
     BooleanParameter clip = new BooleanParameter("Clip negative values", "clip_hessian", false);
     Parameter[] parameters = new Parameter[]{scale, useScale, choice, invert, clip};
@@ -65,16 +65,19 @@ public class Hessian implements PreFilter {
         String unit = input.getUnit();
         if (!useScale.isSelected()) input.setScale(scaleXY, scaleXY, unit);
         int cho = choice.getSelectedIndex();
+        if (input.sizeZ==1 && cho==2) cho=1; // 2D case -> min/mid = min;
         // eigne values
         if (cho < 3) {
             res = ImageFeaturesCore.getHessian(input, scale.getFloatValue(1), nbCPUs)[choice.getSelectedIndex()];
         } // determinant
         else if (cho == 3) {
-            res = ImageFeaturesCore.getHessianDeterminant(input, scale.getFloatValue(1), nbCPUs, false);
+            res = ImageFeaturesCore.getHessianDeterminant(input, scale.getFloatValue(1), nbCPUs, false, false);
         } // curvature = det * itensity
         else if (cho == 4) {
-            res = ImageFeaturesCore.getHessianDeterminant(input, scale.getFloatValue(1), nbCPUs, true);
+            res = ImageFeaturesCore.getHessianDeterminant(input, scale.getFloatValue(1), nbCPUs, false, true);
             res = (ImageFloat) res.multiplyImage(input, 1);
+        } else if (cho == 5) {
+            res = ImageFeaturesCore.getHessianDeterminant(input, scale.getFloatValue(1), nbCPUs, true, false);
         }
         if (!useScale.isSelected()) {
             res.setScale(scaleXY, scaleZ, unit);

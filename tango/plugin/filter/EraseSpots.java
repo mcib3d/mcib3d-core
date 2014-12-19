@@ -121,7 +121,6 @@ public class EraseSpots implements PostFilter {
                 objects = eraseObjectsIntensity(objects, in, intensityMap, quant, thldValue, erode);
             }
         }
-        if (debug) in.showDuplicate("erase spots output");
         return in;
     }
     

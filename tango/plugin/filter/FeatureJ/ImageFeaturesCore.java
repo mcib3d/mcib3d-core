@@ -45,21 +45,43 @@ public class ImageFeaturesCore {
         return res;
     }
     
-    public static ImageFloat getHessianDeterminant(ImageHandler image, double scale, int nbCPUs, boolean allNegative) {
-        ImageFloat res, res0, res1, res2;
-        ImagePlus[] hess = FJHessian(image.getImagePlus(), scale, nbCPUs);
+    public static ImageFloat getHessianDeterminant(ImageHandler image, double scale, int nbCPUs, boolean pow, boolean allNegative) {
 
-        res = new ImageFloat(hess[0]);
-        res = (ImageFloat) res.multiplyImage(new ImageFloat(hess[1]), 1);
-        res = (ImageFloat) res.multiplyImage(new ImageFloat(hess[2]), 1);
+        ImageFloat[] hess = getHessian(image, scale, nbCPUs);
+        ImageFloat res = ImageFloat.newBlankImageFloat("hessian determinent", image);
+        if (image.sizeZ==1) {
+            for (int z = 0; z<hess[0].sizeZ; z++) {
+                for (int xy = 0; xy<hess[0].sizeXY; xy++) {
+                    if (pow) {
+                        res.pixels[z][xy] = hess[0].pixels[z][xy] * hess[1].pixels[z][xy];
+                        if (res.pixels[z][xy]<0) res.pixels[z][xy] = -(float)Math.sqrt(-res.pixels[z][xy]);
+                        else res.pixels[z][xy] = (float)Math.sqrt(res.pixels[z][xy]);
+                    }
+                    else res.pixels[z][xy] = hess[0].pixels[z][xy] * hess[1].pixels[z][xy];
+                }
+            }
+        } else {
+            for (int z = 0; z<hess[0].sizeZ; z++) {
+                for (int xy = 0; xy<hess[0].sizeXY; xy++) {
+                    if (pow) {
+                        res.pixels[z][xy] = hess[0].pixels[z][xy] * hess[1].pixels[z][xy] * hess[2].pixels[z][xy];
+                        if (res.pixels[z][xy]<0) res.pixels[z][xy] = -(float)Math.pow(-res.pixels[z][xy], 1.0/3);
+                        else res.pixels[z][xy] = (float)Math.pow(res.pixels[z][xy], 1.0/3);
+                    }
+                    else res.pixels[z][xy] = hess[0].pixels[z][xy] * hess[1].pixels[z][xy] * hess[2].pixels[z][xy];
+                }
+            }
+        }
         if (allNegative) {
             // test if all values are negative
-            res0 = new ImageFloat(hess[0]);
-            res1 = new ImageFloat(hess[1]);
-            res2 = new ImageFloat(hess[2]);
-            for (int i = 0; i < res0.sizeXYZ; i++) {
-                if ((res0.getPixel(i) >= 0) || (res1.getPixel(i) >= 0) || (res2.getPixel(i) >= 0)) {
-                    res.setPixel(i, 0);
+            for (int z = 0; z<hess[0].sizeZ; z++) {
+                for (int xy = 0; xy<hess[0].sizeXY; xy++) {
+                    for (int i = 0; i<hess.length; i++) {
+                        if (hess[i].pixels[z][xy]>=0) {
+                            res.pixels[z][xy]=0;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -90,10 +112,8 @@ public class ImageFeaturesCore {
             scaleval *= cal.pixelWidth; //scaleval*=Math.pow(cal.pixelWidth*cal.pixelHeight*cal.pixelDepth, 0.3332);
         }
         Vector vector = new FJHessian3D().run(new FloatImage(image), scaleval, nbCPUs);
-        ImagePlus[] res = new ImagePlus[3];
-        res[0] = ((Image) vector.get(0)).imageplus();
-        res[1] = ((Image) vector.get(1)).imageplus();
-        res[2] = ((Image) vector.get(2)).imageplus();
+        ImagePlus[] res = new ImagePlus[image.dimensions().z==1?2:3];
+        for (int i=0;i<res.length;i++) res[i] = ((Image) vector.get(i)).imageplus();
         return res;
     }
 
@@ -109,34 +129,23 @@ public class ImageFeaturesCore {
         Vector vector = (new FJStructure3D()).run(image, sscale, iscale, nbCPUs);
 
 
-        ImagePlus[] res = new ImagePlus[3];
-        res[0] = ((Image) vector.get(0)).imageplus();
-        res[1] = ((Image) vector.get(1)).imageplus();
-        res[2] = ((Image) vector.get(2)).imageplus();
+        ImagePlus[] res = new ImagePlus[image.dimensions().z==1?2:3];
+        for (int i=0;i<res.length;i++) res[i] = ((Image) vector.get(i)).imageplus();
         return res;
     }
     
     public static ImageFloat[] getGradient(ImageHandler image, double scale, boolean computeMagnitude, int nbCPUs) {
-        final ImageFloat[] res = new ImageFloat[computeMagnitude ? 4 : 3];
+        final int dims = image.sizeZ==1?2:3;
+        final ImageFloat[] res = new ImageFloat[computeMagnitude ? dims+1 : dims];
         Image imw = Image.wrap(image.getImagePlus());
-        final Image Ix, Iy, Iz;
         scale *= (double) image.getScaleXY(); // FIXME scaleZ?
-        if (nbCPUs > 1) {
-            final FJDifferentiator3D differentiator = new FJDifferentiator3D();
-            Ix = differentiator.run(imw.duplicate(), scale, 1, 0, 0, nbCPUs);
-            Iy = differentiator.run(imw.duplicate(), scale, 0, 1, 0, nbCPUs);
-            Iz = differentiator.run(imw.duplicate(), scale, 0, 0, 1, nbCPUs);
-        } else {
-            final Differentiator differentiator = new Differentiator();
-            Ix = differentiator.run(imw.duplicate(), scale, 1, 0, 0);
-            Iy = differentiator.run(imw.duplicate(), scale, 0, 1, 0);
-            Iz = differentiator.run(imw.duplicate(), scale, 0, 0, 1);
+        final FJDifferentiator3D differentiator = new FJDifferentiator3D();
+        for (int i =0;i<dims; i++) {
+            res[i] = new ImageFloat(differentiator.run(imw.duplicate(), scale, i==0?1:0, i==1?1:0, i==2?1:0, nbCPUs).imageplus());
         }
-        res[0] = new ImageFloat(Ix.imageplus());
-        res[1] = new ImageFloat(Iy.imageplus());
-        res[2] = new ImageFloat(Iz.imageplus());
         if (computeMagnitude) {
-            res[3] = new ImageFloat(image.getTitle() + "_gradientMagnitude", image.sizeX, image.sizeY, image.sizeZ);
+            res[dims] = new ImageFloat(image.getTitle() + "_gradientMagnitude", image.sizeX, image.sizeY, image.sizeZ);
+            if (dims==3) {
             final ThreadRunner tr = new ThreadRunner(0, image.sizeZ, nbCPUs);
             final int sizeXY  = image.sizeXY;
             for (int i = 0; i < tr.threads.length; i++) {
@@ -145,25 +154,32 @@ public class ImageFeaturesCore {
                             public void run() {
                                 for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
                                     for (int xy = 0; xy < sizeXY; xy++) {
-                                        res[3].pixels[z][xy] = (float) Math.sqrt(res[0].pixels[z][xy] * res[0].pixels[z][xy] + res[1].pixels[z][xy] * res[1].pixels[z][xy] + res[2].pixels[z][xy] * res[2].pixels[z][xy]);
+                                        res[dims].pixels[z][xy] = (float) Math.sqrt(res[0].pixels[z][xy] * res[0].pixels[z][xy] + res[1].pixels[z][xy] * res[1].pixels[z][xy] + res[2].pixels[z][xy] * res[2].pixels[z][xy]);
                                     }
                                 }
                             }
                         });
             }
             tr.startAndJoin();
+            } else {
+                for (int z = 0; z < image.sizeZ; z ++) {
+                    for (int xy = 0; xy < image.sizeXY; xy++) {
+                        res[dims].pixels[z][xy] = (float) Math.sqrt(res[0].pixels[z][xy] * res[0].pixels[z][xy] + res[1].pixels[z][xy] * res[1].pixels[z][xy]);
+                    }
+                }
+            }
         }
         return res;
     }
     
     public static ImageFloat getGradient(ImageHandler image, double scale, int nbCPUs) {
-        return getGradient(image, scale, true, nbCPUs)[3];
+        return getGradient(image, scale, true, nbCPUs)[image.sizeZ==1?2:3];
     }
 
     public static ImageFloat[] getHessian(ImageHandler image, double scale, int nbCPUs) {
-        ImageFloat[] res = new ImageFloat[3];
+        ImageFloat[] res = new ImageFloat[image.sizeZ==1?2:3];
         ImagePlus[] hess = FJHessian(image.getImagePlus(), scale, nbCPUs);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < res.length; i++) {
             res[i] = new ImageFloat(hess[i]);
             res[i].setTitle(image.getTitle() + ":hessian" + (i + 1));
             res[i].offsetX = image.offsetX;
@@ -173,7 +189,6 @@ public class ImageFeaturesCore {
         return res;
     }
     
-    //from FeatureJ
     public static ImageFloat gaussianSmooth(ImageHandler image, double scaleXY, double scaleZ, int nbCPUs) {
         Image res;
         double old_scaleXY = image.getScaleXY();
