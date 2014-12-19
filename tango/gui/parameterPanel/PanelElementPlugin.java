@@ -1,6 +1,7 @@
 package tango.gui.parameterPanel;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Box;
@@ -9,6 +10,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JToggleButton;
 import tango.gui.util.PanelElementAbstract;
+import tango.util.utils;
 
 public class PanelElementPlugin extends PanelElementAbstract implements ActionListener {
 
@@ -22,6 +24,11 @@ public class PanelElementPlugin extends PanelElementAbstract implements ActionLi
         panel = Box.createHorizontalBox();
         panel.add(Box.createHorizontalStrut(2));
         method = new JComboBox();
+        int xSize = 172;
+        if (parameterPanel instanceof MeasurementPanel) xSize = 250;
+        method.setMaximumSize(new Dimension(xSize, 26));
+        method.setMinimumSize(new Dimension(124, 26));
+        method.setPreferredSize(new Dimension(xSize, 26));
         method.addItem("");
         for (String s : parameterPanel.getMethods()) {
             method.addItem(s);
@@ -29,9 +36,10 @@ public class PanelElementPlugin extends PanelElementAbstract implements ActionLi
         if (parameterPanel.getMethod() != null) {
             method.setSelectedItem(parameterPanel.getMethod());
         }
+        utils.addHorizontalScrollBar(method);
         method.addActionListener(this);
-        method.setMinimumSize(method.getPreferredSize());
-        method.setMaximumSize(method.getPreferredSize());
+        //method.setMinimumSize(method.getPreferredSize());
+        //method.setMaximumSize(method.getPreferredSize());
         panel.add(method);
         panel.add(Box.createHorizontalStrut(2));
         // TEST ICONS BUTTON THOMAS
