@@ -2,6 +2,7 @@
 package tango.util;
 
 import ij.IJ;
+import java.awt.Color;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,6 +35,13 @@ import javax.swing.*;
  */
 public class utils {
     static Pattern p = Pattern.compile("[^a-z0-9_-]", Pattern.CASE_INSENSITIVE);
+    
+    public static Color compareColor(Color oldC, Color newC) {
+        if (oldC==null) oldC=Color.black;
+        if (newC==Color.red) oldC=newC;
+        else if (newC==Color.blue && oldC!=Color.red) oldC=newC;
+        return oldC;
+    }
     
     public static File chooseDir(String label, File curDir) {
         final JFileChooser fc = new JFileChooser();

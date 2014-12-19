@@ -198,6 +198,10 @@ public abstract class Parameter implements MouseListener {
         }
         return col;
     }
+    
+    public Color getColor() {
+        return label.getForeground();
+    }
 
     public abstract boolean sameContent(Parameter p);
 

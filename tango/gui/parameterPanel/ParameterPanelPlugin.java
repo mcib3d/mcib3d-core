@@ -23,6 +23,7 @@ import tango.plugin.measurement.Measurement;
 import tango.plugin.measurement.MeasurementObject;
 import tango.plugin.measurement.MeasurementStructure;
 import tango.plugin.sampler.Sampler;
+import tango.util.utils;
 /**
  *
  **
@@ -59,30 +60,37 @@ public abstract class ParameterPanelPlugin extends ParameterPanelAbstract implem
        
     }
     
-    public boolean setTemplate(ParameterPanelPlugin template) {
+    public void setTemplate(ParameterPanelPlugin template) {
         if (template==null) { //remove template
             if (currentParameters!=null) {
                 for (int i = 0; i<currentParameters.length; i++) {
                     currentParameters[i].setTemplate(null);
                 }
             }
-            return false;
         } else {
-            if (template.curMethod==null && curMethod!=null) return false;
-            else if (template.curMethod!=null && curMethod==null) return false;
-            else if (template.curMethod==null && curMethod==null) return true;
+            if (template.curMethod==null && curMethod!=null) return;
+            else if (template.curMethod!=null && curMethod==null) return;
+            else if (template.curMethod==null && curMethod==null) return;
             else {
-                if (!template.curMethod.equals(curMethod)) return false;
-                if (currentParameters==null && template.currentParameters!=null) return false;
-                else if (currentParameters!=null && template.currentParameters==null) return false;
-                if (currentParameters==null && template.currentParameters==null) return true;
-                if (currentParameters.length!=template.currentParameters.length) return false;
+                if (!template.curMethod.equals(curMethod)) return;
+                if (currentParameters==null && template.currentParameters!=null);
+                else if (currentParameters!=null && template.currentParameters==null) return;
+                if (currentParameters==null && template.currentParameters==null) return;
+                if (currentParameters.length!=template.currentParameters.length) return;
+                
                 for (int i = 0; i<currentParameters.length; i++) {
                     currentParameters[i].setTemplate(template.currentParameters[i]);
                 }
-                return true;
             }
         }
+    }
+    
+    public Color getColor() {
+        Color c = Color.black;
+        for (int i = 0; i<currentParameters.length; i++) {
+            c = utils.compareColor(c, currentParameters[i].getColor());
+        }
+        return c;
     }
     
     

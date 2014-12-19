@@ -86,6 +86,8 @@ public class PanelElementPlugin extends PanelElementAbstract implements ActionLi
 
     public void setTemplate(PanelElementPlugin template) {
         this.template = template;
+        if (template != null) ((ParameterPanelPlugin) parameterPanel).setTemplate((ParameterPanelPlugin) template.parameterPanel);
+        else ((ParameterPanelPlugin) parameterPanel).setTemplate(null);
         this.templateSet = true;
         updateValidity();
     }
@@ -98,17 +100,16 @@ public class PanelElementPlugin extends PanelElementAbstract implements ActionLi
 
     @Override
     public void updateValidity() {
-        Color col = Color.black;
-        boolean b = false;
-        if (template != null) {
-            b = ((ParameterPanelPlugin) parameterPanel).setTemplate((ParameterPanelPlugin) template.parameterPanel);
-        }
+        //ij.IJ.log("edit bck color"+edit.getBackground());
+        //Color col = Color.black;
         if (!parameterPanel.checkValidity()) {
-            col = Color.red;
-        } else if (templateSet && !b) {
-            col = Color.blue;
-        }
-        edit.setForeground(col);
+            //col = Color.red;
+            edit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/tango/icons/edit_error.png")));
+        } else if (templateSet && ((ParameterPanelPlugin) parameterPanel).getColor()==Color.blue) {
+            //col = Color.blue;
+            edit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/tango/icons/edit_diff.png")));
+        } else edit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/tango/icons/edit.png")));
+        //edit.setBackground(col);
     }
 
     public PanelElementPlugin(ParameterPanelPlugin parameterPanel, MultiParameterPanel mpp) {

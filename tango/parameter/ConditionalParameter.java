@@ -13,6 +13,7 @@ import javax.swing.border.BevelBorder;
 import tango.gui.util.CollapsiblePanel;
 import tango.gui.util.Displayer;
 import tango.gui.util.Refreshable;
+import tango.util.utils;
 
 /**
  *
@@ -255,7 +256,9 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
                     }
                 }
                 if (defaultParameters!=null && cpt.getDefaultParameters()!=null && cpt.getDefaultParameters().length==defaultParameters.length) {
-                    for (int i = 0; i<defaultParameters.length; i++) defaultParameters[i].setTemplate(cpt.getDefaultParameters()[i]);
+                    for (int i = 0; i<defaultParameters.length; i++) {
+                        defaultParameters[i].setTemplate(cpt.getDefaultParameters()[i]);
+                    }
                 }
                 getActionnableParameter().setTemplate(cpt.getActionnableParameter());
             }
