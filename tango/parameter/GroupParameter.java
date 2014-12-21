@@ -179,4 +179,9 @@ public class GroupParameter extends Parameter implements NestedParameter{
         setColor();
     }
     
+    @Override
+    public void setCompulsary(boolean compulsary) {
+        super.setCompulsary(compulsary);
+        if (parameters!=null) for (Parameter p : parameters) if (p!=null) p.setCompulsary(compulsary); 
+    }
 }

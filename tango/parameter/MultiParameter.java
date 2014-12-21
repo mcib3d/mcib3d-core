@@ -164,6 +164,7 @@ public class MultiParameter extends Parameter implements ChangeListener, NestedP
         for (int i = 0; i<res.length; i++) {
             res[i]=defaultParameters[i].duplicate("#"+(idx+1)+ ": "+defaultParameters[i].getLabel(), defaultParameters[i].id);
             res[i].setParent(this);
+            res[i].setCompulsary(compulsary);
             if (templateArray!=null) res[i].setTemplate(templateArray[i]);
         }
         return res;
@@ -292,6 +293,12 @@ public class MultiParameter extends Parameter implements ChangeListener, NestedP
         if (!nb.isValidOrNotCompulsary()) return false;
         for (Parameter[] pp : getParametersArrayList()) if (pp!=null) for (Parameter p : pp) if (!p.isValidOrNotCompulsary()) return false;
         return true;
+    }
+    
+    @Override
+    public void setCompulsary(boolean compulsary) {
+        super.setCompulsary(compulsary);
+        for (Parameter[] pp : getParametersArrayList()) if (pp!=null) for (Parameter p : pp) if (p!=null) p.setCompulsary(compulsary); 
     }
     
 }

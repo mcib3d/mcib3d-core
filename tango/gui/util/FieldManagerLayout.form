@@ -43,15 +43,16 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="listScrollPane" pref="648" max="32767" attributes="0"/>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="selectPanel" min="-2" pref="170" max="-2" attributes="0"/>
+          <Component id="listScrollPane" pref="649" max="32767" attributes="0"/>
+          <Group type="102" attributes="0">
+              <Component id="selectPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="viewPanel" min="-2" pref="139" max="-2" attributes="0"/>
+              <Component id="viewPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="processPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="exportQuantifications" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -93,7 +94,6 @@
               <Component id="selectNone" alignment="0" max="32767" attributes="0"/>
               <Component id="deleteFields" max="32767" attributes="0"/>
               <Component id="deleteInputImages" alignment="0" max="32767" attributes="0"/>
-              <Component id="deleteSlices" alignment="0" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -106,9 +106,6 @@
                   <Component id="deleteFields" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="deleteInputImages" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                  <Component id="deleteSlices" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -144,14 +141,6 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteInputImagesActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="deleteSlices">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Delete Slices"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteSlicesActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

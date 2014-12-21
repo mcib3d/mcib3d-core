@@ -138,7 +138,7 @@ public class Field implements ObjectStructure, StructureContainer {
         }
     }
     
-    public void deleteSlices(int keepStart, int keepStop) {
+    /*public void deleteSlices(int keepStart, int keepStop) {
         for (int i = 0; i<xp.getNBFiles(); i++) {
             ImageHandler file = inputImages.getChannelFile(i);
             if (file!=null) {
@@ -147,14 +147,14 @@ public class Field implements ObjectStructure, StructureContainer {
                 this.mc.saveInputImage(id, i, file, false);
             }
         }
-        xp.getConnector().saveFieldThumbnail(id, inputImages.getChannelFile(xp.getChannelFileIndexes()[0]), 50, 50);
+        //xp.getConnector().saveFieldThumbnail(id, inputImages.getChannelFile(xp.getChannelFileIndexes()[0]), 50, 50);
         if (segmented==null) segmented = (ImageInt) mc.getNucImage(id, 0, MongoConnector.MASKS);
         if (segmented!=null) {
             segmented.trimSlices(keepStart, keepStop);
             saveOutput();
         }
         for (ImageHandler i : inputImages.filteredImages) if (i!=null) i.trimSlices(keepStart, keepStop);
-    }
+    }*/
 
     public ImageHandler getFilteredInputImage() {
         return inputImages.getFilteredImage(0);
@@ -453,6 +453,7 @@ public class Field implements ObjectStructure, StructureContainer {
     }
 
     public void deleteFiles() {
+        IJ.log("deleting files from field: "+this.name);
         mc.removeInputImages(id, false);
     }
 

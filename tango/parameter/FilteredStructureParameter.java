@@ -53,4 +53,5 @@ public class FilteredStructureParameter extends GroupParameter {
         if (verbose) intensityMap.show("intensityMap");
         return intensityMap;
     }
+    
 }

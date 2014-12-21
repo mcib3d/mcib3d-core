@@ -55,7 +55,7 @@ public class FieldManagerLayout extends javax.swing.JPanel {
         hm.objectIDs.put(this.run, new ID(RetrieveHelp.fieldPage, "Run"));
         hm.objectIDs.put(this.manualSeg, new ID(RetrieveHelp.fieldPage, "Manual_Segmentation"));
         hm.objectIDs.put(this.exportQuantifications, new ID(RetrieveHelp.fieldPage, "Export_Quantifications"));
-        hm.objectIDs.put(this.deleteSlices, new ID(RetrieveHelp.fieldPage, "Delete_Slices"));
+        //hm.objectIDs.put(this.deleteSlices, new ID(RetrieveHelp.fieldPage, "Delete_Slices"));
     }
     
     public void toggleIsRunning(boolean isRunning) {
@@ -72,7 +72,7 @@ public class FieldManagerLayout extends javax.swing.JPanel {
         this.viewOverlay.setEnabled(!isRunning);
         this.exportQuantifications.setEnabled(!isRunning);
         this.viewSelections.setEnabled(!isRunning);
-        this.deleteSlices.setEnabled(!isRunning);
+        //this.deleteSlices.setEnabled(!isRunning);
     }
     
     /**
@@ -91,7 +91,6 @@ public class FieldManagerLayout extends javax.swing.JPanel {
         selectNone = new javax.swing.JButton();
         deleteFields = new javax.swing.JButton();
         deleteInputImages = new javax.swing.JButton();
-        deleteSlices = new javax.swing.JButton();
         viewPanel = new javax.swing.JPanel();
         viewOverlay = new javax.swing.JButton();
         viewInputImages = new javax.swing.JButton();
@@ -147,13 +146,6 @@ public class FieldManagerLayout extends javax.swing.JPanel {
             }
         });
 
-        deleteSlices.setText("Delete Slices");
-        deleteSlices.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteSlicesActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout selectPanelLayout = new javax.swing.GroupLayout(selectPanel);
         selectPanel.setLayout(selectPanelLayout);
         selectPanelLayout.setHorizontalGroup(
@@ -162,7 +154,6 @@ public class FieldManagerLayout extends javax.swing.JPanel {
             .addComponent(selectNone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(deleteFields, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(deleteInputImages, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(deleteSlices, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         selectPanelLayout.setVerticalGroup(
             selectPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -173,10 +164,7 @@ public class FieldManagerLayout extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(deleteFields)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(deleteInputImages)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(deleteSlices)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(deleteInputImages))
         );
 
         viewPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("View"));
@@ -325,15 +313,16 @@ public class FieldManagerLayout extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 648, Short.MAX_VALUE)
+            .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(selectPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(selectPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(viewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 139, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(viewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(processPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(exportQuantifications))
+                .addComponent(exportQuantifications)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -385,17 +374,12 @@ public class FieldManagerLayout extends javax.swing.JPanel {
         fieldManager.toggleShowSelections();
     }//GEN-LAST:event_viewSelectionsActionPerformed
 
-    private void deleteSlicesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteSlicesActionPerformed
-        fieldManager.deleteSlices();
-    }//GEN-LAST:event_deleteSlicesActionPerformed
-
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cropCells;
     private javax.swing.JButton deleteFields;
     private javax.swing.JButton deleteInputImages;
-    private javax.swing.JButton deleteSlices;
     private javax.swing.JButton exportQuantifications;
     public javax.swing.JList list;
     private javax.swing.JScrollPane listScrollPane;

@@ -57,6 +57,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
             if (array!=null) {
                 for (int i = 0; i<array.length; i++) {
                     array[i].setParent(this);
+                    array[i].setCompulsary(compulsary);
                 }
             }
         }
@@ -85,6 +86,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         this.defaultParameters=parameters;
         for (Parameter p : parameters) {
             p.setParent(this);
+            p.setCompulsary(compulsary);
         }
         updateCurretParameters();
     }
@@ -95,6 +97,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         if (parameters!=null) {
             for (Parameter p : parameters) {
                 p.setParent(this);
+                p.setCompulsary(compulsary);
             }
         }
         updateCurretParameters();
@@ -117,6 +120,7 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
         actionnableParameter.getParameter().addToContainer(mainBox);
         box.add(mainBox);
         actionnableParameter.getParameter().setParent(this);
+        actionnableParameter.getParameter().setCompulsary(compulsary);
     }    
     @Override
     public void dbPut(DBObject dbo) {
@@ -262,6 +266,15 @@ public class ConditionalParameter extends Parameter implements Refreshable, Nest
                 }
                 getActionnableParameter().setTemplate(cpt.getActionnableParameter());
             }
+        }
+    }
+    
+    @Override
+    public void setCompulsary(boolean compulsary) {
+        super.setCompulsary(compulsary);
+        if (defaultParameters!=null) for (Parameter p : defaultParameters) if (p!=null) p.setCompulsary(compulsary); 
+        for (Parameter[] ps : this.parameters.values()) {
+            if (ps!=null) for (Parameter p : ps) if (p!=null) p.setCompulsary(compulsary);
         }
     }
     

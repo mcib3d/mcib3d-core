@@ -286,9 +286,9 @@ public class FieldManager implements ListSelectionListener {
     private void deleteSelectedFields() {
         populatingFields = true;
         try {
-            for (Object o : this.list.getSelectedValuesList()) {
-                listModel.removeElement(o);
-                ((Field) o).delete();
+            for (int i : this.list.getSelectedIndices()) {
+                ((Field) this.listModel.get(i)).delete();
+                listModel.removeElement(i);
             }
         } catch (Exception e) {
             exceptionPrinter.print(e, "", Core.GUIMode);
@@ -298,8 +298,8 @@ public class FieldManager implements ListSelectionListener {
 
     private void deleteSelectedFieldsFiles() {
         try {
-            for (Object o : this.list.getSelectedValuesList()) {
-                ((Field) o).deleteFiles();
+            for (int i : this.list.getSelectedIndices()) {
+                ((Field) this.listModel.get(i)).deleteFiles();
             }
         } catch (Exception e) {
             exceptionPrinter.print(e, "", Core.GUIMode);
@@ -667,7 +667,7 @@ public class FieldManager implements ListSelectionListener {
         }
     }
 
-    public void deleteSlices() {
+    /*public void deleteSlices() {
         Object o = this.list.getSelectedValue();
         if (o == null) {
             IJ.error("Select a Field First");
@@ -686,7 +686,7 @@ public class FieldManager implements ListSelectionListener {
         } else {
             IJ.log("cancel");
         }
-    }
+    }*/
 
     public void extractData() {
         final JFileChooser fc = new JFileChooser("Select Folder for Output Files");

@@ -284,7 +284,7 @@ public class ImageManager {
     // restore & dump
     
     
-    // mise a jour de la base de donnee
+    // mise a jour de la base de donnee non utilisé
     
     public void transferProject() {
         int count = 0;

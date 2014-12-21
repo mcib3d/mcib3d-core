@@ -1,5 +1,6 @@
 package tango.gui.util;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import ij.IJ;
@@ -30,6 +31,7 @@ import org.bson.types.ObjectId;
 import tango.gui.Core;
 import tango.gui.FieldManager;
 import tango.mongo.MongoConnector;
+import tango.util.ImageOpener;
 import tango.util.Progressor;
 /**
  *
@@ -71,6 +73,10 @@ public class FieldFactory {
     }
     
     public static void createFields(Experiment xp, File[] input) {
+        if (xp.getChannelFileIndexes()==null || xp.getChannelFileIndexes().length==0 || xp.getChannelFileIndexes()[0]<0) {
+            ij.IJ.log("Error no channel file associated to nucleus structure");
+            return;
+        }
         if (xp.getImportFileMethod().equals(importMethod[1])) { //keywords
             for (File f : input) createFieldsKeyword(xp, f);
         } else if (xp.getImportFileMethod().equals(importMethod[2])) {//rank
@@ -93,25 +99,30 @@ public class FieldFactory {
             for (int f = 0; f < subinput.length; f++) {
                 if (subinput[f].getName().indexOf(nucleusKeyword) >= 0) {
                     boolean allFilesLoaded=true;
-                    ImageHandler[] files = new ImageHandler[xp.getNBFiles()];
+                    //ImageHandler[] files = new ImageHandler[xp.getNBFiles()];
+                    File[] files = new File[xp.getNBFiles()];
                     try {
                         // noyau
                         IJ.log("Loading nucleus " + subinput[f]);
-                        files[nucRank] = ImageHandler.openImage(subinput[f]);
+                        files[nucRank] = subinput[f];
+                        //files[nucRank] = ImageHandler.openImage(subinput[f]);
                         // channels
                         for (int k = 0; k < xp.getNBFiles(); k++) {
                             if (k==nucRank) continue;
                             String name = input + File.separator + subinput[f].getName().replace(nucleusKeyword, keywords[k]);
                             IJ.log("Loading channel " + name);
                             File chan = new File(name);
-                            if (chan.exists()) files[k] = ImageHandler.openImage(chan);
+                            if (chan.exists()) {
+                                files[k] = chan;
+                                //files[k] = ImageHandler.openImage(chan);
+                            }
                             else {
                                 allFilesLoaded=false;
                                 ij.IJ.log("Error loading field: missing file:"+name);
                                 break;
                             }
                         }
-                        if (allFilesLoaded) createField(xp, subinput[f].getName().replace(nucleusKeyword, ""), files);
+                        if (allFilesLoaded) createField(xp, subinput[f].getName().replace(nucleusKeyword, ""), files, 0, 0, false);
                     } catch (Exception e) {
                         exceptionPrinter.print(e, "", Core.GUIMode);
                     }
@@ -130,12 +141,14 @@ public class FieldFactory {
             File[] subinput = input.listFiles(new FileFilterTIF());
             Arrays.sort(subinput);
             if (subinput.length >= xp.getNBFiles()) {
-                ImageHandler[] files = new ImageHandler[xp.getNBFiles()];
+                //ImageHandler[] files = new ImageHandler[xp.getNBFiles()];
+                File[] files = new File[xp.getNBFiles()];
                 int count = 0;
                 int i = 0;
                 while (count < files.length && i < subinput.length) {
                     try {
-                        files[count] = ImageHandler.openImage(subinput[i]);
+                        //files[count] = ImageHandler.openImage(subinput[i]);
+                        files[count] = subinput[i];
                         i++;
                         count++;
                     } catch (Exception e) {
@@ -144,7 +157,7 @@ public class FieldFactory {
                     }
                 }
                 if (count == files.length) {
-                    createField(xp, input.getName(), files);
+                    createField(xp, input.getName(), files, 0, 0, false);
                 }
             }
             /*File[] subinputZVI = input.listFiles(new FileFilterZVI());
@@ -178,42 +191,32 @@ public class FieldFactory {
         * 
         */
     }
-
-    private static void createField(Experiment xp, String name, ImagePlus hyperstack) {
-        ImagePlus[] channels = ChannelSplitter.split(hyperstack);
-        createField(xp, name, channels);
-    }
     
-    private static void createField(Experiment xp, String name, ImagePlus[] channels){
-        ImageHandler[] ims= new ImageHandler[channels.length];
-        for (int i = 0;i<ims.length; i++) ims[i]=ImageHandler.wrap(channels[i]);
-        createField(xp, name, ims);
-    }
-    
-    private static void createField(Experiment xp, String name, ImageHandler[] inputFiles) {
-        if (inputFiles.length!=xp.getNBFiles()) {
-            ij.IJ.log("wrong number of channels for file:"+name+ ".\nfound:"+inputFiles.length+ " requiered:"+xp.getNBFiles());
-            return;
-        }
-        if (xp.getChannelFileIndexes()==null || xp.getChannelFileIndexes().length==0 || xp.getChannelFileIndexes()[0]<0) {
-            ij.IJ.log("Error no channel file associated to nucleus structure");
-            return;
-        }
-        boolean fieldExists = xp.getConnector().fieldExists(xp.getName(), name);
+    private static void createField(Experiment xp, String name, File[] inputFiles, int series, int time, boolean updateThumbnail) {
+        //boolean fieldExists = xp.getConnector().fieldExists(xp.getName(), name);
         BasicDBObject field = xp.getConnector().getField(xp.getName(), name);
         ObjectId field_id = (ObjectId) field.get("_id");
-        inputFiles[xp.getChannelFileIndexes()[0]].setGraysLut();
-        xp.getConnector().saveFieldThumbnail(field_id, inputFiles[xp.getChannelFileIndexes()[0]], 50, 50);
-        boolean savedImages = true;
-        for (int i = 0; i < inputFiles.length; i++) {
-            inputFiles[i].setGraysLut();
-            savedImages=xp.getConnector().saveInputImage(field_id, i, inputFiles[i], true); //removes image if existing
-            inputFiles[i]=null;
-            if (!savedImages) break;
+        
+        BasicDBList files = new BasicDBList();
+        for (File f : inputFiles) {
+            BasicDBObject file = new BasicDBObject("path", f.getAbsolutePath());
+            file.append("timePoint", time);
+            file.append("series", series);
+            files.add(file);
         }
-        if (!savedImages){
-            if (!fieldExists) xp.getConnector().removeField(field_id);
+        field.append("files", files);
+        xp.getConnector().updateField(field);
+        
+        if (updateThumbnail || !xp.getConnector().fieldThumbnailExists(field_id)) {
+            byte[] tmb;
+            if (inputFiles.length>1) {
+                tmb=ImageOpener.openThumbnail(inputFiles[xp.getChannelFileIndexes()[0]], 0, 0, 0, 50, 50);
+            } else {
+                tmb=ImageOpener.openThumbnail(inputFiles[0], xp.getChannelFileIndexes()[0], 0, 0, 50, 50);
+            }
+            xp.getConnector().saveFieldThumbnail(field_id, tmb);
         }
+        
     }
 
     public static Field createVirtualField(Experiment xp, String name) {
@@ -233,51 +236,30 @@ public class FieldFactory {
     }
     
     private static void createFieldFromFile(Experiment xp, File file) {
-        try {
-            ij.IJ.log("opening file:"+file.getAbsolutePath());
-            System.gc();
-            double maxMem = Core.getMaxMemory();
-            double size = file.length() / (1024*1024);
-            if (maxMem<2*size) {
-                IJ.log("Warning: Maximum memory ("+maxMem+") has to be superior to the file size ("+size+") (We advise 2 times the file size). Please refer to ImageJ manual to increase memory");
-            }
-            /*
-            long ds = MongoConnector.getDiskspaceDBPath();
-            String dbPath = MongoConnector.getDBPath();
-            if (ds>=0 && ds<=size*1.1) IJ.log("Warning: low disk space: Maximum available space: "+ds+"Mb in directory"+ dbPath +", File size: "+size+"Mb");
-            */
-            ImporterOptions options = new ImporterOptions();
-            options.setId(file.getAbsolutePath());
-            options.setOpenAllSeries(true);
-            options.setQuiet(true);
-            options.setGroupFiles(false);
-            options.setSplitChannels(false);
-            options.setSplitFocalPlanes(false);
-            options.setSplitTimepoints(false);
-            ImagePlus[] imps=null;
-            MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
-            try {
-                    imps= BF.openImagePlus(options);
-
-            } catch (FormatException exc) {
-                IJ.log("Error while opening image: "+file.getAbsolutePath()+ "::" + exc.getMessage());
-            } catch (Exception e) {
-                exceptionPrinter.print(e, "Error while opening file: "+file.getAbsolutePath(), true);
-            } catch (OutOfMemoryError e) {
-                int MEGABYTE = (1024*1024);
-                MemoryUsage heapUsage = memoryBean.getHeapMemoryUsage();
-                long maxMemory = heapUsage.getMax() / MEGABYTE;
-                long usedMemory = heapUsage.getUsed() / MEGABYTE;
-                IJ.log("Error while opening file:"+file.getAbsolutePath()+ ":: Out of memory. Memory Use :" + usedMemory + "M/" + maxMemory + "M");
-            }
-            if (imps!=null) for (int i =0; i<imps.length; i++) createField(xp, imps[i].getTitle(), imps[i]); //name+"_"+df.format(i)
+        ij.IJ.log("opening file:"+file.getAbsolutePath());
+        System.gc();
+        double maxMem = Core.getMaxMemory();
+        double size = file.length() / (1024*1024);
+        if (maxMem<2*size) {
+            IJ.log("Warning: Maximum memory ("+maxMem+") has to be superior to the file size ("+size+") (We advise 2 times the file size). Please refer to ImageJ manual to increase memory");
         }
-        
-        catch (IOException exc) {
-            IJ.log("Sorry, an error occurred: " + exc.getMessage());
-        } catch (Exception e) {
-            exceptionPrinter.print(e, "Error2 while opening file: "+file.getAbsolutePath(), true);
-        } 
+        int[] dims = ImageOpener.getSTCNumbers(file);
+        if (dims!=null) {
+            if (dims[2]!=xp.getNBFiles()) {
+                ij.IJ.log("wrong number of channels for file:"+file.getAbsolutePath()+ ".\nfound:"+dims[2]+ " requiered:"+xp.getNBFiles());
+                ij.IJ.log("s:"+dims[0]+ " t:"+dims[1]+ " c:"+dims[2]);
+                return;
+            }
+            if (dims[0]==1 && dims[1]==1) {
+                createField(xp, file.getName(), new File[]{file}, 0, 0, false);
+            } else {
+                for (int s=0;s<dims[0];s++) {
+                    for (int t = 0; t<dims[1];t++) {
+                        createField(xp, file.getName()+"_s:"+s+"_t:"+t, new File[]{file}, s, t, false);
+                    }
+                }
+            }
+        }
     }
     
     protected static ArrayList<File> getFilesRecursive(File[] input) {

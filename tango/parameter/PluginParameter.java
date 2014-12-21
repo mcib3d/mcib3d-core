@@ -196,7 +196,7 @@ public abstract class PluginParameter extends Parameter  implements ItemListener
             currentParameters = getParameters();
             this.setParametersProps();
             for (Parameter p : currentParameters) {
-                p.setParent(this);
+                //p.setParent(this);
                 p.addToContainer(mainBox);
             }
         }
@@ -292,7 +292,10 @@ public abstract class PluginParameter extends Parameter  implements ItemListener
     protected void setParametersProps() {
         if (this.currentParameters!=null) {
             setTemplates(template); 
-            for (Parameter p : currentParameters) p.setParent(this);
+            for (Parameter p : currentParameters) {
+                p.setParent(this);
+                p.setCompulsary(compulsary);
+            }
         }
     }
     
@@ -305,6 +308,12 @@ public abstract class PluginParameter extends Parameter  implements ItemListener
             }
             return true;
         } else return false;
+    }
+    
+    @Override
+    public void setCompulsary(boolean compulsary) {
+        super.setCompulsary(compulsary);
+        if (currentParameters!=null) for (Parameter p : currentParameters) if (p!=null) p.setCompulsary(compulsary); 
     }
 
 }
