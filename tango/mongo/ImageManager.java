@@ -71,9 +71,9 @@ public class ImageManager {
         gfsFieldThumbnail=new GridFS(project, "fieldThumbnail");
         gfsNucleusThumbnail=new GridFS(project, "nucleusThumbnail");
         DBCollection fieldsFilesT = project.getCollection("fieldThumbnail.files");
-        fieldsFilesT.ensureIndex(new BasicDBObject("field_id", 1));
+        fieldsFilesT.createIndex(new BasicDBObject("field_id", 1));
         DBCollection nucleiFilesT = project.getCollection("nucleusThumbnail.files");
-        nucleiFilesT.ensureIndex(new BasicDBObject("nucleus_id", 1).append("fileRank", 1));
+        nucleiFilesT.createIndex(new BasicDBObject("nucleus_id", 1).append("fileRank", 1));
         for (ObjectId xp : exps) addExperiment(xp);
     }
     
@@ -83,11 +83,11 @@ public class ImageManager {
             if (project.collectionExists(collectionName+".files") || !project.collectionExists("field")) {
                 gfsField.put(id, new GridFS(project, collectionName));
                 DBCollection fieldsFiles = project.getCollection(collectionName+".files");
-                fieldsFiles.ensureIndex(new BasicDBObject("field_id", 1).append("fileRank", 1));
+                fieldsFiles.createIndex(new BasicDBObject("field_id", 1).append("fileRank", 1));
             } else if (gfsFieldAll==null) {// retrocompatibilité
                 gfsFieldAll = new GridFS(project, "field");
                 DBCollection fieldsFiles = project.getCollection("field.files");
-                fieldsFiles.ensureIndex(new BasicDBObject("field_id", 1).append("fileRank", 1));
+                fieldsFiles.createIndex(new BasicDBObject("field_id", 1).append("fileRank", 1));
                 gfsField.put(id, gfsFieldAll);
             }
         }
@@ -96,11 +96,11 @@ public class ImageManager {
             if (project.collectionExists(collectionName+".files") || !project.collectionExists("nucleus")) {
                 gfsNucleus.put(id, new GridFS(project, collectionName));
                 DBCollection nucleiFiles = project.getCollection(collectionName+".files");
-                nucleiFiles.ensureIndex(new BasicDBObject("nucleus_id", 1).append("fileIdx", 1).append("fileType", 1));
+                nucleiFiles.createIndex(new BasicDBObject("nucleus_id", 1).append("fileIdx", 1).append("fileType", 1));
             } else if (gfsNucleusAll==null) {// retrocompatibilité
                 gfsNucleusAll = new GridFS(project, "nucleus");
                 DBCollection nucleiFiles = project.getCollection("nucleus.files");
-                nucleiFiles.ensureIndex(new BasicDBObject("nucleus_id", 1).append("fileIdx", 1).append("fileType", 1));
+                nucleiFiles.createIndex(new BasicDBObject("nucleus_id", 1).append("fileIdx", 1).append("fileType", 1));
                 gfsNucleus.put(id, gfsNucleusAll);
             }
         }

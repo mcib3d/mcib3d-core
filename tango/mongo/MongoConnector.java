@@ -205,6 +205,9 @@ public class MongoConnector {
                 while (names.contains(settingsDB)) settingsDB=settingsDB+"0";
                 adminUser.save(new BasicDBObject("name", username).append("settingsDB", settingsDB));
                 user = (BasicDBObject)adminUser.findOne(new BasicDBObject("name", username));
+                adminProject.createIndex(new BasicDBObject("user_id", 1).append("name", 1));
+                adminUser.createIndex(new BasicDBObject("name", 1));
+                help.createIndex(new BasicDBObject("container", 1).append("element", 1));
             } 
             userId=(ObjectId)user.get("_id");
             settings = m.getDB(user.getString("settingsDB"));
@@ -212,6 +215,7 @@ public class MongoConnector {
             if (!settings.collectionExists("channel")) {settings.createCollection("channel", new BasicDBObject()); }//IJ.log("collection channel created!");}
             nucleusSettings = settings.getCollection("nucleus");
             channelSettings = settings.getCollection("channel");
+            
             return user;
         } catch (Exception e) {
             exceptionPrinter.print(e, "Connection: ", Core.GUIMode);
@@ -262,6 +266,27 @@ public class MongoConnector {
     public synchronized static boolean mongoStop() {
         return executeBatchScript("mongoStop", true, null);
     }
+    
+    public void ensureIndexes() {
+        experiment.createIndex(new BasicDBObject("name", 1));
+        nucleusSettings.createIndex(new BasicDBObject("name", 1));
+        channelSettings.createIndex(new BasicDBObject("name", 1));
+        field.createIndex(new BasicDBObject("experiment_id", 1).append("name",1));
+        nucleus.createIndex(new BasicDBObject("field_id",1).append("idx", 1));
+        nucleus.createIndex(new BasicDBObject("experiment_id", 1));
+        structureMeasurement.createIndex(new BasicDBObject("nucleus_id", 1).append("structures", 1));
+        object3D.createIndex(new BasicDBObject("nucleus_id", 1).append("channelIdx", 1).append("idx", 1));
+        object3D.createIndex(new BasicDBObject("experiment_id", 1).append("channelIdx", 1).append("idx", 1));
+        DBCollection fieldsFiles = project.getCollection("field.files");
+        fieldsFiles.createIndex(new BasicDBObject("field_id", 1).append("fileRank", 1));
+        DBCollection nucleiFiles = project.getCollection("nucleus.files");
+        nucleiFiles.createIndex(new BasicDBObject("nucleus_id", 1).append("fileIdx", 1).append("fileType", 1));
+        DBCollection fieldsFilesT = project.getCollection("fieldThumbnail.files");
+        fieldsFilesT.createIndex(new BasicDBObject("field_id", 1));
+        DBCollection nucleiFilesT = project.getCollection("nucleusThumbnail.files");
+        nucleiFilesT.createIndex(new BasicDBObject("nucleus_id", 1).append("fileRank", 1));
+        selection.createIndex(new BasicDBObject("experiment_id",1).append("name", 1));
+    }
 
     public boolean mongoDumpProject(String projectName, String outputPath, boolean inputImages, boolean outputImages) {
         boolean r = true;
@@ -276,11 +301,15 @@ public class MongoConnector {
     }
     
     private boolean dumpCollection(String projectDBName, String collectionName, String outputPath) {
+        if (!mongoBinPath.real) {
+            IJ.log("MongoDB Binaries not found, please run TANGO/configure MongoDB command");
+            return false;
+        }
         if(interactive){
             String cmd = "mongodump --host "+host+" --db "+projectDBName+" --collection "+collectionName+" -o "+outputPath;
             IJ.log("Dump command is "+cmd);
             return mongoBinPath.executeInteractiveProcess(cmd);
-        }else{
+        }else {
             String command = "mongodump";
             ArrayList<String> commandArgs = new ArrayList<String>();
             commandArgs.add("--host");
@@ -318,7 +347,7 @@ public class MongoConnector {
             commandArgs.add(collectionName);
             if(drop) commandArgs.add("--drop");
             commandArgs.add(inputPath);
-            return execProcess(mongoBinPath.getDirectory(), commandArgs);
+            return mongoBinPath.executeProcess(command, commandArgs);
         }
     }
     
@@ -345,6 +374,7 @@ public class MongoConnector {
                 r = r && restoreCollection(newDB, colName, f.getAbsolutePath(), false);
             }
             this.setProject(projectName);
+            ensureIndexes();
         } else {
             if (Core.GUIMode) ij.IJ.log("Folder:"+dir.getAbsolutePath()+ " does not contains .bson files");
         }
@@ -363,6 +393,7 @@ public class MongoConnector {
         if (chan.exists()) {
             r = r && restoreCollection(this.settings.getName(), "channel", chan.getAbsolutePath(), true);
         } else if (Core.GUIMode) ij.IJ.log("channel.bson file not found in folder:"+dir.getAbsolutePath());
+        
         return r;
     }
     
@@ -491,6 +522,7 @@ public class MongoConnector {
         while (dbnames.contains(dbname)) dbname+="0";
         adminProject.save(new BasicDBObject("user_id",userId).append("name", name).append("dbname", dbname));
         setProject(name);
+        ensureIndexes();
         if (Core.GUIMode) IJ.log("project:"+name+ " created!");
     }
     
