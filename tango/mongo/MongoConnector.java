@@ -29,6 +29,7 @@ import tango.util.ImageOpener;
 import tango.util.SystemEnvironmentVariable;
 import static tango.util.SystemMethods.execProcess;
 import static tango.util.SystemMethods.executeBatchScript;
+import tango.util.utils;
 /**
  *
  **
@@ -179,7 +180,8 @@ public class MongoConnector {
         ArrayList<String> res= new ArrayList(cur.size());
         while (cur.hasNext()) {
             BasicDBObject u = (BasicDBObject)cur.next();
-            res.add(u.getString("name"));
+            String name = u.getString("name");
+            if (utils.isValid(name, false)) res.add(name);
         }
         cur.close();
         Collections.sort(res);
@@ -187,6 +189,8 @@ public class MongoConnector {
     }
     
     public synchronized BasicDBObject setUser(String username, boolean create) {
+        //IJ.log("set user:"+username+ " create?"+create);
+        if ("".equals(username)) username=null;
         if (username==null) {
             this.username=null;
             this.userId=null;
@@ -212,7 +216,7 @@ public class MongoConnector {
             userId=(ObjectId)user.get("_id");
             //IJ.log("settings DB:"+user.getString("settingsDB"));
             settings = m.getDB(user.getString("settingsDB"));
-            //if (settings==null) IJ.log("settings null");
+            if (settings==null) IJ.log("settings null");
             if (!settings.collectionExists("nucleus")) {settings.createCollection("nucleus", new BasicDBObject()); }//IJ.log("collection nucleus created!");}
             if (!settings.collectionExists("channel")) {settings.createCollection("channel", new BasicDBObject()); }//IJ.log("collection channel created!");}
             nucleusSettings = settings.getCollection("nucleus");

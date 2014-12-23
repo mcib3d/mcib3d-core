@@ -97,6 +97,7 @@ public class Connector extends javax.swing.JPanel {
 
     private void getUsers() {
         this.usernames.removeAllItems();
+        usernames.addItem("");
         // login user
         for (String key : Core.mongoConnector.getUsers()) {
             usernames.addItem(key);
@@ -570,7 +571,7 @@ public class Connector extends javax.swing.JPanel {
         }
         if (evt.getStateChange() == 1) {
             String name = (String) usernames.getSelectedItem();
-            if (name != null && name.length() > 0) {
+            if (name != null) {
                 setUser(name);
             }
         }
