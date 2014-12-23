@@ -319,13 +319,16 @@ public class SystemMethods {
         if(binpath==null || confpath==null){
             a = executeBatchScript("setMongoDBEnv", false, null);
         }
-        SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", binpath, true, true, true);
-        SystemEnvironmentVariable mongoConfPath = new SystemEnvironmentVariable("mongoConfPath", confpath, true, true, true);
+        SystemEnvironmentVariable mongoBinPath = new SystemEnvironmentVariable("mongoBinPath", binpath, true, false, true);
+        mongoBinPath.writeToPrefs();
+        SystemEnvironmentVariable mongoConfPath = new SystemEnvironmentVariable("mongoConfPath", confpath, true, false, true);
+        mongoBinPath.writeToPrefs();
         return a && mongoBinPath.exists() && mongoConfPath.exists();
     }
 
     public static String locateFile(String title) {
         final JFileChooser fc = new JFileChooser(title);
+        fc.setDialogTitle(title);
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int returnval = fc.showOpenDialog(null);
         String p = null;
@@ -336,19 +339,19 @@ public class SystemMethods {
     }
     
     public static boolean locateR(){
-        int n = JOptionPane.showConfirmDialog(null, "Have you already installed R? If you did, you're gonna be asked to locate the R folder.","TANGO INSTALLER", JOptionPane.YES_NO_OPTION);
+        int n = JOptionPane.showConfirmDialog(null, "Have you already installed R? If you did, you will be asked to locate the R folder.","TANGO INSTALLER", JOptionPane.YES_NO_OPTION);
         String p = "";
         if(n==0) p = locateFile("Browse to R folder");
         return setREnv(p);
     }
     
     public static boolean locateMongoDB() {
-        int n = JOptionPane.showConfirmDialog(null, "Have you already installed MongoDB? If you did, you're gonna be asked to locate the MongoDB bin folder and the the MongoDB conf file.","TANGO INSTALLER", JOptionPane.YES_NO_OPTION);
+        int n = JOptionPane.showConfirmDialog(null, "Have you already installed MongoDB? If you did, you will be asked to locate the MongoDB bin folder and the the MongoDB conf file.","TANGO INSTALLER", JOptionPane.YES_NO_OPTION);
         String bp = "";
         String dp = "";
         if(n==0){
             bp = locateFile("Browse to MongoDB bin folder");
-            dp = locateFile("Browse to MongoDB conf file");
+            dp = locateFile("Browse to MongoDB conf folder");
         }
         return setMongoDBEnv(bp,dp);
     }

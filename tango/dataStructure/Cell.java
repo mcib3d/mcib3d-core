@@ -72,7 +72,7 @@ public class Cell implements StructureContainer, Comparable<Cell> { //ObjectStru
     int nbCPUs=1;
     boolean inSelection;
     public static int structureThumbnail;
-    
+    public final static int tmbSize = 25;
     public Cell(BasicDBObject dbCell, Field f, Experiment xp) {
         this.field=f;
         this.xp=xp;

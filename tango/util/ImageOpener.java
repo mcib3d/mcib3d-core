@@ -66,16 +66,17 @@ public class ImageOpener {
                 //IJ.log("Examining file " + file.getName());
                 r.setId(file.getAbsolutePath());
                 r.setSeries(seriesNumber);
-                ImageProcessor[] ips = r.openThumbProcessors(r.getIndex(0, channel, timePoint));
+                //ImageProcessor[] ips = r.openThumbProcessors(r.getIndex(0, channel, timePoint));
                 ImageHandler tmb=null;
-                boolean create = ips.length==0;
-                if (file.getName().endsWith(".zvi")) create = true;
-                if (!create) {
-                    tmb = ImageHandler.wrap(new ImagePlus("", ips[0]));
-                    if (tmb.getMax()==0) create = true;
-                }
+                //boolean create = ips.length==0;
+                //if (file.getName().endsWith(".zvi")) create = true;
+                //if (!create) {
+                //    tmb = ImageHandler.wrap(new ImagePlus("", ips[0]));
+                //    if (tmb.getMax()==0) create = true;
+                //}
+                boolean create = true;
                 if (create) { // open a few planes and getTumbnail
-                    IJ.log("no thumbnail found for file: "+file.getName());
+                    //IJ.log("no thumbnail found for file: "+file.getName());
                     int width = r.getSizeX();
                     int height = r.getSizeY();
                     int sizeZ = r.getSizeZ();

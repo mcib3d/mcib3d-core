@@ -287,8 +287,12 @@ public class FieldManager implements ListSelectionListener {
         populatingFields = true;
         try {
             for (int i : this.list.getSelectedIndices()) {
-                ((Field) this.listModel.get(i)).delete();
-                listModel.removeElement(i);
+                
+                Field f = ((Field) this.listModel.get(i));
+                IJ.log("deleting field: "+f.getName());
+                f.delete();
+                listModel.remove(i);
+                
             }
         } catch (Exception e) {
             exceptionPrinter.print(e, "", Core.GUIMode);

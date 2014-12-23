@@ -210,7 +210,9 @@ public class MongoConnector {
                 help.createIndex(new BasicDBObject("container", 1).append("element", 1));
             } 
             userId=(ObjectId)user.get("_id");
+            //IJ.log("settings DB:"+user.getString("settingsDB"));
             settings = m.getDB(user.getString("settingsDB"));
+            //if (settings==null) IJ.log("settings null");
             if (!settings.collectionExists("nucleus")) {settings.createCollection("nucleus", new BasicDBObject()); }//IJ.log("collection nucleus created!");}
             if (!settings.collectionExists("channel")) {settings.createCollection("channel", new BasicDBObject()); }//IJ.log("collection channel created!");}
             nucleusSettings = settings.getCollection("nucleus");

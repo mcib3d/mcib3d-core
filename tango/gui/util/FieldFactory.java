@@ -210,9 +210,9 @@ public class FieldFactory {
         if (updateThumbnail || !xp.getConnector().fieldThumbnailExists(field_id)) {
             byte[] tmb;
             if (inputFiles.length>1) {
-                tmb=ImageOpener.openThumbnail(inputFiles[xp.getChannelFileIndexes()[0]], 0, 0, 0, 50, 50);
+                tmb=ImageOpener.openThumbnail(inputFiles[xp.getChannelFileIndexes()[0]], 0, 0, 0, Field.tmbSize, Field.tmbSize);
             } else {
-                tmb=ImageOpener.openThumbnail(inputFiles[0], xp.getChannelFileIndexes()[0], 0, 0, 50, 50);
+                tmb=ImageOpener.openThumbnail(inputFiles[0], xp.getChannelFileIndexes()[0], 0, 0, Field.tmbSize, Field.tmbSize);
             }
             xp.getConnector().saveFieldThumbnail(field_id, tmb);
         }
@@ -247,9 +247,10 @@ public class FieldFactory {
         if (dims!=null) {
             if (dims[2]!=xp.getNBFiles()) {
                 ij.IJ.log("wrong number of channels for file:"+file.getAbsolutePath()+ ".\nfound:"+dims[2]+ " requiered:"+xp.getNBFiles());
-                ij.IJ.log("s:"+dims[0]+ " t:"+dims[1]+ " c:"+dims[2]);
+                ij.IJ.log("series:"+dims[0]+ " time points:"+dims[1]+ " channels:"+dims[2]);
                 return;
             }
+            IJ.log("File: "+file.getName()+ " number of channels: "+dims[2]+ " number of time points:"+dims[1]+ " number of series:"+dims[0]);
             if (dims[0]==1 && dims[1]==1) {
                 createField(xp, file.getName(), new File[]{file}, 0, 0, false);
             } else {

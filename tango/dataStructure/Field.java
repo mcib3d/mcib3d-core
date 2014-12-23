@@ -77,7 +77,7 @@ public class Field implements ObjectStructure, StructureContainer {
     Object3D[] objects;
     boolean verbose;
     int nbCPUs=1;
-    
+    public final static int tmbSize = 50;
     public Field(BasicDBObject dbField, Experiment xp) {
         this.xp = xp;
         this.id = (ObjectId) dbField.get("_id");
@@ -371,7 +371,7 @@ public class Field implements ObjectStructure, StructureContainer {
                             ImageHandler im =preFilter.crop3D("cell"+Cell.df3.format(j+1)+"_File"+i+".tif", masks[j].offsetX, masks[j].offsetX+masks[j].sizeX-1, masks[j].offsetY, masks[j].offsetY+masks[j].sizeY-1, masks[j].offsetZ, masks[j].offsetZ+masks[j].sizeZ-1);
                             //im.showDuplicate("j"+Cell.df3.format(j+1)+"_File"+i+".tif");
                             mc.saveNucleusImage(cellIds[j], i, MongoConnector.R, im);
-                            mc.saveChannelImageThumbnail(cellIds[j], i, im, 25, 25, masks[j]);
+                            mc.saveChannelImageThumbnail(cellIds[j], i, im, Cell.tmbSize, Cell.tmbSize, masks[j]);
                             im.closeImagePlus();
                         }
                     }
@@ -430,7 +430,7 @@ public class Field implements ObjectStructure, StructureContainer {
             for (int i = 0; i < rawFiles.length; i++) {
                 if (rawFiles[i] != null) {
                     mc.saveNucleusImage(id, fileRank[i], MongoConnector.R, rawFiles[i]);
-                    mc.saveChannelImageThumbnail(id, fileRank[i], rawFiles[i], 25, 25, null);
+                    mc.saveChannelImageThumbnail(id, fileRank[i], rawFiles[i], Cell.tmbSize, Cell.tmbSize, null);
                 }
             }
         }

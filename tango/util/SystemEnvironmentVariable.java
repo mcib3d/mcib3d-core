@@ -144,7 +144,8 @@ public class SystemEnvironmentVariable {
         if(check){
             if(isBinDirectory){
                 IJ.log("Checking sub elements of Directory "+key);
-                extractValueFromPathsAndBins();
+                if (value!=null) checkSubElements(null);
+                if (!real) extractValueFromPathsAndBins();
                 if(!real){
                     this.value = null;
                 }
