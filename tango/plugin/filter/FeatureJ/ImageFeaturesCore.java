@@ -24,7 +24,7 @@ public class ImageFeaturesCore {
     
     public static void hysteresis(ImageHandler image, double lowval, double highval, boolean lowConnectivity) {
         final Image imp = Image.wrap(image.getImagePlus());
-        final src.mcib_plugins.processing.Thresholder thres = new src.mcib_plugins.processing.Thresholder();
+        final Thresholder thres = new Thresholder();
         if (lowConnectivity) {
             thres.hysteresisLowConnectivity(imp, lowval, highval);
         } else {
