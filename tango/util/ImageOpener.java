@@ -62,6 +62,7 @@ public class ImageOpener {
     
     public static byte[] openThumbnail(File file, int channel, int seriesNumber, int timePoint, int sizeX, int sizeY) {
             ImageProcessorReader r = new ImageProcessorReader(new ChannelSeparator(LociPrefs.makeImageReader()));
+            IJ.log("Creating thumbnail for file:" +file.getName());
             try {
                 //IJ.log("Examining file " + file.getName());
                 r.setId(file.getAbsolutePath());
@@ -102,6 +103,47 @@ public class ImageOpener {
             }
             catch (IOException exc) {
                 IJ.log("An error occurred during import of image: "+file.getName()+ " channel:"+channel+" t:"+timePoint+" s:"+seriesNumber + exc.getMessage());
+            }
+        return null;
+    }
+
+    public static byte[][] openThumbnails(File file, int seriesNumber, int timePoint, int sizeX, int sizeY) {
+            ImageProcessorReader r = new ImageProcessorReader(new ChannelSeparator(LociPrefs.makeImageReader()));
+            IJ.log("Creating thumbnails for file:" +file.getName());
+            try {
+                r.setId(file.getAbsolutePath());
+                r.setSeries(seriesNumber);
+                ImageHandler tmb=null;
+                int cn = r.getSizeC();
+                byte[][] tmbs = new byte[cn][];
+                int width = r.getSizeX();
+                int height = r.getSizeY();
+                int sizeZ = r.getSizeZ();
+                int step;
+                if (sizeZ>50) step = sizeZ/10;
+                else if (sizeZ>20) step = sizeZ/5;
+                else if (sizeZ>6) step = sizeZ/3;
+                else step = 1;
+                for (int i = 0;i<cn; i++) {// open a few planes and getTumbnail
+                    //IJ.log("no thumbnail found for file: "+file.getName());
+                    ImageStack stack = new ImageStack(width, height);
+                    for (int z=0; z<sizeZ; z+=step) {
+                        //IJ.log("open slice:"+z);
+                        ImageProcessor ip = r.openProcessors(r.getIndex(z, i, timePoint))[0];
+                        stack.addSlice("" + (z + 1), ip);
+                    }
+                    tmb = ImageHandler.wrap(stack);
+                    tmb.setGraysLut();
+                    tmbs[i]=tmb.getThumbNail(sizeX, sizeY);
+                }
+                r.close();
+                return tmbs;
+            }
+            catch (FormatException exc) {
+                IJ.log("An error occurred during creation of thumbnails for image: "+file.getName()+" t:"+timePoint+" s:"+seriesNumber + exc.getMessage());
+            }
+            catch (IOException exc) {
+                IJ.log("An error occurred during creation of thumbnails for image: "+file.getName()+" t:"+timePoint+" s:"+seriesNumber + exc.getMessage());
             }
         return null;
     }

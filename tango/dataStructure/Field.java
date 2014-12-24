@@ -71,10 +71,11 @@ public class Field implements ObjectStructure, StructureContainer {
     Experiment xp;
     ObjectId id;
     MongoConnector mc;
-    ImageIcon thumbnail;
+    ImageIcon[] thumbnails;
     InputFieldImages inputImages;
     ImageInt segmented;
     Object3D[] objects;
+    public static int structureThumbnail=0;
     boolean verbose;
     int nbCPUs=1;
     public final static int tmbSize = 50;
@@ -83,10 +84,10 @@ public class Field implements ObjectStructure, StructureContainer {
         this.id = (ObjectId) dbField.get("_id");
         this.name = dbField.getString("name");
         this.mc = xp.getConnector();
-        this.thumbnail = mc.getFieldThumbnail(id);
         inputImages = new InputFieldImages(this);
         this.verbose=false;
         this.nbCPUs=Core.getMaxCPUs();
+        thumbnails= new ImageIcon[xp.getNBFiles()];
     }
     
     public void setVerbose(boolean verbose) {
@@ -210,9 +211,26 @@ public class Field implements ObjectStructure, StructureContainer {
 
         return res;
     }
-
-    public ImageIcon getThumbnail() {
-        return this.thumbnail;
+    
+    public ImageIcon getThumbnail() { 
+        return getThumbnail(structureThumbnail);
+    }
+    
+    public ImageIcon getThumbnail(int structure) {
+        if (structure<0) return null;
+        int file = xp.getChannelFileIndex(structure);
+        if (thumbnails[file]==null) {
+            thumbnails[file]=mc.getFieldThumbnail(id, file);
+            if (structure==0 && thumbnails[0]==null) thumbnails[file]=mc.getFieldThumbnail(id); // retrocompatibilité
+            if (thumbnails[file]==null) { // create it...
+                byte[] tmb = mc.createInputImageThumbnail(id, file);
+                if (tmb!=null) {
+                    mc.saveFieldThumbnail(id, file, tmb);
+                    thumbnails[file] = new ImageIcon(tmb);
+                }
+            }
+        }
+        return thumbnails[file];
     }
 
     public String getXPName() {

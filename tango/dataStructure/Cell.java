@@ -85,7 +85,7 @@ public class Cell implements StructureContainer, Comparable<Cell> { //ObjectStru
         setName();
         this.tag=new Tag(dbCell.getInt("tag", 0));  
         this.id=(ObjectId)dbCell.get("_id");
-        this.thumbnails=new ImageIcon[xp.getNBStructures(false)];
+        this.thumbnails=new ImageIcon[xp.getNBFiles()];
     }
     
     private void setName() {
@@ -98,9 +98,10 @@ public class Cell implements StructureContainer, Comparable<Cell> { //ObjectStru
     }
     
     public ImageIcon getThumbnail(int structure) {
-        if (structure>=thumbnails.length || structure<0) return null;
-        if (thumbnails[structure]==null) thumbnails[structure]=mc.getChannelThumbnail(id, xp.getChannelFileIndex(structure));
-        return thumbnails[structure];
+        if (structure<0) return null;
+        int file = xp.getChannelFileIndex(structure);
+        if (thumbnails[file]==null) thumbnails[file]=mc.getChannelThumbnail(id, file);
+        return thumbnails[file];
     }
     
     public static void setAscendingOrger(boolean ascending) {

@@ -21,6 +21,7 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import mcib3d.image3d.ImageInt;
 import org.bson.types.ObjectId;
+import tango.dataStructure.Field;
 import tango.dataStructure.Selection;
 import tango.gui.Core;
 import tango.helper.ID;
@@ -1001,17 +1002,31 @@ public class MongoConnector {
         nucleus.save(nuc);
     }
 
-    public synchronized boolean fieldThumbnailExists(ObjectId field_id) {
-        BasicDBObject query = new BasicDBObject("field_id", field_id);
+    public synchronized boolean allFieldThumbnailsExist(ObjectId field_id, int nbChannels) {
+        BasicDBObject query = new BasicDBObject("field_id", field_id).append("fileIdx", nbChannels);
+        for (int i = 0; i<nbChannels; i++) {
         GridFSDBFile f = gfsFieldThumbnail.findOne(query);
-        if (f!=null) {
-            return true;
-        } else return false;
-    }
-    
+            if (f==null) return false;
+        }
+        return true;
+    }    
     
     public synchronized ImageIcon getFieldThumbnail(ObjectId field_id) {
         BasicDBObject query = new BasicDBObject("field_id", field_id);
+        GridFSDBFile f = gfsFieldThumbnail.findOne(query);
+        if (f!=null) {
+            try {
+                Image im=ImageIO.read(f.getInputStream());
+                if (im!=null) return new ImageIcon(im);
+            } catch (Exception e) {
+                exceptionPrinter.print(e, "", Core.GUIMode);
+            }
+        }
+        return null;
+    }
+    
+    public synchronized ImageIcon getFieldThumbnail(ObjectId field_id, int fileIdx) {
+        BasicDBObject query = new BasicDBObject("field_id", field_id).append("fileRank", fileIdx);
         GridFSDBFile f = gfsFieldThumbnail.findOne(query);
         if (f!=null) {
             try {
@@ -1092,11 +1107,12 @@ public class MongoConnector {
         return false;
     }
     
-    public synchronized void saveFieldThumbnail(ObjectId field_id, byte[] thumbnail) {
+    public synchronized void saveFieldThumbnail(ObjectId field_id, int fileIdx,  byte[] thumbnail) {
         GridFSInputFile gfi = this.gfsFieldThumbnail.createFile(thumbnail);
-        BasicDBObject query = new BasicDBObject("field_id", field_id);
+        BasicDBObject query = new BasicDBObject("field_id", field_id).append("fileRank", fileIdx);
         gfsFieldThumbnail.remove(query);
         gfi.put("field_id", field_id);
+        gfi.put("fileRank", fileIdx);
         gfi.save();
         try {
             gfi.getOutputStream().close();
@@ -1104,6 +1120,7 @@ public class MongoConnector {
             exceptionPrinter.print(e, "", Core.GUIMode);
         }
     }
+
     
     public synchronized void removeNucleusImage(ObjectId nucleus_id, int fileIdx, int fileType) {
         BasicDBObject query = new BasicDBObject("nucleus_id", nucleus_id).append("fileIdx", fileIdx).append("fileType", fileType);
@@ -1183,6 +1200,36 @@ public class MongoConnector {
             }
         } else IJ.log(error);
         
+        return null;
+    }
+    
+    public synchronized byte[] createInputImageThumbnail(ObjectId field_id, int idx) {
+        BasicDBObject query = new BasicDBObject("field_id", field_id).append("fileRank", idx);
+        GridFSDBFile f = this.gfsField.findOne(query);
+        if (f!=null) {
+            ImageHandler res= createImage(f);
+            if (res!=null) return res.getThumbNail(Field.tmbSize, Field.tmbSize);
+        }
+         // open from directory
+        BasicDBObject field = this.getField(field_id);
+        String error = "could'nt open file:"+idx+" from field:"+field.getString("name")+" please relink files by launching the command \"import files\"";
+        if (field.containsField("files")) {
+            BasicDBList files = (BasicDBList) field.get("files");
+            if (files.size()>1) { // separated files
+                if (idx>=files.size()) {
+                    IJ.log(error);
+                } else {
+                    BasicDBObject fileObj = (BasicDBObject) files.get(idx);
+                    File file = new File(fileObj.getString("path"));
+                    if (file.exists()) return ImageOpener.openThumbnail(file, 0, 0, 0, Field.tmbSize, Field.tmbSize);
+                    
+                }
+            } else {
+                BasicDBObject fileObj = (BasicDBObject) files.get(0);
+                File file = new File(fileObj.getString("path"));
+                if (file.exists()) return ImageOpener.openThumbnail(file, idx, fileObj.getInt("series"), fileObj.getInt("timePoint"), Field.tmbSize, Field.tmbSize);
+            }
+        } else IJ.log(error);
         return null;
     }
     

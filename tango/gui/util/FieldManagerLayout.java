@@ -1,10 +1,13 @@
 
 package tango.gui.util;
 
+import java.awt.Dimension;
+import tango.dataStructure.Field;
 import tango.gui.FieldManager;
 import tango.helper.HelpManager;
 import tango.helper.ID;
 import tango.helper.RetrieveHelp;
+import tango.util.utils;
 
 /**
  *
@@ -36,6 +39,22 @@ public class FieldManagerLayout extends javax.swing.JPanel {
     public FieldManagerLayout(FieldManager fieldManager) {
         this.fieldManager=fieldManager;
         initComponents();  
+        //this.thumbnailsCB.setMaximumSize(new Dimension(viewPanel.getPreferredSize().width, thumbnailsCB.getPreferredSize().height));
+        utils.addHorizontalScrollBar(thumbnailsCB);
+    }
+    
+    public void setStructures(String[] structures) {
+        this.thumbnailsCB.removeAllItems();
+        for (String s: structures) this.thumbnailsCB.addItem(s);
+        if (structures.length>0) this.thumbnailsCB.setSelectedIndex(0);
+    }
+    
+    public String getThumbnailStructure() {
+        return utils.getSelectedString(thumbnailsCB);
+    }
+    
+    public void setStructure(String structure) {
+        if (utils.contains(thumbnailsCB, structure, true)) thumbnailsCB.setSelectedItem(structure);
     }
     
     public void registerComponents(HelpManager hm) {
@@ -96,6 +115,7 @@ public class FieldManagerLayout extends javax.swing.JPanel {
         viewInputImages = new javax.swing.JButton();
         viewCells = new javax.swing.JToggleButton();
         viewSelections = new javax.swing.JToggleButton();
+        thumbnailsCB = new javax.swing.JComboBox();
         processPanel = new javax.swing.JPanel();
         processNuc = new javax.swing.JCheckBox();
         cropCells = new javax.swing.JCheckBox();
@@ -197,6 +217,14 @@ public class FieldManagerLayout extends javax.swing.JPanel {
             }
         });
 
+        thumbnailsCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "nucleus" }));
+        thumbnailsCB.setMaximumSize(new java.awt.Dimension(210, 24));
+        thumbnailsCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                thumbnailsCBActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout viewPanelLayout = new javax.swing.GroupLayout(viewPanel);
         viewPanel.setLayout(viewPanelLayout);
         viewPanelLayout.setHorizontalGroup(
@@ -205,6 +233,7 @@ public class FieldManagerLayout extends javax.swing.JPanel {
             .addComponent(viewInputImages, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(viewCells, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(viewSelections, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(thumbnailsCB, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         viewPanelLayout.setVerticalGroup(
             viewPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -212,11 +241,12 @@ public class FieldManagerLayout extends javax.swing.JPanel {
                 .addComponent(viewOverlay)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(viewInputImages)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(thumbnailsCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(viewSelections)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(viewCells)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(viewCells))
         );
 
         processPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Process"));
@@ -313,7 +343,7 @@ public class FieldManagerLayout extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 649, Short.MAX_VALUE)
+            .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 648, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(selectPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -374,6 +404,11 @@ public class FieldManagerLayout extends javax.swing.JPanel {
         fieldManager.toggleShowSelections();
     }//GEN-LAST:event_viewSelectionsActionPerformed
 
+    private void thumbnailsCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_thumbnailsCBActionPerformed
+        Field.structureThumbnail=this.thumbnailsCB.getSelectedIndex();
+        this.list.updateUI();
+    }//GEN-LAST:event_thumbnailsCBActionPerformed
+
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -394,6 +429,7 @@ public class FieldManagerLayout extends javax.swing.JPanel {
     private javax.swing.JButton selectNone;
     private javax.swing.JPanel selectPanel;
     private javax.swing.JButton test;
+    private javax.swing.JComboBox thumbnailsCB;
     public javax.swing.JToggleButton viewCells;
     private javax.swing.JButton viewInputImages;
     private javax.swing.JButton viewOverlay;

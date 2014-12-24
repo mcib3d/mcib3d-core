@@ -40,7 +40,9 @@ import tango.parameter.StructureParameter;
  */
 
 public abstract class VirtualStructure extends Structure {
-    public static String[] methods = new String[]{"Constant Object Number", "Object Colocalization", "Cluster"};
+    public final static String[] methodsCurrent = new String[]{}; //"Post-Processing Chain"
+    public final static String[] methodsTesting = new String[]{"Constant Object Number", "Object Colocalization", "Cluster"}; //"Post-Processing Chain", 
+    public static String[] methods = (Core.TESTING) ? methodsTesting:methodsCurrent;
     public VirtualStructure(String title, int idx, Cell cell) {
         super(title, idx, cell);
     }
@@ -58,13 +60,14 @@ public abstract class VirtualStructure extends Structure {
     
     public static VirtualStructure createStructure(String title, int idx, Cell cell) {
         VirtualStructurePanel vsp = getPanel(cell, idx);
-        if (vsp.type.getSelectedIndex()==0) { // constant object
+        if ("Constant Object Number".equals(vsp.type.getSelectedItem())) {
             return new VirtualStructureObjectNumber(title, idx, cell);
-        } else if (vsp.type.getSelectedIndex()==1) { // coloc
+        } else if ("Object Colocalization".equals(vsp.type.getSelectedItem())) { // coloc
             return new VirtualStructureColoc(title, idx, cell);
-        } else if (vsp.type.getSelectedIndex()==2) {
+        } else if ("Cluster".equals(vsp.type.getSelectedItem())) {
             return new VirtualStructureCluster(title, idx, cell);
-        } else return null;
+        } //else if ("Post-Processing Chain".equals(vsp.type.getSelectedItem())) {
+        else return null;
     }
     
 }

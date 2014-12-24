@@ -129,10 +129,8 @@ public class CellManagerLayout extends javax.swing.JPanel {
     
     public void setStructures(String[] structures) {
         this.thumbnailsCB.removeAllItems();
-        Dimension dim = new Dimension(viewPanel.getPreferredSize().width, thumbnailsCB.getPreferredSize().height);
         for (String s: structures) this.thumbnailsCB.addItem(s);
         if (structures.length>0) this.thumbnailsCB.setSelectedIndex(0);
-        this.thumbnailsCB.setMaximumSize(dim);
     }
     
     public String getThumbnailStructure() {

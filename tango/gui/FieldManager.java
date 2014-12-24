@@ -134,6 +134,7 @@ public class FieldManager implements ListSelectionListener {
                 core.refreshDisplay();
             }
             populateFields();
+            layout.setStructures(xp.getStructureNames(false));
             cellManager.setXP(xp);
         } catch (Exception e) {
             exceptionPrinter.print(e, "", Core.GUIMode);
@@ -286,12 +287,11 @@ public class FieldManager implements ListSelectionListener {
     private void deleteSelectedFields() {
         populatingFields = true;
         try {
-            for (int i : this.list.getSelectedIndices()) {
-                
-                Field f = ((Field) this.listModel.get(i));
+            for (Object o : this.list.getSelectedValues()) {
+                Field f = (Field) o;
                 IJ.log("deleting field: "+f.getName());
                 f.delete();
-                listModel.remove(i);
+                listModel.removeElement(o);
                 
             }
         } catch (Exception e) {
@@ -302,8 +302,9 @@ public class FieldManager implements ListSelectionListener {
 
     private void deleteSelectedFieldsFiles() {
         try {
-            for (int i : this.list.getSelectedIndices()) {
-                ((Field) this.listModel.get(i)).deleteFiles();
+            for (Object o : this.list.getSelectedValues()) {
+                Field f = (Field) o;
+                f.deleteFiles();
             }
         } catch (Exception e) {
             exceptionPrinter.print(e, "", Core.GUIMode);
@@ -650,10 +651,12 @@ public class FieldManager implements ListSelectionListener {
 
     public void viewInputImages() {
         try {
-            for (int i = 0; i < xp.getNBStructures(false); i++) {
+            /*for (int i = 0; i < xp.getNBStructures(false); i++) {
                 Field f = (Field) list.getSelectedValue();
                 f.getStructureInputImage(i).show(f.getName() + "_" + xp.getChannelSettings(i).getString("name"));
-            }
+            }*/
+            Field f = (Field) list.getSelectedValue();
+            f.getStructureInputImage(Field.structureThumbnail).show(f.getName() + "_" + xp.getChannelSettings(Field.structureThumbnail).getString("name"));
         } catch (Exception e) {
             exceptionPrinter.print(e, "", Core.GUIMode);
         }
@@ -793,5 +796,11 @@ public class FieldManager implements ListSelectionListener {
         if (this.nucleusManager != null) {
             nucleusManager.toggleIsRunning(isRunning);
         }
+    }
+    
+    public void updateXP() {
+        String structure = layout.getThumbnailStructure();
+        layout.setStructures(xp.getStructureNames(false));
+        layout.setStructure(structure);
     }
 }

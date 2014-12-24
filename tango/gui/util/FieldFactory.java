@@ -207,14 +207,15 @@ public class FieldFactory {
         field.append("files", files);
         xp.getConnector().updateField(field);
         
-        if (updateThumbnail || !xp.getConnector().fieldThumbnailExists(field_id)) {
-            byte[] tmb;
+        if (updateThumbnail || !xp.getConnector().allFieldThumbnailsExist(field_id, xp.getNBFiles())) {
+            IJ.log("creating thumbnails for field: "+name);
+            byte[][] tmb = new byte[xp.getNBFiles()][];
             if (inputFiles.length>1) {
-                tmb=ImageOpener.openThumbnail(inputFiles[xp.getChannelFileIndexes()[0]], 0, 0, 0, Field.tmbSize, Field.tmbSize);
+                for (int i = 0;i<xp.getNBFiles(); i++) tmb[i]=ImageOpener.openThumbnail(inputFiles[i], 0, 0, 0, Field.tmbSize, Field.tmbSize);
             } else {
-                tmb=ImageOpener.openThumbnail(inputFiles[0], xp.getChannelFileIndexes()[0], 0, 0, Field.tmbSize, Field.tmbSize);
+                tmb=ImageOpener.openThumbnails(inputFiles[0], 0, 0, Field.tmbSize, Field.tmbSize);
             }
-            xp.getConnector().saveFieldThumbnail(field_id, tmb);
+            for (int i = 0;i<xp.getNBFiles(); i++) xp.getConnector().saveFieldThumbnail(field_id, i, tmb[i]);
         }
         
     }

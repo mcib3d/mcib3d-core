@@ -370,6 +370,7 @@ public class Core extends JFrame implements Displayer {
         if (this.structureTemplateEditor!=null) structureTemplateEditor.refreshParameters();
         if (this.processingChainEditor!=null) processingChainEditor.refreshParameters();
         if (this.cellManager!=null && Core.getExperiment()!=null) cellManager.updateXP();
+        if (this.fieldManager!=null && Core.getExperiment()!=null) fieldManager.updateXP();
     }
     
     
