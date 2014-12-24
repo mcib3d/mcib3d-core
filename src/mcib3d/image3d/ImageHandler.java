@@ -7,7 +7,9 @@ import ij.io.FileSaver;
 import ij.io.Opener;
 import ij.io.TiffEncoder;
 import ij.measure.Calibration;
+import ij.plugin.ContrastEnhancer;
 import ij.plugin.ZProjector;
+import ij.plugin.filter.ThresholdToSelection;
 import ij.process.ImageProcessor;
 import java.awt.image.IndexColorModel;
 import java.io.ByteArrayOutputStream;
@@ -1270,16 +1272,39 @@ public abstract class ImageHandler {
     public byte[] getThumbNail(int sizeX, int sizeY, ImageInt mask) {
         //projection
         ImagePlus im;
+        ImageProcessor imMask=null;
         this.setMinAndMax(mask);
         if (sizeZ > 1) {
             ZProjector proj = new ZProjector(img);
             proj.setMethod(ZProjector.MAX_METHOD);
             proj.doProjection();
             im = proj.getProjection();
+            
         } else {
             im = img;
         }
+        if (mask!=null) {
+            if (mask.sizeZ > 1) {
+                ZProjector proj = new ZProjector(mask.img);
+                proj.setMethod(ZProjector.MAX_METHOD);
+                proj.doProjection();
+                imMask = proj.getProjection().getProcessor();
+
+            } else {
+                imMask = mask.img.getProcessor();
+            }
+            // ensure byte mask
+            if (!(mask instanceof ImageByte)) {
+                imMask = imMask.convertToByte(false);
+                
+            }
+        }
+        ContrastEnhancer ch = new ContrastEnhancer();
+        //ch.setNormalize(true);
+        //ch.stretchHistogram(im, 0.5);
+        ch.equalize(im);
         ImageProcessor ip = im.getProcessor().resize(sizeX, sizeY, true);
+        if (imMask!=null) ip.setMask(imMask);
         ip = ip.convertToByte(true);
         ip.setMinAndMax(ip.getMin(), ip.getMax());
         im = new ImagePlus(img.getShortTitle() + "_tmb", ip);
