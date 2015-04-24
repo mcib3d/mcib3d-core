@@ -23,7 +23,7 @@ public class MereoAnalysis {
 
     Objects3DPopulation popA;
     Objects3DPopulation popB;
-    // for relationship
+    // for relationships
     private float RadX, RadY, RadZ;
     String[][] relationships;
 
