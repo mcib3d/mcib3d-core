@@ -1,8 +1,9 @@
 package mcib3d.image3d.distanceMap3d;
 
-import ij.*;
-import ij.measure.Calibration;
-import ij.process.*;
+import ij.IJ;
+import ij.ImageStack;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 

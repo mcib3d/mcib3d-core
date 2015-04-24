@@ -39,6 +39,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.ImageShort;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 import mcib3d.utils.KDTreeC.Item;
@@ -429,6 +430,7 @@ public class Objects3DPopulation {
      */
     public void setMask(Object3D mask) {
         this.mask = mask;
+        mask.init();
     }
 
     /**
@@ -441,17 +443,21 @@ public class Objects3DPopulation {
     }
 
     public Object3D getObjectByValue(int val) {
-        return objects.get(hashValue.get(val));
+        Integer idxI = hashValue.get(val);
+        if (idxI == null) {
+            return null;
+        }
+        return objects.get(idxI.intValue());
     }
 
     public Object3D getObjectByName(String name) {
-        return objects.get(hashName.get(name));
+        int nb = hashName.get(name);
+        return objects.get(nb);
     }
-    
+
     public int getIndexFromName(String name) {
         return hashName.get(name);
     }
-    
 
     public int getIndexFromValue(int val) {
         return hashValue.get(val);
@@ -1143,53 +1149,57 @@ public class Objects3DPopulation {
         return res;
     }
 
-    public boolean shuffle(double angle, Vector3D axis) {
+    public ArrayList<Object3D> shuffle() {
         int si = this.getNbObjects();
         ArrayUtil idx = new ArrayUtil(si);
         for (int i = 0; i < si; i++) {
             idx.addValue(i, i);
         }
         idx.shuffle();
-        double dx = mask.getXmax() - mask.getXmin();
-        double dy = mask.getYmax() - mask.getYmin();
-        double dz = mask.getZmax() - mask.getZmin();
-        int c = 0;
-        // test rotate
+        int c;
+
+        ArrayList<Object3D> shuObj = new ArrayList<Object3D>();
+
+        int maxr = 1000;
+        Object3DVoxels mav = mask.getObject3DVoxels();
+        ImageInt label2 = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
         for (int i = 0; i < si; i++) {
             boolean ok = false;
             Object3D obj = this.getObject((int) idx.getValue(i));
             c = 0;
-            while ((!ok) && (c < 1000)) {
+            Object3DVoxels Vtest = new Object3DVoxels(obj);
+            ImageInt labelTest = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
+            while ((!ok) && (c < maxr)) {
                 ok = true;
                 c++;
-                double x = Math.random() * dx + mask.getXmin();
-                double y = Math.random() * dy + mask.getYmin();
-                double z = Math.random() * dz + mask.getZmin();
-                obj.setNewCenter(x, y, z + 1);
-                if (!mask.includes(obj)) {
+                Voxel3D test = mav.getRandomvoxel();
+                Vtest.draw(labelTest, 0);
+                Vtest.setNewCenter(test.getX(), test.getY(), test.getZ());
+                Vtest.draw(labelTest);
+                Vtest.setLabelImage(labelTest);
+
+                if (mask.getColoc(Vtest) < Vtest.getVolumePixels()) {
                     ok = false;
                 }
-                if (ok) {
-                    for (Object3D o : objects) {
-                        if (!o.equals(obj)) {
-                            double pc = obj.pcColoc(o);
-                            if (pc > 0) {
-                                ok = false;
-                                break;
-                            }
-                        }
+
+                // coloc with other objects
+                for (Object3D O : shuObj) {
+                    if (O.getColoc(Vtest) > 0) {
+                        ok = false;
                     }
                 }
             }
 
-            if (c == 1000) {
-                break;
-            } else if ((angle != 0) && (axis != null)) {
-                ((Object3DVoxels) obj).rotate(axis, angle);
+            if (c == maxr) {
+                IJ.log("Could not shuffle " + obj + " " + i + " " + idx.getValue(i));
+            } else {
+                shuObj.add(Vtest);
+                Vtest.draw(label2);
+                Vtest.setLabelImage(label2);
             }
         }
 
-        return c != 1000;
+        return shuObj;
     }
 
     int[] k_Means(int k) {
@@ -1408,7 +1418,7 @@ public class Objects3DPopulation {
                 zipentry = zipinputstream.getNextEntry();
                 // create object
                 obj = new Object3DVoxels();
-                obj.setValue(0);
+                obj.setValue(1);
                 obj.loadObject(dir + fs, entryName);
                 obj.setName(entryName.substring(0, entryName.length() - 6));
 

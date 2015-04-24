@@ -5,8 +5,13 @@ import ij.ImagePlus;
 import ij.gui.Plot;
 import ij.measure.CurveFitter;
 import ij.process.ByteProcessor;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Copyright (C) Thomas Boudier
@@ -102,15 +107,14 @@ public class ArrayUtil {
             return Double.NaN;
         }
     }
-    
+
     public int getValueInt(int pos) {
         if (pos < size) {
-            return (int)values[pos];
+            return (int) values[pos];
         } else {
             return 0;
         }
     }
-    
 
     /**
      * get the number of elements
@@ -129,6 +133,16 @@ public class ArrayUtil {
     public double[] getArray() {
         return values;
     }
+    
+     public ArrayList<Double> getArrayList() {
+        ArrayList<Double> list=new ArrayList<Double>(this.getSize());
+        for(int i=0;i<this.getSize();i++){
+            list.add(this.getValue(i));
+        }
+        
+        return list;
+    }
+    
 
     /**
      * new size of the array (can incresase size of array)
@@ -228,8 +242,12 @@ public class ArrayUtil {
         return imax;
     }
 
-    public int getFirstLocalMaxima(double threshold) {
-        for (int i = 1; i < size - 1; i++) {
+    public int getFirstLocalMaxima(int start, double threshold) {
+        int st = start;
+        if (st <= 0) {
+            st = 1;
+        }
+        for (int i = st; i < size - 1; i++) {
             if (values[i] >= threshold) {
                 double v0 = values[i - 1];
                 double v1 = values[i];
@@ -1415,4 +1433,18 @@ public class ArrayUtil {
 
         return centers;
     }
+
+    public void saveArray(String dir, String file, String header) {
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(dir + file));
+            out.write("idx\t" + header);
+            for (int i = 0; i < size; i++) {
+                out.write("\n" + i + "\t" + values[i]);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ArrayUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
 }

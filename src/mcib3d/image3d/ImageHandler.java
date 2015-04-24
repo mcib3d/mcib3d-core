@@ -9,7 +9,6 @@ import ij.io.TiffEncoder;
 import ij.measure.Calibration;
 import ij.plugin.ContrastEnhancer;
 import ij.plugin.ZProjector;
-import ij.plugin.filter.ThresholdToSelection;
 import ij.process.ImageProcessor;
 import java.awt.image.IndexColorModel;
 import java.io.ByteArrayOutputStream;
@@ -942,6 +941,14 @@ public abstract class ImageHandler {
             setPixel(i, this.getPixel(i) / coeff);
         }
     }
+    
+    public void multiplyByValue(float coeff) {
+        for (int i = 0; i < sizeXYZ; i++) {
+            setPixel(i, this.getPixel(i) * coeff);
+        }
+    }
+    
+    
 
     public void addValue(float val) {
         for (int i = 0; i < sizeXYZ; i++) {

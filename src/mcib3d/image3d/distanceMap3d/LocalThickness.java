@@ -4,10 +4,9 @@
  */
 package mcib3d.image3d.distanceMap3d;
 
-import ij.*;
-import ij.plugin.filter.PlugInFilter;
-import ij.process.*;
-import java.awt.*;
+import ij.IJ;
+import ij.ImagePlus;
+import ij.ImageStack;
 
 /// adapted to take anisotropy in account. 2012 jean Ollion ollion@mnhn.fr
 

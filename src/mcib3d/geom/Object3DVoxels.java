@@ -17,6 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import mcib3d.Jama.EigenvalueDecomposition;
@@ -24,9 +25,9 @@ import mcib3d.Jama.Matrix;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.ImageLabeller;
 import mcib3d.image3d.ImageShort;
 import mcib3d.image3d.processing.FillHoles3D;
-import mcib3d.image3d.processing.Flood3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 
@@ -474,10 +475,14 @@ public class Object3DVoxels extends Object3D {
 
     public boolean isConnex() {
         ImageShort seg = (ImageShort) this.createSegImageMini(1, 1);
-        Voxel3D se = this.getFirstVoxel();
-        se.translate(-seg.offsetX, -seg.offsetY, -seg.offsetZ);
-        Flood3D.flood3d26(seg, se.getRoundX(), se.getRoundY(), se.getRoundZ(), 2);
-        return !seg.hasOneValueInt(1);
+        // label the seg image
+        ImageLabeller labeler = new ImageLabeller();
+        return (labeler.getNbObjectsTotal(seg) == 1);
+        // flood version is slow
+//        Voxel3D se = this.getFirstVoxel();
+//        se.translate(-seg.offsetX, -seg.offsetY, -seg.offsetZ);
+//        Flood3D.flood3d26(seg, se.getRoundX(), se.getRoundY(), se.getRoundZ(), 2);
+//        return !seg.hasOneValueInt(1);
     }
 
     public Object3DVoxels getInterior3DFill() {
@@ -991,18 +996,20 @@ public class Object3DVoxels extends Object3D {
     public int getColoc(Object3D obj) {
         // test box
         if (this.disjointBox(obj)) {
+            //IJ.log("coloc disjoint box");
             return 0;
         }
         // if labels images for both objects, use them
         if ((this.getLabelImage() != null) || (obj.getLabelImage() != null)) {
+            //IJ.log("coloc image");                    
             return getColocImage(obj);
         }
 
         // thresgold on size of objects
-        int thres = 1000;
+        int thres = 100;
         // if one object has size > threshold use images else use voxels
         if ((this.getVolumePixels() > thres) && (obj.getVolumePixels() > thres)) {
-            //IJ.log("Using coloc image");
+            //IJ.log("Using coloc image");            
             return getColocImage(obj);
         } else {
             //IJ.log("Using coloc voxels");
@@ -1042,6 +1049,10 @@ public class Object3DVoxels extends Object3D {
         if (this.disjointBox(obj)) {
             return 0;
         }
+
+        //IJ.log("coloc image "+getLabelImage()+" "+obj.getLabelImage());
+//        getLabelImage().show("this label");
+//        obj.getLabelImage().duplicate().show("obj label");
         // if no label images, create temporary one
         if ((this.getLabelImage() == null) || (obj.getLabelImage() == null)) {
             return getColocImageIntersection(obj);
@@ -1058,6 +1069,13 @@ public class Object3DVoxels extends Object3D {
         int val = obj.getValue();
         ImageInt otherseg = obj.getLabelImage();
 
+        int offX0 = labelImage.offsetX;
+        int offY0 = labelImage.offsetY;
+        int offZ0 = labelImage.offsetZ;
+        int offX1 = otherseg.offsetX;
+        int offY1 = otherseg.offsetY;
+        int offZ1 = otherseg.offsetZ;
+        //IJ.log("" + offX0 + " " + offY0 + " " + offZ0 + " " + offX1 + " " + offY1 + " " + offZ1);
         xmin0 = getXmin();
         ymin0 = getYmin();
         zmin0 = getZmin();
@@ -1072,19 +1090,13 @@ public class Object3DVoxels extends Object3D {
         ymax0 = Math.min(ymax0, obj.getYmax());
         zmax0 = Math.min(zmax0, obj.getZmax());
 
-        //IJ.log(""+xmin0+"-"+xmax0+" "+ymin0+"-"+ymax0+" "+zmin0+"-"+zmax0+" "+otherseg);
-        //labelImage.show("this");
-        //otherseg.show("other");
-        int offX0 = labelImage.offsetX;
-        int offY0 = labelImage.offsetY;
-        int offZ0 = labelImage.offsetZ;
-        int offX1 = otherseg.offsetX;
-        int offY1 = otherseg.offsetY;
-        int offZ1 = otherseg.offsetZ;
-
+        // IJ.log("" + xmin0 + "-" + xmax0 + " " + ymin0 + "-" + ymax0 + " " + zmin0 + "-" + zmax0 + " " + otherseg);
+        //labelImage.duplicate().show("this");
+        // otherseg.duplicate().show("other");
         for (int k = zmin0; k <= zmax0; k++) {
             for (int j = ymin0; j <= ymax0; j++) {
                 for (int i = xmin0; i <= xmax0; i++) {
+                    //if ((labelImage.getPixel(i, j, k) == value) && (otherseg.getPixel(i, j, k) == val)) {
                     if ((labelImage.getPixel(i - offX0, j - offY0, k - offZ0) == value) && (otherseg.getPixel(i - offX1, j - offY1, k - offZ1) == val)) {
                         count++;
                     }
@@ -1106,7 +1118,7 @@ public class Object3DVoxels extends Object3D {
         return count;
     }
 
-    private int getColocVoxels(Object3D obj) {
+    public int getColocVoxels(Object3D obj) {
         if (this.disjointBox(obj)) {
             return 0;
         }
@@ -1381,6 +1393,14 @@ public class Object3DVoxels extends Object3D {
         return voxels.get(0);
     }
 
+    public Voxel3D getRandomvoxel() {
+        if (isEmpty()) {
+            return null;
+        }
+        Random ra = new Random();
+        return voxels.get(ra.nextInt(getVolumePixels()));
+    }
+
     // From Bribiesca 2008 Pattern Recognition
     public double getDiscreteCompactness() {
         double n = getVolumePixels();
@@ -1456,7 +1476,7 @@ public class Object3DVoxels extends Object3D {
                 dy = Double.parseDouble(coord[2]);
                 dz = Double.parseDouble(coord[3]);
                 v = (int) Double.parseDouble(coord[4]);
-                voxels.add(new Voxel3D(dx, dy, dz, v));                
+                voxels.add(new Voxel3D(dx, dy, dz, v));
                 data = bf.readLine();
             }
             bf.close();

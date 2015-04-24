@@ -151,7 +151,7 @@ public abstract class Object3D {
     /**
      * Value (grey-level)
      */
-    protected int value=0;
+    protected int value = 0;
     /**
      * Contours pixels
      */
@@ -163,7 +163,7 @@ public abstract class Object3D {
     /**
      * Touch the borders ?
      */
-    protected boolean touchBorders;
+    //protected boolean touchBorders;
     /**
      * Centred Moments order 2
      */
@@ -687,6 +687,7 @@ public abstract class Object3D {
     }
 
     public abstract ArrayUtil listValues(ImageHandler ima);
+   
 
     /**
      * List voxels in the image with values > threshold
@@ -1623,6 +1624,8 @@ public abstract class Object3D {
      * Gets the feret attribute of the Object3D (unit)
      */
     private void computeFeret() {
+        // TEST
+        IJ.log("Feret");
         double distmax = 0;
         double dist;
         double rx2 = resXY * resXY;
@@ -1631,7 +1634,8 @@ public abstract class Object3D {
         Voxel3D p2;
         ArrayList cont = this.getContours();
 
-        int s = getContours().size();
+        int s = cont.size();
+        IJ.log("Feret contour " + s);
         for (int i = 0; i < s; i++) {
             p1 = (Voxel3D) cont.get(i);
             for (int j = i + 1; j < s; j++) {
@@ -1836,6 +1840,10 @@ public abstract class Object3D {
         return Math.sqrt((bx - x) * (bx - x) * resXY * resXY + (by - y) * (by - y) * resXY * resXY + (bz - z) * (bz - z) * resZ * resZ);
     }
 
+    public double distPixelCenter(Point3D P) {
+        return Math.sqrt((bx - P.x) * (bx - P.x) * resXY * resXY + (by - P.y) * (by - P.y) * resXY * resXY + (bz - P.z) * (bz - P.z) * resZ * resZ);
+    }
+
     /**
      * Gets the centerUnit attribute of the Object3D object
      *
@@ -1851,10 +1859,9 @@ public abstract class Object3D {
      *
      * @return The touchBorders value
      */
-    public boolean getTouchBorders() {
-        return touchBorders;
-    }
-
+//    public boolean getTouchBorders() {
+//        return touchBorders;
+//    }
     /**
      *
      * @param vox
@@ -2820,7 +2827,8 @@ public abstract class Object3D {
      * @return
      */
     public ImageInt createSegImage() {
-        return createSegImage(0, 0, 0, xmax, ymax, zmax, value);
+        return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, value);
+//return createSegImage(0, 0, 0, xmax, ymax, zmax, value);
     }
 
     /**
@@ -2836,6 +2844,9 @@ public abstract class Object3D {
      */
     public ImageInt createSegImage(int xmi, int ymi, int zmi, int xma, int yma, int zma, int val) {
         ImageInt SegImage = new ImageShort("Object", xma - xmi + 1, yma - ymi + 1, zma - zmi + 1);
+        SegImage.offsetX = xmi;
+        SegImage.offsetY = ymi;
+        SegImage.offsetZ = zmi;
         Voxel3D vox;
         Iterator it = getVoxels().iterator();
         while (it.hasNext()) {
@@ -2873,7 +2884,7 @@ public abstract class Object3D {
             bf.write("type=\t" + type + "\n");
         }
         // value
-        bf.write("value=\t"+value+"\n");
+        bf.write("value=\t" + value + "\n");
     }
 
     protected String loadInfo(BufferedReader bf) throws IOException {
@@ -2895,8 +2906,10 @@ public abstract class Object3D {
             } else if (data.startsWith("value=")) {
                 coord = data.split("\t");
                 value = Integer.parseInt(coord[1]);
-            } 
-            else {
+                if (value == 0) {
+                    value = 1;
+                }
+            } else {
                 break;
             }
             data = bf.readLine();
@@ -2905,7 +2918,6 @@ public abstract class Object3D {
     }
 
     // code copied from ImageJ 3D Viewer MCTriangulator
-
     /**
      *
      * @param calibrated

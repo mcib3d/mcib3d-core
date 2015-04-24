@@ -1048,9 +1048,9 @@ public class Object3DSurface extends Object3D {
             if (!vertices.contains(P)) {
                 vertices.add(P);
                 int p = vertices.indexOf(P);
-                if (p == 50) {
-                    IJ.log(P + " new " + p + " " + i);
-                }
+//                if (p == 50) {
+//                    IJ.log(P + " new " + p + " " + i);
+//                }
                 ArrayList list = new ArrayList();
                 list.add(i);
                 vefa[p] = list;
@@ -1058,9 +1058,9 @@ public class Object3DSurface extends Object3D {
             } else {
 
                 int p = vertices.indexOf(P);
-                if (p == 50) {
-                    IJ.log(P + " already " + p + " " + i);
-                }
+//                if (p == 50) {
+//                    IJ.log(P + " already " + p + " " + i);
+//                }
                 vefa[p].add(i);
                 faces_vertices_index.add(i, p);
             }

@@ -4,6 +4,7 @@
  */
 package mcib3d.geom;
 
+import ij.IJ;
 import ij.measure.ResultsTable;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -107,7 +108,7 @@ public class MereoAnalysis {
         boolean[] checkedObject = new boolean[popB.getNbObjects()];
         int nbA = popA.getNbObjects();
         for (int a = 0; a < nbA; a++) {
-            //IJ.log("Processing object A" + a);
+            IJ.log("Processing object A" + a);
             for (int o = 0; o < popB.getNbObjects(); o++) {
                 checkedObject[o] = false;
                 relationships[a][o] = MereoObject3D.DC;
