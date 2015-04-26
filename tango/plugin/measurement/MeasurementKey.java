@@ -98,14 +98,14 @@ public class MeasurementKey implements Comparable<MeasurementKey>{
         return false;
     }
     
-    public boolean includeO2O(Object other) { // two first structures of this object are included in other
+    public boolean includeO2O(Object other) { // two first structures of this object are included in Object other
         if (structures.length==0) return false;
         if (other instanceof MeasurementKey) {
             MeasurementKey mk = (MeasurementKey)other;
             if (type==mk.type) {
                 if (mk.count==null) mk.computeCount();
                 int s2 = structures.length>1? structures[1] : structures[0];
-                if (mk.count.length>this.structures[0] && mk.count.length>=s2) {
+                if (mk.count.length>this.structures[0] && mk.count.length>s2) {
                     return mk.count[this.structures[0]]>0 && mk.count[s2]>0;
                 }
             }

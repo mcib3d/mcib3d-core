@@ -100,6 +100,8 @@ public class Cell implements StructureContainer, Comparable<Cell> { //ObjectStru
     public ImageIcon getThumbnail(int structure) {
         if (structure<0) return null;
         int file = xp.getChannelFileIndex(structure);
+        //IJ.log("get TB: structure:"+structure+" file:"+file);
+        if (file<0) return null;
         if (thumbnails[file]==null) thumbnails[file]=mc.getChannelThumbnail(id, file);
         return thumbnails[file];
     }

@@ -134,7 +134,7 @@ public class Shuffle_3D implements Sampler {
         population = new Objects3DPopulation(spotPlus);
         Object3D mask = new Object3DVoxels(maskPlus, 1);
         population.setMask(mask);
-        population.shuffle(0, null);
+        //population.shuffle(0, null);
         draw = spotPlus.createSameDimensions();
         population.draw(draw);
     }

@@ -138,7 +138,10 @@ public class Experiment {
             }
         }
         fileRank = new int[structures.size()];
-        for (int i = 0; i<structures.size(); i++) fileRank[i]=structureSettings[i].getInt("file", 0);
+        for (int i = 0; i<structures.size(); i++) {
+            fileRank[i]=structureSettings[i].getInt("file", 0);
+            if (fileRank[i]==-1) ij.IJ.log("Experiment configuration error: structure:"+i+" not associated to a channel image");
+        }
         ChannelFileParameter.setChannels(fileKeyword);
         StructureParameter.setStructures(this.getStructureNames(false), this.getVirtualStructureNames());
         SamplerParameter.setChannels(this.getSampleChannelNames());

@@ -14,16 +14,22 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import loci.common.services.DependencyException;
+import loci.common.services.ServiceException;
+import loci.common.services.ServiceFactory;
 import loci.formats.ChannelSeparator;
 import loci.formats.FormatException;
-import loci.plugins.BF;
-import loci.plugins.in.ImagePlusReader;
-import loci.plugins.in.ImportProcess;
-import loci.plugins.in.ImporterOptions;
+import loci.formats.meta.IMetadata;
+import loci.formats.services.OMEXMLService;
 import loci.plugins.util.ImageProcessorReader;
 import loci.plugins.util.LociPrefs;
 import mcib3d.image3d.ImageHandler;
-import mcib3d.utils.exceptionPrinter;
+import ome.units.quantity.Length;
+import ome.xml.meta.MetadataRetrieve;
+import ome.xml.model.primitives.PositiveFloat;
 
 /**
  *
@@ -34,6 +40,22 @@ public class ImageOpener {
     public static ImageHandler OpenChannel(File file, int channel, int seriesNumber, int timePoint) {
             ImageHandler res = null;
             ImageProcessorReader r = new ImageProcessorReader(new ChannelSeparator(LociPrefs.makeImageReader()));
+            
+            ServiceFactory factory;
+            IMetadata meta=null;
+            try {
+                factory = new ServiceFactory();
+                OMEXMLService service = factory.getInstance(OMEXMLService.class);
+                try {
+                    meta = service.createOMEXMLMetadata();
+                    r.setMetadataStore(meta);
+                } catch (ServiceException ex) {
+                    Logger.getLogger(ImageOpener.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } catch (DependencyException ex) {
+                Logger.getLogger(ImageOpener.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
             try {
                 //IJ.log("Examining file " + file.getName());
                 r.setId(file.getAbsolutePath());
@@ -47,9 +69,23 @@ public class ImageOpener {
                     ImageProcessor ip = r.openProcessors(r.getIndex(z, channel, timePoint))[0];
                     stack.addSlice("" + (z + 1), ip);
                 }
-                r.close();
                 res = ImageHandler.wrap(stack);
                 res.setGraysLut();
+                
+                //MetadataRetrieve meta=(MetadataRetrieve)r.getMetadataStore();
+                if (meta!=null) {
+                    Length xy=meta.getPixelsPhysicalSizeX(0);
+                    Length z=meta.getPixelsPhysicalSizeZ(0);
+                    
+                    if (xy!=null && z!=null) {
+                        //ij.IJ.log("calibration: xy"+ xy.value()+" z:"+z.value()+ "  units:"+xy.unit().getSymbol());
+                        res.setScale((Double)xy.value(), (Double)z.value(), xy.unit().getSymbol());
+                    } else ij.IJ.log("no calibration found");
+                }
+                r.close();
+                
+                
+                
             }
             catch (FormatException exc) {
                 IJ.log("An error occurred while opering image: "+file.getName()+ " channel:"+channel+" t:"+timePoint+" s:"+seriesNumber + exc.getMessage());
