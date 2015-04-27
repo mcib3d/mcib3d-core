@@ -2033,9 +2033,9 @@ public abstract class Object3D {
         int ozmin = autre.getZmin();
         int ozmax = autre.getZmax();
 
-        boolean intersectX = ((xmax > oxmin) && (oxmax > xmin));
-        boolean intersectY = ((ymax > oymin) && (oymax > ymin));
-        boolean intersectZ = ((zmax > ozmin) && (ozmax > zmin));
+        boolean intersectX = ((xmax >= oxmin) && (oxmax >= xmin));
+        boolean intersectY = ((ymax >= oymin) && (oymax >= ymin));
+        boolean intersectZ = ((zmax >= ozmin) && (ozmax >= zmin));
 
         return (intersectX && intersectY && intersectZ);
     }

@@ -996,9 +996,9 @@ public class Object3DVoxels extends Object3D {
     public int getColoc(Object3D obj) {
         // test box
         if (this.disjointBox(obj)) {
-            //IJ.log("coloc disjoint box");
-            //IJ.log(""+xmin+"-"+xmax+"  "+ymin+"-"+ymax+"  "+zmin+"-"+zmax);
-            // IJ.log(""+obj.xmin+"-"+obj.xmax+"  "+obj.ymin+"-"+obj.ymax+"  "+obj.zmin+"-"+obj.zmax);
+//            IJ.log("coloc disjoint box");
+//            IJ.log(""+xmin+"-"+xmax+"  "+ymin+"-"+ymax+"  "+zmin+"-"+zmax);
+//            IJ.log(""+obj.xmin+"-"+obj.xmax+"  "+obj.ymin+"-"+obj.ymax+"  "+obj.zmin+"-"+obj.zmax);
             return 0;
         }
         // if labels images for both objects, use them
