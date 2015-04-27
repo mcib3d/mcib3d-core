@@ -1258,7 +1258,7 @@ public class Object3DVoxels extends Object3D {
             while ((ok) && (i < nb)) {
                 ok = false;
                 Object3DVoxels ob3 = objs.get(i);
-                if (!obInter.intersectionBox(ob3)) {
+                if (!obInter.overlapBox(ob3)) {
                     cpt = 0;
                 } else {
                     if (obInter.pcColoc(ob3) > 0) {
