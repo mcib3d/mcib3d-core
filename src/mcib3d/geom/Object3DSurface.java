@@ -2154,4 +2154,24 @@ public class Object3DSurface extends Object3D {
         vector.setSize(idx);
         return vector;
     }
+
+    @Override
+    public ArrayUtil listValues(ImageHandler ima, float thresh) {
+        ArrayUtil vector = new ArrayUtil(this.getVolumePixels());
+        float pixvalue;
+        int idx = 0;
+
+        for (Voxel3D pixel : voxels) {
+            if (ima.contains(pixel)) {
+                pixvalue = ima.getPixel(pixel);
+                if (pixvalue > thresh) {
+                    vector.addValue(idx, pixvalue);
+                    idx++;
+                }
+            }
+        }
+        vector.setSize(idx);
+        return vector;
+    }
+
 }

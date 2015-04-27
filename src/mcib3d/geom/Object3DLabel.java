@@ -1053,6 +1053,42 @@ public class Object3DLabel extends Object3D {
     }
 
     @Override
+    public ArrayUtil listValues(ImageHandler ima, float thresh) {
+        ArrayUtil list = new ArrayUtil(this.getVolumePixels());
+        float pixel;
+        int xmin0;
+        int ymin0;
+        int zmin0;
+        int xmax0;
+        int ymax0;
+        int zmax0;
+
+        xmin0 = getXmin();
+        ymin0 = getYmin();
+        zmin0 = getZmin();
+        xmax0 = getXmax();
+        ymax0 = getYmax();
+        zmax0 = getZmax();
+
+        int idx = 0;
+        for (int k = zmin0; k <= zmax0; k++) {
+            for (int j = ymin0; j <= ymax0; j++) {
+                for (int i = xmin0; i <= xmax0; i++) {
+                    if (labelImage.getPixel(i, j, k) == value) {
+                        pixel = ima.getPixel(i, j, k);
+                        if (pixel > thresh) {
+                            list.putValue(idx, pixel);
+                            idx++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return list;
+    }
+
+    @Override
     public void draw(ImageHandler mask, int col, int tx, int ty, int tz) {
         for (int z = zmin; z <= zmax; z++) {
             for (int x = xmin; x <= xmax; x++) {

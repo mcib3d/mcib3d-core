@@ -996,12 +996,14 @@ public class Object3DVoxels extends Object3D {
     public int getColoc(Object3D obj) {
         // test box
         if (this.disjointBox(obj)) {
-            //IJ.log("coloc disjoint box");
+            IJ.log("coloc disjoint box");
+            IJ.log(""+xmin+"-"+xmax+"  "+ymin+"-"+ymax+"  "+zmin+"-"+zmax);
+             IJ.log(""+obj.xmin+"-"+obj.xmax+"  "+obj.ymin+"-"+obj.ymax+"  "+obj.zmin+"-"+obj.zmax);
             return 0;
         }
         // if labels images for both objects, use them
         if ((this.getLabelImage() != null) || (obj.getLabelImage() != null)) {
-            //IJ.log("coloc image");                    
+            IJ.log("coloc image");                    
             return getColocImage(obj);
         }
 
@@ -1009,10 +1011,10 @@ public class Object3DVoxels extends Object3D {
         int thres = 100;
         // if one object has size > threshold use images else use voxels
         if ((this.getVolumePixels() > thres) && (obj.getVolumePixels() > thres)) {
-            //IJ.log("Using coloc image");            
+            IJ.log("Using coloc image");            
             return getColocImage(obj);
         } else {
-            //IJ.log("Using coloc voxels");
+            IJ.log("Using coloc voxels");
             return getColocVoxels(obj);
         }
 
@@ -1734,5 +1736,32 @@ public class Object3DVoxels extends Object3D {
         list.setSize(idx);
 
         return list;
+    }
+
+    @Override
+    public ArrayUtil listValues(ImageHandler ima, float thresh) {
+        ArrayUtil list = new ArrayUtil(this.getVolumePixels());
+        Voxel3D voxel;
+
+        Iterator<Voxel3D> it = voxels.iterator();
+        int idx = 0;
+        while (it.hasNext()) {
+            voxel = it.next();
+            if (ima.contains(voxel.getX(), voxel.getY(), voxel.getZ())) {
+                float pix = ima.getPixel(voxel);
+                if (pix > thresh) {
+                    list.putValue(idx, ima.getPixel(voxel));
+                    idx++;
+                }
+            }
+        }
+        list.setSize(idx);
+
+        return list;
+    }
+
+    public double getPixMedianValue(ImageHandler img) {
+        ArrayUtil tab = this.listValues(img);
+        return tab.median();
     }
 }

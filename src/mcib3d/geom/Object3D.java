@@ -687,7 +687,8 @@ public abstract class Object3D {
     }
 
     public abstract ArrayUtil listValues(ImageHandler ima);
-   
+
+    public abstract ArrayUtil listValues(ImageHandler ima, float thresh);
 
     /**
      * List voxels in the image with values > threshold
@@ -2032,11 +2033,11 @@ public abstract class Object3D {
         int ozmin = autre.getZmin();
         int ozmax = autre.getZmax();
 
-        if (insideBounding(oxmin, oymin, ozmin) || insideBounding(oxmin, oymax, ozmin) || insideBounding(oxmax, oymin, ozmin) || insideBounding(oxmax, oymax, ozmin) || insideBounding(oxmin, oymin, ozmax) || insideBounding(oxmin, oymax, ozmax) || insideBounding(oxmax, oymin, ozmax) || insideBounding(oxmax, oymax, ozmax)) {
-            return true;
-        } else {
-            return false;
-        }
+        boolean intersectX = ((xmax > oxmin) && (oxmax > xmin));
+        boolean intersectY = ((ymax > oymin) && (oymax > ymin));
+        boolean intersectZ = ((zmax > ozmin) && (ozmax > zmin));
+
+        return (intersectX && intersectY && intersectZ);
     }
 
     /**
