@@ -2,6 +2,7 @@ package tango.plugin.sampler;
 
 import ij.IJ;
 import ij.ImagePlus;
+import java.util.ArrayList;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Objects3DPopulation;
@@ -9,7 +10,8 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import tango.dataStructure.InputCellImages;
 import tango.dataStructure.SegmentedCellImages;
-import tango.parameter.*;
+import tango.parameter.Parameter;
+import tango.parameter.StructureParameter;
 
 /*
  * To change this template, choose Tools | Templates and open the template in
@@ -59,6 +61,8 @@ public class Shuffle_3D implements Sampler {
     Parameter[] parameters = {channelMask, channelObjects};
     Objects3DPopulation population;
     ImageHandler draw = null;
+    
+    ArrayList<Object3D> shu;
 
     boolean verbose;
     int nbCPUs = 1;
@@ -134,9 +138,11 @@ public class Shuffle_3D implements Sampler {
         population = new Objects3DPopulation(spotPlus);
         Object3D mask = new Object3DVoxels(maskPlus, 1);
         population.setMask(mask);
-        //population.shuffle(0, null);
+        shu=population.shuffle();
         draw = spotPlus.createSameDimensions();
-        population.draw(draw);
+        for(Object3D O:shu){
+            O.draw(draw);
+        }
     }
 
     @Override
@@ -146,7 +152,7 @@ public class Shuffle_3D implements Sampler {
 
     @Override
     public String getHelp() {
-        return "Shuffle the objects positions. One object will be located at another object location. ";
+        return "Shuffle the objects positions.";
     }
 
     @Override
