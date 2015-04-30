@@ -72,8 +72,7 @@ public class VirtualStructurePanel extends ParameterPanel {
         structures = new MultiParameter("Structures:", "structures", defaultParams, 2, 3, 2);
         structures.setHelp("The different real structure to compute colocalised spots", true);
         ij3d = new IJ3dViewerParameters(false);
-        Parameter[] colocParameters = new Parameter[]{outputType, outputStructure, pcColoc, structures};
-        cond.setCondition(VirtualStructure.methods[1], colocParameters);
+        
         
         // constant number
         objectNumber = new IntParameter("Object Number", "objectNumber", 46);
@@ -83,7 +82,13 @@ public class VirtualStructurePanel extends ParameterPanel {
         // cluster
         clusterThreshold = new DoubleParameter("Contact Thresdhold:", "contactThld", 0.11d, Parameter.nfDEC5);
         inputStructureCluster = new StructureParameter("Mediating Structure:", "mediatingStructure", -1, false);
-        cond.setCondition(VirtualStructure.methods[2], new Parameter[]{inputStructure, inputStructureCluster, clusterThreshold});
+        cond.setCondition(VirtualStructure.methods[1], new Parameter[]{inputStructure, inputStructureCluster, clusterThreshold});
+        
+        //coloc
+        if (VirtualStructure.methods.length>2) {
+            Parameter[] colocParameters = new Parameter[]{outputType, outputStructure, pcColoc, structures};
+            cond.setCondition(VirtualStructure.methods[2], colocParameters);
+        }
         
         parameters = new Parameter[]{name, color, cond, ij3d.getParameter()};
     }

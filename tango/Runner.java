@@ -59,6 +59,7 @@ public class Runner implements PlugIn {
         System.out.println("Welcome to TANGO v"+Core.VERSION+" shell");
         PluginFactory.findPlugins();
         String host = prompt("Enter hostname:");
+        if ("EXIT".equals(host)) return;
         if ("".equals(host)) host = "localhost";
         Core.mongoConnector = new MongoConnector(host);
         boolean connected = Core.mongoConnector.isConnected();
@@ -71,11 +72,15 @@ public class Runner implements PlugIn {
         }
         if (connected) {
             String user = prompt("Enter username:");
+            if ("EXIT".equals(user)) return;
             boolean userSet = Core.mongoConnector.setUser(user, false)!=null;
             if (userSet) {
                 while(!parseGeneralCommand()){};
             } else System.out.println("unknown user");
-        } else System.out.println("Could'nt connect to db ...");
+        } else {
+            System.out.println("Could'nt connect to db ...");
+            return;
+        }
         
         
         

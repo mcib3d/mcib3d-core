@@ -584,13 +584,18 @@ public class FieldManager implements ListSelectionListener {
                     Field field = (Field) fields[i];
                     field.setVerbose(false);
                     field.hide();
+                    boolean goOnCrop = true;
                     try {
                         tags[i] = field.processNucleus();
                         field.saveOutput();
+                        System.out.println("output saved!"); //TODO : si on commente cette ligne, process + crop se bloque: comprendre pourquoi!
                     } catch (Exception e) {
                         exceptionPrinter.print(e, "process field error: " + field.getName(), Core.GUIMode);
+                        goOnCrop = false;
                     }
-                    if (crop) {
+                    //System.out.println("process done.");
+                    if (crop && goOnCrop) {
+                        //System.out.println("cropping...");
                         if (Core.GUIMode) {
                             Core.getProgressor().setAction("Cropping field");
                         }

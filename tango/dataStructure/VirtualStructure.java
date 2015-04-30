@@ -40,8 +40,8 @@ import tango.parameter.StructureParameter;
  */
 
 public abstract class VirtualStructure extends Structure {
-    public final static String[] methodsCurrent = new String[]{}; //"Post-Processing Chain"
-    public final static String[] methodsTesting = new String[]{"Constant Object Number", "Object Colocalization", "Cluster"}; //"Post-Processing Chain", 
+    public final static String[] methodsCurrent = new String[]{"Constant Object Number", "Cluster"}; //"Post-Processing Chain"
+    public final static String[] methodsTesting = new String[]{"Constant Object Number", "Cluster", "Object Colocalization"}; //"Post-Processing Chain", 
     public static String[] methods = (Core.TESTING) ? methodsTesting:methodsCurrent;
     public VirtualStructure(String title, int idx, Cell cell) {
         super(title, idx, cell);

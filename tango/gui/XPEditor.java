@@ -345,7 +345,7 @@ public class XPEditor extends javax.swing.JPanel implements PanelDisplayer {
         }
         if (!enable) editTab.setComponentAt(editTab.getSelectedIndex(), new JPanel());
         if (!Core.SPATIALSTATS) editTab.setEnabledAt(4, false);
-        if (!Core.TESTING) editTab.setEnabledAt(2, false); //virtual structures
+        if (!Core.VIRTUALSTRUCTURES) editTab.setEnabledAt(2, false); //virtual structures
     }
     
 

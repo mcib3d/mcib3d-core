@@ -417,7 +417,10 @@ public class ObjectManager implements ListSelectionListener, AdjustmentListener,
             tts.setup("", im);
             tts.run(im.getProcessor());
             Roi r = im.getRoi();
-            if (r!=null) currentROIs.put(i,r);
+            if (r!=null) {
+                r.setStrokeColor(Connector.getRoiColor());
+                currentROIs.put(i,r);
+            }
         }
         updateRoi();
     }

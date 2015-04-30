@@ -270,26 +270,29 @@ public class Field implements ObjectStructure, StructureContainer {
         return input;
     }
 
-    public int[] processNucleus() {
-        try {
+    public int[] processNucleus() throws Exception {
+        //try {
             System.gc();
+            //System.out.println("pre-filtering... ");
             ImageHandler in = inputImages.getFilteredImage(0);
             if (this.verbose) in.showDuplicate("pre Filtered image");
             NucleusSegmenterRunner nsr = xp.getNucleusSegmenterRunner(nbCPUs, verbose);
+            //System.out.println("segmenting... " + in.getTitle());
             segmented = nsr.run(0, in, inputImages);
             if (segmented == null) return null;
-            IJ.log("segmenting... " + segmented.getTitle());
             segmented.setTitle(in.getTitle() + "_masks");
             segmented.set332RGBLut();
             segmented.setScale(in);
             if (this.verbose) segmented.showDuplicate("Segmented image");
+            //System.out.println("post-filtering... " + segmented.getTitle());
             segmented = postFilterStructure(segmented, 0);
             if (this.verbose) segmented.showDuplicate("Post-Filtered image");
+            //System.out.println(segmented.getTitle()+" processed!");
             return null; //return nsr.getTags();
-        } catch (Exception e) {
-            exceptionPrinter.print(e, "", Core.GUIMode);
-        }
-        return null;
+        //} catch (Exception e) {
+        //    exceptionPrinter.print(e, "", Core.GUIMode);
+        //}
+        //return null;
     }
     
     public void testProcess(int step, int subStep) {
@@ -359,9 +362,9 @@ public class Field implements ObjectStructure, StructureContainer {
         return change;
     }
     
-    public void cropCells(int[] tags) { 
+    public void cropCells(int[] tags) throws Exception { 
         deleteCells();
-        try {
+        //try {
             ImageInt in=this.getSegmented();
             ImageInt[] masks = in.crop3DBinary();
             ObjectId[] cellIds = new ObjectId[masks.length];
@@ -402,9 +405,9 @@ public class Field implements ObjectStructure, StructureContainer {
                     masks[j].closeImagePlus();
                 }
             }
-        } catch (Exception e) {
-            exceptionPrinter.print(e, "", Core.GUIMode);
-        }
+        //} catch (Exception e) {
+        //    exceptionPrinter.print(e, "", Core.GUIMode);
+        //}
     }
 
     public final void createCells() {
