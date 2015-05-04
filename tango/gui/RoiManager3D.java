@@ -3,6 +3,7 @@ package tango.gui;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
+import java.awt.Color;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseWheelEvent;
@@ -129,7 +130,8 @@ public class RoiManager3D extends javax.swing.JPanel implements ListSelectionLis
         if (currentImage==null || !currentImage.isVisible() || currentImage.getNSlices()!=nbSlices || populatingObjects) return;
         Object o = listModel.get(currentImage.getSlice()-1);
         if (o!=null) {
-            currentImage.setRoi((Roi)o);
+            //Roi r = (Roi)o;
+            currentImage.setRoi(((Roi)o));
         } else {
             currentImage.killRoi();
         }

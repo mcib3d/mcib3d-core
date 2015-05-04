@@ -232,6 +232,7 @@ public class Experiment {
     }
     
     public int getChannelFileIndex(int structureIdx) {
+        if (structureIdx>=this.getNBStructures(false)) return -1; // virtual structures
         return this.fileRank[structureIdx];
     }
     
