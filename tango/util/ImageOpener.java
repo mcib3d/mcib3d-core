@@ -6,15 +6,10 @@
 package tango.util;
 
 import ij.IJ;
-import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ImageProcessor;
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import loci.common.services.DependencyException;
@@ -28,8 +23,6 @@ import loci.plugins.util.ImageProcessorReader;
 import loci.plugins.util.LociPrefs;
 import mcib3d.image3d.ImageHandler;
 import ome.units.quantity.Length;
-import ome.xml.meta.MetadataRetrieve;
-import ome.xml.model.primitives.PositiveFloat;
 
 /**
  *
