@@ -1308,8 +1308,8 @@ public abstract class ImageHandler {
         }
         ContrastEnhancer ch = new ContrastEnhancer();
         //ch.setNormalize(true);
-        //ch.stretchHistogram(im, 0.5);
-        ch.equalize(im);
+        //ch.stretchHistogram(im, 0.5);        
+        if(im.getBitDepth()<32) ch.equalize(im);
         ImageProcessor ip = im.getProcessor().resize(sizeX, sizeY, true);
         if (imMask!=null) ip.setMask(imMask);
         ip = ip.convertToByte(true);

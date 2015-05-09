@@ -38,7 +38,7 @@ public class AssociationRegion {
 
     public AssociationRegion() {
         association = new ArrayList();
-    }
+    }  
 
     public void addRegion(int region) {
         if (association.contains(region)) {
@@ -57,7 +57,7 @@ public class AssociationRegion {
                 association.add(i, region);
             }
         }
-    }
+    }    
 
     public void addAssociation(AssociationRegion asso) {
         for (int r : asso.getList()) {
@@ -112,6 +112,10 @@ public class AssociationRegion {
 
     public int getFirst() {
         return association.get(0);
+    }
+    
+    public int getRegion(int i){
+        return association.get(i);
     }
 
     public boolean equals(AssociationRegion other) {

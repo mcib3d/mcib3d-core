@@ -998,7 +998,9 @@ public class Object3DVoxels extends Object3D {
     public int getColoc(Object3D obj) {
         // test box
         if (this.disjointBox(obj)) {
-            //IJ.log("coloc disjoint box");
+//            IJ.log("coloc disjoint box");
+//            IJ.log(""+xmin+"-"+xmax+"  "+ymin+"-"+ymax+"  "+zmin+"-"+zmax);
+//            IJ.log(""+obj.xmin+"-"+obj.xmax+"  "+obj.ymin+"-"+obj.ymax+"  "+obj.zmin+"-"+obj.zmax);
             return 0;
         }
         // if labels images for both objects, use them
@@ -1014,7 +1016,7 @@ public class Object3DVoxels extends Object3D {
             //IJ.log("Using coloc image");            
             return getColocImage(obj);
         } else {
-            //IJ.log("Using coloc voxels");
+            // IJ.log("Using coloc voxels");
             return getColocVoxels(obj);
         }
 
@@ -1258,7 +1260,7 @@ public class Object3DVoxels extends Object3D {
             while ((ok) && (i < nb)) {
                 ok = false;
                 Object3DVoxels ob3 = objs.get(i);
-                if (!obInter.intersectionBox(ob3)) {
+                if (!obInter.overlapBox(ob3)) {
                     cpt = 0;
                 } else {
                     if (obInter.pcColoc(ob3) > 0) {
@@ -1738,6 +1740,25 @@ public class Object3DVoxels extends Object3D {
         return list;
     }
     
+    @Override
+    public ArrayUtil listValues(ImageHandler ima, float thresh) {
+        ArrayUtil list = new ArrayUtil(this.getVolumePixels());
+        Voxel3D voxel;
+
+        Iterator<Voxel3D> it = voxels.iterator();
+        int idx = 0;
+        while (it.hasNext()) {
+            voxel = it.next();
+            if (ima.contains(voxel.getX(), voxel.getY(), voxel.getZ()) && voxel.value>thresh) {
+                list.putValue(idx, ima.getPixel(voxel));
+                idx++;
+            }
+        }
+        list.setSize(idx);
+
+        return list;
+    }
+    
     public float[] getValueArray(ImageHandler im) {
         float[] res = new float[getVolumePixels()];
         int i = 0;
@@ -1777,5 +1798,10 @@ public class Object3DVoxels extends Object3D {
         res.setUnits(units);
         res.setLabelImage(dil);
         return res;
+    }
+    
+    public double getPixMedianValue(ImageHandler img) {
+        ArrayUtil tab = this.listValues(img);
+        return tab.median();
     }
 }

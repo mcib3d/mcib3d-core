@@ -4,9 +4,10 @@
  */
 package mcib3d.image3d.regionGrowing;
 
+import ij.IJ;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import mcib3d.image3d.ImageHandler;
 import mcib3d.utils.ArrayUtil;
 
 /**
@@ -43,9 +44,39 @@ public class AllRegionsAssociation {
     public AllRegionsAssociation() {
         list = new ArrayList<AssociationRegion>();
     }
+    
+    public AssociationRegion getAssociation(int i){
+        return list.get(i);
+    }
 
     public ArrayList<AssociationRegion> getListAssociation() {
         return list;
+    }
+
+    public void computeAllRegionsAssociationPairs(ImageHandler img, int BorderValue) {
+        list = new ArrayList<AssociationRegion>();
+
+        for (int z = 1; z < img.sizeZ - 1; z++) {
+            IJ.showStatus("Analysing " + z);
+            for (int x = 1; x < img.sizeX - 1; x++) {
+                for (int y = 1; y < img.sizeY - 1; y++) {
+                    if (((BorderValue >= 0) && (img.getPixel(x, y, z) == BorderValue)) || (BorderValue < 0)) {
+                        ArrayUtil tab = img.getNeighborhoodCross3D(x, y, z);
+                        int val = (int) img.getPixel(x, y, z);
+                        tab = tab.distinctValues();
+                        for (int i = 0; i < tab.getSize(); i++) {
+                            int val2 = tab.getValueInt(i);
+                            if (val2 != val) {
+                                AssociationRegion asso = new AssociationRegion();
+                                asso.addRegion(val);
+                                asso.addRegion(val2);
+                                this.addAssoRegion(asso);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public AllRegionsAssociation getSubListAssociation(ArrayList<Integer> subLabels) {
@@ -102,6 +133,15 @@ public class AllRegionsAssociation {
     public boolean contains(AssociationRegion asso) {
         for (AssociationRegion a : list) {
             if (a.equals(asso)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean contains(int region) {
+        for (AssociationRegion A : list) {
+            if (A.contains(region)) {
                 return true;
             }
         }
