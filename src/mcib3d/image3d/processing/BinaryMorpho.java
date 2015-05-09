@@ -69,9 +69,9 @@ public class BinaryMorpho {
             }
 
             // test rad <=1
-            if ((radius <= 1) && (radiusZ <= 1)) {
+            /*if ((radius <= 1) && (radiusZ <= 1)) {
                 return binaryOpenRad1(in, 1, nbCPUs);
-            }
+            }*/
 
             ImageFloat edm = EDT.run(in, 0, 1, radius / radiusZ, false, nbCPUs);
             ImageByte temp = edm.threshold(radius, false, true);
@@ -102,9 +102,9 @@ public class BinaryMorpho {
             }
 
             // test rad <=1
-            if ((radius <= 1) && (radiusZ <= 1)) {
+            /*if ((radius <= 1) && (radiusZ <= 1)) {
                 return binaryErodeRad1(in, 1, nbCPUs);
-            }
+            }*/
 
             ImageFloat edm = EDT.run(in, 0, 1, radius / radiusZ, false, nbCPUs);
             ImageByte temp = edm.threshold(radius, false, true);
@@ -175,9 +175,9 @@ public class BinaryMorpho {
                 nbCPUs = ThreadUtil.getNbCpus();
             }
             // test rad <=1
-            if ((radius <= 1) && (radiusZ <= 1)) {
+            /*if ((radius <= 1) && (radiusZ <= 1)) {
                 return binaryCloseRad1(in, 1, nbCPUs);
-            }
+            }*/
             // FIXME thresholdings > strict or not??
             int rad = (int) radius + 1;
             int radZ = (int) radiusZ + 1;
@@ -428,11 +428,12 @@ public class BinaryMorpho {
         ImageByte[] ihs = in.crop3DBinary();
         if (ihs != null) {
             for (int idx = 0; idx < ihs.length; idx++) {
-                if (radius <= 1 && radiusZ <= 1) {
+                /*if (radius <= 1 && radiusZ <= 1) {
                     ihs[idx] = BinaryMorpho.binaryOpenRad1(ihs[idx], 1, nbCPUs);
                 } else {
                     ihs[idx] = binaryOpen(ihs[idx], radius, radiusZ, nbCPUs);
-                }
+                }*/
+                ihs[idx] = binaryOpen(ihs[idx], radius, radiusZ, nbCPUs);
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
@@ -450,11 +451,12 @@ public class BinaryMorpho {
         if (ihs != null) {
             //ij.IJ.log("BinaryClose multilabel nb :"+ihs.length);
             for (int idx = 0; idx < ihs.length; idx++) {
-                if (radiusXY <= 1 && radiusZ <= 1) {
+                /*if (radiusXY <= 1 && radiusZ <= 1) {
                     ihs[idx] = BinaryMorpho.binaryCloseRad1(ihs[idx], 1, nbCPUs);
                 } else {
                     ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY, radiusZ, nbCPUs);
-                }
+                }*/
+                ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY, radiusZ, nbCPUs);
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
@@ -493,12 +495,13 @@ public class BinaryMorpho {
         if (ihs != null) {
             //ij.IJ.log("BinaryClose multilabel nb :"+ihs.length);
             for (int idx = 0; idx < ihs.length; idx++) {
-                if (radiusXY[idx] <= 1 && radiusZ[idx] <= 1) {
+                /*if (radiusXY[idx] <= 1 && radiusZ[idx] <= 1) {
                     // FIXME pb if dilate, only performs closing
                     ihs[idx] = BinaryMorpho.binaryCloseRad1(ihs[idx], 1, nbCPUs);
                 } else {
                     ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY[idx], radiusZ[idx], nbCPUs);
-                }
+                }*/
+                ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY[idx], radiusZ[idx], nbCPUs);
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
