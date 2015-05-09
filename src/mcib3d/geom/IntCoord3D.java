@@ -2,7 +2,7 @@ package mcib3d.geom;
 import java.util.ArrayList;
 
 public class IntCoord3D {
-    public int x, y, z, w;
+    public int x, y, z;
     public IntCoord3D() {
         this.x=0;
         this.y=0;

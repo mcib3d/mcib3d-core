@@ -22,11 +22,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import mcib3d.Jama.EigenvalueDecomposition;
 import mcib3d.Jama.Matrix;
+import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageLabeller;
 import mcib3d.image3d.ImageShort;
+import mcib3d.image3d.processing.BinaryMorpho;
 import mcib3d.image3d.processing.FillHoles3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
@@ -1734,5 +1736,46 @@ public class Object3DVoxels extends Object3D {
         list.setSize(idx);
 
         return list;
+    }
+    
+    public float[] getValueArray(ImageHandler im) {
+        float[] res = new float[getVolumePixels()];
+        int i = 0;
+        if (im instanceof ImageFloat) {
+            ImageFloat imf = (ImageFloat) im;
+            for (Voxel3D v : getVoxels()) res[i++] = imf.pixels[v.getRoundZ()][v.getXYCoord(imf.sizeX)];
+        } else if (im instanceof ImageShort) {
+            ImageShort imf = (ImageShort) im;
+            for (Voxel3D v : getVoxels()) res[i++] = imf.pixels[v.getRoundZ()][v.getXYCoord(imf.sizeX)]&0xffff;
+        } else if (im instanceof ImageByte) {
+            ImageByte imf = (ImageByte) im;
+            for (Voxel3D v : getVoxels()) res[i++] = imf.pixels[v.getRoundZ()][v.getXYCoord(imf.sizeX)]&0xff;
+        } else for (Voxel3D v : getVoxels()) res[i++] = im.getPixel(v);
+        return res;
+    }
+    
+    public Object3DVoxels dilate(float dilateSize, ImageInt mask, int nbCPUs) {
+        ImageInt oldMiniLabelImage = this.miniLabelImage;
+        ImageInt seg = this.createSegImageMini(1, 0);
+        float dilateSizeZ = (float) (dilateSize * this.resXY/this.resZ);
+        ImageInt dil = BinaryMorpho.binaryDilate(seg, dilateSize, dilateSizeZ , true, type);
+        ArrayList<Voxel3D> vox = new ArrayList<Voxel3D>();
+        for (int z = 0; z<dil.sizeZ; z++) {
+            for (int y = 0; y<dil.sizeY; y++) {
+                for (int x=0;x<dil.sizeX;x++) {
+                    int xy = x + y * dil.sizeX;
+                    if (dil.getPixelInt(xy, z)!=0) {
+                        if (mask==null || (mask.getPixel(xy, z)==0 || mask.getPixel(xy, z)==this.value)) vox.add(new Voxel3D(x+dil.offsetX, y+dil.offsetY, z+dil.offsetZ, value));
+                    }
+                }
+            }
+        }
+        this.miniLabelImage=oldMiniLabelImage;
+        Object3DVoxels res = new Object3DVoxels(vox);
+        res.setResXY(resXY);
+        res.setResZ(resZ);
+        res.setUnits(units);
+        res.setLabelImage(dil);
+        return res;
     }
 }
