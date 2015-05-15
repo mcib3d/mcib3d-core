@@ -442,6 +442,20 @@ public class Objects3DPopulation {
     public Object3D getObject(int i) {
         return objects.get(i);
     }
+    
+    public void setObject(int i, Object3D obj){  
+        // remove old name
+        Object3D old=objects.get(i);
+        hashName.remove(old.getName());
+        // set new object
+        obj.setCalibration(calibration);
+        objects.set(i, obj);      
+        hashName.put(obj.getName(), i);
+        // update kdtree if available // FIXME UPDATE kdtree
+        if (kdtree != null) {
+            createKDTreeCenters();
+        }        
+    }
 
     public Object3D getObjectByValue(int val) {
         Integer idxI = hashValue.get(val);

@@ -1626,7 +1626,7 @@ public abstract class Object3D {
      */
     private void computeFeret() {
         // TEST
-        IJ.log("Feret");
+        //IJ.log("Feret");
         double distmax = 0;
         double dist;
         double rx2 = resXY * resXY;
@@ -1636,7 +1636,7 @@ public abstract class Object3D {
         ArrayList cont = this.getContours();
 
         int s = cont.size();
-        IJ.log("Feret contour " + s);
+        //IJ.log("Feret contour " + s);
         for (int i = 0; i < s; i++) {
             p1 = (Voxel3D) cont.get(i);
             for (int j = i + 1; j < s; j++) {

@@ -4,21 +4,20 @@
  */
 package mcib3d.image3d;
 
-import mcib3d.image3d.regionGrowing.Watershed3D;
-import mcib3d.image3d.legacy.IntImage3D;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.gui.Plot;
 import ij.measure.CurveFitter;
-import mcib3d.utils.ArrayUtil;
 import java.util.ArrayList;
 import java.util.Iterator;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.distanceMap3d.EDT;
+import mcib3d.image3d.legacy.IntImage3D;
 import mcib3d.image3d.processing.FastFilters3D;
+import mcib3d.image3d.regionGrowing.Watershed3D;
+import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.ThreadUtil;
 
 /**
@@ -1016,11 +1015,13 @@ public class Segment3DSpots {
             int cpus = ThreadUtil.getNbCpus();
             // FIXME variable multithread
             ImageFloat edt3d = EDT.run(seg, 1f, false, cpus);
+            // 3D filtering of the edt t oremove small local maxima
+            edt3d=FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
             //edt3d.showDuplicate("edt");
 
-            ImageStack localMax = FastFilters3D.filterFloatImageStack(edt3d.getImageStack(), FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
-            ImageFloat maxlocal3d = new ImageFloat(localMax);
-            //new ImagePlus("max", maxlocal3d.getStack()).show();
+            //ImageStack localMax = FastFilters3D.filterFloatImageStack(edt3d.getImageStack(), FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
+            ImageFloat maxlocal3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
+            //maxlocal3d.show("max local");
             ArrayList<Voxel3D> locals = obj.listVoxels(maxlocal3d, 0);
 
             int nb = locals.size();
@@ -1108,7 +1109,7 @@ public class Segment3DSpots {
             }
             // check minimal distances
             double distPP = PP1.distance(PP2);
-            IJ.log("Centers found PP1=" + PP1 + " PP2=" + PP2 + " distance " + distPP);
+            IJ.log("Centers found for split PP1=" + PP1 + " PP2=" + PP2 + " distance " + distPP);
             if (distPP < dist) {
                 return null;
             }
