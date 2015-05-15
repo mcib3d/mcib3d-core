@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -1163,6 +1164,7 @@ public class Objects3DPopulation {
         int maxr = 1000;
         Object3DVoxels mav = mask.getObject3DVoxels();
         ImageInt label2 = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
+        Random ra = new Random();
         for (int i = 0; i < si; i++) {
             boolean ok = false;
             Object3D obj = this.getObject((int) idx.getValue(i));
@@ -1172,7 +1174,7 @@ public class Objects3DPopulation {
             while ((!ok) && (c < maxr)) {
                 ok = true;
                 c++;
-                Voxel3D test = mav.getRandomvoxel();
+                Voxel3D test = mav.getRandomvoxel(ra);
                 Vtest.draw(labelTest, 0);
                 Vtest.setNewCenter(test.getX(), test.getY(), test.getZ());
                 Vtest.draw(labelTest);

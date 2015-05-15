@@ -1397,11 +1397,10 @@ public class Object3DVoxels extends Object3D {
         return voxels.get(0);
     }
 
-    public Voxel3D getRandomvoxel() {
+    public Voxel3D getRandomvoxel(Random ra) {
         if (isEmpty()) {
             return null;
         }
-        Random ra = new Random();
         return voxels.get(ra.nextInt(getVolumePixels()));
     }
 
@@ -1749,9 +1748,13 @@ public class Object3DVoxels extends Object3D {
         int idx = 0;
         while (it.hasNext()) {
             voxel = it.next();
-            if (ima.contains(voxel.getX(), voxel.getY(), voxel.getZ()) && voxel.value>thresh) {
-                list.putValue(idx, ima.getPixel(voxel));
-                idx++;
+            if (ima.contains(voxel.getX(), voxel.getY(), voxel.getZ())) {
+                float pix = ima.getPixel(voxel);
+                if (pix>thresh) {
+                    list.putValue(idx, pix);
+                    idx++;
+                }
+                
             }
         }
         list.setSize(idx);
