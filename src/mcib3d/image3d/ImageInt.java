@@ -242,6 +242,22 @@ public abstract class ImageInt extends ImageHandler {
         }
         return null;
     }
+    
+    public Object3DVoxels getObjectMask() {
+        ArrayList<Voxel3D> vox = new ArrayList<Voxel3D>();
+        for (int z = 0; z<sizeZ; z++) {
+            for (int y = 0; y<sizeY; y++) {
+                for (int x = 0; x<sizeX; x++) {
+                    if (this.getPixel(x, y, z)!=0) vox.add(new Voxel3D(x, y, z, 1f));
+                }
+            }
+        }
+        Object3DVoxels obj =  new Object3DVoxels(vox);
+        obj.setResXY(this.getScaleXY());
+        obj.setResZ(this.getScaleZ());
+        obj.setLabelImage(this);
+        return obj;
+    }
 
     public Objects3DPopulation getObjects3DPopulation() {
         // build new population

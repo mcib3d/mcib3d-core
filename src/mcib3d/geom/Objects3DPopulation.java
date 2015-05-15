@@ -1177,13 +1177,19 @@ public class Objects3DPopulation {
 
         int maxr = 1000;
         Object3DVoxels mav = mask.getObject3DVoxels();
+        if (mav.isEmpty()) {
+            IJ.log("Could'nt shuffle, mask is empty");
+            return null;
+        }
         ImageInt label2 = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
         Random ra = new Random();
         for (int i = 0; i < si; i++) {
             boolean ok = false;
-            Object3D obj = this.getObject((int) idx.getValue(i));
+            int objIdx = (int) idx.getValue(i);
+            Object3D obj = this.getObject(objIdx);
             c = 0;
             Object3DVoxels Vtest = new Object3DVoxels(obj);
+
             ImageInt labelTest = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
             while ((!ok) && (c < maxr)) {
                 ok = true;
@@ -1210,7 +1216,7 @@ public class Objects3DPopulation {
                 IJ.log("Could not shuffle " + obj + " " + i + " " + idx.getValue(i));
             } else {
                 shuObj.add(Vtest);
-                Vtest.draw(label2);
+                Vtest.draw(label2); 
                 Vtest.setLabelImage(label2);
             }
         }
