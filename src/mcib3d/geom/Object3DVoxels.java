@@ -1784,12 +1784,15 @@ public class Object3DVoxels extends Object3D {
         float dilateSizeZ = (float) (dilateSize * this.resXY/this.resZ);
         ImageInt dil = BinaryMorpho.binaryDilate(seg, dilateSize, dilateSizeZ , true, type);
         ArrayList<Voxel3D> vox = new ArrayList<Voxel3D>();
+        int xx, yy, zz;
         for (int z = 0; z<dil.sizeZ; z++) {
             for (int y = 0; y<dil.sizeY; y++) {
                 for (int x=0;x<dil.sizeX;x++) {
-                    int xy = x + y * dil.sizeX;
-                    if (dil.getPixelInt(xy, z)!=0) {
-                        if (mask==null || (mask.getPixel(xy, z)==0 || mask.getPixel(xy, z)==this.value)) vox.add(new Voxel3D(x+dil.offsetX, y+dil.offsetY, z+dil.offsetZ, value));
+                    if (dil.getPixelInt(x, y, z)!=0) {
+                        xx = x+dil.offsetX;
+                        yy = y+dil.offsetY;
+                        zz = z+dil.offsetZ;
+                        if (mask==null || ( mask.contains(xx, yy, zz) && (mask.getPixel(xx, yy, zz)==0 || mask.getPixel(xx, yy, zz)==this.value))) vox.add(new Voxel3D(xx, yy, zz, value));
                     }
                 }
             }
@@ -1799,7 +1802,7 @@ public class Object3DVoxels extends Object3D {
         res.setResXY(resXY);
         res.setResZ(resZ);
         res.setUnits(units);
-        res.setLabelImage(dil);
+        //res.setLabelImage(dil);
         return res;
     }
     

@@ -29,7 +29,7 @@ public class Voxel3D extends Point3D implements Comparable<Voxel3D> {
     /**
      * Description of the Field
      */
-    double value;
+    public double value;
 
     /**
      * constructeurs
@@ -190,7 +190,7 @@ public class Voxel3D extends Point3D implements Comparable<Voxel3D> {
         //consitancy with equals method
         if (v.x == x && v.y == y && v.z == z) {
             return 0;
-        } // decreasing intensities
+        } // decreasing order
         else if (value < v.value) {
             return 1;
         } else if (value > v.value) {

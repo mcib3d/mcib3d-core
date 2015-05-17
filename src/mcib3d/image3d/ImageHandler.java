@@ -2,6 +2,7 @@ package mcib3d.image3d;
 
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.gui.ImageCanvas;
 import ij.io.FileInfo;
 import ij.io.FileSaver;
 import ij.io.Opener;
@@ -53,7 +54,7 @@ import mcib3d.utils.exceptionPrinter;
  * @author Thomas Boudier
  */
 public abstract class ImageHandler {
-
+    public static double defZoomFactor=1d;
     public int sizeX, sizeY, sizeZ, sizeXY, sizeXYZ, offsetX, offsetY, offsetZ;
     protected ImagePlus img;
     protected String title;
@@ -1178,12 +1179,14 @@ public abstract class ImageHandler {
     public void show() {
         this.setMinAndMax(null);
         this.img.show();
+        zoom(img, defZoomFactor);
     }
 
     public void show(String title) {
         this.setMinAndMax(null);
         this.img.setTitle(title);
         this.img.show();
+        zoom(img, defZoomFactor);
     }
 
     public void showDuplicate(String title) {
@@ -1196,6 +1199,22 @@ public abstract class ImageHandler {
         }
         ip.setCalibration(img.getCalibration());
         ip.show();
+        zoom(ip, defZoomFactor);
+    }
+    
+    public static void zoom(ImagePlus image, double magnitude) {
+        ImageCanvas ic = image.getCanvas();
+        if (ic==null) return;
+        ic.zoom100Percent();
+        if (magnitude>1) {
+            for (int i = 0; i<(int)(magnitude+0.5); i++) {
+                ic.zoomIn(image.getWidth()/2, image.getHeight()/2);
+            }
+        } else if (magnitude>0 && magnitude<1) {
+            for (int i =0; i<(int)(1/magnitude+0.5); i++) {
+                ic.zoomOut(image.getWidth()/2, image.getHeight()/2);
+            }
+        }
     }
 
     public void closeImagePlus() {
