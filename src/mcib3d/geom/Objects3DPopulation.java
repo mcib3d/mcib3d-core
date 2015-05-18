@@ -1181,7 +1181,8 @@ public class Objects3DPopulation {
             IJ.log("Could'nt shuffle, mask is empty");
             return null;
         }
-        ImageInt label2 = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
+        //ImageInt label2 = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
+        ImageInt label2 = new ImageShort("", mask.getXmax(), mask.getYmax(), mask.getZmax());
         Random ra = new Random();
         for (int i = 0; i < si; i++) {
             boolean ok = false;
@@ -1190,7 +1191,7 @@ public class Objects3DPopulation {
             c = 0;
             Object3DVoxels Vtest = new Object3DVoxels(obj);
 
-            ImageInt labelTest = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
+            ImageInt labelTest = label2.duplicate();
             while ((!ok) && (c < maxr)) {
                 ok = true;
                 c++;
