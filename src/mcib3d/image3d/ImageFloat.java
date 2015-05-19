@@ -740,7 +740,11 @@ public class ImageFloat extends ImageHandler {
                 res.deleteSlice(1);
             }
         }
-        return new ImageFloat(new ImagePlus(title + "::resized", res));
+        ImageFloat r = new ImageFloat(new ImagePlus(title + "::resized", res));
+        r.offsetX=offsetX-dX;
+        r.offsetY=offsetY-dY;
+        r.offsetZ=offsetZ-dZ;
+        return r;
     }
 
     @Override

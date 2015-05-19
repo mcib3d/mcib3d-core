@@ -842,7 +842,11 @@ public class ImageShort extends ImageInt {
                 res.deleteSlice(1);
             }
         }
-        return new ImageShort(new ImagePlus(title + "::resized", res));
+        ImageShort r =  new ImageShort(new ImagePlus(title + "::resized", res));
+        r.offsetX=offsetX-dX;
+        r.offsetY=offsetY-dY;
+        r.offsetZ=offsetZ-dZ;
+        return r;
     }
 
     @Override

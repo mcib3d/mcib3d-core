@@ -839,7 +839,11 @@ public class ImageByte extends ImageInt {
 
             }
         }
-        return new ImageByte(new ImagePlus(title + "::resized", res));
+        ImageByte r = new ImageByte(new ImagePlus(title + "::resized", res));
+        r.offsetX=offsetX-dX;
+        r.offsetY=offsetY-dY;
+        r.offsetZ=offsetZ-dZ;
+        return r;
     }
 
     @Override

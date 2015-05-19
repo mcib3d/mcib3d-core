@@ -1,5 +1,6 @@
 package mcib3d.image3d.processing;
 
+import ij.IJ;
 import mcib3d.image3d.*;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.utils.ThreadRunner;
@@ -284,10 +285,11 @@ public class BinaryMorpho {
         return min;
     }
 
-    private static ImageByte binaryDilateRad1(final ImageInt in, final float thld, int nbCPUs) {
+    private static ImageByte binaryDilateRad1(final ImageInt in_, final float thld, int nbCPUs) {
         if (nbCPUs == 0) {
             nbCPUs = ThreadUtil.getNbCpus();
         }
+        final ImageInt in = (ImageInt) in_.resize(1, 1, 1);
         final ImageByte max = new ImageByte("max", in.sizeX, in.sizeY, in.sizeZ);
         final ThreadRunner tr = new ThreadRunner(0, in.sizeZ, nbCPUs);
         for (int i = 0; i < tr.threads.length; i++) {
@@ -314,19 +316,20 @@ public class BinaryMorpho {
         return max;
     }
 
-    private static ImageByte binaryCloseRad1(final ImageInt in, final float thld, int nbCPUs) {
+    private static ImageByte binaryCloseRad1(final ImageInt in_, final float thld, int nbCPUs) {
         if (nbCPUs == 0) {
             nbCPUs = ThreadUtil.getNbCpus();
         }
+        final ImageInt in = (ImageInt) in_.resize(1, 1, 1); // TODO: faire sans resize avec un simple décalage des indices
         final ImageByte max = new ImageByte("max", in.sizeX, in.sizeY, in.sizeZ);
-        final ThreadRunner tr = new ThreadRunner(0, in.sizeZ, nbCPUs);
+        final ThreadRunner tr = new ThreadRunner(0, max.sizeZ, nbCPUs);
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
                         public void run() {
                             for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
-                                for (int y = 0; y < in.sizeY; y++) {
-                                    for (int x = 0; x < in.sizeX; x++) {
+                                for (int y = 0; y < max.sizeY; y++) {
+                                    for (int x = 0; x < max.sizeX; x++) {
                                         if (maxRad1(in, thld, x, y, z)) {
                                             max.pixels[z][x + y * in.sizeX] = (byte) 255;
                                         }
@@ -362,7 +365,7 @@ public class BinaryMorpho {
         return close;
     }
 
-    //returns true if the value is over thld && no pixel around is under thld && dont touch borders
+    //returns true if the value is over thld && no pixel around is under thld && dont touch borders (outside border -> value = 0)
     private static boolean minRad1(ImageInt in, float thld, int x, int y, int z) {
         if (in.getPixel(x, y, z) >= thld) {
             if (in.touchBorders(x, y, z)) {
@@ -392,25 +395,51 @@ public class BinaryMorpho {
         }
     }
 
-    //returns true if the value is over thld or at least 1 pixel around is over thld
+    //returns true if the value is over thld or at least 1 pixel around is over thld VERSION WITHOUT RESIZE AVE DECALAGE DINDICE (TODO)
+    /*private static boolean maxRad1(ImageInt in, float thld, int x, int y, int z) {
+        if (!in.contains(x, y, z) || in.getPixel(x, y, z) < thld) {
+            if (in.contains(x-1, y, z) && in.getPixel(x - 1, y, z) >= thld) {
+                return true;
+            }
+            if (in.contains(x+1, y, z) && in.getPixel(x + 1, y, z) >= thld) {
+                return true;
+            }
+            if (in.contains(x, y-1, z) && in.getPixel(x, y - 1, z) >= thld) {
+                return true;
+            }
+            if (in.contains(x, y+1, z) && in.getPixel(x, y + 1, z) >= thld) {
+                return true;
+            }
+            if (in.contains(x, y, z-1) && in.getPixel(x, y, z - 1) >= thld) {
+                return true;
+            }
+            if (in.contains(x, y, z+1) && in.getPixel(x, y, z + 1) >= thld) {
+                return true;
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }*/
+    
     private static boolean maxRad1(ImageInt in, float thld, int x, int y, int z) {
-        if (in.getPixel(x, y, z) < thld) {
-            if (x > 0 && in.getPixel(x - 1, y, z) >= thld) {
+        if ( in.getPixel(x, y, z) < thld) {
+            if (x>0 && in.getPixel(x - 1, y, z) >= thld) {
                 return true;
             }
-            if (x < (in.sizeX - 1) && in.getPixel(x + 1, y, z) >= thld) {
+            if ((x+1)<in.sizeX && in.getPixel(x + 1, y, z) >= thld) {
                 return true;
             }
-            if (y > 0 && in.getPixel(x, y - 1, z) >= thld) {
+            if (y>0 && in.getPixel(x, y - 1, z) >= thld) {
                 return true;
             }
-            if (y < (in.sizeY - 1) && in.getPixel(x, y + 1, z) >= thld) {
+            if ((y+1)<in.sizeY && in.getPixel(x, y + 1, z) >= thld) {
                 return true;
             }
-            if (z > 0 && in.getPixel(x, y, z - 1) >= thld) {
+            if (z>0 && in.getPixel(x, y, z - 1) >= thld) {
                 return true;
             }
-            if (z < (in.sizeZ - 1) && in.getPixel(x, y, z + 1) >= thld) {
+            if ((z+1)<in.sizeZ && in.getPixel(x, y, z + 1) >= thld) {
                 return true;
             }
             return false;
@@ -418,7 +447,7 @@ public class BinaryMorpho {
             return true;
         }
     }
-
+    
     public static ImageInt binaryOpenMultilabel(ImageInt in, float radius, float radiusZ) {
         return binaryOpenMultilabel(in, radius, radiusZ, 0);
 
@@ -437,6 +466,7 @@ public class BinaryMorpho {
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
+            temp.setOffset(in);
             return temp;
         }
         return in;
@@ -451,15 +481,15 @@ public class BinaryMorpho {
         if (ihs != null) {
             //ij.IJ.log("BinaryClose multilabel nb :"+ihs.length);
             for (int idx = 0; idx < ihs.length; idx++) {
-                /*if (radiusXY <= 1 && radiusZ <= 1) {
+                if (radiusXY <= 1 && radiusZ <= 1) {
                     ihs[idx] = BinaryMorpho.binaryCloseRad1(ihs[idx], 1, nbCPUs);
                 } else {
                     ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY, radiusZ, nbCPUs);
-                }*/
-                ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY, radiusZ, nbCPUs);
+                }
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
+            temp.setOffset(in);
             return temp;
         }
         return in;
@@ -482,6 +512,7 @@ public class BinaryMorpho {
             //ihs[0].show("crop binary 0 dilated");
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
+            temp.setOffset(in);
             return temp;
         }
         return in;
@@ -495,16 +526,16 @@ public class BinaryMorpho {
         if (ihs != null) {
             //ij.IJ.log("BinaryClose multilabel nb :"+ihs.length);
             for (int idx = 0; idx < ihs.length; idx++) {
-                /*if (radiusXY[idx] <= 1 && radiusZ[idx] <= 1) {
-                    // FIXME pb if dilate, only performs closing
+                if (radiusXY[idx] <= 1 && radiusZ[idx] <= 1) {
                     ihs[idx] = BinaryMorpho.binaryCloseRad1(ihs[idx], 1, nbCPUs);
                 } else {
                     ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY[idx], radiusZ[idx], nbCPUs);
-                }*/
+                }
                 ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY[idx], radiusZ[idx], nbCPUs);
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
+            temp.setOffset(in);
             return temp;
         }
         return in;
@@ -522,6 +553,7 @@ public class BinaryMorpho {
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
+            temp.setOffset(in);
             return temp;
         }
         return in;
