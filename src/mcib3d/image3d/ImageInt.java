@@ -1,19 +1,22 @@
 package mcib3d.image3d;
 
 import ij.IJ;
-import mcib3d.image3d.legacy.IntImage3D;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.measure.Calibration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import mcib3d.geom.*;
+import mcib3d.geom.Object3D;
+import mcib3d.geom.Object3DFactory;
+import mcib3d.geom.Object3DFuzzy;
+import mcib3d.geom.Object3DVoxels;
+import mcib3d.geom.Objects3DPopulation;
+import mcib3d.geom.Point3D;
+import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
-import mcib3d.utils.ThreadRunner;
 import mcib3d.utils.ThreadUtil;
 import mcib3d.utils.exceptionPrinter;
 
@@ -245,10 +248,13 @@ public abstract class ImageInt extends ImageHandler {
     
     public Object3DVoxels getObjectMask() {
         ArrayList<Voxel3D> vox = new ArrayList<Voxel3D>();
+        // should be a labelled image
+        // extracting the value of the object
+        int value=(int) this.getMinAboveValue(0);
         for (int z = 0; z<sizeZ; z++) {
             for (int y = 0; y<sizeY; y++) {
                 for (int x = 0; x<sizeX; x++) {
-                    if (this.getPixel(x, y, z)!=0) vox.add(new Voxel3D(x, y, z, 1f));
+                    if (this.getPixel(x, y, z)!=0) vox.add(new Voxel3D(x, y, z, value));
                 }
             }
         }

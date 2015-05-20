@@ -192,7 +192,7 @@ public abstract class Object3D {
      * label image, starts at 0,0
      */
     protected ImageInt labelImage = null;
-    // the current image for quantification
+    protected int offX = 0, offY = 0, offZ = 0; // offset of objet into label image
     /**
      * current image used for quantification (to compute results once)
      */
@@ -382,12 +382,16 @@ public abstract class Object3D {
     }
 
     /**
-     * Sets the label image of the object (should start at 0,0
+     * Sets the label image of the object (should start at 0,0,0)
      *
      * @param labelImage
      */
     public void setLabelImage(ImageInt labelImage) {
         this.labelImage = labelImage;
+        // reset offset if any
+        offX=0;
+        offY=0;
+        offZ=0;
     }
 
     /**
@@ -2774,9 +2778,12 @@ public abstract class Object3D {
 
         //miniSegImage.getImagePlus().show();
         // set the offsets
-        miniLabelImage.offsetX = xm;
-        miniLabelImage.offsetY = ym;
-        miniLabelImage.offsetZ = zm;
+//        miniLabelImage.offsetX = xm;
+//        miniLabelImage.offsetY = ym;
+//        miniLabelImage.offsetZ = zm;
+        this.offX = xm;
+        this.offY = ym;
+        this.offZ = zm;
         miniLabelImage.setScale((float) this.getResXY(), (float) this.getResZ(), this.getUnits());
         //miniLabelImage.show("obj:"+this);
         return miniLabelImage;
@@ -2829,7 +2836,6 @@ public abstract class Object3D {
      */
     public ImageInt createSegImage() {
         return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, value);
-//return createSegImage(0, 0, 0, xmax, ymax, zmax, value);
     }
 
     /**
@@ -2845,9 +2851,12 @@ public abstract class Object3D {
      */
     public ImageInt createSegImage(int xmi, int ymi, int zmi, int xma, int yma, int zma, int val) {
         ImageInt SegImage = new ImageShort("Object", xma - xmi + 1, yma - ymi + 1, zma - zmi + 1);
-        SegImage.offsetX = xmi;
-        SegImage.offsetY = ymi;
-        SegImage.offsetZ = zmi;
+//        SegImage.offsetX = xmi;
+//        SegImage.offsetY = ymi;
+//        SegImage.offsetZ = zmi;
+        this.offX = xmi;
+        this.offY = ymi;
+        this.offZ = zmi;
         Voxel3D vox;
         Iterator it = getVoxels().iterator();
         while (it.hasNext()) {
