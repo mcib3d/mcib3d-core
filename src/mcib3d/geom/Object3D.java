@@ -505,7 +505,7 @@ public abstract class Object3D {
             return Double.NaN;
         }
         Arrays.sort(vals);
-        double index = quantile * vals.length;
+        double index = quantile * (vals.length-1);
         if (index <= 0) {
             return vals[0];
         } else if (index >= (vals.length - 1)) {
