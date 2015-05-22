@@ -135,9 +135,9 @@ public class BinaryMorpho {
             }
 
             // test rad <=1
-            /*if ((radius <= 1) && (radiusZ <= 1)) {
+            if ((radius <= 1) && (radiusZ <= 1)) {
                 return binaryDilateRad1(in, 1, nbCPUs);
-            }*/
+            }
 
             int reX = (int) (radius + 1);
             int reY = (int) (radius + 1);

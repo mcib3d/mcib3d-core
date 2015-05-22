@@ -2778,9 +2778,11 @@ public abstract class Object3D {
 
         //miniSegImage.getImagePlus().show();
         // set the offsets
-//        miniLabelImage.offsetX = xm;
-//        miniLabelImage.offsetY = ym;
-//        miniLabelImage.offsetZ = zm;
+        // offset of minilable image within label image
+        miniLabelImage.offsetX = xm;
+        miniLabelImage.offsetY = ym;
+        miniLabelImage.offsetZ = zm;
+        // offset of object within label image
         this.offX = xm;
         this.offY = ym;
         this.offZ = zm;
