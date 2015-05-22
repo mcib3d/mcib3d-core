@@ -1181,6 +1181,10 @@ public class Objects3DPopulation {
             IJ.log("Could'nt shuffle, mask is empty");
             return null;
         }
+//        ImageInt labelm = new ImageShort("", mask.getXmax(), mask.getYmax(), mask.getZmax());
+//        mav.draw(labelm);
+//        labelm.show();
+        
         //ImageInt label2 = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
         ImageInt label2 = new ImageShort("", mask.getXmax(), mask.getYmax(), mask.getZmax());
         Random ra = new Random();
@@ -1202,6 +1206,7 @@ public class Objects3DPopulation {
                 Vtest.setLabelImage(labelTest);
 
                 if (mask.getColoc(Vtest) < Vtest.getVolumePixels()) {
+                    //IJ.log("PB coloc mask ");
                     ok = false;
                 }
 
@@ -1209,6 +1214,7 @@ public class Objects3DPopulation {
                 for (Object3D O : shuObj) {
                     if (O.getColoc(Vtest) > 0) {
                         ok = false;
+                         //IJ.log("PB coloc others");
                     }
                 }
             }
