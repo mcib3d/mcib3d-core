@@ -76,7 +76,10 @@ public class Voxel3DComparable extends Voxel3D implements Comparable<Voxel3D> {
         } else {
             return 1;
         }
-
-
+    }
+    
+    @Override
+    public String toString(){
+        return ("(" + getX() + " , " + getY() + " , " + getZ() + " : "+getValue()+")");
     }
 }
