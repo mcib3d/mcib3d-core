@@ -2,12 +2,22 @@ package mcib3d.utils;
 
 import ij.IJ;
 import ij.plugin.BrowserLauncher;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URL;
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 /**
  * Description of the Class
@@ -16,7 +26,8 @@ import javax.swing.*;
  */
 public class AboutMCIB extends JFrame {
 
-    String name;
+    public static String name;
+    public static double VERSION = 3.2;
 
     /**
      * Constructor for the AboutWindow object
@@ -41,7 +52,7 @@ public class AboutMCIB extends JFrame {
      * @return the label with the version
      */
     private JLabel version() {
-        JLabel label = new JLabel(name);
+        JLabel label = new JLabel(name + " (MCIB V" + VERSION+")");
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
         return label;
     }
@@ -77,7 +88,7 @@ public class AboutMCIB extends JFrame {
      * @return the authors label
      */
     private JLabel authors() {
-        JLabel curie = new JLabel("T. BOUDIER");
+        JLabel curie = new JLabel("T. BOUDIER and J. OLLION");
         curie.setAlignmentX(Component.CENTER_ALIGNMENT);
         return curie;
     }
@@ -88,7 +99,7 @@ public class AboutMCIB extends JFrame {
      * @return the contact label
      */
     private JLabel contact() {
-        JLabel cont = new JLabel("contact : thomas.boudier@snv.jussieu.fr");
+        JLabel cont = new JLabel("contact : thomas.boudier at upmc.fr");
         cont.setAlignmentX(Component.CENTER_ALIGNMENT);
         cont.setCursor(new Cursor(Cursor.HAND_CURSOR));
         cont.addMouseListener(
@@ -97,9 +108,9 @@ public class AboutMCIB extends JFrame {
                     @Override
                     public void mouseClicked(MouseEvent me) {
                         try {
-                            BrowserLauncher.openURL("http://www.snv.jussieu.fr/~wboudier/softs.html");
+                            BrowserLauncher.openURL("http://imagejdocu.tudor.lu/doku.php?id=plugin:stacks:3d_ij_suite:start");
                         } catch (IOException ioe) {
-                            IJ.log("cannot open mailto\n" + ioe);
+                            IJ.log("cannot open link\n" + ioe);
                         }
                     }
                 });
@@ -150,7 +161,6 @@ public class AboutMCIB extends JFrame {
                         }
                     }
                 });
-
 
         url = getClass().getResource("/icons/cnrs.gif");
         image = Toolkit.getDefaultToolkit().getImage(url);
