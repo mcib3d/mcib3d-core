@@ -1123,4 +1123,5 @@ public class ImageByte extends ImageInt {
         }
         return count;
     }
+
 }

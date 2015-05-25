@@ -315,6 +315,37 @@ public class BinaryMorpho {
 
         return max;
     }
+    
+    private static ImageByte binaryDilateRad1diag(final ImageInt in_, final float thld, int nbCPUs) {
+        if (nbCPUs == 0) {
+            nbCPUs = ThreadUtil.getNbCpus();
+        }
+        final ImageInt in = (ImageInt) in_.resize(1, 1, 1);
+        final ImageByte max = new ImageByte("max", in.sizeX, in.sizeY, in.sizeZ);
+        final ThreadRunner tr = new ThreadRunner(0, in.sizeZ, nbCPUs);
+        for (int i = 0; i < tr.threads.length; i++) {
+            tr.threads[i] = new Thread(
+                    new Runnable() {
+                        public void run() {
+                            for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
+                                for (int y = 0; y < in.sizeY; y++) {
+                                    for (int x = 0; x < in.sizeX; x++) {
+                                        if (maxRad15(in, thld, x, y, z)) {
+                                            max.pixels[z][x + y * in.sizeX] = (byte) 255;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+        }
+        tr.startAndJoin();
+
+        max.setScale(in);
+        max.setOffset(in);
+
+        return max;
+    }
 
     private static ImageByte binaryCloseRad1(final ImageInt in_, final float thld, int nbCPUs) {
         if (nbCPUs == 0) {
@@ -364,6 +395,55 @@ public class BinaryMorpho {
         close.setScale(in);
         return close;
     }
+    
+    private static ImageByte binaryCloseRad1diag(final ImageInt in_, final float thld, int nbCPUs) {
+        if (nbCPUs == 0) {
+            nbCPUs = ThreadUtil.getNbCpus();
+        }
+        final ImageInt in = (ImageInt) in_.resize(1, 1, 1); // TODO: faire sans resize avec un simple décalage des indices
+        final ImageByte max = new ImageByte("max", in.sizeX, in.sizeY, in.sizeZ);
+        final ThreadRunner tr = new ThreadRunner(0, max.sizeZ, nbCPUs);
+        for (int i = 0; i < tr.threads.length; i++) {
+            tr.threads[i] = new Thread(
+                    new Runnable() {
+                        public void run() {
+                            for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
+                                for (int y = 0; y < max.sizeY; y++) {
+                                    for (int x = 0; x < max.sizeX; x++) {
+                                        if (maxRad15(in, thld, x, y, z)) {
+                                            max.pixels[z][x + y * in.sizeX] = (byte) 255;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+        }
+        tr.startAndJoin();
+        final ThreadRunner tr2 = new ThreadRunner(0, in.sizeZ, nbCPUs);
+        final ImageByte close = new ImageByte(in.getTitle() + "::close", in.sizeX, in.sizeY, in.sizeZ);
+        for (int i = 0; i < tr2.threads.length; i++) {
+            tr2.threads[i] = new Thread(
+                    new Runnable() {
+                        public void run() {
+                            for (int z = tr2.ai.getAndIncrement(); z < tr2.end; z = tr2.ai.getAndIncrement()) {
+                                for (int y = 0; y < in.sizeY; y++) {
+                                    for (int x = 0; x < in.sizeX; x++) {
+                                        if (minRad15(max, 1, x, y, z)) {
+                                            close.pixels[z][x + y * in.sizeX] = (byte) 255;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+        }
+        tr2.startAndJoin();
+        max.closeImagePlus();
+        close.setOffset(in);
+        close.setScale(in);
+        return close;
+    }
 
     //returns true if the value is over thld && no pixel around is under thld && dont touch borders (outside border -> value = 0)
     private static boolean minRad1(ImageInt in, float thld, int x, int y, int z) {
@@ -394,36 +474,42 @@ public class BinaryMorpho {
             return false;
         }
     }
-
-    //returns true if the value is over thld or at least 1 pixel around is over thld VERSION WITHOUT RESIZE AVE DECALAGE DINDICE (TODO)
-    /*private static boolean maxRad1(ImageInt in, float thld, int x, int y, int z) {
-        if (!in.contains(x, y, z) || in.getPixel(x, y, z) < thld) {
-            if (in.contains(x-1, y, z) && in.getPixel(x - 1, y, z) >= thld) {
-                return true;
+    
+    private static boolean minRad15(ImageInt in, float thld, int x, int y, int z) {
+        if (in.getPixel(x, y, z) >= thld) {
+            if (in.touchBorders(x, y, z)) {
+                return false;
             }
-            if (in.contains(x+1, y, z) && in.getPixel(x + 1, y, z) >= thld) {
-                return true;
+            for (int zz=z-1; zz<=z+1; zz++) {
+                for (int yy=y-1; yy<=y+1; yy++) {
+                    for (int xx=x-1; xx<=x+1; xx++) {
+                        if (in.getPixel(xx, yy, zz)<thld) return false;
+                    }
+                }
             }
-            if (in.contains(x, y-1, z) && in.getPixel(x, y - 1, z) >= thld) {
-                return true;
-            }
-            if (in.contains(x, y+1, z) && in.getPixel(x, y + 1, z) >= thld) {
-                return true;
-            }
-            if (in.contains(x, y, z-1) && in.getPixel(x, y, z - 1) >= thld) {
-                return true;
-            }
-            if (in.contains(x, y, z+1) && in.getPixel(x, y, z + 1) >= thld) {
-                return true;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    private static boolean maxRad15(ImageInt in, float thld, int x, int y, int z) {
+        if (in.getPixel(x, y, z) < thld) {
+            for (int zz=z-1; zz<=z+1; zz++) {
+                for (int yy=y-1; yy<=y+1; yy++) {
+                    for (int xx=x-1; xx<=x+1; xx++) {
+                        if (in.contains(xx, yy, zz) && in.getPixel(xx, yy, zz)>=thld) return true;
+                    }
+                }
             }
             return false;
         } else {
             return true;
         }
-    }*/
+    }
     
     private static boolean maxRad1(ImageInt in, float thld, int x, int y, int z) {
-        if ( in.getPixel(x, y, z) < thld) {
+        if (in.getPixel(x, y, z) < thld) {
             if (x>0 && in.getPixel(x - 1, y, z) >= thld) {
                 return true;
             }
@@ -481,8 +567,10 @@ public class BinaryMorpho {
         if (ihs != null) {
             //ij.IJ.log("BinaryClose multilabel nb :"+ihs.length);
             for (int idx = 0; idx < ihs.length; idx++) {
-                if (radiusXY <= 1 && radiusZ <= 1) {
-                    ihs[idx] = BinaryMorpho.binaryCloseRad1(ihs[idx], 1, nbCPUs);
+                if (radiusXY <1 && radiusZ <1) {
+                    ihs[idx] = binaryCloseRad1(ihs[idx], 1, nbCPUs);
+                } else if (radiusXY <2 && radiusZ <2) {
+                    ihs[idx] = (ImageByte) binaryCloseRad1diag(ihs[idx], 1, nbCPUs);
                 } else {
                     ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY, radiusZ, nbCPUs);
                 }
@@ -507,7 +595,13 @@ public class BinaryMorpho {
             //ihs[0].show("crop binary 0");
             int end = ihs.length;
             for (int idx = 0; idx < end; idx++) {
-                ihs[idx] = (ImageByte) binaryDilate(ihs[idx], radiusXY, radiusZ, nbCPUs);
+                if (radiusXY <1 && radiusZ <1) {
+                    ihs[idx] = binaryDilateRad1(ihs[idx], 1, nbCPUs);
+                } else if (radiusXY <2 && radiusZ <2) {
+                    ihs[idx] = (ImageByte) binaryDilateRad1diag(ihs[idx], 1, nbCPUs);
+                } else {
+                    ihs[idx] = (ImageByte) binaryDilate(ihs[idx], radiusXY, radiusZ, nbCPUs);
+                }
             }
             //ihs[0].show("crop binary 0 dilated");
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);

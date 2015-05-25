@@ -3,6 +3,8 @@ package mcib3d.image3d;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import mcib3d.image3d.legacy.IntImage3D;
 import java.util.TreeMap;
 import java.util.ArrayList;

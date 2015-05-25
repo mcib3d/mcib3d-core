@@ -4,6 +4,8 @@ import mcib3d.image3d.legacy.RealImage3D;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.TreeMap;
 import java.util.ArrayList;
 import java.util.HashMap;

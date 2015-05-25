@@ -11,7 +11,10 @@ import ij.measure.Calibration;
 import ij.plugin.ContrastEnhancer;
 import ij.plugin.ZProjector;
 import ij.process.ImageProcessor;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
+import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -1378,6 +1381,7 @@ public abstract class ImageHandler {
         }
         return null;
     }
+    
 
     public boolean touchBorders(int x, int y, int z) {
         return (x == 0 || y == 0 || z == 0 || x == (sizeX - 1) || y == (sizeY - 1) || (z == sizeZ - 1));
