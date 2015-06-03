@@ -1,11 +1,13 @@
 package mcib3d.image3d.processing;
 
-import ij.IJ;
-import mcib3d.image3d.*;
+import mcib3d.image3d.ImageByte;
+import mcib3d.image3d.ImageFloat;
+import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.ImageShort;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.utils.ThreadRunner;
-import mcib3d.utils.exceptionPrinter;
 import mcib3d.utils.ThreadUtil;
+import mcib3d.utils.exceptionPrinter;
 
 /**
  *
@@ -156,6 +158,7 @@ public class BinaryMorpho {
                 temp.offsetY -= reY;
                 temp.offsetZ -= reZ;
             } else {
+                // FIXME resize with <0 does not work, use crop instead
                 temp = (ImageByte) temp.resize(-reX, -reY, -reZ);
             }
 
@@ -180,9 +183,9 @@ public class BinaryMorpho {
                 return binaryCloseRad1(in, 1, nbCPUs);
             }*/
             // FIXME thresholdings > strict or not??
-            int rad = (int) radius + 1;
-            int radZ = (int) radiusZ + 1;
-            int resize = 0;
+            int rad = (int) (radius + 1);
+            int radZ = (int) (radiusZ + 1);
+            int resize = 0; // FIXME useful ??
             ImageInt inResized = (ImageInt) in.resize(rad + resize, rad + resize, radZ + resize);
             ImageFloat edm = EDT.run(inResized, 0, 1, radius / radiusZ, true, nbCPUs);
             inResized.closeImagePlus();
@@ -190,17 +193,17 @@ public class BinaryMorpho {
             edm.closeImagePlus();
             edm = EDT.run(inThresholded, 0, 1, radius / radiusZ, false, nbCPUs);
             inThresholded.closeImagePlus();
-            ImageFloat edm2 = (ImageFloat) edm.resize(-rad, -rad, -radZ);
+            //ImageFloat edm2 = (ImageFloat) edm.resize(-rad+resize, -rad+resize, -radZ+resize);
+            //edm.closeImagePlus();
+            //edm = null;
+            //System.gc();
+            inThresholded = edm.threshold(radius, false, true);
             edm.closeImagePlus();
             edm = null;
             System.gc();
-            inThresholded = edm2.threshold(radius, false, true);
-            edm2.closeImagePlus();
-            edm2 = null;
-            System.gc();
-            inThresholded.offsetX = in.offsetX - resize;
-            inThresholded.offsetY = in.offsetY - resize;
-            inThresholded.offsetZ = in.offsetZ - resize;
+            inThresholded.offsetX = inResized.offsetX ;
+            inThresholded.offsetY = inResized.offsetY ;
+            inThresholded.offsetZ = inResized.offsetZ ;
             inThresholded.setScale(in);
             return inThresholded;
         } catch (Exception e) {

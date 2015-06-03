@@ -386,7 +386,7 @@ public class Objects3DPopulation {
         for (int i = 0; i < max - min + 1; i++) {
             if (!objectstmp[i].isEmpty()) {
                 Object3DVoxels ob = new Object3DVoxels(objectstmp[i]);
-                ob.setLabelImage(seg);
+                ob.setLabelImage(null);// the image can be closed anytime
                 ob.setCalibration(cali);
                 ob.setName("Obj" + (i + 1));
                 addObject(ob);
