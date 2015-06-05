@@ -159,7 +159,7 @@ public abstract class Object3D {
     /**
      * kd-tree for the contour
      */
-    protected KDTreeC kdtreeContours=null;
+    protected KDTreeC kdtreeContours = null;
     /**
      * Touch the borders ?
      */
@@ -1951,15 +1951,15 @@ public abstract class Object3D {
             return false;
         }
         int val = value;
-        if (this.getLabelImage() != null) {
-            int testx = (int) Math.round(x)-offX;
-            int testy = (int) Math.round(y)-offY;
-            int testz = (int) Math.round(z)-offZ;
-            if ((testx < 0) || (testy < 0) || (testz < 0) || (testx >= labelImage.sizeX) || (testy >= labelImage.sizeY) || (testz >= labelImage.sizeZ)) {
-                return false;
-            }
-            return (labelImage.getPixel(testx, testy, testz) == val);
+        ImageInt label = this.getLabelImage();
+        int testx = (int) Math.round(x) - offX;
+        int testy = (int) Math.round(y) - offY;
+        int testz = (int) Math.round(z) - offZ;
+        if ((testx < 0) || (testy < 0) || (testz < 0) || (testx >= label.sizeX) || (testy >= label.sizeY) || (testz >= label.sizeZ)) {
+            return false;
         }
+        return (label.getPixel(testx, testy, testz) == val);
+
 //        if (miniLabelImage == null) {
 //            miniLabelImage = this.createSegImageMini(val, 1);
 //        } else {
@@ -1986,7 +1986,6 @@ public abstract class Object3D {
 //        if (miniLabelImage.getPixel(testx, testy, testz) == val) {
 //            return true;
 //        }
-        return false;
     }
 
     /**
@@ -2238,6 +2237,21 @@ public abstract class Object3D {
         return voxSet.size();
     }
 
+    public boolean edgeImage(ImageHandler img, boolean edgeXY, boolean edgeZ) {
+        if (edgeXY) {
+            if ((xmin <= 0) || (ymin <= 0) || (xmax >= img.sizeX - 1) || (ymax >= img.sizeY - 1)) {
+                return true;
+            }
+        }
+        if (edgeZ) {
+            if ((zmin <= 0) || (zmax >= img.sizeZ - 1)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * the radius of the object towards another object
      *
@@ -2321,11 +2335,11 @@ public abstract class Object3D {
     public Voxel3D[] VoxelsBorderBorder(Object3D other) {
         double distmin = Double.MAX_VALUE;
         Voxel3D otherBorder = null, thisBorder = null;
-        KDTreeC tree=this.getKdtreeContours();
+        KDTreeC tree = this.getKdtreeContours();
         //IJ.log("border " + tree+" "+getContours().size()+" "+other.getContours().size());
-        
+
         for (Voxel3D othervox : other.getContours()) {
-            double[] pos = othervox.getArray();            
+            double[] pos = othervox.getArray();
             Item item = tree.getNearestNeighbor(pos, 1)[0];
             //IJ.log("pixelborder " + item);
             if (item.distanceSq < distmin) {
@@ -2738,10 +2752,9 @@ public abstract class Object3D {
      * @param borderSize
      * @return the labelled image
      */
-    public ImageInt createSegImageMini(int val, int borderSize) {
-        return createSegImageMini(val, borderSize, borderSize, borderSize);
-    }
-
+//    public ImageInt createSegImageMini(int val, int borderSize) {
+//        return createSegImageMini(val, borderSize, borderSize, borderSize);
+//    }
     /**
      *
      * @param val
@@ -2750,55 +2763,54 @@ public abstract class Object3D {
      * @param borderSizeZ
      * @return
      */
-    public ImageInt createSegImageMini(int val, int borderSizeX, int borderSizeY, int borderSizeZ) {
-        int xm = this.getXmin() - borderSizeX;
-        if (xm < -borderSizeX) {
-            xm = -borderSizeX;
-        }
-        int ym = this.getYmin() - borderSizeY;
-        if (ym < -borderSizeY) {
-            ym = -borderSizeY;
-        }
-        int zm = this.getZmin() - borderSizeZ;
-        if (zm < -borderSizeZ) {
-            zm = -borderSizeZ;
-        }
-
-        int w = this.getXmax() - xm + 1 + borderSizeX;
-        int h = this.getYmax() - ym + 1 + borderSizeY;
-        int d = this.getZmax() - zm + 1 + borderSizeZ;
-        miniLabelImage = new ImageShort("Object_" + val, w, h, d);
-        Voxel3D vox;
-        int xx;
-        int yy;
-        int zz;
-        Iterator it = getVoxels().iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
-            xx = (int) Math.round(vox.getX() - xm);
-            yy = (int) Math.round(vox.getY() - ym);
-            zz = (int) Math.round(vox.getZ() - zm);
-            // TODO suface vertices may have coordinates < 0 if touching edges 
-            if (miniLabelImage.contains(xx, yy, zz)) {
-                miniLabelImage.setPixel(xx, yy, zz, val);
-            }
-        }
-
-        //miniSegImage.getImagePlus().show();
-        // set the offsets
-        // offset of minilable image within label image
-//        miniLabelImage.offsetX = xm;
-//        miniLabelImage.offsetY = ym;
-//        miniLabelImage.offsetZ = zm;
-        // offset of object within label image
-        this.offX = xm;
-        this.offY = ym;
-        this.offZ = zm;
-        miniLabelImage.setScale((float) this.getResXY(), (float) this.getResZ(), this.getUnits());
-        //miniLabelImage.show("obj:"+this);
-        return miniLabelImage;
-    }
-
+//    public ImageInt createSegImageMini(int val, int borderSizeX, int borderSizeY, int borderSizeZ) {
+//        int xm = this.getXmin() - borderSizeX;
+//        if (xm < -borderSizeX) {
+//            xm = -borderSizeX;
+//        }
+//        int ym = this.getYmin() - borderSizeY;
+//        if (ym < -borderSizeY) {
+//            ym = -borderSizeY;
+//        }
+//        int zm = this.getZmin() - borderSizeZ;
+//        if (zm < -borderSizeZ) {
+//            zm = -borderSizeZ;
+//        }
+//
+//        int w = this.getXmax() - xm + 1 + borderSizeX;
+//        int h = this.getYmax() - ym + 1 + borderSizeY;
+//        int d = this.getZmax() - zm + 1 + borderSizeZ;
+//        miniLabelImage = new ImageShort("Object_" + val, w, h, d);
+//        Voxel3D vox;
+//        int xx;
+//        int yy;
+//        int zz;
+//        Iterator it = getVoxels().iterator();
+//        while (it.hasNext()) {
+//            vox = (Voxel3D) it.next();
+//            xx = (int) Math.round(vox.getX() - xm);
+//            yy = (int) Math.round(vox.getY() - ym);
+//            zz = (int) Math.round(vox.getZ() - zm);
+//            // TODO suface vertices may have coordinates < 0 if touching edges 
+//            if (miniLabelImage.contains(xx, yy, zz)) {
+//                miniLabelImage.setPixel(xx, yy, zz, val);
+//            }
+//        }
+//
+//        //miniSegImage.getImagePlus().show();
+//        // set the offsets
+//        // offset of minilable image within label image
+////        miniLabelImage.offsetX = xm;
+////        miniLabelImage.offsetY = ym;
+////        miniLabelImage.offsetZ = zm;
+//        // offset of object within label image
+//        this.offX = xm;
+//        this.offY = ym;
+//        this.offZ = zm;
+//        miniLabelImage.setScale((float) this.getResXY(), (float) this.getResZ(), this.getUnits());
+//        //miniLabelImage.show("obj:"+this);
+//        return miniLabelImage;
+//    }
     /**
      *
      * @param val
@@ -3058,7 +3070,7 @@ public abstract class Object3D {
         }
         // draw object on new image
         //int bo = (int) Math.max(radX, radY), radZ);
-        ImageInt segImage=this.getLabelImage();
+        ImageInt segImage = this.getLabelImage();
         //segImage = this.createSegImageMini(value, (int) Math.ceil(radX), (int) Math.ceil(radY), (int) Math.ceil(radZ));
         //segImage.show("segimage 1");
         ImageInt segImage2 = null;
@@ -3089,7 +3101,7 @@ public abstract class Object3D {
         //segImage2.show("segimage_"+this);
         //IJ.log("morpho object "+offX+" "+offY+" "+offZ+" "+segImage2.offsetX+" "+segImage2.offsetY+" "+segImage2.offsetZ);
         Object3DVoxels objMorpho = new Object3DVoxels(segImage2);
-        objMorpho.translate(offX+segImage2.offsetX, offY+segImage2.offsetY, offZ+segImage2.offsetZ);
+        objMorpho.translate(offX + segImage2.offsetX, offY + segImage2.offsetY, offZ + segImage2.offsetZ);
         objMorpho.setCalibration(resXY, resZ, units);
         //objMorpho.setLabelImage(null);
         // test
@@ -3231,15 +3243,16 @@ public abstract class Object3D {
         if (!mask.includesBox(this)) {
             return null;
         }
-        ImageInt img = mask.createSegImageMini(255, 1);
+        //ImageInt img = mask.createSegImageMini(255, 1);
+        ImageInt img = mask.getLabelImage();
         ImageHandler dup = img.createSameDimensions();
-        this.draw(dup, 255, -img.offsetX, -img.offsetY, -img.offsetZ);
+        this.draw(dup, 255, -mask.offX, -mask.offY, -mask.offZ);
         ImageFloat edt = EDT.run(dup, 128, (float) resXY, (float) resZ, true, 0);
         EDT.normalizeDistanceMap(edt, img, true);
         ImageByte th = edt.thresholdRangeInclusive(0, ratio);
-        Object3DVoxels res = new Object3DVoxels(th, 255);
+        Object3DVoxels res = new Object3DVoxels(th);
         res.setCalibration(resXY, resZ, units);
-        res.translate(img.offsetX, img.offsetY, img.offsetZ);
+        res.translate(mask.offX, mask.offY, mask.offZ);
 
         return res;
     }

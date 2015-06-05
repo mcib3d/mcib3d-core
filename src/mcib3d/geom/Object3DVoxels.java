@@ -1070,6 +1070,7 @@ public class Object3DVoxels extends Object3D {
 
         int val = obj.getValue();
         ImageInt otherseg = obj.getLabelImage();
+        ImageInt label=this.getLabelImage();
 
 //        int offX0 = labelImage.offsetX;
 //        int offY0 = labelImage.offsetY;
@@ -1112,8 +1113,8 @@ public class Object3DVoxels extends Object3D {
                     int xx = i - offX1;
                     int yy = j - offY1;
                     int zz = k - offZ1;
-                    if ((labelImage.contains(x, y, z)) && (otherseg.contains(xx, yy, zz))) {
-                        if ((labelImage.getPixel(x, y, z) == value) && (otherseg.getPixel(xx, yy, zz) == val)) {
+                    if ((label.contains(x, y, z)) && (otherseg.contains(xx, yy, zz))) {
+                        if ((label.getPixel(x, y, z) == value) && (otherseg.getPixel(xx, yy, zz) == val)) {
                             count++;
                         }
                     }
