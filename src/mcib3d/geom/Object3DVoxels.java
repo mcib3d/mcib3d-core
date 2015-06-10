@@ -730,6 +730,8 @@ public class Object3DVoxels extends Object3D {
      * Compute the contours of the object rad=0.5
      */
     private void computeContours(ImageInt segImage, int x0, int y0, int z0) {
+        //IJ.log("computing contours for "+this+"  "+x0+" "+y0+" "+z0+" "+xmin+" "+ymin+" "+zmin);
+        //segImage.show(""+this);
         // init kdtree
         kdtreeContours = new KDTreeC(3);
         kdtreeContours.setScale3(this.resXY, this.resXY, this.resZ);
@@ -876,6 +878,7 @@ public class Object3DVoxels extends Object3D {
                 }
             }
         }
+        //IJ.log("contours "+contours.size());
         // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
         double w1 = 0.894, w2 = 1.3409, w3 = 1.5879, w4 = 2.0, w5 = 8.0 / 3.0, w6 = 10.0 / 3.0;
         correctedSurfaceArea = (class1 * w1 + class2 * w2 + class3 * w3 + class4 * w4 + class5 * w5 + class6 * w6);

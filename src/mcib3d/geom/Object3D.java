@@ -2068,6 +2068,16 @@ public abstract class Object3D {
      * for intersection)
      */
     public ImageInt createIntersectionImage(Object3D other, int val1, int val2, int border) {
+        // keep labelimage
+        ImageInt label = this.getLabelImage();
+        int ofX = offX;
+        int ofY = offY;
+        int ofZ = offZ;
+        ImageInt label2 = other.getLabelImage();
+        int ofX2 = other.offX;
+        int ofY2 = other.offY;
+        int ofZ2 = other.offZ;
+
         // bounding box
         int xmi = Math.min(this.xmin, other.xmin) - border;
         if (xmi < 0) {
@@ -2085,6 +2095,7 @@ public abstract class Object3D {
         int yma = Math.max(this.ymax, other.ymax) + border;
         int zma = Math.max(this.zmax, other.zmax) + border;
 
+        // this will update label image and change offset
         ImageInt imgThis = this.createSegImage(xmi, ymi, zmi, xma, yma, zma, val1);
         ImageInt imgOther = other.createSegImage(xmi, ymi, zmi, xma, yma, zma, val2);
 
@@ -2103,6 +2114,16 @@ public abstract class Object3D {
         imgThis = null;
         imgOther = null;
         System.gc();
+
+        // put old label back
+        labelImage = label;
+        offX = ofX;
+        offY = ofY;
+        offZ = ofZ;
+        other.labelImage = label2;
+        other.offX = ofX2;
+        other.offY = ofY2;
+        other.offZ = ofZ2;
 
         return addImage;
     }
@@ -2139,8 +2160,8 @@ public abstract class Object3D {
         obj.translate(this.offX, this.offY, this.offZ);
         // clean
         inter = null;
-        obj.setLabelImage(null);
-        other.setLabelImage(null);
+        //obj.setLabelImage(null);
+        //other.setLabelImage(null);
 
         return obj;
     }
@@ -2336,7 +2357,7 @@ public abstract class Object3D {
         double distmin = Double.MAX_VALUE;
         Voxel3D otherBorder = null, thisBorder = null;
         KDTreeC tree = this.getKdtreeContours();
-        //IJ.log("border " + tree+" "+getContours().size()+" "+other.getContours().size());
+        //IJ.log("border " + tree + " " + this.getContours().size() + " " + other.getContours().size());
 
         for (Voxel3D othervox : other.getContours()) {
             double[] pos = othervox.getArray();
@@ -2885,6 +2906,7 @@ public abstract class Object3D {
                 SegImage.setPixel(vox.getRoundX() - offX, vox.getRoundY() - offY, vox.getRoundZ() - offZ, val);
             }
         }
+        //IJ.log("seg image " + offX + " " + offY + " " + offZ);
         return SegImage;
     }
 
@@ -3070,10 +3092,12 @@ public abstract class Object3D {
         }
         // draw object on new image
         //int bo = (int) Math.max(radX, radY), radZ);
+        //IJ.log("dilated object ");
         ImageInt segImage = this.getLabelImage();
+
         //segImage = this.createSegImageMini(value, (int) Math.ceil(radX), (int) Math.ceil(radY), (int) Math.ceil(radZ));
         //segImage.show("segimage 1");
-        ImageInt segImage2 = null;
+        ImageInt segImage2;
         /// use fastFilter if rx != ry
         if ((radY != radX) || (radZ == 0)) {
             int filter = 0;
@@ -3109,6 +3133,9 @@ public abstract class Object3D {
         if (createLabelImage) {
             ImageInt labelDilated = objMorpho.getLabelImage();
         }
+
+        //IJ.log("dilated object " + offX + " " + offY + " " + offZ);
+
         return objMorpho;
     }
 
