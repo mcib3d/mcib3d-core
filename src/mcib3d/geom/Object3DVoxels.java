@@ -290,6 +290,9 @@ public class Object3DVoxels extends Object3D {
         init();
         value = other.getValue();
         this.labelImage = other.getLabelImage();
+        this.offX=other.offX;
+        this.offY=other.offY;
+        this.offZ=other.offZ;
         this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
@@ -299,6 +302,9 @@ public class Object3DVoxels extends Object3D {
         init();
         value = other.getValue();
         this.labelImage = other.getLabelImage();
+        this.offX=other.offX;
+        this.offY=other.offY;
+        this.offZ=other.offZ;
         this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
