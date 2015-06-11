@@ -73,9 +73,8 @@ public class BinaryMorpho {
 
             // test rad <=1
             /*if ((radius <= 1) && (radiusZ <= 1)) {
-                return binaryOpenRad1(in, 1, nbCPUs);
-            }*/
-
+             return binaryOpenRad1(in, 1, nbCPUs);
+             }*/
             ImageFloat edm = EDT.run(in, 0, 1, radius / radiusZ, false, nbCPUs);
             ImageByte temp = edm.threshold(radius, false, true);
             edm.closeImagePlus();
@@ -106,9 +105,8 @@ public class BinaryMorpho {
 
             // test rad <=1
             /*if ((radius <= 1) && (radiusZ <= 1)) {
-                return binaryErodeRad1(in, 1, nbCPUs);
-            }*/
-
+             return binaryErodeRad1(in, 1, nbCPUs);
+             }*/
             ImageFloat edm = EDT.run(in, 0, 1, radius / radiusZ, false, nbCPUs);
             ImageByte temp = edm.threshold(radius, false, true);
             edm.flush();
@@ -124,13 +122,9 @@ public class BinaryMorpho {
 
     public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ) {
         return binaryDilate(in, radius, radiusZ, 0);
-    }
+    }   
 
     public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ, int nbCPUs) {
-        return binaryDilate(in, radius, radiusZ, false, nbCPUs);
-    }
-
-    public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ, boolean resize, int nbCPUs) {
         try {
             if (nbCPUs == 0) {
                 nbCPUs = ThreadUtil.getNbCpus();
@@ -153,15 +147,7 @@ public class BinaryMorpho {
             edm = null;
             temp.setOffset(in);
             temp.setScale(in);
-            if (resize) {
-                temp.offsetX -= reX;
-                temp.offsetY -= reY;
-                temp.offsetZ -= reZ;
-            } else {
-                // FIXME resize with <0 does not work, use crop instead
-                temp = (ImageByte) temp.resize(-reX, -reY, -reZ);
-            }
-
+            // no more resize, should use crop
             return temp;
         } catch (Exception e) {
             exceptionPrinter.print(e, null, true);
@@ -180,8 +166,8 @@ public class BinaryMorpho {
             }
             // test rad <=1
             /*if ((radius <= 1) && (radiusZ <= 1)) {
-                return binaryCloseRad1(in, 1, nbCPUs);
-            }*/
+             return binaryCloseRad1(in, 1, nbCPUs);
+             }*/
             // FIXME thresholdings > strict or not??
             int rad = (int) (radius + 1);
             int radZ = (int) (radiusZ + 1);
@@ -201,9 +187,9 @@ public class BinaryMorpho {
             edm.closeImagePlus();
             edm = null;
             System.gc();
-            inThresholded.offsetX = inResized.offsetX ;
-            inThresholded.offsetY = inResized.offsetY ;
-            inThresholded.offsetZ = inResized.offsetZ ;
+            inThresholded.offsetX = inResized.offsetX;
+            inThresholded.offsetY = inResized.offsetY;
+            inThresholded.offsetZ = inResized.offsetZ;
             inThresholded.setScale(in);
             return inThresholded;
         } catch (Exception e) {
@@ -318,7 +304,7 @@ public class BinaryMorpho {
 
         return max;
     }
-    
+
     private static ImageByte binaryDilateRad1diag(final ImageInt in_, final float thld, int nbCPUs) {
         if (nbCPUs == 0) {
             nbCPUs = ThreadUtil.getNbCpus();
@@ -398,7 +384,7 @@ public class BinaryMorpho {
         close.setScale(in);
         return close;
     }
-    
+
     private static ImageByte binaryCloseRad1diag(final ImageInt in_, final float thld, int nbCPUs) {
         if (nbCPUs == 0) {
             nbCPUs = ThreadUtil.getNbCpus();
@@ -477,16 +463,18 @@ public class BinaryMorpho {
             return false;
         }
     }
-    
+
     private static boolean minRad15(ImageInt in, float thld, int x, int y, int z) {
         if (in.getPixel(x, y, z) >= thld) {
             if (in.touchBorders(x, y, z)) {
                 return false;
             }
-            for (int zz=z-1; zz<=z+1; zz++) {
-                for (int yy=y-1; yy<=y+1; yy++) {
-                    for (int xx=x-1; xx<=x+1; xx++) {
-                        if (in.getPixel(xx, yy, zz)<thld) return false;
+            for (int zz = z - 1; zz <= z + 1; zz++) {
+                for (int yy = y - 1; yy <= y + 1; yy++) {
+                    for (int xx = x - 1; xx <= x + 1; xx++) {
+                        if (in.getPixel(xx, yy, zz) < thld) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -495,13 +483,15 @@ public class BinaryMorpho {
             return false;
         }
     }
-    
+
     private static boolean maxRad15(ImageInt in, float thld, int x, int y, int z) {
         if (in.getPixel(x, y, z) < thld) {
-            for (int zz=z-1; zz<=z+1; zz++) {
-                for (int yy=y-1; yy<=y+1; yy++) {
-                    for (int xx=x-1; xx<=x+1; xx++) {
-                        if (in.contains(xx, yy, zz) && in.getPixel(xx, yy, zz)>=thld) return true;
+            for (int zz = z - 1; zz <= z + 1; zz++) {
+                for (int yy = y - 1; yy <= y + 1; yy++) {
+                    for (int xx = x - 1; xx <= x + 1; xx++) {
+                        if (in.contains(xx, yy, zz) && in.getPixel(xx, yy, zz) >= thld) {
+                            return true;
+                        }
                     }
                 }
             }
@@ -510,25 +500,25 @@ public class BinaryMorpho {
             return true;
         }
     }
-    
+
     private static boolean maxRad1(ImageInt in, float thld, int x, int y, int z) {
         if (in.getPixel(x, y, z) < thld) {
-            if (x>0 && in.getPixel(x - 1, y, z) >= thld) {
+            if (x > 0 && in.getPixel(x - 1, y, z) >= thld) {
                 return true;
             }
-            if ((x+1)<in.sizeX && in.getPixel(x + 1, y, z) >= thld) {
+            if ((x + 1) < in.sizeX && in.getPixel(x + 1, y, z) >= thld) {
                 return true;
             }
-            if (y>0 && in.getPixel(x, y - 1, z) >= thld) {
+            if (y > 0 && in.getPixel(x, y - 1, z) >= thld) {
                 return true;
             }
-            if ((y+1)<in.sizeY && in.getPixel(x, y + 1, z) >= thld) {
+            if ((y + 1) < in.sizeY && in.getPixel(x, y + 1, z) >= thld) {
                 return true;
             }
-            if (z>0 && in.getPixel(x, y, z - 1) >= thld) {
+            if (z > 0 && in.getPixel(x, y, z - 1) >= thld) {
                 return true;
             }
-            if ((z+1)<in.sizeZ && in.getPixel(x, y, z + 1) >= thld) {
+            if ((z + 1) < in.sizeZ && in.getPixel(x, y, z + 1) >= thld) {
                 return true;
             }
             return false;
@@ -536,7 +526,7 @@ public class BinaryMorpho {
             return true;
         }
     }
-    
+
     public static ImageInt binaryOpenMultilabel(ImageInt in, float radius, float radiusZ) {
         return binaryOpenMultilabel(in, radius, radiusZ, 0);
 
@@ -547,10 +537,10 @@ public class BinaryMorpho {
         if (ihs != null) {
             for (int idx = 0; idx < ihs.length; idx++) {
                 /*if (radius <= 1 && radiusZ <= 1) {
-                    ihs[idx] = BinaryMorpho.binaryOpenRad1(ihs[idx], 1, nbCPUs);
-                } else {
-                    ihs[idx] = binaryOpen(ihs[idx], radius, radiusZ, nbCPUs);
-                }*/
+                 ihs[idx] = BinaryMorpho.binaryOpenRad1(ihs[idx], 1, nbCPUs);
+                 } else {
+                 ihs[idx] = binaryOpen(ihs[idx], radius, radiusZ, nbCPUs);
+                 }*/
                 ihs[idx] = binaryOpen(ihs[idx], radius, radiusZ, nbCPUs);
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
@@ -570,9 +560,9 @@ public class BinaryMorpho {
         if (ihs != null) {
             //ij.IJ.log("BinaryClose multilabel nb :"+ihs.length);
             for (int idx = 0; idx < ihs.length; idx++) {
-                if (radiusXY <1 && radiusZ <1) {
+                if (radiusXY < 1 && radiusZ < 1) {
                     ihs[idx] = binaryCloseRad1(ihs[idx], 1, nbCPUs);
-                } else if (radiusXY <2 && radiusZ <2) {
+                } else if (radiusXY < 2 && radiusZ < 2) {
                     ihs[idx] = (ImageByte) binaryCloseRad1diag(ihs[idx], 1, nbCPUs);
                 } else {
                     ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY, radiusZ, nbCPUs);
@@ -598,9 +588,9 @@ public class BinaryMorpho {
             //ihs[0].show("crop binary 0");
             int end = ihs.length;
             for (int idx = 0; idx < end; idx++) {
-                if (radiusXY <1 && radiusZ <1) {
+                if (radiusXY < 1 && radiusZ < 1) {
                     ihs[idx] = binaryDilateRad1(ihs[idx], 1, nbCPUs);
-                } else if (radiusXY <2 && radiusZ <2) {
+                } else if (radiusXY < 2 && radiusZ < 2) {
                     ihs[idx] = (ImageByte) binaryDilateRad1diag(ihs[idx], 1, nbCPUs);
                 } else {
                     ihs[idx] = (ImageByte) binaryDilate(ihs[idx], radiusXY, radiusZ, nbCPUs);

@@ -1813,7 +1813,7 @@ public class Object3DVoxels extends Object3D {
 
     public Object3DVoxels dilate(float dilateSize, ImageInt mask, int nbCPUs) {
         // use getdilatedObject
-        Object3DVoxels dilated=this.getDilatedObject(dilateSize, dilateSize, dilateSize, false);
+        Object3DVoxels dilated=this.getDilatedObject(dilateSize, dilateSize, dilateSize);
         ImageInt seg=dilated.getLabelImage();        
         
 //        ImageInt oldMiniLabelImage = this.miniLabelImage;

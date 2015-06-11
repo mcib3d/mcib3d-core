@@ -2894,7 +2894,7 @@ public abstract class Object3D {
      */
     public ImageInt createSegImage(int xmi, int ymi, int zmi, int xma, int yma, int zma, int val) {
         ImageInt SegImage = new ImageShort("Object", xma - xmi + 1, yma - ymi + 1, zma - zmi + 1);
-        // FIXME offset useful --> yes, see intersection image for mereo
+        // FIXME offset useful --> yes, see intersection image for mereo, and also for dilated object
         this.offX = xmi;
         this.offY = ymi;
         this.offZ = zmi;
@@ -2908,6 +2908,10 @@ public abstract class Object3D {
         }
         //IJ.log("seg image " + offX + " " + offY + " " + offZ);
         return SegImage;
+    }
+
+    public ImageInt createSegImage(int bx, int by, int bz) {
+        return createSegImage(xmin - bx, ymin - by, zmin - bz, xmax + bx, ymax + by, zmax + bz, value);
     }
 
     /**
@@ -3085,7 +3089,7 @@ public abstract class Object3D {
         return 100.0 * vC / (vA + vB);
     }
 
-    private Object3DVoxels getMorphoObject(int op, float radX, float radY, float radZ, boolean createLabelImage) {
+    private Object3DVoxels getMorphoObject(int op, float radX, float radY, float radZ) {
         // special case radii = 0
         if ((radX == 0) && (radY == 0) && (radZ == 0)) {
             return new Object3DVoxels(this);
@@ -3093,7 +3097,6 @@ public abstract class Object3D {
         // draw object on new image
         //int bo = (int) Math.max(radX, radY), radZ);
         //IJ.log("dilated object ");
-        ImageInt segImage = this.getLabelImage();
 
         //segImage = this.createSegImageMini(value, (int) Math.ceil(radX), (int) Math.ceil(radY), (int) Math.ceil(radZ));
         //segImage.show("segimage 1");
@@ -3110,11 +3113,18 @@ public abstract class Object3D {
             } else if (op == BinaryMorpho.MORPHO_OPEN) {
                 filter = FastFilters3D.OPENGRAY;
             }
-            segImage2 = FastFilters3D.filterIntImage(segImage, filter, radX, radY, radZ, 0, true);
+            // resize if DILATE or CLOSE
+            if ((op == BinaryMorpho.MORPHO_DILATE) || (op == BinaryMorpho.MORPHO_CLOSE)) {
+                labelImage = createSegImage((int) (radX + 1), (int) (radY + 1), (int) (radZ + 1));
+            }
+            segImage2 = FastFilters3D.filterIntImage(getLabelImage(), filter, radX, radY, radZ, 0, true);
+            //IJ.log("FF "+segImage2.offsetX+" "+segImage2.offsetY+" "+segImage2.offsetZ);
             //segImage2.setOffset(segImage);
         } // else use binaryMorpho class (based on edm)
         else {
-            segImage2 = BinaryMorpho.binaryMorpho(segImage, op, radX, radZ);
+            // automatic resize --> offset for image
+            segImage2 = BinaryMorpho.binaryMorpho(getLabelImage(), op, radX, radZ);
+            //IJ.log("BM "+segImage2.offsetX+" "+segImage2.offsetY+" "+segImage2.offsetZ);
 //            if (segImage2 != null) {
 //                segImage2.replacePixelsValue(255, value);
 //            }
@@ -3123,19 +3133,15 @@ public abstract class Object3D {
             return null;
         }
         //segImage2.show("segimage_"+this);
-        //IJ.log("morpho object "+offX+" "+offY+" "+offZ+" "+segImage2.offsetX+" "+segImage2.offsetY+" "+segImage2.offsetZ);
+        //IJ.log("morpho object " + offX + " " + offY + " " + offZ + " " + segImage2.offsetX + " " + segImage2.offsetY + " " + segImage2.offsetZ);
         Object3DVoxels objMorpho = new Object3DVoxels(segImage2);
-        objMorpho.translate(offX + segImage2.offsetX, offY + segImage2.offsetY, offZ + segImage2.offsetZ);
+        objMorpho.translate(offX + segImage2.offsetX, offY + segImage2.offsetX, offZ + segImage2.offsetX);
         objMorpho.setCalibration(resXY, resZ, units);
         //objMorpho.setLabelImage(null);
         // test
-        //this.setLabelImage(null);
-        if (createLabelImage) {
-            ImageInt labelDilated = objMorpho.getLabelImage();
-        }
+        //this.setLabelImage(null);        
 
         //IJ.log("dilated object " + offX + " " + offY + " " + offZ);
-
         return objMorpho;
     }
 
@@ -3149,7 +3155,7 @@ public abstract class Object3D {
      * @return
      */
     public boolean b_closed(float radX, float radY, float radZ) {
-        Object3D closed = this.getClosedObject(radX, radY, radZ, false);
+        Object3D closed = this.getClosedObject(radX, radY, radZ);
         MereoObject3D mereo = new MereoObject3D(this, closed);
         return mereo.Equality();
     }
@@ -3164,7 +3170,7 @@ public abstract class Object3D {
      * @return
      */
     public boolean b_open(float radX, float radY, float radZ) {
-        Object3D open = this.getOpenedObject(radX, radY, radZ, false);
+        Object3D open = this.getOpenedObject(radX, radY, radZ);
         MereoObject3D mereo = new MereoObject3D(this, open);
         return mereo.Equality();
     }
@@ -3194,8 +3200,8 @@ public abstract class Object3D {
      * @param createLabelImage
      * @return
      */
-    public Object3DVoxels getDilatedObject(float radX, float radY, float radZ, boolean createLabelImage) {
-        return getMorphoObject(BinaryMorpho.MORPHO_DILATE, radX, radY, radZ, createLabelImage);
+    public Object3DVoxels getDilatedObject(float radX, float radY, float radZ) {
+        return getMorphoObject(BinaryMorpho.MORPHO_DILATE, radX, radY, radZ);
     }
 
     /**
@@ -3206,8 +3212,8 @@ public abstract class Object3D {
      * @param createLabelImage
      * @return
      */
-    public Object3DVoxels getErodedObject(float radX, float radY, float radZ, boolean createLabelImage) {
-        return getMorphoObject(BinaryMorpho.MORPHO_ERODE, radX, radY, radZ, createLabelImage);
+    public Object3DVoxels getErodedObject(float radX, float radY, float radZ) {
+        return getMorphoObject(BinaryMorpho.MORPHO_ERODE, radX, radY, radZ);
     }
 
     /**
@@ -3218,8 +3224,8 @@ public abstract class Object3D {
      * @param createLabelImage
      * @return
      */
-    public Object3DVoxels getClosedObject(float radX, float radY, float radZ, boolean createLabelImage) {
-        return getMorphoObject(BinaryMorpho.MORPHO_CLOSE, radX, radY, radZ, createLabelImage);
+    public Object3DVoxels getClosedObject(float radX, float radY, float radZ) {
+        return getMorphoObject(BinaryMorpho.MORPHO_CLOSE, radX, radY, radZ);
     }
 
     /**
@@ -3230,22 +3236,22 @@ public abstract class Object3D {
      * @param createLabelImage
      * @return
      */
-    public Object3DVoxels getOpenedObject(float radX, float radY, float radZ, boolean createLabelImage) {
-        return getMorphoObject(BinaryMorpho.MORPHO_OPEN, radX, radY, radZ, createLabelImage);
+    public Object3DVoxels getOpenedObject(float radX, float radY, float radZ) {
+        return getMorphoObject(BinaryMorpho.MORPHO_OPEN, radX, radY, radZ);
     }
 
     public Object3DVoxels getLayerObject(float r1, float r2) {
         Object3DVoxels obMax;
         if (r2 > 0) {
-            obMax = getDilatedObject(r2, r2, r2, true);
+            obMax = getDilatedObject(r2, r2, r2);
         } else {
-            obMax = getErodedObject(-r2, -r2, -r2, true);
+            obMax = getErodedObject(-r2, -r2, -r2);
         }
         Object3DVoxels obMin;
         if (r1 > 0) {
-            obMin = getDilatedObject(r1, r1, r1, true);
+            obMin = getDilatedObject(r1, r1, r1);
         } else {
-            obMin = getErodedObject(-r1, -r1, -r1, true);
+            obMin = getErodedObject(-r1, -r1, -r1);
         }
 
         obMax.substractObject(obMin);

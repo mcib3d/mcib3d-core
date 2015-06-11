@@ -389,14 +389,14 @@ public class MereoObject3D {
     //////////////////////////////////////////////////
     private Object3D getDilatedA() {
         if (Adilated == null) {
-            Adilated = A.getDilatedObject(RadX, RadY, RadZ, false);
+            Adilated = A.getDilatedObject(RadX, RadY, RadZ);
         }
         return Adilated;
     }
 
     private Object3D getDilatedB() {
         if (Bdilated == null) {
-            Bdilated = B.getDilatedObject(RadX, RadY, RadZ, false);
+            Bdilated = B.getDilatedObject(RadX, RadY, RadZ);
         }
         return Bdilated;
     }
