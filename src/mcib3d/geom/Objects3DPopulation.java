@@ -360,7 +360,6 @@ public class Objects3DPopulation {
             IJ.log("No objects found");
             return;
         }
-        //IJ.log("min-max " + min + " " + max);
         // iterate in image  and constructs objects
         calibration = cali;
         ArrayList<Voxel3D>[] objectstmp = new ArrayList[max - min + 1];
@@ -386,11 +385,10 @@ public class Objects3DPopulation {
         for (int i = 0; i < max - min + 1; i++) {
             if (!objectstmp[i].isEmpty()) {
                 Object3DVoxels ob = new Object3DVoxels(objectstmp[i]);
-                ob.setLabelImage(null);// the image can be closed anytime
+                //ob.setLabelImage(null);// the image can be closed anytime
                 ob.setCalibration(cali);
                 ob.setName("Obj" + (i + 1));
                 addObject(ob);
-                //IJ.log("adding ob " + ob.getValue() + " " + ob.getCenterAsPoint());
             }
         }
     }

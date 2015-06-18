@@ -3137,6 +3137,11 @@ public abstract class Object3D {
         Object3DVoxels objMorpho = new Object3DVoxels(segImage2);
         objMorpho.translate(offX + segImage2.offsetX, offY + segImage2.offsetX, offZ + segImage2.offsetX);
         objMorpho.setCalibration(resXY, resZ, units);
+        // test
+        objMorpho.setLabelImage(segImage2);
+        objMorpho.offX=offX + segImage2.offsetX;
+        objMorpho.offY=offY + segImage2.offsetY;
+        objMorpho.offZ=offZ + segImage2.offsetZ;
         //objMorpho.setLabelImage(null);
         // test
         //this.setLabelImage(null);        

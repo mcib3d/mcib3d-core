@@ -283,9 +283,9 @@ public class Watershed3D {
         int ite = 0;
         boolean loop = true;
         int nb0, nb1;
-        int Nb = voxels.size();
+        float Nb = voxels.size();
         while ((loop) && (ite < MaxIterations)) {
-            IJ.showStatus("Watershed " + (ite + 1) + " (" + (int) (100 - 100 * voxels.size() / Nb) + "%)");
+            IJ.showStatus("Watershed " + (ite + 1) + " (" + (int) (100 - (100.0f * voxels.size() / Nb)) + "%)");
             //IJ.log("Watershed " + ite + " (" + voxels.size() + ")");
             ite++;
             nb0 = voxels.size();
@@ -522,6 +522,8 @@ public class Watershed3D {
         }
 
         voxels = voxelsNextRound;
+        System.gc();
+
         return loop;
     }
 
