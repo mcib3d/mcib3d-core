@@ -78,6 +78,14 @@ public class Objects3DPopulation {
         this.addObjects(objs);
     }
 
+    public Objects3DPopulation(ArrayList objs) {
+        objects = new ArrayList();
+        hashValue = new HashMap<Integer, Integer>();
+        hashName = new HashMap<String, Integer>();
+        calibration = new Calibration();
+        this.addObjects(objs);
+    }
+
     public Objects3DPopulation(Object3D[] objs, Calibration cal) {
         objects = new ArrayList();
         hashValue = new HashMap<Integer, Integer>();
@@ -292,6 +300,26 @@ public class Objects3DPopulation {
         hashValue.remove(objects.get(i).getValue());
         hashName.remove(objects.get(i).getName());
         objects.remove(i);
+        // rebuild hash ;) + KD tree (?)
+    }
+    
+    public void removeObject(Object3D obj) {
+        hashValue.remove(obj.getValue());
+        hashName.remove(obj.getName());
+        objects.remove(obj);
+    }
+    
+    
+
+    public void buildHash() {
+        hashName.clear();
+        hashValue.clear();
+
+        for (int i = 0; i < getNbObjects(); i++) {
+            Object3D O = getObject(i);
+            hashName.put(O.getName(), i);
+            hashValue.put(O.getValue(), i);
+        }
     }
 
     public void addPoints(Point3D[] points) {
@@ -354,12 +382,14 @@ public class Objects3DPopulation {
      * @param cali
      */
     public void addImage(ImageInt seg, int threshold, Calibration cali) {
+        seg.resetStats(null);
         int min = (int) seg.getMinAboveValue(0);
         int max = (int) seg.getMax();
         if (max == 0) {
             IJ.log("No objects found");
             return;
         }
+        //IJ.log("mm "+min+" "+max);
         // iterate in image  and constructs objects
         calibration = cali;
         ArrayList<Voxel3D>[] objectstmp = new ArrayList[max - min + 1];
@@ -440,19 +470,19 @@ public class Objects3DPopulation {
     public Object3D getObject(int i) {
         return objects.get(i);
     }
-    
-    public void setObject(int i, Object3D obj){  
+
+    public void setObject(int i, Object3D obj) {
         // remove old name
-        Object3D old=objects.get(i);
+        Object3D old = objects.get(i);
         hashName.remove(old.getName());
         // set new object
         obj.setCalibration(calibration);
-        objects.set(i, obj);      
+        objects.set(i, obj);
         hashName.put(obj.getName(), i);
         // update kdtree if available // FIXME UPDATE kdtree
         if (kdtree != null) {
             createKDTreeCenters();
-        }        
+        }
     }
 
     public Object3D getObjectByValue(int val) {
@@ -1182,7 +1212,7 @@ public class Objects3DPopulation {
 //        ImageInt labelm = new ImageShort("", mask.getXmax(), mask.getYmax(), mask.getZmax());
 //        mav.draw(labelm);
 //        labelm.show();
-        
+
         //ImageInt label2 = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
         ImageInt label2 = new ImageShort("", mask.getXmax(), mask.getYmax(), mask.getZmax());
         Random ra = new Random();
@@ -1212,7 +1242,7 @@ public class Objects3DPopulation {
                 for (Object3D O : shuObj) {
                     if (O.getColoc(Vtest) > 0) {
                         ok = false;
-                         //IJ.log("PB coloc others");
+                        //IJ.log("PB coloc others");
                     }
                 }
             }
@@ -1221,7 +1251,7 @@ public class Objects3DPopulation {
                 IJ.log("Could not shuffle " + obj + " " + i + " " + idx.getValue(i));
             } else {
                 shuObj.add(Vtest);
-                Vtest.draw(label2); 
+                Vtest.draw(label2);
                 Vtest.setLabelImage(label2);
             }
         }

@@ -290,9 +290,9 @@ public class Object3DVoxels extends Object3D {
         init();
         value = other.getValue();
         this.labelImage = other.getLabelImage();
-        this.offX=other.offX;
-        this.offY=other.offY;
-        this.offZ=other.offZ;
+        this.offX = other.offX;
+        this.offY = other.offY;
+        this.offZ = other.offZ;
         this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
@@ -302,9 +302,9 @@ public class Object3DVoxels extends Object3D {
         init();
         value = other.getValue();
         this.labelImage = other.getLabelImage();
-        this.offX=other.offX;
-        this.offY=other.offY;
-        this.offZ=other.offZ;
+        this.offX = other.offX;
+        this.offY = other.offY;
+        this.offZ = other.offZ;
         this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
@@ -482,7 +482,7 @@ public class Object3DVoxels extends Object3D {
 
     public boolean isConnex() {
         //ImageShort seg = (ImageShort) this.createSegImageMini(1, 1);
-        ImageInt seg=this.getLabelImage();
+        ImageInt seg = this.getLabelImage();
         // label the seg image
         ImageLabeller labeler = new ImageLabeller();
         return (labeler.getNbObjectsTotal(seg) == 1);
@@ -493,9 +493,20 @@ public class Object3DVoxels extends Object3D {
 //        return !seg.hasOneValueInt(1);
     }
 
+    public ArrayList<Object3DVoxels> getConnexComponents() {
+        ImageInt seg = this.getLabelImage();
+        ImageLabeller labeler = new ImageLabeller();
+        ArrayList<Object3DVoxels> objs = labeler.getObjects(seg);
+        for (Object3DVoxels O : objs) {
+            O.translate(offX, offY, offZ);
+        }
+
+        return objs;
+    }
+
     public Object3DVoxels getInterior3DFill() {
         //ImageHandler seg = createSegImageMini(255, 1);
-        ImageInt seg=this.getLabelImage();
+        ImageInt seg = this.getLabelImage();
         ImageHandler fill = seg.duplicate();
         FillHoles3D.process(fill, value, 0, false);
         ImageFloat res = fill.substractImage(seg);
@@ -896,7 +907,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     @Override
-    public void computeContours() {        
+    public void computeContours() {
         this.computeContours(this.getLabelImage(), this.offX, this.offY, this.offZ);
     }
 
@@ -1079,7 +1090,7 @@ public class Object3DVoxels extends Object3D {
 
         int val = obj.getValue();
         ImageInt otherseg = obj.getLabelImage();
-        ImageInt label=this.getLabelImage();
+        ImageInt label = this.getLabelImage();
 
 //        int offX0 = labelImage.offsetX;
 //        int offY0 = labelImage.offsetY;
@@ -1222,7 +1233,6 @@ public class Object3DVoxels extends Object3D {
 //
 //        return false;
 //    }
-
     private boolean hasOneVoxelColocVoxels(Object3D obj) {
         if (this.disjointBox(obj)) {
             return false;
@@ -1813,9 +1823,9 @@ public class Object3DVoxels extends Object3D {
 
     public Object3DVoxels dilate(float dilateSize, ImageInt mask, int nbCPUs) {
         // use getdilatedObject
-        Object3DVoxels dilated=this.getDilatedObject(dilateSize, dilateSize, dilateSize);
-        ImageInt seg=dilated.getLabelImage();        
-        
+        Object3DVoxels dilated = this.getDilatedObject(dilateSize, dilateSize, dilateSize);
+        ImageInt seg = dilated.getLabelImage();
+
 //        ImageInt oldMiniLabelImage = this.miniLabelImage;
 //        ImageInt seg = this.createSegImageMini(1, 0);
 //        float dilateSizeZ = (float) (dilateSize * this.resXY / this.resZ);

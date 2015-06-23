@@ -2998,13 +2998,13 @@ public abstract class Object3D {
         // translate object with units coordinates
         float tx, ty, tz;
         if (calibrated) {
-            tx = (float) (miniseg.offsetX * resXY);
-            ty = (float) (miniseg.offsetY * resXY);
-            tz = (float) (miniseg.offsetZ * resZ);
+            tx = (float) (this.offX * resXY);
+            ty = (float) (this.offY * resXY);
+            tz = (float) (this.offZ * resZ);
         } else {
-            tx = (float) (miniseg.offsetX);
-            ty = (float) (miniseg.offsetY);
-            tz = (float) (miniseg.offsetZ);
+            tx = (float) (this.offX);
+            ty = (float) (this.offY);
+            tz = (float) (this.offZ);
         }
         l = Object3DSurface.translateTool(l, tx, ty, tz);
 
