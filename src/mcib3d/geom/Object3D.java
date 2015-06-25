@@ -2878,7 +2878,12 @@ public abstract class Object3D {
      * @return
      */
     private ImageInt createSegImage() {
-        return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, value);
+        // case value =0 
+        if (value != 0) {
+            return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, value);
+        } else {
+            return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, 1);
+        }
     }
 
     /**
@@ -3139,9 +3144,9 @@ public abstract class Object3D {
         objMorpho.setCalibration(resXY, resZ, units);
         // test
         objMorpho.setLabelImage(segImage2);
-        objMorpho.offX=offX + segImage2.offsetX;
-        objMorpho.offY=offY + segImage2.offsetY;
-        objMorpho.offZ=offZ + segImage2.offsetZ;
+        objMorpho.offX = offX + segImage2.offsetX;
+        objMorpho.offY = offY + segImage2.offsetY;
+        objMorpho.offZ = offZ + segImage2.offsetZ;
         //objMorpho.setLabelImage(null);
         // test
         //this.setLabelImage(null);        

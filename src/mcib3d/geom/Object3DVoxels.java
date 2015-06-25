@@ -768,6 +768,12 @@ public class Object3DVoxels extends Object3D {
         int class3or4;
         int class1 = 0, class2 = 0, class3 = 0, class4 = 0, class5 = 0, class6 = 0;
 
+        int val = value;
+        // special case value=0
+        if (val == 0) {
+            val = (int) segImage.getMinAboveValue(0);
+        }
+
         // TODO parcourir seulement les objets de arraylist voxels et non la bounding box!
         // pb ??
 //       for (Voxel3D vox : voxels) {
@@ -783,7 +789,7 @@ public class Object3DVoxels extends Object3D {
                     cont = false;
                     if (segImage.contains(i, j, k)) {
                         pix0 = segImage.getPixelInt(i, j, k);
-                        if (pix0 == value) {
+                        if (pix0 == val) {
                             face = 0;
                             class3or4 = 0;
                             if (i + 1 < sx) {
@@ -816,46 +822,46 @@ public class Object3DVoxels extends Object3D {
                             } else {
                                 pix6 = 0;
                             }
-                            if (pix1 != value) {
+                            if (pix1 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
-                                if (pix2 != value) {
+                                if (pix2 != val) {
                                     class3or4 = 1;
                                 }
                             }
-                            if (pix2 != value) {
+                            if (pix2 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
                             }
-                            if (pix3 != value) {
+                            if (pix3 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
-                                if (pix4 != value) {
+                                if (pix4 != val) {
                                     class3or4 = 1;
                                 }
                             }
-                            if (pix4 != value) {
+                            if (pix4 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
                             }
-                            if (pix5 != value) {
+                            if (pix5 != val) {
                                 cont = true;
                                 areaContactUnit += XX;
                                 areaContactVoxels++;
                                 face++;
-                                if (pix6 != value) {
+                                if (pix6 != val) {
                                     class3or4 = 1;
                                 }
                             }
-                            if (pix6 != value) {
+                            if (pix6 != val) {
                                 cont = true;
                                 areaContactUnit += XX;
                                 areaContactVoxels++;
@@ -863,7 +869,7 @@ public class Object3DVoxels extends Object3D {
                             }
                             if (cont) {
                                 areaNbVoxels++;
-                                Voxel3D voxC = new Voxel3D(i + x0, j + y0, k + z0, value);
+                                Voxel3D voxC = new Voxel3D(i + x0, j + y0, k + z0, val);
                                 contours.add(voxC);
                                 kdtreeContours.add(voxC.getArray(), voxC);
                                 // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE

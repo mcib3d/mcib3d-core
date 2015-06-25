@@ -271,7 +271,10 @@ public class Objects3DPopulation {
         if (kdtree != null) {
             createKDTreeCenters();
         }
-        //IJ.log("adding ob " + obj.getValue() + " " + obj.getCenterAsPoint());
+//        if (obj.getValue() == 0) {
+//            IJ.log("adding ob " + obj.getValue() + " " + obj.getCenterAsPoint());
+//            IJ.log("hash "+hashValue.get(0));
+//        }
     }
 
     public final void addObjects(Object3D[] objs) {
@@ -302,14 +305,12 @@ public class Objects3DPopulation {
         objects.remove(i);
         // rebuild hash ;) + KD tree (?)
     }
-    
+
     public void removeObject(Object3D obj) {
         hashValue.remove(obj.getValue());
         hashName.remove(obj.getName());
         objects.remove(obj);
     }
-    
-    
 
     public void buildHash() {
         hashName.clear();
@@ -383,7 +384,7 @@ public class Objects3DPopulation {
      */
     public void addImage(ImageInt seg, int threshold, Calibration cali) {
         seg.resetStats(null);
-        int min = (int) seg.getMinAboveValue(0);
+        int min = (int) seg.getMinAboveValue(threshold);
         int max = (int) seg.getMax();
         if (max == 0) {
             IJ.log("No objects found");
@@ -1204,8 +1205,8 @@ public class Objects3DPopulation {
         ArrayList<Object3D> shuObj = new ArrayList<Object3D>();
 
         int maxr = 1000;
-        Object3DVoxels mav = mask.getObject3DVoxels();
-        if (mav.isEmpty()) {
+        Object3DVoxels maskVox = mask.getObject3DVoxels();
+        if (maskVox.isEmpty()) {
             IJ.log("Could'nt shuffle, mask is empty");
             return null;
         }
@@ -1227,14 +1228,14 @@ public class Objects3DPopulation {
             while ((!ok) && (c < maxr)) {
                 ok = true;
                 c++;
-                Voxel3D test = mav.getRandomvoxel(ra);
+                Voxel3D test = maskVox.getRandomvoxel(ra);
                 Vtest.draw(labelTest, 0);
                 Vtest.setNewCenter(test.getX(), test.getY(), test.getZ());
                 Vtest.draw(labelTest);
                 Vtest.setLabelImage(labelTest);
 
                 if (mask.getColoc(Vtest) < Vtest.getVolumePixels()) {
-                    //IJ.log("PB coloc mask ");
+                    System.out.println("PB coloc mask ");
                     ok = false;
                 }
 
@@ -1242,13 +1243,16 @@ public class Objects3DPopulation {
                 for (Object3D O : shuObj) {
                     if (O.getColoc(Vtest) > 0) {
                         ok = false;
-                        //IJ.log("PB coloc others");
+                        System.out.println("PB coloc others");
                     }
                 }
             }
 
             if (c == maxr) {
                 IJ.log("Could not shuffle " + obj + " " + i + " " + idx.getValue(i));
+                shuObj.add(obj);
+                obj.draw(label2);
+                obj.setLabelImage(label2);
             } else {
                 shuObj.add(Vtest);
                 Vtest.draw(label2);
