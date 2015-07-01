@@ -231,6 +231,9 @@ public abstract class Object3D {
     // with currentQuantifImage
     public static final byte MEASURE_INTENSITY_AVG = 10;
     public static final byte MEASURE_INTENSITY_SD = 11;
+    public static final byte MEASURE_INTENSITY_MIN = 12;
+    public static final byte MEASURE_INTENSITY_MAX = 13;
+    public static final byte MEASURE_INTENSITY_MEDIAN = 14;
 
     /**
      * Sets the calibration in XY of the Object3D
@@ -434,6 +437,24 @@ public abstract class Object3D {
         } else if (Measure == MEASURE_INTENSITY_SD) {
             if (currentQuantifImage != null) {
                 return getPixStdDevValue(currentQuantifImage);
+            } else {
+                return 0;
+            }
+        } else if (Measure == MEASURE_INTENSITY_MAX) {
+            if (currentQuantifImage != null) {
+                return getPixMaxValue(currentQuantifImage);
+            } else {
+                return 0;
+            }
+        } else if (Measure == MEASURE_INTENSITY_MEDIAN) {
+            if (currentQuantifImage != null) {
+                return getPixMedianValue(currentQuantifImage);
+            } else {
+                return 0;
+            }
+        } else if (Measure == MEASURE_INTENSITY_MIN) {
+            if (currentQuantifImage != null) {
+                return getPixMinValue(currentQuantifImage);
             } else {
                 return 0;
             }
@@ -2646,6 +2667,14 @@ public abstract class Object3D {
     public double getPixMeanValue(ImageHandler ima) {
         if (volume > 0) {
             return getIntegratedDensity(ima) / getVolumePixels();
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    public double getPixMedianValue(ImageHandler ima) {
+        if (volume > 0) {
+            return listValues(ima).median();
         } else {
             return Double.NaN;
         }

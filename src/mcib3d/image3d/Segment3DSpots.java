@@ -401,7 +401,7 @@ public class Segment3DSpots {
         double[] gaussFit;
         double[] params;
         if (WATERSHED) {
-            gaussFit = rawImage.radialDistribution(x, y, z, GAUSS_MAXR, watershedImage);
+            gaussFit = rawImage.radialDistribution(x, y, z, GAUSS_MAXR, Object3D.MEASURE_INTENSITY_AVG, watershedImage);
         } else {
             gaussFit = rawImage.radialDistribution(x, y, z, GAUSS_MAXR);
         }
@@ -1016,7 +1016,7 @@ public class Segment3DSpots {
             // FIXME variable multithread
             ImageFloat edt3d = EDT.run(seg, 1f, false, cpus);
             // 3D filtering of the edt t oremove small local maxima
-            edt3d=FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
+            edt3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
             //edt3d.showDuplicate("edt");
 
             //ImageStack localMax = FastFilters3D.filterFloatImageStack(edt3d.getImageStack(), FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
