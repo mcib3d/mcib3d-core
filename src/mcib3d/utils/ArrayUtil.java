@@ -77,6 +77,24 @@ public class ArrayUtil {
         }
     }
 
+    public void fromArrayListInt(ArrayList<Integer> arr) {
+        this.size = arr.size();
+        sorted = false;
+        values = new double[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = (int) (arr.get(i));
+        }
+    }
+
+    public void fromArrayListDouble(ArrayList<Double> arr) {
+        this.size = arr.size();
+        sorted = false;
+        values = new double[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = arr.get(i);
+        }
+    }
+
     /**
      * put a value to a index
      *
@@ -133,16 +151,24 @@ public class ArrayUtil {
     public double[] getArray() {
         return values;
     }
-    
-     public ArrayList<Double> getArrayList() {
-        ArrayList<Double> list=new ArrayList<Double>(this.getSize());
-        for(int i=0;i<this.getSize();i++){
+
+    public int[] getArrayInt() {
+        int[] res = new int[this.getSize()];
+        for (int i = 0; i < res.length; i++) {
+            res[i] = (int) values[i];
+        }
+
+        return res;
+    }
+
+    public ArrayList<Double> getArrayList() {
+        ArrayList<Double> list = new ArrayList<Double>(this.getSize());
+        for (int i = 0; i < this.getSize(); i++) {
             list.add(this.getValue(i));
         }
-        
+
         return list;
     }
-    
 
     /**
      * new size of the array (can incresase size of array)
