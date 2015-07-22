@@ -328,7 +328,7 @@ public class Watershed3D {
         for (Iterator it = voxels.iterator(); it.hasNext();) {
             voxel = (Voxel3DComparable) it.next();
             if (voxel.getValue() < threshold) {
-                voxelsNextRound.addAll(voxels.subList(voxels.indexOf(voxel), voxels.size()));
+                //voxelsNextRound.addAll(voxels.subList(voxels.indexOf(voxel), voxels.size()));
                 break;
                 //voxelsNextRound.add(voxel);
                 //continue;
@@ -427,7 +427,7 @@ public class Watershed3D {
         for (Iterator it = voxels.iterator(); it.hasNext();) {
             voxel = (Voxel3DComparable) it.next();
             if (voxel.getValue() < threshold) {
-                voxelsNextRound.addAll(voxels.subList(voxels.indexOf(voxel), voxels.size()));
+                //voxelsNextRound.addAll(voxels.subList(voxels.indexOf(voxel), voxels.size()));
                 break;
 //                voxelsNextRound.add(voxel);
 //                continue;

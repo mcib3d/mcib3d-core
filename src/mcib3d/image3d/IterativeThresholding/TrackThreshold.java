@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.BlankMask;
@@ -255,23 +254,23 @@ public class TrackThreshold {
                 ArrayUtil list = obt.getObject().listValues(labels2);
                 list = list.distinctValues();
                 // 1<->1
-                if (list.getSize() == 1) {
-                    ObjectTrack child = hash.get((int) list.getValue(0));
-                    // check if change in volume
-                    if (child != null) {
-                        //if (child.volume != obt.volume) {
-                        obt.addChild(child);
-                        child.setParent(obt);
-                        obt.setObject(null);
-                        //} else {
-                        //    frame2.add(obt);
-                        //}
-                    } else {
-                        obt.setObject(null);
-                    }
-                }
+//                if (list.getSize() == 1) {
+//                    ObjectTrack child = hash.get((int) list.getValue(0));
+//                    // check if change in volume
+//                    if (child != null) {
+//                        //if (child.volume != obt.volume) {
+//                        obt.addChild(child);
+//                        child.setParent(obt);
+//                        obt.setObject(null);
+//                        //} else {
+//                        //    frame2.add(obt);
+//                        //}
+//                    } else {
+//                        obt.setObject(null);
+//                    }
+//                }
                 // association 1<->n
-                if (list.getSize() > 1) {
+                if (list.getSize() > 0) {
                     obt.setObject(null);
                     for (int i = 0; i < list.getSize(); i++) {
                         ObjectTrack child = hash.get((int) list.getValue(i));
