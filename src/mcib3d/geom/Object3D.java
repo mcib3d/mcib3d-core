@@ -60,7 +60,7 @@ import mcib3d.utils.KDTreeC.Item;
  *
  * @author thomas
  */
-public abstract class Object3D {
+public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * name the object (not used yet)
@@ -234,6 +234,9 @@ public abstract class Object3D {
     public static final byte MEASURE_INTENSITY_MIN = 12;
     public static final byte MEASURE_INTENSITY_MAX = 13;
     public static final byte MEASURE_INTENSITY_MEDIAN = 14;
+
+    // TEST comparable
+    public double compare = 0;
 
     /**
      * Sets the calibration in XY of the Object3D
@@ -3375,5 +3378,16 @@ public abstract class Object3D {
      */
     public Object3DVoxels getConvexObject() {
         return getConvexObject(true);
+    }
+
+    @Override
+    public int compareTo(Object3D o) {
+        if (this.compare < o.compare) {
+            return -1;
+        } else if (this.compare > o.compare) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }
