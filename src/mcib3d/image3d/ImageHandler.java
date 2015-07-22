@@ -1716,6 +1716,11 @@ public abstract class ImageHandler {
         return mini;
     }
 
+    public double[] radialDistribution(int x0, int y0, int z0, int maxR, ImageInt water) {
+        return radialDistribution(x0, y0, z0, maxR, Object3D.MEASURE_INTENSITY_AVG, water);
+
+    }
+
     /**
      * Radial distribution of pixels mean values in layers
      *
