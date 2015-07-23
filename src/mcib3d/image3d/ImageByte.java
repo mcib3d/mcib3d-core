@@ -1,6 +1,5 @@
 package mcib3d.image3d;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.Prefs;
@@ -8,11 +7,14 @@ import ij.gui.NewImage;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
-import ij.process.StackStatistics;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
-import mcib3d.geom.*;
+import mcib3d.geom.IntCoord3D;
+import mcib3d.geom.Object3D;
+import mcib3d.geom.Object3DVoxels;
+import mcib3d.geom.Point3D;
+import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.legacy.IntImage3D;
 
 /**
@@ -485,8 +487,8 @@ public class ImageByte extends ImageInt {
         }
         return res;
     }
-    
-     @Override
+
+    @Override
     public ImageByte thresholdRangeExclusive(float min, float max) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
         res.offsetX = offsetX;
@@ -502,8 +504,6 @@ public class ImageByte extends ImageInt {
         }
         return res;
     }
-    
-    
 
     @Override
     public ImageByte threshold(float thld, boolean keepUnderThld, boolean strict) {
@@ -840,9 +840,9 @@ public class ImageByte extends ImageInt {
             }
         }
         ImageByte r = new ImageByte(new ImagePlus(title + "::resized", res));
-        r.offsetX=offsetX-dX;
-        r.offsetY=offsetY-dY;
-        r.offsetZ=offsetZ-dZ;
+        r.offsetX = offsetX - dX;
+        r.offsetY = offsetY - dY;
+        r.offsetZ = offsetZ - dZ;
         return r;
     }
 
@@ -1058,6 +1058,18 @@ public class ImageByte extends ImageInt {
                 }
             }
         }
+    }
+
+    public void intersectMask2D(ImageInt mask, int z) {
+        if (mask == null) {
+            return;
+        }
+        for (int xy = 0; xy < sizeXY; xy++) {
+            if (mask.getPixel(xy, 0) == 0) {
+                pixels[z][xy] = 0;
+            }
+        }
+
     }
 
     public void substractMask(ImageInt mask) {

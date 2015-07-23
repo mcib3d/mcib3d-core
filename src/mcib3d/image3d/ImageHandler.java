@@ -1639,6 +1639,8 @@ public abstract class ImageHandler {
     }
 
     public abstract void intersectMask(ImageInt mask);
+    
+    public abstract void intersectMask2D(ImageInt mask, int z);
 
     public ImageFloat getDistanceMap(float thld, float scaleXY, float scaleZ, boolean invert, int nbCPUs) {
         return EDT.run(this, thld, scaleXY, scaleZ, invert, nbCPUs);
