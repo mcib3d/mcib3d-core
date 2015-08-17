@@ -230,6 +230,37 @@ public abstract class ImageHandler {
         return res;
     }
 
+    public ArrayList<Voxel3D> getNeighborhood3x3x3ListCenter(int x, int y, int z) {
+        ArrayList<Voxel3D> res = new ArrayList<Voxel3D>(27);
+        for (int k = z - 1; k <= z + 1; k++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if ((i >= 0) && (j >= 0) && (k >= 0) && (i < sizeX) && (j < sizeY) && (k < sizeZ)) {
+                        res.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+    public ArrayList<Voxel3D> getNeighborhood3x3x3ListNoCenter(int x, int y, int z) {
+        ArrayList<Voxel3D> res = new ArrayList<Voxel3D>(27);
+        for (int k = z - 1; k <= z + 1; k++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if ((i == x) && (j == y) && (k == z)) {
+                        continue;
+                    }
+                    if ((i >= 0) && (j >= 0) && (k >= 0) && (i < sizeX) && (j < sizeY) && (k < sizeZ)) {
+                        res.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
     /**
      * 6-neighborhood in 3D cross of a given voxel
      *
@@ -1639,7 +1670,7 @@ public abstract class ImageHandler {
     }
 
     public abstract void intersectMask(ImageInt mask);
-    
+
     public abstract void intersectMask2D(ImageInt mask, int z);
 
     public ImageFloat getDistanceMap(float thld, float scaleXY, float scaleZ, boolean invert, int nbCPUs) {

@@ -384,6 +384,30 @@ public class ImageByte extends ImageInt {
     }
 
     @Override
+    public void setPixelCross3D(int x, int y, int z, int value) {
+        byte val = (byte) value;
+        pixels[z][x + y * sizeX] = val;
+        if (x - 1 >= 0) {
+            pixels[z][(x - 1) + y * sizeX] = val;
+        }
+        if (y - 1 >= 0) {
+            pixels[z][x + (y - 1) * sizeX] = val;
+        }
+        if (z - 1 >= 0) {
+            pixels[z - 1][x + y * sizeX] = val;
+        }
+        if (x + 1 < sizeX) {
+            pixels[z][(x + 1) + y * sizeX] = val;
+        }
+        if (y + 1 < sizeY) {
+            pixels[z][x + (y + 1) * sizeX] = val;
+        }
+        if (z + 1 < sizeZ) {
+            pixels[z + 1][x + y * sizeX] = val;
+        }
+    }
+
+    @Override
     public void setPixel(int xy, int z, int value) {
         pixels[z][xy] = (byte) value;
     }
