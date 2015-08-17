@@ -1563,11 +1563,12 @@ public class Object3DVoxels extends Object3D {
             double sum = 0;
             double sum2 = 0;
             double pix;
-            double pmin = Double.MAX_VALUE;
-            double pmax = -Double.MAX_VALUE;
+            double pmin = Double.POSITIVE_INFINITY;
+            double pmax = Double.NEGATIVE_INFINITY;
 
             double i, j, k;
             Voxel3D vox;
+            int nb = 0;
             Iterator it = voxels.iterator();
             while (it.hasNext()) {
                 vox = (Voxel3D) it.next();
@@ -1576,16 +1577,19 @@ public class Object3DVoxels extends Object3D {
                 k = vox.getZ();
                 if (ima.contains(vox)) {
                     pix = ima.getPixel(vox);
-                    cx += i * pix;
-                    cy += j * pix;
-                    cz += k * pix;
-                    sum += pix;
-                    sum2 += pix * pix;
-                    if (pix > pmax) {
-                        pmax = pix;
-                    }
-                    if (pix < pmin) {
-                        pmin = pix;
+                    if (!Double.isNaN(pix)) {
+                        nb++;
+                        cx += i * pix;
+                        cy += j * pix;
+                        cz += k * pix;
+                        sum += pix;
+                        sum2 += pix * pix;
+                        if (pix > pmax) {
+                            pmax = pix;
+                        }
+                        if (pix < pmin) {
+                            pmin = pix;
+                        }
                     }
                 }
             }
@@ -1594,9 +1598,17 @@ public class Object3DVoxels extends Object3D {
             cz /= sum;
 
             integratedDensity = sum;
+            meanDensity = integratedDensity / (double) nb;
 
             pixmin = pmin;
             pixmax = pmax;
+
+            if (pmin == Double.POSITIVE_INFINITY) {
+                pixmin = Double.NaN;
+            }
+            if (pmax == Double.NEGATIVE_INFINITY) {
+                pixmax = Double.NaN;
+            }
 
             // standard dev
             int vol = getVolumePixels();

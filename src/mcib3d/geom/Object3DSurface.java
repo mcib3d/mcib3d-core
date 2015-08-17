@@ -912,6 +912,7 @@ public class Object3DSurface extends Object3D {
 
             double i, j, k;
             Voxel3D vox;
+            int nb = 0;
             Iterator it = getVoxels().iterator();
             while (it.hasNext()) {
                 vox = (Voxel3D) it.next();
@@ -920,16 +921,19 @@ public class Object3DSurface extends Object3D {
                 k = vox.getZ();
 
                 pix = ima.getPixel(vox);
-                cx += i * pix;
-                cy += j * pix;
-                cz += k * pix;
-                sum += pix;
-                sum2 += pix * pix;
-                if (pix > pmax) {
-                    pmax = pix;
-                }
-                if (pix < pmin) {
-                    pmin = pix;
+                if (!Double.isNaN(pix)) {
+                    nb++;
+                    cx += i * pix;
+                    cy += j * pix;
+                    cz += k * pix;
+                    sum += pix;
+                    sum2 += pix * pix;
+                    if (pix > pmax) {
+                        pmax = pix;
+                    }
+                    if (pix < pmin) {
+                        pmin = pix;
+                    }
                 }
             }
             cx /= sum;
@@ -937,6 +941,7 @@ public class Object3DSurface extends Object3D {
             cz /= sum;
 
             integratedDensity = sum;
+            meanDensity = integratedDensity / nb;
 
             pixmin = pmin;
             pixmax = pmax;

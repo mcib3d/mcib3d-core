@@ -89,18 +89,22 @@ public class Object3DFuzzy extends Object3DVoxels {
             double pix;
             double pmin = Double.MAX_VALUE;
             double pmax = -Double.MAX_VALUE;
+            int nb = 0;
             for (Voxel3D vox : voxels) {
                 pix = ima.getPixel(vox) * vox.getValue();
-                cx += vox.getX() * pix;
-                cy += vox.getY() * pix;
-                cz += vox.getZ() * pix;
-                sum += pix;
-                sum2 += pix * pix;
-                if (pix > pmax) {
-                    pmax = pix;
-                }
-                if (pix < pmin) {
-                    pmin = pix;
+                if (!Double.isNaN(pix)) {
+                    nb++;
+                    cx += vox.getX() * pix;
+                    cy += vox.getY() * pix;
+                    cz += vox.getZ() * pix;
+                    sum += pix;
+                    sum2 += pix * pix;
+                    if (pix > pmax) {
+                        pmax = pix;
+                    }
+                    if (pix < pmin) {
+                        pmin = pix;
+                    }
                 }
             }
             cx /= sum;
@@ -108,6 +112,7 @@ public class Object3DFuzzy extends Object3DVoxels {
             cz /= sum;
 
             integratedDensity = sum;
+            meanDensity = integratedDensity / nb;
 
             pixmin = pmin;
             pixmax = pmax;
@@ -346,7 +351,7 @@ public class Object3DFuzzy extends Object3DVoxels {
 
         try {
             bf = new java.io.BufferedWriter(new java.io.FileWriter(path + value + ".3droi")); //name??
-             saveInfo(bf);
+            saveInfo(bf);
             Iterator it = voxels.iterator();
             while (it.hasNext()) {
                 c++;

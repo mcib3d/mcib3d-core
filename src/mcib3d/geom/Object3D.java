@@ -136,6 +136,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * Integrated density (sum of pixels)
      */
     protected double integratedDensity = Double.NaN;
+    protected double meanDensity = Double.NaN;
     /**
      * standard deviation
      */
@@ -2669,7 +2670,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public double getPixMeanValue(ImageHandler ima) {
         if (volume > 0) {
-            return getIntegratedDensity(ima) / getVolumePixels();
+            return meanDensity;
         } else {
             return Double.NaN;
         }
