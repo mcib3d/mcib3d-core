@@ -16,7 +16,7 @@ import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.image3d.legacy.IntImage3D;
 import mcib3d.image3d.processing.FastFilters3D;
-import mcib3d.image3d.regionGrowing.Watershed3D;
+import mcib3d.image3d.regionGrowing.Watershed3D_old;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.ThreadUtil;
 
@@ -278,7 +278,7 @@ public class Segment3DSpots {
     }
 
     private void computeWatershed() {
-        Watershed3D wat3D = new Watershed3D(rawImage, seedsImage, noiseWatershed, seedsThreshold);
+        Watershed3D_old wat3D = new Watershed3D_old(rawImage, seedsImage, noiseWatershed, seedsThreshold);
         watershedImage = wat3D.getWatershedImage3D();
     }
 
@@ -1117,7 +1117,7 @@ public class Segment3DSpots {
             seeds.setPixel(PP1.getRoundX(), PP1.getRoundY(), PP1.getRoundZ(), 255);
             seeds.setPixel(PP2.getRoundX(), PP2.getRoundY(), PP2.getRoundZ(), 255);
             //seeds.show();
-            Watershed3D wat = new Watershed3D(edt3d, seeds, 0, 0);
+            Watershed3D_old wat = new Watershed3D_old(edt3d, seeds, 0, 0);
             ImageInt wat2 = wat.getWatershedImage3D();
             //wat2.show();
             // in watershed label starts at 2
