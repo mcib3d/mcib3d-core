@@ -7,8 +7,10 @@ package mcib3d.image3d.regionGrowing;
 import ij.IJ;
 import ij.ImageStack;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.TreeSet;
+import mcib3d.geom.ComparatorVoxel;
+import mcib3d.geom.Voxel3D;
 import mcib3d.geom.Voxel3DComparable;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
@@ -42,9 +44,11 @@ public class Watershed3D {
     ImageHandler rawImage; // raw image
     ImageHandler seedsImage; // positions of seeds
     ImageInt watershedImage = null; // watershed from seeds
-    ArrayList<Voxel3DComparable> voxels = null; // voxels to compute watershed    
+    ImageInt mask;
+    LinkedList<Voxel3DComparable> voxels = null; // voxels to compute watershed    
     final int NO_LABEL = 0; // watershed label
-    final int BORDER = 1; // watershed label
+    //final int BORDER = 2; // watershed label
+    final int QUEUE = 1;
     // association between neighbor regions
     protected boolean computeAssociation = false;
     ArrayList<String> associations = null;
@@ -55,7 +59,7 @@ public class Watershed3D {
     // get volumes for each labels (jaza)
     protected boolean computeVolumes = false;
     ArrayList<Double> volumeLabels = null;
-    private final int rawThreshold;
+    private int rawThreshold;
     private final int seedsThreshold;
     private boolean okseeds = false;
 
@@ -96,30 +100,26 @@ public class Watershed3D {
      * @param threshold
      * @return watershed image
      */
-    public ImageInt getWatershedImage3D(int threshold) {
-        if (watershedImage == null) {
-            this.computeWatershed(threshold);
-        }
-        return watershedImage;
-    }
-
+//    public ImageInt getWatershedImage3D(int threshold) {
+//        if (watershedImage == null) {
+//            this.computeWatershed(threshold);
+//        }
+//        return watershedImage;
+//    }
     /**
      * compute the watershed image
      *
      * @return watershed image
      */
-    public ImageInt getWatershedImage3D() {
-        return getWatershedImage3D(0);
-    }
-
-    public void updateWatershedImage3D(ImageInt wat) {
-        watershedImage = wat;
-    }
-
-    public void setFastButLessAccurate(boolean fastButLessAccurate) {
-        this.fastButLessAccurate = fastButLessAccurate;
-    }
-
+//    public ImageInt getWatershedImage3D() {
+//        return getWatershedImage3D(0);
+//    }
+//    public void updateWatershedImage3D(ImageInt wat) {
+//        watershedImage = wat;
+//    }
+//    public void setFastButLessAccurate(boolean fastButLessAccurate) {
+//        this.fastButLessAccurate = fastButLessAccurate;
+//    }
 //    public void computeAssociations(boolean ca) {
 //        computeAssociation = ca;
 //        if (!ca) {
@@ -177,49 +177,46 @@ public class Watershed3D {
 //    public ArrayList<double[]> getVolumeLabels() {
 //        return volumeLabels;
 //    }
-    public void updateVolumeLabel(int idx, double vol) {
-        if (idx < volumeLabels.size()) {
-            volumeLabels.set(idx, vol);
-        } else {
-            volumeLabels.add(vol);
-        }
-    }
-
-    /**
-     * Compute the watershed image as next iteration from previous watershed ,
-     * only for voxels with value > threshold
-     *
-     * @param threshold
-     * @return
-     */
-    public ImageInt continueWatershed3D(int threshold) {
-        if (watershedImage == null) {
-            this.computeWatershed(threshold);
-        } else {
-            IJ.log("Continuing watershed");
-            continueWatershed(threshold);
-        }
-        return watershedImage;
-    }
-
-    /**
-     * compute the watershed image
-     *
-     * @return watershed image
-     */
-    public ImageStack getWatershedImageStack(int threshold) {
-        return getWatershedImage3D(threshold).getImageStack();
-    }
-
+//    public void updateVolumeLabel(int idx, double vol) {
+//        if (idx < volumeLabels.size()) {
+//            volumeLabels.set(idx, vol);
+//        } else {
+//            volumeLabels.add(vol);
+//        }
+//    }
+//
+//    /**
+//     * Compute the watershed image as next iteration from previous watershed ,
+//     * only for voxels with value > threshold
+//     *
+//     * @param threshold
+//     * @return
+//     */
+//    public ImageInt continueWatershed3D(int threshold) {
+//        if (watershedImage == null) {
+//            this.computeWatershed(threshold);
+//        } else {
+//            IJ.log("Continuing watershed");
+//            continueWatershed(threshold);
+//        }
+//        return watershedImage;
+//    }
     /**
      * compute the watershed image
      *
      * @return watershed image
      */
-    public ImageStack getWatershedImageStack() {
-        return getWatershedImage3D().getImageStack();
-    }
-
+//    public ImageStack getWatershedImageStack(int threshold) {
+//        return getWatershedImage3D(threshold).getImageStack();
+//    }
+    /**
+     * compute the watershed image
+     *
+     * @return watershed image
+     */
+//    public ImageStack getWatershedImageStack() {
+//        return getWatershedImage3D().getImageStack();
+//    }
     /**
      * Get the raw image used
      *
@@ -256,279 +253,209 @@ public class Watershed3D {
         this.seedsImage = seeds;
     }
 
-    private void initWatershed() {
-        this.createArrayList();
-        if (!okseeds) {
-            IJ.log("No seeds found !");
-            return;
+//    private void initWatershed() {
+//        this.createArrayList();
+//        if (!okseeds) {
+//            IJ.log("No seeds found !");
+//            return;
+//        }
+//        IJ.showStatus("Sorting watershed ...");
+//        if (fastButLessAccurate) {
+//            Collections.shuffle(voxels);
+//        }
+//        Collections.sort(voxels);
+//    }
+//    private void computeWatershed(int threshold) {
+//        initWatershed();
+//        //continueWatershed(threshold);
+//        testWatershed(threshold, true);
+//    }
+//    private void continueWatershed(int threshold) {
+//        int sx = rawImage.sizeX;
+//        int sy = rawImage.sizeY;
+//        int sz = rawImage.sizeZ;
+//        int MaxIterations = (int) Math.sqrt(sx * sx + sy * sy + sz * sz);
+//        //IJ.log("ite=" + MaxIterations);
+//        int ite = 0;
+//        boolean loop = true;
+//        int nb0, nb1;
+//        float Nb = voxels.size();
+//        while ((loop) && (ite < MaxIterations)) {
+//            IJ.showStatus("Watershed " + (ite + 1) + " (" + (int) (100 - (100.0f * voxels.size() / Nb)) + "%)");
+//            //IJ.log("Watershed " + ite + " (" + voxels.size() + ")");
+//            ite++;
+//            nb0 = voxels.size();
+//            if (fastButLessAccurate) {
+//                loop = assignWatershedFastLessAccurate(threshold);
+//            } else {
+//                loop = assignWatershedAccurate(threshold);
+//            }
+//            nb1 = voxels.size();
+//            // no voxels could be assigned --> stop
+//            if (nb1 == nb0) {
+//                loop = false;
+//            }
+//            //IJ.log("Nb " + nb0 + " " + nb1 + " " + loop);
+//        }
+//    }
+//    public void testWatershed(int threshold, boolean anim) {
+//        initWatershed();
+//
+//        //mask = watershedImage.thresholdAboveExclusive(0);
+//        //mask = FastFilters3D.filterIntImage(mask, FastFilters3D.MAX, 1, 1, 1, 0, false);
+////
+////        int sx = rawImage.sizeX;
+////        int sy = rawImage.sizeY;
+////        int sz = rawImage.sizeZ;
+//        //int MaxIterations = (int) Math.sqrt(sx * sx + sy * sy + sz * sz);
+//        //IJ.log("ite=" + MaxIterations);
+//        //int ite = 0;
+//        boolean loop = true;
+//        //int nb0, nb1;
+//        //float Nb = voxels.size();
+//        int level = (int) (voxels.get(0).getValue());
+//        if (anim) {
+//            watershedImage.show();
+//        }
+////        for (int i = 0; i < 12; i++) {
+////            IJ.log(" " + (int) (voxels.get(i).getValue()));
+////        }
+//
+//        String update = "\\Update:";
+//        int ii = 0;
+//        int pc = 0;
+//        long t0 = System.currentTimeMillis();
+//        while ((loop) && (level > threshold)) {
+//
+//            //nb0 = voxels.size();
+//            assignWatershedAccurate2(level, ii);
+//            // nb1 = voxels.size();
+//            // no voxels could be assigned --> stop
+////            if (nb1 == nb0) {
+////                loop = false;
+////            }
+//
+//            if (System.currentTimeMillis() - t0 > 1000) {
+//                int pc2 = (int) (100.0 * ii / voxels.size());
+//                IJ.log(update + "Watershed level " + (level) + " " + ii + "/" + voxels.size() + " (" + pc2 + "%)");
+//                pc = pc2;
+//                t0 = System.currentTimeMillis();
+//                if (anim) {
+//                    watershedImage.updateDisplay();
+//                }
+//            }
+//
+//            // IJ.log("Watershed " + level + " " + ii + " " + loop);
+//            //ii = 0;
+//            int val = (int) (voxels.get(ii).getValue());
+//            while (((val == -1)) && (ii < voxels.size() - 1)) {
+//                ii++;
+//                val = (int) (voxels.get(ii).getValue());
+//            }
+//            while (((val >= level) || (val == -1)) && (ii < voxels.size() - 1)) {
+//                ii++;
+//                val = (int) (voxels.get(ii).getValue());
+//            }
+//            level = val;
+//
+//            if (ii == voxels.size() - 1) {
+//                loop = false;
+//            }
+//
+//            //level--;
+//        }
+//    }
+    public ImageInt getClassicWatershed(boolean anim) {
+        long step = 100;
+        // gt voxels list
+        createNeigList();
+        long t0 = System.currentTimeMillis();
+        if (anim) {
+            watershedImage.show();
         }
-        IJ.showStatus("Sorting watershed ...");
-        if (fastButLessAccurate) {
-            Collections.shuffle(voxels);
+        if (rawImage.getMin() > rawThreshold) {
+            IJ.log("Setting minimum for raw image to " + rawImage.getMin());
+            rawThreshold = (int) rawImage.getMin();
         }
-        Collections.sort(voxels);
-    }
-
-    private void computeWatershed(int threshold) {
-        initWatershed();
-        continueWatershed(threshold);
-    }
-
-    private void continueWatershed(int threshold) {
-        int sx = rawImage.sizeX;
-        int sy = rawImage.sizeY;
-        int sz = rawImage.sizeZ;
-        int MaxIterations = (int) Math.sqrt(sx * sx + sy * sy + sz * sz);
-        //IJ.log("ite=" + MaxIterations);
-        int ite = 0;
         boolean loop = true;
-        int nb0, nb1;
-        float Nb = voxels.size();
-        while ((loop) && (ite < MaxIterations)) {
-            IJ.showStatus("Watershed " + (ite + 1) + " (" + (int) (100 - (100.0f * voxels.size() / Nb)) + "%)");
-            //IJ.log("Watershed " + ite + " (" + voxels.size() + ")");
-            ite++;
-            nb0 = voxels.size();
-            if (fastButLessAccurate) {
-                loop = assignWatershedFastLessAccurate(threshold);
-            } else {
-                loop = assignWatershedAccurate(threshold);
-            }
-            nb1 = voxels.size();
-            // no voxels could be assigned --> stop
-            if (nb1 == nb0) {
-                loop = false;
-            }
-            //IJ.log("Nb " + nb0 + " " + nb1 + " " + loop);
-        }
-    }
-
-    public ImageHandler getNonLabelledVoxels(int threshold, boolean value) {
-        ImageHandler res = watershedImage.createSameDimensions();
+        // test tree set
+        ComparatorVoxel comp = new ComparatorVoxel();
+        TreeSet<Voxel3DComparable> tree = new TreeSet(comp);
+        TreeSet<Voxel3DComparable> tree2 = new TreeSet(comp);
+        int idx = 1;
         for (Voxel3DComparable V : voxels) {
-            if (V.getValue() >= threshold) {
-                if (value) {
-                    res.setPixel(V, (int) V.getValue());
-                } else {
-                    res.setPixel(V, 255);
-                }
-            }
+            V.setMax(idx++, 0);
+            tree.add(V);
         }
+        boolean newt = true;
 
-        return res;
-    }
+        while (newt) {
+            newt = false;
+            while ((!tree.isEmpty()) && (loop)) {
+                //IJ.wait((int) step);
+                Voxel3DComparable V = tree.pollFirst();
+                ArrayList<Voxel3D> Nei = watershedImage.getNeighborhood3x3x3ListNoCenter(V.getRoundX(), V.getRoundY(), V.getRoundZ());
 
-    private boolean assignWatershedFastLessAccurate(int threshold) {
-        Voxel3DComparable voxel;
-        int px, py, pz;
-        ArrayUtil neigh;
-        int max, max2;
-        boolean loop = false;
-        ArrayList voxelsNextRound = new ArrayList();
-        for (Iterator it = voxels.iterator(); it.hasNext();) {
-            voxel = (Voxel3DComparable) it.next();
-            if (voxel.getValue() < threshold) {
-                //voxelsNextRound.addAll(voxels.subList(voxels.indexOf(voxel), voxels.size()));
-                break;
-                //voxelsNextRound.add(voxel);
-                //continue;
-            }
-            px = voxel.getRoundX();
-            py = voxel.getRoundY();
-            pz = voxel.getRoundZ();
-            if (watershedImage.getPixel(px, py, pz) == NO_LABEL) {
-                // 6-neighbor
-                //neigh = watershedImage.getNeighborhoodCross3D(px, py, pz);
-                // 26-neighbor
-                neigh = watershedImage.getNeighborhood3x3x3(px, py, pz);
-                max = (int) neigh.getMaximum();
-                if ((max == NO_LABEL) || (max == BORDER)) {
-                    voxelsNextRound.add(voxel);
-                } else { // has a neighbor already labeled // test if two differents labels around
-                    max2 = (int) neigh.getMaximumBelow(max);
-                    // only one label around
-                    if ((max2 == NO_LABEL) || (max2 == BORDER)) {
-                        watershedImage.setPixel(px, py, pz, max);
-                        loop = true;
-                        // compute volumes
-                        if (computeVolumes) {
-                            //volumeLabels.get(max)[1]++;
-                            volumeLabels.set(max, volumeLabels.get(max) + 1);
-                        }
-                        // get active label
-                        if (computeUpdatedLabels) {
-                            String la = "" + max;
-                            // test if exists already
-                            boolean ok = true;
-                            for (String S : updatedLabels) {
-                                if ((S.compareTo(la)) == 0) {
-                                    ok = false;
-                                    break;
-                                }
+                // check all labels around
+                ArrayUtil tab = new ArrayUtil(Nei.size());
+                int id = 0;
+                double label = -1;
+                for (Voxel3D N : Nei) {
+                    if (N.getValue() > QUEUE) {
+                        tab.addValue(id++, N.getValue());
+                        // first label
+                        if (label == -1) {
+                            label = N.getValue();
+                        } // next ones
+                        else {
+                            if (N.getValue() != label) {
+                                label = -2;
                             }
-                            if (ok) {
-                                updatedLabels.add(la);
-                            }
-                        }
-                        // add the new labels sharing a border
-                        if ((max2 == BORDER) && (computeAssociation)) {
-                            updateAssociationBorder(px, py, pz, max);
-                        }
-                        // two or more labels around
-                    } else {
-                        watershedImage.setPixel(px, py, pz, BORDER);
-                        // get association
-                        if (computeAssociation) {
-                            String asso = max + "_" + max2;
-                            AssociationRegion assoR = new AssociationRegion();
-                            assoR.addRegion(max);
-                            assoR.addRegion(max2);
-                            max2 = (int) neigh.getMaximumBelow(max2);
-                            while ((max2 != NO_LABEL) && (max2 != BORDER)) {
-                                asso = asso.concat("_" + max2);
-                                assoR.addRegion(max2);
-                                max2 = (int) neigh.getMaximumBelow(max2);
-                            }
-                            // if next to border update 
-                            if ((max2 == BORDER) && (computeAssociation)) {
-                                for (String S : asso.split("_")) {
-                                    updateAssociationBorder(px, py, pz, Integer.parseInt(S));
-                                }
-                            }
-                            // test if association exists already
-                            boolean ok = true;
-                            for (String S : associations) {
-                                if ((S.compareTo(asso)) == 0) {
-                                    ok = false;
-                                    break;
-                                }
-                            }
-                            if (ok) {
-                                associations.add(asso);
-                            }
-                            assoRegions.addAssoRegion(assoR);
-                        }
-                    }
-                }
-            }
-        }
-        voxels = voxelsNextRound;
-        return loop;
-    }
-
-    private boolean assignWatershedAccurate(int threshold) {
-        Voxel3DComparable voxel;
-        int px, py, pz;
-        ArrayUtil neigh;
-        int max, max2;
-        boolean loop = false;
-        ArrayList<Voxel3DComparable> voxelsNextRound = new ArrayList();
-        ArrayList<Voxel3DComparable> voxelsToProcess = new ArrayList();
-        for (Iterator it = voxels.iterator(); it.hasNext();) {
-            voxel = (Voxel3DComparable) it.next();
-            if (voxel.getValue() < threshold) {
-                //voxelsNextRound.addAll(voxels.subList(voxels.indexOf(voxel), voxels.size()));
-                break;
-//                voxelsNextRound.add(voxel);
-//                continue;
-            }
-            px = voxel.getRoundX();
-            py = voxel.getRoundY();
-            pz = voxel.getRoundZ();
-            if (watershedImage.getPixel(px, py, pz) == NO_LABEL) {
-                // 6-neighbor
-                //neigh = watershedImage.getNeighborhoodCross3D(px, py, pz);
-                // 26-neighbor
-                neigh = watershedImage.getNeighborhood3x3x3(px, py, pz);
-                max = (int) neigh.getMaximum();
-                if ((max == NO_LABEL) || (max == BORDER)) {
-                    voxelsNextRound.add(voxel);
-                } else { // has a neighbor already labeled // test if two differents labels around
-                    voxelsToProcess.add(voxel);
-                }
-            }
-        }
-        // process voxels
-        for (Voxel3DComparable vox : voxelsToProcess) {
-            px = vox.getRoundX();
-            py = vox.getRoundY();
-            pz = vox.getRoundZ();
-            neigh = watershedImage.getNeighborhood3x3x3(px, py, pz);
-            max = (int) neigh.getMaximum();
-            max2 = (int) neigh.getMaximumBelow(max);
-
-            if ((max2 == NO_LABEL) || (max2 == BORDER)) {
-                watershedImage.setPixel(px, py, pz, max);
-                loop = true;
-                // compute volumes
-                if (computeVolumes) {
-                    //volumeLabels.get(max)[1]++;
-                    volumeLabels.set(max, volumeLabels.get(max) + 1);
-                }
-                // get active label
-                if (computeUpdatedLabels) {
-                    String la = "" + max;
-                    // test if exists already
-                    boolean ok = true;
-                    for (String S : updatedLabels) {
-                        if ((S.compareTo(la)) == 0) {
-                            ok = false;
                             break;
                         }
                     }
-                    if (ok) {
-                        updatedLabels.add(la);
-                    }
                 }
-                // add the new labels sharing a border
-                if ((max2 == BORDER) && (computeAssociation)) {
-                    updateAssociationBorder(px, py, pz, max);
+                boolean assign = false;
+
+                if (label > 0) {
+                    watershedImage.setPixel(V, tab.getValueInt(0));
+                    assign = true;
                 }
-                // two or more labels around
-            } else {
-                watershedImage.setPixel(px, py, pz, BORDER);
-                // get association
-                if (computeAssociation) {
-                    String asso = max + "_" + max2;
-                    AssociationRegion assoR = new AssociationRegion();
-                    assoR.addRegion(max);
-                    assoR.addRegion(max2);
-                    max2 = (int) neigh.getMaximumBelow(max2);
-                    while ((max2 != NO_LABEL) && (max2 != BORDER)) {
-                        asso = asso.concat("_" + max2);
-                        assoR.addRegion(max2);
-                        max2 = (int) neigh.getMaximumBelow(max2);
-                    }
-                    // if next to border update 
-                    if ((max2 == BORDER) && (computeAssociation)) {
-                        for (String S : asso.split("_")) {
-                            updateAssociationBorder(px, py, pz, Integer.parseInt(S));
+
+                // all non labelled around are put into priority queue   
+                if (assign) {
+                    for (Voxel3D N : Nei) {
+                        int rawN = (int) rawImage.getPixel(N);
+
+                        // neighbor voxel not in queue yet
+                        if ((N.getValue() == 0) && (rawN > rawThreshold)) {
+                            watershedImage.setPixel(N, QUEUE);// was queue instead of W0
+                            Voxel3DComparable Vnew = new Voxel3DComparable(N.getRoundX(), N.getRoundY(), N.getRoundZ(), rawN, V.getLabel());
+                            Vnew.setMax(idx++, 0);
+                            tree.add(Vnew);
                         }
                     }
-                    // test if association exists already
-                    boolean ok = true;
-                    for (String S : associations) {
-                        if ((S.compareTo(asso)) == 0) {
-                            ok = false;
-                            break;
-                        }
+                }
+
+                if (System.currentTimeMillis() - t0 > step) {
+                    IJ.log("\\Update:Voxels to process : " + Math.abs(tree.size()));
+                    if (anim) {
+                        watershedImage.updateDisplay();
                     }
-                    if (ok) {
-                        associations.add(asso);
-                    }
-                    assoRegions.addAssoRegion(assoR);
+                    t0 = System.currentTimeMillis();
                 }
             }
         }
+        IJ.log("\\Update:Voxels to process : " + Math.abs(tree.size()));
+        // delete voxels with color QUEUE
+        watershedImage.replacePixelsValue(QUEUE, 0);
+        IJ.log("Watershed completed.");
 
-        voxels = voxelsNextRound;
-        System.gc();
-
-        return loop;
+        return watershedImage;
     }
 
-    private void createArrayList() {
-        voxels = new ArrayList();
+    private void createNeigList() {
+        voxels = new LinkedList();
         int sx = rawImage.sizeX;
         int sy = rawImage.sizeY;
         int sz = rawImage.sizeZ;
@@ -543,17 +470,11 @@ public class Watershed3D {
         // compute the labelled image (in case seeds are clustered)
         ImageLabeller labeller = new ImageLabeller();
         ImageInt seedsLabel = labeller.getLabels(seedsImage.thresholdAboveExclusive(seedsThreshold));
-        //IJ.log("MAX SEEDS " + seedsLabel.getImageStats(null).getMax());
         // since seedsLabel starts at 1 and watershed at 2, replace values
-        seedsLabel.replacePixelsValue(BORDER, (int) seedsLabel.getMax() + 1);
+        int max = (int) seedsLabel.getMax();
+        seedsLabel.replacePixelsValue(QUEUE, max + 1);
+
         seedsLabel.resetStats(null);
-        // compute volumes
-        //IJ.log("MAX SEEDS " + seedsLabel.getImageStats(null).getMax());
-        if (computeVolumes) {
-            for (int i = 0; i <= seedsLabel.getMax(); i++) {
-                volumeLabels.add(0.0);
-            }
-        }
 
         for (int z = 0; z < sz; z++) {
             IJ.showStatus("Processing watershed " + (z + 1));
@@ -562,70 +483,18 @@ public class Watershed3D {
                     pix = rawImage.getPixel(x, y, z);
                     se = seedsLabel.getPixel(x, y, z);
                     if (pix > rawThreshold) {
-                        //IJ.log("seed found " + x + " " + y + " " + z+" : "+se);
                         if (se > 0) {
-                            //IJ.log("seed found " + x + " " + y + " " + z);
                             watershedImage.setPixel(x, y, z, se);
-                            voxels.add(new Voxel3DComparable(x, y, z, pix, se));
                             okseeds = true;
-                        } else {
-                            voxels.add(new Voxel3DComparable(x, y, z, pix, NO_LABEL));
-                            watershedImage.setPixel(x, y, z, NO_LABEL);
-                        }
-                    } else {
-                        watershedImage.setPixel(x, y, z, NO_LABEL);
-                    }
-                    // compute volumes (warning if seeds are float values)
-                    if (computeVolumes) {
-                        //volumeLabels.get((int) se)[1]++;
-                        volumeLabels.set((int) se, volumeLabels.get((int) se) + 1);
-                    }
-                }
-            }
-        }
-    }
-
-    private void updateAssociationBorder(int px, int py, int pz, int label) {
-        //int label = watershedImage.getPixelInt(px, py, pz);
-        // get neighboring borders
-        int sx = Math.max(0, px - 1);
-        int sy = Math.max(0, py - 1);
-        int sz = Math.max(0, pz - 1);
-        int ex = Math.min(watershedImage.sizeX - 1, px + 1);
-        int ey = Math.min(watershedImage.sizeY - 1, py + 1);
-        int ez = Math.min(watershedImage.sizeZ - 1, pz + 1);
-
-        for (int x = sx; x <= ex; x++) {
-            for (int y = sy; y <= ey; y++) {
-                for (int z = sz; z <= ez; z++) {
-                    if (watershedImage.getPixel(x, y, z) == BORDER) {
-                        ArrayUtil neigh = watershedImage.getNeighborhood3x3x3(x, y, z);
-                        // update all associations
-                        for (int i = 0; i < neigh.getSize(); i++) {
-                            int val = (int) neigh.getValue(i);
-                            if ((val != BORDER) && (val != NO_LABEL) && (val != label)) {
-                                // always max value first
-                                String asso;
-                                AssociationRegion assoR = new AssociationRegion();
-                                assoR.addRegion(label);
-                                assoR.addRegion(val);
-                                if (label > val) {
-                                    asso = label + "_" + val;
-                                } else {
-                                    asso = val + "_" + label;
+                            for (Voxel3D N : watershedImage.getNeighborhood3x3x3ListNoCenter(x, y, z)) {
+                                int vx = (int) N.getX();
+                                int vy = (int) N.getY();
+                                int vz = (int) N.getZ();
+                                int raw = (int) rawImage.getPixel(vx, vy, vz);
+                                if ((raw > rawThreshold) && (seedsLabel.getPixel(vx, vy, vz) == 0) && (watershedImage.getPixel(vx, vy, vz) != QUEUE)) {
+                                    voxels.add(new Voxel3DComparable(vx, vy, vz, raw, se));
+                                    watershedImage.setPixel(vx, vy, vz, QUEUE);
                                 }
-                                // test if association exists already
-                                boolean ok = true;
-                                for (String S : associations) {
-                                    if ((S.compareTo(asso)) == 0) {
-                                        ok = false;
-                                        break;
-                                    }
-                                }
-                                if (ok) {
-                                    associations.add(asso);
-                                }
-                                assoRegions.addAssoRegion(assoR);
                             }
                         }
                     }

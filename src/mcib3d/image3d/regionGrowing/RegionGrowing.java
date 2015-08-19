@@ -35,7 +35,7 @@ import mcib3d.utils.ArrayUtil;
  *
  * @author thomas
  */
-public class RegionGrowing extends Watershed3D {
+public class RegionGrowing extends Watershed3D_old {
 
     public RegionGrowing(ImageHandler image, ImageHandler seeds, int noi, int seth) {
         super(image, seeds, noi, seth);
