@@ -50,20 +50,20 @@ public class Watershed3D {
     //final int BORDER = 2; // watershed label
     final int QUEUE = 1;
     // association between neighbor regions
-    protected boolean computeAssociation = false;
-    ArrayList<String> associations = null;
-    AllRegionsAssociation assoRegions = null;
+    //protected boolean computeAssociation = false;
+    //ArrayList<String> associations = null;
+    //AllRegionsAssociation assoRegions = null;
     // list of active labels 
-    protected boolean computeUpdatedLabels = false;
-    ArrayList<String> updatedLabels = null;
+    //protected boolean computeUpdatedLabels = false;
+    //ArrayList<String> updatedLabels = null;
     // get volumes for each labels (jaza)
-    protected boolean computeVolumes = false;
-    ArrayList<Double> volumeLabels = null;
+    //protected boolean computeVolumes = false;
+    //ArrayList<Double> volumeLabels = null;
     private int rawThreshold;
     private final int seedsThreshold;
-    private boolean okseeds = false;
 
-    private boolean fastButLessAccurate = false;
+    boolean okseeds = false;
+    boolean anim = false;
 
     /**
      *
@@ -94,129 +94,6 @@ public class Watershed3D {
         this.seedsThreshold = seth;
     }
 
-    /**
-     * compute the watershed image, only for voxels with value > threshold
-     *
-     * @param threshold
-     * @return watershed image
-     */
-//    public ImageInt getWatershedImage3D(int threshold) {
-//        if (watershedImage == null) {
-//            this.computeWatershed(threshold);
-//        }
-//        return watershedImage;
-//    }
-    /**
-     * compute the watershed image
-     *
-     * @return watershed image
-     */
-//    public ImageInt getWatershedImage3D() {
-//        return getWatershedImage3D(0);
-//    }
-//    public void updateWatershedImage3D(ImageInt wat) {
-//        watershedImage = wat;
-//    }
-//    public void setFastButLessAccurate(boolean fastButLessAccurate) {
-//        this.fastButLessAccurate = fastButLessAccurate;
-//    }
-//    public void computeAssociations(boolean ca) {
-//        computeAssociation = ca;
-//        if (!ca) {
-//            associations = null;
-//        }
-//        if ((ca) && (associations == null)) {
-//            associations = new ArrayList<String>();
-//        }
-//    }
-//    
-//    public void computeUpdatedLabels(boolean ca) {
-//        computeUpdatedLabels = ca;
-//        if (!ca) {
-//            updatedLabels = null;
-//        }
-//        if ((ca) && (updatedLabels == null)) {
-//            updatedLabels = new ArrayList<String>();
-//        }
-//    }
-//    
-//    public void computeVolumes(boolean b) {
-//        computeVolumes = b;
-//        if (!b) {
-//            volumeLabels = null;
-//        }
-//        if ((b) && (volumeLabels == null)) {
-//            volumeLabels = new ArrayList<double[]>();
-//        }
-//    }
-//    
-//    public ArrayList<String> getAssociationsAsString() {
-//        return associations;
-//    }
-//    
-//    public ArrayList<String> getUpdatedLabelsAsString() {
-//        return updatedLabels;
-//    }
-//    
-//    public ArrayList<int[]> getAssociationsAsIntegers() {
-//        if ((associations == null) || (associations.isEmpty())) {
-//            return null;
-//        }
-//        ArrayList<int[]> res = new ArrayList<int[]>(associations.size());
-//        for (String S : associations) {
-//            String[] sp = S.split("_");
-//            int[] tab = new int[sp.length];
-//            for (int i = 0; i < sp.length; i++) {
-//                tab[i] = Integer.parseInt(sp[i]);
-//            }
-//            res.add(tab);
-//        }
-//        return res;
-//    }
-//    
-//    public ArrayList<double[]> getVolumeLabels() {
-//        return volumeLabels;
-//    }
-//    public void updateVolumeLabel(int idx, double vol) {
-//        if (idx < volumeLabels.size()) {
-//            volumeLabels.set(idx, vol);
-//        } else {
-//            volumeLabels.add(vol);
-//        }
-//    }
-//
-//    /**
-//     * Compute the watershed image as next iteration from previous watershed ,
-//     * only for voxels with value > threshold
-//     *
-//     * @param threshold
-//     * @return
-//     */
-//    public ImageInt continueWatershed3D(int threshold) {
-//        if (watershedImage == null) {
-//            this.computeWatershed(threshold);
-//        } else {
-//            IJ.log("Continuing watershed");
-//            continueWatershed(threshold);
-//        }
-//        return watershedImage;
-//    }
-    /**
-     * compute the watershed image
-     *
-     * @return watershed image
-     */
-//    public ImageStack getWatershedImageStack(int threshold) {
-//        return getWatershedImage3D(threshold).getImageStack();
-//    }
-    /**
-     * compute the watershed image
-     *
-     * @return watershed image
-     */
-//    public ImageStack getWatershedImageStack() {
-//        return getWatershedImage3D().getImageStack();
-//    }
     /**
      * Get the raw image used
      *
@@ -253,119 +130,17 @@ public class Watershed3D {
         this.seedsImage = seeds;
     }
 
-//    private void initWatershed() {
-//        this.createArrayList();
-//        if (!okseeds) {
-//            IJ.log("No seeds found !");
-//            return;
-//        }
-//        IJ.showStatus("Sorting watershed ...");
-//        if (fastButLessAccurate) {
-//            Collections.shuffle(voxels);
-//        }
-//        Collections.sort(voxels);
-//    }
-//    private void computeWatershed(int threshold) {
-//        initWatershed();
-//        //continueWatershed(threshold);
-//        testWatershed(threshold, true);
-//    }
-//    private void continueWatershed(int threshold) {
-//        int sx = rawImage.sizeX;
-//        int sy = rawImage.sizeY;
-//        int sz = rawImage.sizeZ;
-//        int MaxIterations = (int) Math.sqrt(sx * sx + sy * sy + sz * sz);
-//        //IJ.log("ite=" + MaxIterations);
-//        int ite = 0;
-//        boolean loop = true;
-//        int nb0, nb1;
-//        float Nb = voxels.size();
-//        while ((loop) && (ite < MaxIterations)) {
-//            IJ.showStatus("Watershed " + (ite + 1) + " (" + (int) (100 - (100.0f * voxels.size() / Nb)) + "%)");
-//            //IJ.log("Watershed " + ite + " (" + voxels.size() + ")");
-//            ite++;
-//            nb0 = voxels.size();
-//            if (fastButLessAccurate) {
-//                loop = assignWatershedFastLessAccurate(threshold);
-//            } else {
-//                loop = assignWatershedAccurate(threshold);
-//            }
-//            nb1 = voxels.size();
-//            // no voxels could be assigned --> stop
-//            if (nb1 == nb0) {
-//                loop = false;
-//            }
-//            //IJ.log("Nb " + nb0 + " " + nb1 + " " + loop);
-//        }
-//    }
-//    public void testWatershed(int threshold, boolean anim) {
-//        initWatershed();
-//
-//        //mask = watershedImage.thresholdAboveExclusive(0);
-//        //mask = FastFilters3D.filterIntImage(mask, FastFilters3D.MAX, 1, 1, 1, 0, false);
-////
-////        int sx = rawImage.sizeX;
-////        int sy = rawImage.sizeY;
-////        int sz = rawImage.sizeZ;
-//        //int MaxIterations = (int) Math.sqrt(sx * sx + sy * sy + sz * sz);
-//        //IJ.log("ite=" + MaxIterations);
-//        //int ite = 0;
-//        boolean loop = true;
-//        //int nb0, nb1;
-//        //float Nb = voxels.size();
-//        int level = (int) (voxels.get(0).getValue());
-//        if (anim) {
-//            watershedImage.show();
-//        }
-////        for (int i = 0; i < 12; i++) {
-////            IJ.log(" " + (int) (voxels.get(i).getValue()));
-////        }
-//
-//        String update = "\\Update:";
-//        int ii = 0;
-//        int pc = 0;
-//        long t0 = System.currentTimeMillis();
-//        while ((loop) && (level > threshold)) {
-//
-//            //nb0 = voxels.size();
-//            assignWatershedAccurate2(level, ii);
-//            // nb1 = voxels.size();
-//            // no voxels could be assigned --> stop
-////            if (nb1 == nb0) {
-////                loop = false;
-////            }
-//
-//            if (System.currentTimeMillis() - t0 > 1000) {
-//                int pc2 = (int) (100.0 * ii / voxels.size());
-//                IJ.log(update + "Watershed level " + (level) + " " + ii + "/" + voxels.size() + " (" + pc2 + "%)");
-//                pc = pc2;
-//                t0 = System.currentTimeMillis();
-//                if (anim) {
-//                    watershedImage.updateDisplay();
-//                }
-//            }
-//
-//            // IJ.log("Watershed " + level + " " + ii + " " + loop);
-//            //ii = 0;
-//            int val = (int) (voxels.get(ii).getValue());
-//            while (((val == -1)) && (ii < voxels.size() - 1)) {
-//                ii++;
-//                val = (int) (voxels.get(ii).getValue());
-//            }
-//            while (((val >= level) || (val == -1)) && (ii < voxels.size() - 1)) {
-//                ii++;
-//                val = (int) (voxels.get(ii).getValue());
-//            }
-//            level = val;
-//
-//            if (ii == voxels.size() - 1) {
-//                loop = false;
-//            }
-//
-//            //level--;
-//        }
-//    }
-    public ImageInt getClassicWatershed(boolean anim) {
+    public void setAnim(boolean anim) {
+        this.anim = anim;
+    }
+    
+    
+
+    public ImageInt getWatershedImage3D() {
+        return getClassicWatershed();
+    }
+
+    private ImageInt getClassicWatershed() {
         long step = 100;
         // gt voxels list
         createNeigList();
