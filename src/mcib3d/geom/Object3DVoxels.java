@@ -1379,6 +1379,7 @@ public class Object3DVoxels extends Object3D {
      * @param z The Z coordinate
      * @param col The value to draw
      */
+    @Override
     public void draw(ByteProcessor mask, int z, int col) {
         Voxel3D vox;
         Iterator it = voxels.iterator();
