@@ -1027,7 +1027,7 @@ public class Segment3DSpots {
             int cpus = ThreadUtil.getNbCpus();
             // FIXME variable multithread
             ImageFloat edt3d = EDT.run(seg, 1f, false, cpus);
-            // 3D filtering of the edt t oremove small local maxima
+            // 3D filtering of the edt to remove small local maxima
             edt3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
             //edt3d.showDuplicate("edt");
 
@@ -1131,12 +1131,14 @@ public class Segment3DSpots {
             //seeds.show();
 //            Watershed3D_old wat = new Watershed3D_old(edt3d, seeds, 0, 0);
 //            ImageInt wat2 = wat.getWatershedImage3D();
-            Watershed3D wat = new Watershed3D(edt3d, seeds, 0, 0);
+            ImageHandler edt16 = edt3d.convertToShort(true);
+            Watershed3D wat = new Watershed3D(edt16, seeds, 0, 0);
             ImageInt wat2 = wat.getWatershedImage3D();
             //wat2.show();
             // in watershed label starts at 2
             Object3DVoxels ob1 = new Object3DVoxels(wat2, 2);
             Object3DVoxels ob2 = new Object3DVoxels(wat2, 3);
+            //IJ.log("split1="+ob1+" split2="+ob2);
             // translate objects if needed by miniseg
             //ob1.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
             //new ImagePlus("wat", wat2.getStack()).show();
