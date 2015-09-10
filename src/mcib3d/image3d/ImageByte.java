@@ -373,7 +373,7 @@ public class ImageByte extends ImageInt {
 
     @Override
     public void setPixel(int xy, int z, float value) {
-        pixels[z][xy] = (byte) (value + 0.5);
+        pixels[z][xy] = (byte) (value);
     }
 
     @Override
