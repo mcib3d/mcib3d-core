@@ -11,10 +11,7 @@ import ij.measure.Calibration;
 import ij.plugin.ContrastEnhancer;
 import ij.plugin.ZProjector;
 import ij.process.ImageProcessor;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
-import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +54,8 @@ import mcib3d.utils.exceptionPrinter;
  * @author Thomas Boudier
  */
 public abstract class ImageHandler {
-    public static double defZoomFactor=1d;
+
+    public static double defZoomFactor = 1d;
     public int sizeX, sizeY, sizeZ, sizeXY, sizeXYZ, offsetX, offsetY, offsetZ;
     protected ImagePlus img;
     protected String title;
@@ -229,6 +227,37 @@ public abstract class ImageHandler {
             }
         }
         res.setSize(idx);
+        return res;
+    }
+
+    public ArrayList<Voxel3D> getNeighborhood3x3x3ListCenter(int x, int y, int z) {
+        ArrayList<Voxel3D> res = new ArrayList<Voxel3D>(27);
+        for (int k = z - 1; k <= z + 1; k++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if ((i >= 0) && (j >= 0) && (k >= 0) && (i < sizeX) && (j < sizeY) && (k < sizeZ)) {
+                        res.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+    public ArrayList<Voxel3D> getNeighborhood3x3x3ListNoCenter(int x, int y, int z) {
+        ArrayList<Voxel3D> res = new ArrayList<Voxel3D>(27);
+        for (int k = z - 1; k <= z + 1; k++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if ((i == x) && (j == y) && (k == z)) {
+                        continue;
+                    }
+                    if ((i >= 0) && (j >= 0) && (k >= 0) && (i < sizeX) && (j < sizeY) && (k < sizeZ)) {
+                        res.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
+                    }
+                }
+            }
+        }
         return res;
     }
 
@@ -945,14 +974,12 @@ public abstract class ImageHandler {
             setPixel(i, this.getPixel(i) / coeff);
         }
     }
-    
+
     public void multiplyByValue(float coeff) {
         for (int i = 0; i < sizeXYZ; i++) {
             setPixel(i, this.getPixel(i) * coeff);
         }
     }
-    
-    
 
     public void addValue(float val) {
         for (int i = 0; i < sizeXYZ; i++) {
@@ -1204,18 +1231,20 @@ public abstract class ImageHandler {
         ip.show();
         zoom(ip, defZoomFactor);
     }
-    
+
     public static void zoom(ImagePlus image, double magnitude) {
         ImageCanvas ic = image.getCanvas();
-        if (ic==null) return;
+        if (ic == null) {
+            return;
+        }
         ic.zoom100Percent();
-        if (magnitude>1) {
-            for (int i = 0; i<(int)(magnitude+0.5); i++) {
-                ic.zoomIn(image.getWidth()/2, image.getHeight()/2);
+        if (magnitude > 1) {
+            for (int i = 0; i < (int) (magnitude + 0.5); i++) {
+                ic.zoomIn(image.getWidth() / 2, image.getHeight() / 2);
             }
-        } else if (magnitude>0 && magnitude<1) {
-            for (int i =0; i<(int)(1/magnitude+0.5); i++) {
-                ic.zoomOut(image.getWidth()/2, image.getHeight()/2);
+        } else if (magnitude > 0 && magnitude < 1) {
+            for (int i = 0; i < (int) (1 / magnitude + 0.5); i++) {
+                ic.zoomOut(image.getWidth() / 2, image.getHeight() / 2);
             }
         }
     }
@@ -1301,18 +1330,18 @@ public abstract class ImageHandler {
     public byte[] getThumbNail(int sizeX, int sizeY, ImageInt mask) {
         //projection
         ImagePlus im;
-        ImageProcessor imMask=null;
+        ImageProcessor imMask = null;
         this.setMinAndMax(mask);
         if (sizeZ > 1) {
             ZProjector proj = new ZProjector(img);
             proj.setMethod(ZProjector.MAX_METHOD);
             proj.doProjection();
             im = proj.getProjection();
-            
+
         } else {
             im = img;
         }
-        if (mask!=null) {
+        if (mask != null) {
             if (mask.sizeZ > 1) {
                 ZProjector proj = new ZProjector(mask.img);
                 proj.setMethod(ZProjector.MAX_METHOD);
@@ -1325,15 +1354,19 @@ public abstract class ImageHandler {
             // ensure byte mask
             if (!(mask instanceof ImageByte)) {
                 imMask = imMask.convertToByte(false);
-                
+
             }
         }
         ContrastEnhancer ch = new ContrastEnhancer();
         //ch.setNormalize(true);
         //ch.stretchHistogram(im, 0.5);        
-        if(im.getBitDepth()<32) ch.equalize(im);
+        if (im.getBitDepth() < 32) {
+            ch.equalize(im);
+        }
         ImageProcessor ip = im.getProcessor().resize(sizeX, sizeY, true);
-        if (imMask!=null) ip.setMask(imMask);
+        if (imMask != null) {
+            ip.setMask(imMask);
+        }
         ip = ip.convertToByte(true);
         ip.setMinAndMax(ip.getMin(), ip.getMax());
         im = new ImagePlus(img.getShortTitle() + "_tmb", ip);
@@ -1381,7 +1414,6 @@ public abstract class ImageHandler {
         }
         return null;
     }
-    
 
     public boolean touchBorders(int x, int y, int z) {
         return (x == 0 || y == 0 || z == 0 || x == (sizeX - 1) || y == (sizeY - 1) || (z == sizeZ - 1));
@@ -1639,6 +1671,8 @@ public abstract class ImageHandler {
 
     public abstract void intersectMask(ImageInt mask);
 
+    public abstract void intersectMask2D(ImageInt mask, int z);
+
     public ImageFloat getDistanceMap(float thld, float scaleXY, float scaleZ, boolean invert, int nbCPUs) {
         return EDT.run(this, thld, scaleXY, scaleZ, invert, nbCPUs);
     }
@@ -1715,6 +1749,11 @@ public abstract class ImageHandler {
         return mini;
     }
 
+    public double[] radialDistribution(int x0, int y0, int z0, int maxR, ImageInt water) {
+        return radialDistribution(x0, y0, z0, maxR, Object3D.MEASURE_INTENSITY_AVG, water);
+
+    }
+
     /**
      * Radial distribution of pixels mean values in layers
      *
@@ -1725,7 +1764,7 @@ public abstract class ImageHandler {
      * @param water
      * @return arry with mean radial values
      */
-    public double[] radialDistribution(int x0, int y0, int z0, int maxR, ImageInt water) {
+    public double[] radialDistribution(int x0, int y0, int z0, int maxR, int measure, ImageInt water) {
         //int maxR = 10;
         double[] radPlot = new double[2 * maxR + 1];
         ArrayUtil raddist;
@@ -1733,12 +1772,25 @@ public abstract class ImageHandler {
         int c = 0;
         int r;
 
-        // compute radial means
+        // compute radial means // FIXME optimise since symmetric ;)
         for (int i = -maxR; i <= 0; i++) {
             r = -i;
             raddist = getNeighborhoodLayer(x0, y0, z0, r, r + 1, water);
             if (raddist != null) {
-                radPlot[c] = raddist.getMean();
+                if (measure == Object3D.MEASURE_INTENSITY_AVG) {
+                    radPlot[c] = raddist.getMean();
+                } else if (measure == Object3D.MEASURE_INTENSITY_MAX) {
+                    radPlot[c] = raddist.getMaximum();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_MEDIAN) {
+                    radPlot[c] = raddist.median();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_MIN) {
+                    radPlot[c] = raddist.getMinimum();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_SD) {
+                    radPlot[c] = raddist.getStdDev();
+                }
             } else {
                 radPlot[c] = Double.NaN;
             }
@@ -1748,7 +1800,20 @@ public abstract class ImageHandler {
             r = i;
             raddist = getNeighborhoodLayer(x0, y0, z0, r, r + 1, water);
             if (raddist != null) {
-                radPlot[c] = raddist.getMean();
+                if (measure == Object3D.MEASURE_INTENSITY_AVG) {
+                    radPlot[c] = raddist.getMean();
+                } else if (measure == Object3D.MEASURE_INTENSITY_MAX) {
+                    radPlot[c] = raddist.getMaximum();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_MEDIAN) {
+                    radPlot[c] = raddist.median();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_MIN) {
+                    radPlot[c] = raddist.getMinimum();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_SD) {
+                    radPlot[c] = raddist.getStdDev();
+                }
             } else {
                 radPlot[c] = Double.NaN;
             }
@@ -1768,7 +1833,7 @@ public abstract class ImageHandler {
      * @return arry with mean radial values
      */
     public double[] radialDistribution(int x0, int y0, int z0, int maxR) {
-        return this.radialDistribution(x0, y0, z0, maxR, null);
+        return this.radialDistribution(x0, y0, z0, maxR, Object3D.MEASURE_INTENSITY_AVG, null);
     }
 
     public boolean hasOneValue(float f) {

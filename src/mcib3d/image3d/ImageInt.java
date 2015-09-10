@@ -71,6 +71,8 @@ public abstract class ImageInt extends ImageHandler {
     public abstract void setPixel(int x, int y, int z, int value);
 
     public abstract void setPixel(int xy, int z, int value);
+    
+    public abstract void setPixelCross3D(int x,int y,int z, int value);
 
     public abstract void draw(Object3D o, int value);
 

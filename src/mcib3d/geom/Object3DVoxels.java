@@ -290,9 +290,9 @@ public class Object3DVoxels extends Object3D {
         init();
         value = other.getValue();
         this.labelImage = other.getLabelImage();
-        this.offX=other.offX;
-        this.offY=other.offY;
-        this.offZ=other.offZ;
+        this.offX = other.offX;
+        this.offY = other.offY;
+        this.offZ = other.offZ;
         this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
@@ -302,9 +302,9 @@ public class Object3DVoxels extends Object3D {
         init();
         value = other.getValue();
         this.labelImage = other.getLabelImage();
-        this.offX=other.offX;
-        this.offY=other.offY;
-        this.offZ=other.offZ;
+        this.offX = other.offX;
+        this.offY = other.offY;
+        this.offZ = other.offZ;
         this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
@@ -482,7 +482,7 @@ public class Object3DVoxels extends Object3D {
 
     public boolean isConnex() {
         //ImageShort seg = (ImageShort) this.createSegImageMini(1, 1);
-        ImageInt seg=this.getLabelImage();
+        ImageInt seg = this.getLabelImage();
         // label the seg image
         ImageLabeller labeler = new ImageLabeller();
         return (labeler.getNbObjectsTotal(seg) == 1);
@@ -493,9 +493,20 @@ public class Object3DVoxels extends Object3D {
 //        return !seg.hasOneValueInt(1);
     }
 
+    public ArrayList<Object3DVoxels> getConnexComponents() {
+        ImageInt seg = this.getLabelImage();
+        ImageLabeller labeler = new ImageLabeller();
+        ArrayList<Object3DVoxels> objs = labeler.getObjects(seg);
+        for (Object3DVoxels O : objs) {
+            O.translate(offX, offY, offZ);
+        }
+
+        return objs;
+    }
+
     public Object3DVoxels getInterior3DFill() {
         //ImageHandler seg = createSegImageMini(255, 1);
-        ImageInt seg=this.getLabelImage();
+        ImageInt seg = this.getLabelImage();
         ImageHandler fill = seg.duplicate();
         FillHoles3D.process(fill, value, 0, false);
         ImageFloat res = fill.substractImage(seg);
@@ -757,6 +768,12 @@ public class Object3DVoxels extends Object3D {
         int class3or4;
         int class1 = 0, class2 = 0, class3 = 0, class4 = 0, class5 = 0, class6 = 0;
 
+        int val = value;
+        // special case value=0
+        if (val == 0) {
+            val = (int) segImage.getMinAboveValue(0);
+        }
+
         // TODO parcourir seulement les objets de arraylist voxels et non la bounding box!
         // pb ??
 //       for (Voxel3D vox : voxels) {
@@ -772,7 +789,7 @@ public class Object3DVoxels extends Object3D {
                     cont = false;
                     if (segImage.contains(i, j, k)) {
                         pix0 = segImage.getPixelInt(i, j, k);
-                        if (pix0 == value) {
+                        if (pix0 == val) {
                             face = 0;
                             class3or4 = 0;
                             if (i + 1 < sx) {
@@ -805,46 +822,46 @@ public class Object3DVoxels extends Object3D {
                             } else {
                                 pix6 = 0;
                             }
-                            if (pix1 != value) {
+                            if (pix1 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
-                                if (pix2 != value) {
+                                if (pix2 != val) {
                                     class3or4 = 1;
                                 }
                             }
-                            if (pix2 != value) {
+                            if (pix2 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
                             }
-                            if (pix3 != value) {
+                            if (pix3 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
-                                if (pix4 != value) {
+                                if (pix4 != val) {
                                     class3or4 = 1;
                                 }
                             }
-                            if (pix4 != value) {
+                            if (pix4 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
                             }
-                            if (pix5 != value) {
+                            if (pix5 != val) {
                                 cont = true;
                                 areaContactUnit += XX;
                                 areaContactVoxels++;
                                 face++;
-                                if (pix6 != value) {
+                                if (pix6 != val) {
                                     class3or4 = 1;
                                 }
                             }
-                            if (pix6 != value) {
+                            if (pix6 != val) {
                                 cont = true;
                                 areaContactUnit += XX;
                                 areaContactVoxels++;
@@ -852,7 +869,7 @@ public class Object3DVoxels extends Object3D {
                             }
                             if (cont) {
                                 areaNbVoxels++;
-                                Voxel3D voxC = new Voxel3D(i + x0, j + y0, k + z0, value);
+                                Voxel3D voxC = new Voxel3D(i + x0, j + y0, k + z0, val);
                                 contours.add(voxC);
                                 kdtreeContours.add(voxC.getArray(), voxC);
                                 // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
@@ -896,7 +913,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     @Override
-    public void computeContours() {        
+    public void computeContours() {
         this.computeContours(this.getLabelImage(), this.offX, this.offY, this.offZ);
     }
 
@@ -1079,7 +1096,7 @@ public class Object3DVoxels extends Object3D {
 
         int val = obj.getValue();
         ImageInt otherseg = obj.getLabelImage();
-        ImageInt label=this.getLabelImage();
+        ImageInt label = this.getLabelImage();
 
 //        int offX0 = labelImage.offsetX;
 //        int offY0 = labelImage.offsetY;
@@ -1222,7 +1239,6 @@ public class Object3DVoxels extends Object3D {
 //
 //        return false;
 //    }
-
     private boolean hasOneVoxelColocVoxels(Object3D obj) {
         if (this.disjointBox(obj)) {
             return false;
@@ -1363,6 +1379,7 @@ public class Object3DVoxels extends Object3D {
      * @param z The Z coordinate
      * @param col The value to draw
      */
+    @Override
     public void draw(ByteProcessor mask, int z, int col) {
         Voxel3D vox;
         Iterator it = voxels.iterator();
@@ -1547,11 +1564,12 @@ public class Object3DVoxels extends Object3D {
             double sum = 0;
             double sum2 = 0;
             double pix;
-            double pmin = Double.MAX_VALUE;
-            double pmax = -Double.MAX_VALUE;
+            double pmin = Double.POSITIVE_INFINITY;
+            double pmax = Double.NEGATIVE_INFINITY;
 
             double i, j, k;
             Voxel3D vox;
+            int nb = 0;
             Iterator it = voxels.iterator();
             while (it.hasNext()) {
                 vox = (Voxel3D) it.next();
@@ -1560,16 +1578,19 @@ public class Object3DVoxels extends Object3D {
                 k = vox.getZ();
                 if (ima.contains(vox)) {
                     pix = ima.getPixel(vox);
-                    cx += i * pix;
-                    cy += j * pix;
-                    cz += k * pix;
-                    sum += pix;
-                    sum2 += pix * pix;
-                    if (pix > pmax) {
-                        pmax = pix;
-                    }
-                    if (pix < pmin) {
-                        pmin = pix;
+                    if (!Double.isNaN(pix)) {
+                        nb++;
+                        cx += i * pix;
+                        cy += j * pix;
+                        cz += k * pix;
+                        sum += pix;
+                        sum2 += pix * pix;
+                        if (pix > pmax) {
+                            pmax = pix;
+                        }
+                        if (pix < pmin) {
+                            pmin = pix;
+                        }
                     }
                 }
             }
@@ -1578,9 +1599,17 @@ public class Object3DVoxels extends Object3D {
             cz /= sum;
 
             integratedDensity = sum;
+            meanDensity = integratedDensity / (double) nb;
 
             pixmin = pmin;
             pixmax = pmax;
+
+            if (pmin == Double.POSITIVE_INFINITY) {
+                pixmin = Double.NaN;
+            }
+            if (pmax == Double.NEGATIVE_INFINITY) {
+                pixmax = Double.NaN;
+            }
 
             // standard dev
             int vol = getVolumePixels();
@@ -1813,9 +1842,9 @@ public class Object3DVoxels extends Object3D {
 
     public Object3DVoxels dilate(float dilateSize, ImageInt mask, int nbCPUs) {
         // use getdilatedObject
-        Object3DVoxels dilated=this.getDilatedObject(dilateSize, dilateSize, dilateSize);
-        ImageInt seg=dilated.getLabelImage();        
-        
+        Object3DVoxels dilated = this.getDilatedObject(dilateSize, dilateSize, dilateSize);
+        ImageInt seg = dilated.getLabelImage();
+
 //        ImageInt oldMiniLabelImage = this.miniLabelImage;
 //        ImageInt seg = this.createSegImageMini(1, 0);
 //        float dilateSizeZ = (float) (dilateSize * this.resXY / this.resZ);

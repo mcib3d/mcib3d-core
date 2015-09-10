@@ -1,20 +1,25 @@
 package mcib3d.image3d;
 
-import mcib3d.image3d.legacy.RealImage3D;
-import ij.*;
-import ij.process.*;
-import ij.gui.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.TreeMap;
+import ij.IJ;
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.Prefs;
+import ij.gui.NewImage;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
+import ij.process.StackProcessor;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import mcib3d.geom.*;
+import mcib3d.geom.IntCoord3D;
+import mcib3d.geom.Object3D;
+import mcib3d.geom.Object3DVoxels;
+import mcib3d.geom.Point3D;
+import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.legacy.IntImage3D;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
-import mcib3d.utils.ThreadRunner;
 import mcib3d.utils.ThreadUtil;
 
 /**
@@ -483,8 +488,8 @@ public class ImageFloat extends ImageHandler {
         }
         return res;
     }
-    
-     @Override
+
+    @Override
     public ImageByte thresholdRangeExclusive(float min, float max) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
         res.offsetX = offsetX;
@@ -500,7 +505,6 @@ public class ImageFloat extends ImageHandler {
         }
         return res;
     }
-    
 
     @Override
     public ImageByte threshold(float thld, boolean keepUnderThld, boolean strict) {
@@ -743,9 +747,9 @@ public class ImageFloat extends ImageHandler {
             }
         }
         ImageFloat r = new ImageFloat(new ImagePlus(title + "::resized", res));
-        r.offsetX=offsetX-dX;
-        r.offsetY=offsetY-dY;
-        r.offsetZ=offsetZ-dZ;
+        r.offsetX = offsetX - dX;
+        r.offsetY = offsetY - dY;
+        r.offsetZ = offsetZ - dZ;
         return r;
     }
 
@@ -874,6 +878,16 @@ public class ImageFloat extends ImageHandler {
                 }
             }
         }
+    }
+
+    @Override
+    public void intersectMask2D(ImageInt mask, int z) {
+        for (int xy = 0; xy < sizeXY; xy++) {
+            if (mask.getPixel(xy, 0) == 0) {
+                pixels[z][xy] = 0;
+            }
+        }
+
     }
 
     public void intersectMask(ImageFloat mask) {

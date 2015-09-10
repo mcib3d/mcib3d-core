@@ -60,7 +60,7 @@ import mcib3d.utils.KDTreeC.Item;
  *
  * @author thomas
  */
-public abstract class Object3D {
+public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * name the object (not used yet)
@@ -136,6 +136,7 @@ public abstract class Object3D {
      * Integrated density (sum of pixels)
      */
     protected double integratedDensity = Double.NaN;
+    protected double meanDensity = Double.NaN;
     /**
      * standard deviation
      */
@@ -231,6 +232,12 @@ public abstract class Object3D {
     // with currentQuantifImage
     public static final byte MEASURE_INTENSITY_AVG = 10;
     public static final byte MEASURE_INTENSITY_SD = 11;
+    public static final byte MEASURE_INTENSITY_MIN = 12;
+    public static final byte MEASURE_INTENSITY_MAX = 13;
+    public static final byte MEASURE_INTENSITY_MEDIAN = 14;
+
+    // TEST comparable
+    public double compare = 0;
 
     /**
      * Sets the calibration in XY of the Object3D
@@ -434,6 +441,24 @@ public abstract class Object3D {
         } else if (Measure == MEASURE_INTENSITY_SD) {
             if (currentQuantifImage != null) {
                 return getPixStdDevValue(currentQuantifImage);
+            } else {
+                return 0;
+            }
+        } else if (Measure == MEASURE_INTENSITY_MAX) {
+            if (currentQuantifImage != null) {
+                return getPixMaxValue(currentQuantifImage);
+            } else {
+                return 0;
+            }
+        } else if (Measure == MEASURE_INTENSITY_MEDIAN) {
+            if (currentQuantifImage != null) {
+                return getPixMedianValue(currentQuantifImage);
+            } else {
+                return 0;
+            }
+        } else if (Measure == MEASURE_INTENSITY_MIN) {
+            if (currentQuantifImage != null) {
+                return getPixMinValue(currentQuantifImage);
             } else {
                 return 0;
             }
@@ -2645,7 +2670,15 @@ public abstract class Object3D {
      */
     public double getPixMeanValue(ImageHandler ima) {
         if (volume > 0) {
-            return getIntegratedDensity(ima) / getVolumePixels();
+            return meanDensity;
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    public double getPixMedianValue(ImageHandler ima) {
+        if (volume > 0) {
+            return listValues(ima).median();
         } else {
             return Double.NaN;
         }
@@ -2878,7 +2911,12 @@ public abstract class Object3D {
      * @return
      */
     private ImageInt createSegImage() {
-        return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, value);
+        // case value =0 
+        if (value != 0) {
+            return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, value);
+        } else {
+            return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, 1);
+        }
     }
 
     /**
@@ -2998,13 +3036,13 @@ public abstract class Object3D {
         // translate object with units coordinates
         float tx, ty, tz;
         if (calibrated) {
-            tx = (float) (miniseg.offsetX * resXY);
-            ty = (float) (miniseg.offsetY * resXY);
-            tz = (float) (miniseg.offsetZ * resZ);
+            tx = (float) (this.offX * resXY);
+            ty = (float) (this.offY * resXY);
+            tz = (float) (this.offZ * resZ);
         } else {
-            tx = (float) (miniseg.offsetX);
-            ty = (float) (miniseg.offsetY);
-            tz = (float) (miniseg.offsetZ);
+            tx = (float) (this.offX);
+            ty = (float) (this.offY);
+            tz = (float) (this.offZ);
         }
         l = Object3DSurface.translateTool(l, tx, ty, tz);
 
@@ -3139,9 +3177,9 @@ public abstract class Object3D {
         objMorpho.setCalibration(resXY, resZ, units);
         // test
         objMorpho.setLabelImage(segImage2);
-        objMorpho.offX=offX + segImage2.offsetX;
-        objMorpho.offY=offY + segImage2.offsetY;
-        objMorpho.offZ=offZ + segImage2.offsetZ;
+        objMorpho.offX = offX + segImage2.offsetX;
+        objMorpho.offY = offY + segImage2.offsetY;
+        objMorpho.offZ = offZ + segImage2.offsetZ;
         //objMorpho.setLabelImage(null);
         // test
         //this.setLabelImage(null);        
@@ -3341,5 +3379,16 @@ public abstract class Object3D {
      */
     public Object3DVoxels getConvexObject() {
         return getConvexObject(true);
+    }
+
+    @Override
+    public int compareTo(Object3D o) {
+        if (this.compare < o.compare) {
+            return -1;
+        } else if (this.compare > o.compare) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }

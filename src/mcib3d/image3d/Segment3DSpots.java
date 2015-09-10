@@ -278,8 +278,20 @@ public class Segment3DSpots {
     }
 
     private void computeWatershed() {
-        Watershed3D wat3D = new Watershed3D(rawImage, seedsImage, noiseWatershed, seedsThreshold);
+//        Watershed3D_old wat3D = new Watershed3D_old(rawImage, seedsImage, noiseWatershed, seedsThreshold);
+//        watershedImage = wat3D.getWatershedImage3D();
+        // watershed is used to separate spots, not for segmentation
+        // so based on edt of background
+        ImageByte seedsTh = seedsImage.thresholdAboveExclusive(seedsThreshold);
+        ImageFloat edt = EDT.run(seedsTh, 0, (float) rawImage.getScaleXY(), (float) rawImage.getScaleZ(), true, 0);
+        ImageShort edt16 = edt.convertToShort(true);
+        edt16.invert();
+        Watershed3D wat3D = new Watershed3D(edt16, seedsImage, 0, 0);
+        //Watershed3D wat3D = new Watershed3D(rawImage, seedsImage, noiseWatershed, seedsThreshold);
         watershedImage = wat3D.getWatershedImage3D();
+//        watershedImage.show();
+//        seedsTh.show();
+//        edt16.show();
     }
 
     /**
@@ -401,7 +413,7 @@ public class Segment3DSpots {
         double[] gaussFit;
         double[] params;
         if (WATERSHED) {
-            gaussFit = rawImage.radialDistribution(x, y, z, GAUSS_MAXR, watershedImage);
+            gaussFit = rawImage.radialDistribution(x, y, z, GAUSS_MAXR, Object3D.MEASURE_INTENSITY_AVG, watershedImage);
         } else {
             gaussFit = rawImage.radialDistribution(x, y, z, GAUSS_MAXR);
         }
@@ -1015,8 +1027,8 @@ public class Segment3DSpots {
             int cpus = ThreadUtil.getNbCpus();
             // FIXME variable multithread
             ImageFloat edt3d = EDT.run(seg, 1f, false, cpus);
-            // 3D filtering of the edt t oremove small local maxima
-            edt3d=FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
+            // 3D filtering of the edt to remove small local maxima
+            edt3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
             //edt3d.showDuplicate("edt");
 
             //ImageStack localMax = FastFilters3D.filterFloatImageStack(edt3d.getImageStack(), FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
@@ -1117,12 +1129,16 @@ public class Segment3DSpots {
             seeds.setPixel(PP1.getRoundX(), PP1.getRoundY(), PP1.getRoundZ(), 255);
             seeds.setPixel(PP2.getRoundX(), PP2.getRoundY(), PP2.getRoundZ(), 255);
             //seeds.show();
-            Watershed3D wat = new Watershed3D(edt3d, seeds, 0, 0);
+//            Watershed3D_old wat = new Watershed3D_old(edt3d, seeds, 0, 0);
+//            ImageInt wat2 = wat.getWatershedImage3D();
+            ImageHandler edt16 = edt3d.convertToShort(true);
+            Watershed3D wat = new Watershed3D(edt16, seeds, 0, 0);
             ImageInt wat2 = wat.getWatershedImage3D();
             //wat2.show();
             // in watershed label starts at 2
             Object3DVoxels ob1 = new Object3DVoxels(wat2, 2);
             Object3DVoxels ob2 = new Object3DVoxels(wat2, 3);
+            //IJ.log("split1="+ob1+" split2="+ob2);
             // translate objects if needed by miniseg
             //ob1.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
             //new ImagePlus("wat", wat2.getStack()).show();

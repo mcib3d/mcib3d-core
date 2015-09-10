@@ -465,21 +465,25 @@ public class Object3DLabel extends Object3D {
             double pix;
             double pmin = Double.MAX_VALUE;
             double pmax = -Double.MAX_VALUE;
+            int nb=0;
             for (int k = zmin; k <= zmax; k++) {
                 for (int j = ymin; j <= ymax; j++) {
                     for (int i = xmin; i <= xmax; i++) {
                         if (labelImage.getPixel(i, j, k) == value) {
                             pix = ima.getPixel(i, j, k);
-                            cx += i * pix;
-                            cy += j * pix;
-                            cz += k * pix;
-                            sum += pix;
-                            sum2 += pix * pix;
-                            if (pix > pmax) {
-                                pmax = pix;
-                            }
-                            if (pix < pmin) {
-                                pmin = pix;
+                            if (!Double.isNaN(pix)) {
+                                nb++;
+                                cx += i * pix;
+                                cy += j * pix;
+                                cz += k * pix;
+                                sum += pix;
+                                sum2 += pix * pix;
+                                if (pix > pmax) {
+                                    pmax = pix;
+                                }
+                                if (pix < pmin) {
+                                    pmin = pix;
+                                }
                             }
                         }
                     }
@@ -490,6 +494,7 @@ public class Object3DLabel extends Object3D {
             cz /= sum;
 
             integratedDensity = sum;
+            meanDensity=integratedDensity/nb;
 
             pixmin = pmin;
             pixmax = pmax;
