@@ -371,7 +371,12 @@ public class TrackThreshold {
     }
 
     public ImageHandler segment(ImageHandler input, boolean show) {
-        return process(input, show).get(0);
+        ArrayList<ImageHandler> res = process(input, show);
+        if (!res.isEmpty()) {
+            return res.get(0);
+        } else {
+            return null;
+        }
     }
 
     public ArrayList<ImageHandler> segmentAll(ImageHandler input, boolean show) {

@@ -122,7 +122,7 @@ public class BinaryMorpho {
 
     public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ) {
         return binaryDilate(in, radius, radiusZ, 0);
-    }   
+    }
 
     public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ, int nbCPUs) {
         try {
@@ -168,22 +168,25 @@ public class BinaryMorpho {
             /*if ((radius <= 1) && (radiusZ <= 1)) {
              return binaryCloseRad1(in, 1, nbCPUs);
              }*/
-            // FIXME thresholdings > strict or not??
+            // FIXME thresholdings > strict
             int rad = (int) (radius + 1);
             int radZ = (int) (radiusZ + 1);
             int resize = 0; // FIXME useful ??
             ImageInt inResized = (ImageInt) in.resize(rad + resize, rad + resize, radZ + resize);
+            //inResized.show("resize");
             ImageFloat edm = EDT.run(inResized, 0, 1, radius / radiusZ, true, nbCPUs);
             inResized.closeImagePlus();
-            ImageByte inThresholded = edm.threshold(radius, true, false);
+            ImageByte inThresholded = edm.threshold(radius, true, false);           
             edm.closeImagePlus();
             edm = EDT.run(inThresholded, 0, 1, radius / radiusZ, false, nbCPUs);
+            //edm.show("edm");
             inThresholded.closeImagePlus();
             //ImageFloat edm2 = (ImageFloat) edm.resize(-rad+resize, -rad+resize, -radZ+resize);
             //edm.closeImagePlus();
             //edm = null;
             //System.gc();
-            inThresholded = edm.threshold(radius, false, true);
+            inThresholded = edm.threshold(radius, false, false);
+            // inThresholded.show("bin");
             edm.closeImagePlus();
             edm = null;
             System.gc();
