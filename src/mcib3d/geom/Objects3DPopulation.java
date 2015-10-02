@@ -300,6 +300,24 @@ public class Objects3DPopulation {
         }
     }
 
+    public void removeObjectsTouchingBorders(ImageHandler img, boolean Z) {
+        for (Object3D obj : objects) {
+            if (obj.touchBorders(img, Z)) {
+                removeObject(obj);
+            }
+        }
+    }
+
+    public void removeObjectsTouchingBorders(ImagePlus img, boolean Z) {
+        ArrayList<Object3D> toRemove = new ArrayList<Object3D>();
+        for (Object3D obj : objects) {
+            if (obj.touchBorders(img, Z)) {
+                toRemove.add(obj);
+            }
+        }
+        objects.removeAll(toRemove);
+    }
+
     public void removeObject(int i) {
         hashValue.remove(objects.get(i).getValue());
         hashName.remove(objects.get(i).getName());
