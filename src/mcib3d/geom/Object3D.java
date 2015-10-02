@@ -1976,6 +1976,9 @@ public abstract class Object3D implements Comparable<Object3D> {
             return false;
         }
         int val = value;
+        if (val == 0) {
+            val = 1;
+        }
         ImageInt label = this.getLabelImage();
         int testx = (int) Math.round(x) - offX;
         int testy = (int) Math.round(y) - offY;
@@ -2670,6 +2673,10 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public double getPixMeanValue(ImageHandler ima) {
         if (volume > 0) {
+            if ((currentQuantifImage == null) || (currentQuantifImage != ima)) {
+                computeMassCenter(ima);
+                currentQuantifImage = ima;
+            }
             return meanDensity;
         } else {
             return Double.NaN;
@@ -2678,6 +2685,10 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     public double getPixMedianValue(ImageHandler ima) {
         if (volume > 0) {
+            if ((currentQuantifImage == null) || (currentQuantifImage != ima)) {
+                computeMassCenter(ima);
+                currentQuantifImage = ima;
+            }
             return listValues(ima).median();
         } else {
             return Double.NaN;
@@ -3125,6 +3136,38 @@ public abstract class Object3D implements Comparable<Object3D> {
         double vC = A.getColoc(B);
 
         return 100.0 * vC / (vA + vB);
+    }
+
+    public boolean touchBorders(ImageHandler img, boolean Z) {
+        int[] bb = getBoundingBox();
+        // 0
+        if ((bb[0] <= 0) || (bb[2] <= 0)) {
+            return true;
+        }
+        if (Z && (bb[4] <= 0)) {
+            return true;
+        }
+        // max
+        if ((bb[1] >= img.sizeX - 1) || (bb[3] >= img.sizeY - 1)) {
+            return true;
+        }
+        return Z && (bb[5] >= img.sizeZ);
+    }
+
+    public boolean touchBorders(ImagePlus img, boolean Z) {
+        int[] bb = getBoundingBox();
+        // 0
+        if ((bb[0] <= 0) || (bb[2] <= 0)) {
+            return true;
+        }
+        if (Z && (bb[4] <= 0)) {
+            return true;
+        }
+        // max
+        if ((bb[1] >= img.getWidth() - 1) || (bb[3] >= img.getHeight() - 1)) {
+            return true;
+        }
+        return Z && (bb[5] >= img.getNSlices());
     }
 
     private Object3DVoxels getMorphoObject(int op, float radX, float radY, float radZ) {
