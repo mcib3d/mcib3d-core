@@ -3,6 +3,7 @@ package mcib3d.image3d.processing;
 import ij.IJ;
 import java.util.LinkedList;
 import java.util.Queue;
+import mcib3d.geom.IntCoord3D;
 import mcib3d.image3d.Coordinate3D;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageHandler;
@@ -35,7 +36,7 @@ import mcib3d.utils.exceptionPrinter;
  * @author Jean Ollion
  */
 public class FillHoles3D {
-    
+
     public static void process(ImageHandler mask, int foregroundValue, int nbCPUs, boolean verbose) {
         if (mask instanceof ImageByte) {
             process((ImageByte) mask, foregroundValue, nbCPUs, verbose);
@@ -45,7 +46,7 @@ public class FillHoles3D {
             IJ.log("Cannot perform Fillholes 3D on image type" + mask.getType());
         }
     }
-    
+
     public static void process(ImageByte mask, int foregroundValue, int nbCPUs, boolean verbose) {
         final byte[][] pixels = mask.pixels;
         final int sizeX = mask.sizeX;
@@ -99,7 +100,7 @@ public class FillHoles3D {
         for (int i = 0; i < tr2.threads.length; i++) {
             tr2.threads[i] = new Thread(
                     new Runnable() {
-                        
+
                         public void run() {
                             for (int idx = tr2.ai.getAndIncrement(); idx < tr2.end; idx = tr2.ai.getAndIncrement()) {
                                 try {
@@ -144,14 +145,14 @@ public class FillHoles3D {
         for (int i = 0; i < tr3.threads.length; i++) {
             tr3.threads[i] = new Thread(
                     new Runnable() {
-                        
+
                         public void run() {
                             for (int idx = tr3.ai.getAndIncrement(); idx < tr3.end; idx = tr3.ai.getAndIncrement()) {
                                 try {
                                     byte mid = midValue;
                                     byte fg = fgValue;
                                     for (int x = 0; x < sizeX; x++) {
-                                        
+
                                         boolean bcg = pixels[idx][x] == 0;
                                         for (int y = 0; y < sizeY; y++) {
                                             byte value = pixels[idx][y * sizeX + x];
@@ -185,41 +186,46 @@ public class FillHoles3D {
         tr3.startAndJoin();
         //im1.showDuplicate("3eme passage");
         //remove artefacts
-        Queue<Integer> heap = new LinkedList<Integer>();
+        Queue<IntCoord3D> heap = new LinkedList<IntCoord3D>();
         for (int z = 0; z < sizeZ; z++) {
             for (int y = 0; y < sizeY; y++) {
                 for (int x = 0; x < sizeX; x++) {
                     if (pixels[z][x + sizeX * y] == 0) {
                         if (checkVoxel(pixels, x, y, z, sizeX, sizeY, sizeZ, midValue)) {
-                            heap.add(x + y * sizeX + z * sizeXY);
+                            //heap.add((x + y * sizeX + z * sizeXY));
+                            heap.add(new IntCoord3D(x, y, z));
                         }
                     }
                 }
             }
         }
-        Coordinate3D c = new Coordinate3D(0, sizeX, sizeY, sizeZ);
+        //Coordinate3D c = new Coordinate3D(0, sizeX, sizeY, sizeZ);
         while (!heap.isEmpty()) {
-            int coord = heap.remove();
-            c.setCoord(coord);
+            //int coord = heap.remove();
+            IntCoord3D c = heap.remove();
+            //c.setCoord(coord);
+            if ((c.z < 0) || (c.z >= sizeZ) || (c.x + c.y * sizeX < 0) || (c.x + c.y * sizeX >= sizeXY)) {
+                IJ.log("souci " + c);
+            }
             if (pixels[c.z][c.x + c.y * sizeX] == 0) {
                 pixels[c.z][c.x + c.y * sizeX] = midValue;
                 if (c.z > 0 && pixels[c.z - 1][c.x + c.y * sizeX] == 0) {
-                    heap.add(coord - sizeXY);
+                    heap.add(new IntCoord3D(c.x, c.y, c.z - 1));
                 }
                 if (c.z < (sizeZ - 1) && pixels[c.z + 1][c.x + c.y * sizeX] == 0) {
-                    heap.add(coord + sizeXY);
+                    heap.add(new IntCoord3D(c.x, c.y, c.z + 1));
                 }
                 if (c.x > 0 && pixels[c.z][c.x - 1 + c.y * sizeX] == 0) {
-                    heap.add(coord - 1);
+                    heap.add(new IntCoord3D(c.x - 1, c.y, c.z));
                 }
                 if (c.x < (sizeX - 1) && pixels[c.z][c.x + 1 + c.y * sizeX] == 0) {
-                    heap.add(coord + 1);
+                    heap.add(new IntCoord3D(c.x + 1, c.y, c.z));
                 }
                 if (c.y > 0 && pixels[c.z][c.x + (c.y - 1) * sizeX] == 0) {
-                    heap.add(coord - sizeX);
+                    heap.add(new IntCoord3D(c.x, c.y - 1, c.z));
                 }
                 if (c.y < (sizeY - 1) && pixels[c.z][c.x + (c.y + 1) * sizeX] == 0) {
-                    heap.add(coord + sizeX);
+                    heap.add(new IntCoord3D(c.x, c.y + 1, c.z));
                 }
             }
         }
@@ -229,7 +235,8 @@ public class FillHoles3D {
         for (int i = 0; i < tr4.threads.length; i++) {
             tr4.threads[i] = new Thread(
                     new Runnable() {
-                        
+
+                        @Override
                         public void run() {
                             for (int idx = tr4.ai.getAndIncrement(); idx < tr4.end; idx = tr4.ai.getAndIncrement()) {
                                 try {
@@ -250,9 +257,9 @@ public class FillHoles3D {
                     });
         }
         tr4.startAndJoin();
-        
+
     }
-    
+
     private static boolean checkVoxel(final byte[][] pixels, final int x, final int y, final int z, final int sizeX, final int sizeY, final int sizeZ, byte midValue) {
         if (z > 0 && pixels[z - 1][x + y * sizeX] == midValue) {
             return true;
@@ -274,7 +281,7 @@ public class FillHoles3D {
         }
         return false;
     }
-    
+
     public static void process(ImageShort mask, int foregroundValue, int nbCPUs, boolean verbose) {
         final short[][] pixels = mask.pixels;
         final int sizeX = mask.sizeX;
@@ -294,7 +301,7 @@ public class FillHoles3D {
         final mcib3d.utils.ThreadRunner tr = new mcib3d.utils.ThreadRunner(0, sizeY, nbCPUs);
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
-                    new Runnable() {                        
+                    new Runnable() {
                         @Override
                         public void run() {
                             for (int idx = tr.ai.getAndIncrement(); idx < tr.end; idx = tr.ai.getAndIncrement()) {
@@ -328,7 +335,7 @@ public class FillHoles3D {
         final mcib3d.utils.ThreadRunner tr2 = new mcib3d.utils.ThreadRunner(0, sizeZ, nbCPUs);
         for (int i = 0; i < tr2.threads.length; i++) {
             tr2.threads[i] = new Thread(
-                    new Runnable() {                        
+                    new Runnable() {
                         @Override
                         public void run() {
                             for (int idx = tr2.ai.getAndIncrement(); idx < tr2.end; idx = tr2.ai.getAndIncrement()) {
@@ -373,7 +380,7 @@ public class FillHoles3D {
         final mcib3d.utils.ThreadRunner tr3 = new mcib3d.utils.ThreadRunner(0, sizeZ, nbCPUs);
         for (int i = 0; i < tr3.threads.length; i++) {
             tr3.threads[i] = new Thread(
-                    new Runnable() {                        
+                    new Runnable() {
                         @Override
                         public void run() {
                             for (int idx = tr3.ai.getAndIncrement(); idx < tr3.end; idx = tr3.ai.getAndIncrement()) {
@@ -381,7 +388,7 @@ public class FillHoles3D {
                                     short mid = midValue;
                                     short fg = fgValue;
                                     for (int x = 0; x < sizeX; x++) {
-                                        
+
                                         boolean bcg = pixels[idx][x] == 0;
                                         for (int y = 0; y < sizeY; y++) {
                                             short value = pixels[idx][y * sizeX + x];
@@ -458,7 +465,7 @@ public class FillHoles3D {
         final mcib3d.utils.ThreadRunner tr4 = new mcib3d.utils.ThreadRunner(0, sizeZ, nbCPUs);
         for (int i = 0; i < tr4.threads.length; i++) {
             tr4.threads[i] = new Thread(
-                    new Runnable() {                        
+                    new Runnable() {
                         @Override
                         public void run() {
                             for (int idx = tr4.ai.getAndIncrement(); idx < tr4.end; idx = tr4.ai.getAndIncrement()) {
@@ -480,9 +487,9 @@ public class FillHoles3D {
                     });
         }
         tr4.startAndJoin();
-        
+
     }
-    
+
     private static boolean checkVoxel(final short[][] pixels, final int x, final int y, final int z, final int sizeX, final int sizeY, final int sizeZ, short midValue) {
         if (z > 0 && pixels[z - 1][x + y * sizeX] == midValue) {
             return true;
