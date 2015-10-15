@@ -301,11 +301,17 @@ public class Objects3DPopulation {
     }
 
     public void removeObjectsTouchingBorders(ImageHandler img, boolean Z) {
+        ArrayList<Object3D> toRemove = new ArrayList<Object3D>();
         for (Object3D obj : objects) {
             if (obj.touchBorders(img, Z)) {
-                removeObject(obj);
+                toRemove.add(obj);
             }
         }
+        for (Object3D obj : toRemove) {
+            removeObject(obj);
+            //IJ.log("removing touching " + obj);
+        }
+        buildHash();
     }
 
     public void removeObjectsTouchingBorders(ImagePlus img, boolean Z) {
@@ -315,7 +321,11 @@ public class Objects3DPopulation {
                 toRemove.add(obj);
             }
         }
-        objects.removeAll(toRemove);
+        for (Object3D obj : toRemove) {
+            removeObject(obj);
+            //IJ.log("removing touching " + obj);
+        }
+        buildHash();
     }
 
     public void removeObject(int i) {
@@ -328,7 +338,7 @@ public class Objects3DPopulation {
     public void removeObject(Object3D obj) {
         hashValue.remove(obj.getValue());
         hashName.remove(obj.getName());
-        objects.remove(obj);
+        if(!objects.remove(obj)) IJ.log("Pb removing "+obj);
     }
 
     public void buildHash() {
