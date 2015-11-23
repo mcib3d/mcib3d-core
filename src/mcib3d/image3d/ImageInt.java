@@ -71,8 +71,8 @@ public abstract class ImageInt extends ImageHandler {
     public abstract void setPixel(int x, int y, int z, int value);
 
     public abstract void setPixel(int xy, int z, int value);
-    
-    public abstract void setPixelCross3D(int x,int y,int z, int value);
+
+    public abstract void setPixelCross3D(int x, int y, int z, int value);
 
     public abstract void draw(Object3D o, int value);
 
@@ -247,20 +247,22 @@ public abstract class ImageInt extends ImageHandler {
         }
         return null;
     }
-    
+
     public Object3DVoxels getObjectMask() {
         ArrayList<Voxel3D> vox = new ArrayList<Voxel3D>();
         // should be a labelled image
         // extracting the value of the object
-        int value=(int) this.getMinAboveValue(0);
-        for (int z = 0; z<sizeZ; z++) {
-            for (int y = 0; y<sizeY; y++) {
-                for (int x = 0; x<sizeX; x++) {
-                    if (this.getPixel(x, y, z)!=0) vox.add(new Voxel3D(x, y, z, value));
+        int value = (int) this.getMinAboveValue(0);
+        for (int z = 0; z < sizeZ; z++) {
+            for (int y = 0; y < sizeY; y++) {
+                for (int x = 0; x < sizeX; x++) {
+                    if (this.getPixel(x, y, z) != 0) {
+                        vox.add(new Voxel3D(x, y, z, value));
+                    }
                 }
             }
         }
-        Object3DVoxels obj =  new Object3DVoxels(vox);
+        Object3DVoxels obj = new Object3DVoxels(vox);
         obj.setResXY(this.getScaleXY());
         obj.setResZ(this.getScaleZ());
         obj.setLabelImage(this);
@@ -328,7 +330,7 @@ public abstract class ImageInt extends ImageHandler {
     public ImageFloat getDistanceMapInsideMask(int nbCPUs) {
         return EDT.run(this, 0, false, nbCPUs);
     }
-    
+
     public ImageByte erode(float erodeRadius, int nbCPUs) {
         ImageFloat dm = getDistanceMapInsideMask(nbCPUs);
         return dm.threshold(erodeRadius, false, true);
@@ -406,7 +408,6 @@ public abstract class ImageInt extends ImageHandler {
 //            }
 //        }
 //    }
-
     /**
      * Replace pixel values by others
      *
@@ -424,7 +425,7 @@ public abstract class ImageInt extends ImageHandler {
             }
         }
     }
-    
+
     /**
      * Replace a pixel values by another
      *
@@ -442,7 +443,6 @@ public abstract class ImageInt extends ImageHandler {
             }
         }
     }
-    
 
     /**
      *
@@ -464,18 +464,20 @@ public abstract class ImageInt extends ImageHandler {
 
     @Override
     public abstract ImageInt resample(int newZ, int method);
-   
+
     public abstract ImageByte toMask();
-    
+
     public ImageByte toCenterMask() {
         ImageByte res = new ImageByte("mask", this.sizeX, this.sizeY, this.sizeZ);
         res.setScale(this);
         res.setOffset(this);
         Object3DVoxels[] os = this.getObjects3D();
-        for (Object3DVoxels o:os) res.setPixel(o.getCenterAsPoint(), 255);
+        for (Object3DVoxels o : os) {
+            res.setPixel(o.getCenterAsPoint(), 255);
+        }
         return res;
     }
-    
+
     public abstract int countMaskVolume();
 
     public ImageInt addImage(ImageInt other) {
@@ -496,7 +498,7 @@ public abstract class ImageInt extends ImageHandler {
 
         return res;
     }
-    
+
     public ImageInt diffAbsImage(ImageHandler other) {
         ImageInt res;
         if (!this.sameDimentions(other)) {
@@ -515,7 +517,6 @@ public abstract class ImageInt extends ImageHandler {
 
         return res;
     }
-    
 
     @Override
     public abstract ImageInt duplicate();
@@ -696,7 +697,6 @@ public abstract class ImageInt extends ImageHandler {
         double ez;
         double edge;
 
-
         for (int k = 0; k < sizeZ; k++) {
             //if (this.showStatus) {
             //    IJ.showStatus("3D Sobel : " + (int) (100 * k / sizez) + "%");
@@ -744,7 +744,6 @@ public abstract class ImageInt extends ImageHandler {
         final float radX2 = radx;
         final float radY2 = rady;
         final float radZ2 = radz;
-
 
         // PARALLEL (Thomas Boudier)
         final AtomicInteger ai = new AtomicInteger(0);

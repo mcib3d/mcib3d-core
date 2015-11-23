@@ -166,25 +166,23 @@ public class Segment3DSpots {
      *
      * @return
      */
-    public ImageHandler getLabelImage() {
-        
+    public ImageHandler getInternalLabelImage() {
+
         return labelImage;
     }
-    
-    public ImageHandler getIndexObjImage() {
-        IJ.log("Create label image with "+segmentedObjects.size()+" objects");
-        if(indexImage == null)
-        {
+
+    public ImageHandler getLabelImage() {
+        IJ.log("Create label image with " + segmentedObjects.size() + " objects");
+        if (indexImage == null) {
             if (!bigLabel) {
                 indexImage = new ImageShort("Index", rawImage.sizeX, rawImage.sizeY, rawImage.sizeZ);
             } else {
                 indexImage = new ImageFloat("Index", rawImage.sizeX, rawImage.sizeY, rawImage.sizeZ);
             }
         }
-        for(Object3D obj : segmentedObjects)
-        {
+        for (Object3D obj : segmentedObjects) {
             obj.draw(indexImage, obj.getValue());
-        }    
+        }
         return indexImage;
     }
 
@@ -464,7 +462,6 @@ public class Segment3DSpots {
     public void segmentAll() {
         segmentedObjects = new ArrayList();
         ArrayList<Voxel3D> obj;
-        Voxel3D vox;
         int o = 1;
         int localThreshold = localValue;
         if (labelImage == null) {
@@ -473,7 +470,7 @@ public class Segment3DSpots {
         // locate seeds
         for (int z = 0; z < seedsImage.sizeZ; z++) {
             IJ.showStatus("Segmenting slice " + (z + 1));
-            IJ.log("Segmenting slice " + (z + 1));
+            //IJ.log("Segmenting slice " + (z + 1));
             for (int y = 0; y < seedsImage.sizeY; y++) {
                 for (int x = 0; x < seedsImage.sizeX; x++) {
                     if (seedsImage.getPixel(x, y, z) > seedsThreshold) {
@@ -514,10 +511,8 @@ public class Segment3DSpots {
                             o++;
                         } else if (obj != null) {
                             // erase from label image
-                            Iterator it = obj.iterator();
-                            while (it.hasNext()) {
-                                vox = (Voxel3D) it.next();
-                                labelImage.setPixel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), 0);
+                            for (Voxel3D vo : obj) {
+                                labelImage.setPixel(vo.getRoundX(), vo.getRoundY(), vo.getRoundZ(), 0);
                             }
                             if (show) {
                                 IJ.log("object volume outside range : " + obj.size());
@@ -776,10 +771,9 @@ public class Segment3DSpots {
 
                             if (ok) {
                                 changement = true;
-                                if(neigh.size()>volMax)
-                                {
+                                if (neigh.size() > volMax) {
                                     return null;
-                                }    
+                                }
                                 it = neigh.iterator();
                                 while (it.hasNext()) {
                                     tmpneigh = (Voxel3D) it.next();

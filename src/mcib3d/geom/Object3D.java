@@ -562,6 +562,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * Compute the moments of the object (for ellipsoid orientation)
+     * @param normalize
      */
     protected abstract void computeMoments2(boolean normalize); // order 2
 
@@ -665,6 +666,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * orientation. Reference: F. A. Sadjadi and E. L. Hall, Three-Dimensional
      * Moment Invariants, IEEE Transactions on Pattern Analysis and Machine
      * Intelligence, vol. PAMI-2, no. 2, pp. 127-136, March 1980.
+     * @return 
      */
     public double[] getMoments3D() {
         computeMoments2(false);

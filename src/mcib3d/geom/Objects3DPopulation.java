@@ -105,6 +105,8 @@ public class Objects3DPopulation {
         hashName = new HashMap<String, Integer>();
         addImagePlus(plus);
     }
+    
+    
 
     public Objects3DPopulation(ImageInt plus) {
         objects = new ArrayList();

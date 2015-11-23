@@ -580,6 +580,7 @@ public class Object3DVoxels extends Object3D {
     /**
      * Computation of the dispersion tensor with units value
      */
+    @Override
     protected void computeMoments2(boolean normalize) {
         s200 = 0;
         s110 = 0;
@@ -623,6 +624,7 @@ public class Object3DVoxels extends Object3D {
         eigen = null;
     }
 
+    @Override
     public void computeMoments3() {
         s300 = s030 = s003 = 0;
         s210 = s201 = s120 = s021 = s102 = s012 = s111 = 0;
@@ -661,6 +663,7 @@ public class Object3DVoxels extends Object3D {
         s111 *= resXY * resXY * resZ;
     }
 
+    @Override
     public void computeMoments4() {
         s400 = s040 = s040 = s220 = s202 = s022 = s121 = s112 = s211 = 0;
         s103 = s301 = s130 = s310 = s013 = s031 = 0;
@@ -713,18 +716,17 @@ public class Object3DVoxels extends Object3D {
     /**
      * Compute the barycenter and the volume
      */
+    @Override
     protected void computeCenter() {
         bx = 0;
         by = 0;
         bz = 0;
-        Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D vox : voxels) {
             bx += vox.getX();
             by += vox.getY();
             bz += vox.getZ();
         }
+
         int sum = voxels.size();
         bx /= sum;
         by /= sum;
