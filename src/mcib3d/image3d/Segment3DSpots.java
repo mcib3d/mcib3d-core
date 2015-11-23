@@ -166,6 +166,7 @@ public class Segment3DSpots {
      * @return
      */
     public ImageHandler getLabelImage() {
+        
         return labelImage;
     }
 
