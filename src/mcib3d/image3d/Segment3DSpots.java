@@ -47,6 +47,7 @@ public class Segment3DSpots {
     ImageHandler seedsImage; // positions of seeds
     ImageInt watershedImage = null; // watershed from seeds
     ImageHandler labelImage = null; // labelled image with objects
+    ImageHandler indexImage = null; // indexed image with objects
     int seedsThreshold = -1; // global threshold (min value from seeds)
     // methods of segmentation
     public final static int SEG_CLASSICAL = 1;
@@ -168,6 +169,23 @@ public class Segment3DSpots {
     public ImageHandler getLabelImage() {
         
         return labelImage;
+    }
+    
+    public ImageHandler getIndexObjImage() {
+        IJ.log("Create label image with "+segmentedObjects.size()+" objects");
+        if(indexImage == null)
+        {
+            if (!bigLabel) {
+                indexImage = new ImageShort("Index", rawImage.sizeX, rawImage.sizeY, rawImage.sizeZ);
+            } else {
+                indexImage = new ImageFloat("Index", rawImage.sizeX, rawImage.sizeY, rawImage.sizeZ);
+            }
+        }
+        for(Object3D obj : segmentedObjects)
+        {
+            obj.draw(indexImage, obj.getValue());
+        }    
+        return indexImage;
     }
 
     /**
@@ -455,6 +473,7 @@ public class Segment3DSpots {
         // locate seeds
         for (int z = 0; z < seedsImage.sizeZ; z++) {
             IJ.showStatus("Segmenting slice " + (z + 1));
+            IJ.log("Segmenting slice " + (z + 1));
             for (int y = 0; y < seedsImage.sizeY; y++) {
                 for (int x = 0; x < seedsImage.sizeX; x++) {
                     if (seedsImage.getPixel(x, y, z) > seedsThreshold) {
@@ -491,6 +510,7 @@ public class Segment3DSpots {
                         }
                         if ((obj != null) && (obj.size() >= volMin) && (obj.size() <= volMax)) {
                             segmentedObjects.add(new Object3DVoxels(obj));
+                            //IJ.log("obj size: "+obj.size());
                             o++;
                         } else if (obj != null) {
                             // erase from label image
@@ -756,6 +776,10 @@ public class Segment3DSpots {
 
                             if (ok) {
                                 changement = true;
+                                if(neigh.size()>volMax)
+                                {
+                                    return null;
+                                }    
                                 it = neigh.iterator();
                                 while (it.hasNext()) {
                                     tmpneigh = (Voxel3D) it.next();
@@ -809,7 +833,7 @@ public class Segment3DSpots {
             }// k
             sens *= -1;
         }//while      
-
+        //IJ.log("obj size: ");
         return object;
     }
 
