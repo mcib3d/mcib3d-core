@@ -749,14 +749,18 @@ public class Object3DLabel extends Object3D {
      * @param z The Z coordinate
      * @param col The value to draw
      */
-    public void draw(ByteProcessor mask, int z, int col) {
+    @Override
+    public boolean draw(ByteProcessor mask, int z, int col) {
+        boolean ok=false;
         for (int x = xmin; x <= xmax; x++) {
             for (int y = ymin; y <= ymax; y++) {
                 if (labelImage.getPixel(x, y, z) == value) {
                     mask.putPixel(x, y, col);
+                    ok=true;
                 }
             }
         }
+        return ok;
     }
 
     /**

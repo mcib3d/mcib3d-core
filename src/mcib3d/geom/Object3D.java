@@ -825,8 +825,9 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param mask the byte processor
      * @param z the z slice
      * @param col the color(grey level)
+     * @return 
      */
-    public abstract void draw(ByteProcessor mask, int z, int col);
+    public abstract boolean draw(ByteProcessor mask, int z, int col);
 
     /**
      * drawing inside an imagestack

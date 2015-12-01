@@ -1759,6 +1759,7 @@ public class Object3DSurface extends Object3D {
         return vector;
     }
 
+    @Override
     public ArrayList<Voxel3D> getVoxels() {
         //IJ.log("voxels  begin " + voxels+" "+this.resXY+" "+this.resZ);
         // check if already computed
@@ -1865,12 +1866,15 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
-    public void draw(ByteProcessor mask, int z, int col) {
+    public boolean draw(ByteProcessor mask, int z, int col) {
+        boolean ok=false;
         for (Voxel3D vox : this.getVoxels()) {
             if (Math.abs(z - vox.getZ()) < 0.5) {
                 mask.putPixel((int) (Math.round(vox.getX())), (int) (Math.round(vox.getY())), col);
+                ok=true;
             }
         }
+        return ok;
     }
 
     @Override

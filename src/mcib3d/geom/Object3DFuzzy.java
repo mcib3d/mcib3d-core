@@ -291,15 +291,18 @@ public class Object3DFuzzy extends Object3DVoxels {
     }
 
     @Override
-    public void draw(ByteProcessor mask, int z, int col) {
+    public boolean draw(ByteProcessor mask, int z, int col) {
+        boolean ok=false;
         Voxel3D vox;
         Iterator it = voxels.iterator();
         while (it.hasNext()) {
             vox = (Voxel3D) it.next();
             if (Math.abs(z - vox.getZ()) < 0.5) {
                 mask.putPixel((int) vox.getX(), (int) vox.getY(), col);
+                ok=true;
             }
         }
+        return ok;
     }
 
     @Override

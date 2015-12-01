@@ -1380,17 +1380,21 @@ public class Object3DVoxels extends Object3D {
      * @param mask The mask image to draw
      * @param z The Z coordinate
      * @param col The value to draw
+     * @return 
      */
     @Override
-    public void draw(ByteProcessor mask, int z, int col) {
+    public boolean draw(ByteProcessor mask, int z, int col) {
+        boolean ok=false;
         Voxel3D vox;
         Iterator it = voxels.iterator();
         while (it.hasNext()) {
             vox = (Voxel3D) it.next();
             if (Math.abs(z - vox.getZ()) < 0.5) {
                 mask.putPixel(vox.getRoundX(), vox.getRoundY(), col);
+                ok=true;
             }
         }
+        return ok;
     }
 
     /**
