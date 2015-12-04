@@ -312,6 +312,7 @@ public class ImageFloat extends ImageHandler {
         }
     }
 
+    @Override
     public ImageFloat duplicate() {
         ImageFloat res = new ImageFloat(img.duplicate());
         res.offsetX = offsetX;
@@ -329,6 +330,7 @@ public class ImageFloat extends ImageHandler {
         }
     }
 
+    @Override
     public float getPixel(int coord) {
         return pixels[coord / sizeXY][coord % sizeXY];
     }
@@ -341,10 +343,12 @@ public class ImageFloat extends ImageHandler {
         return pixels[coord.z][coord.x + coord.y * sizeX];
     }
 
+    @Override
     public float getPixel(int x, int y, int z) {
         return pixels[z][x + y * sizeX];
     }
 
+    @Override
     public float getPixel(int xy, int z) {
         return pixels[z][xy];
     }
@@ -356,7 +360,7 @@ public class ImageFloat extends ImageHandler {
 
     @Override
     public void setPixel(Point3D point, float value) {
-        pixels[(int) point.z][(int) point.x + (int) point.y * sizeX] = value;
+        pixels[ point.getRoundZ()][point.getRoundX() + point.getRoundY() * sizeX] = value;
     }
 
     @Override
