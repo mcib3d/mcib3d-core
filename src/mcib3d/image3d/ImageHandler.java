@@ -15,6 +15,8 @@ import java.awt.image.IndexColorModel;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -1051,6 +1053,99 @@ public abstract class ImageHandler {
     public double getMean() {
         return getImageStats(new BlankMask(this)).getMean();
     }
+
+    public double[] getLineX(int x0, int y0, int z0, int length) {
+        int x1 = x0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        x1 = min(sizeX - 1, x1);
+
+        double[] line = new double[x1 - x0 + 1];
+        for (int i = x0; i <= x1; i++) {
+            line[i - x0] = getPixel(i, y0, z0);
+        }
+
+        return line;
+    }
+    
+    public double[] getLineY(int x0, int y0, int z0, int length) {
+        int y1 = y0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        y1 = min(sizeY - 1, y1);
+
+        double[] line = new double[y1 - y0 + 1];
+        for (int i = y0; i <= y1; i++) {
+            line[i - y0] = getPixel(x0, i, z0);
+        }
+
+        return line;
+    }
+    
+     public double[] getLineZ(int x0, int y0, int z0, int length) {
+        int z1 = z0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        z1 = min(sizeZ - 1, z1);
+
+        double[] line = new double[z1 - z0 + 1];
+        for (int i = z0; i <= z1; i++) {
+            line[i - z0] = getPixel(x0, y0, i);
+        }
+
+        return line;
+    }
+    
+    
+    
+    
+
+    public void setLineX(int x0, int y0, int z0, double[] line) {
+        int length = line.length;
+        int x1 = x0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        x1 = min(sizeX - 1, x1);
+
+        for (int i = x0; i <= x1; i++) {
+            setPixel(i, y0, z0, (float) line[i - x0]);
+        }
+
+    }
+    
+    public void setLineY(int x0, int y0, int z0, double[] line) {
+        int length = line.length;
+        int y1 = y0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        y1 = min(sizeY - 1, y1);
+
+        for (int i = y0; i <= y1; i++) {
+            setPixel(x0, i, z0, (float) line[i - y0]);
+        }
+
+    }
+    
+    public void setLineZ(int x0, int y0, int z0, double[] line) {
+        int length = line.length;
+        int z1 = z0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        z1 = min(sizeZ - 1, z1);
+
+        for (int i = z0; i <= z1; i++) {
+            setPixel(x0, y0, i, (float) line[i - z0]);
+        }
+
+    }
+    
+    
 
     public double[] extractLine(int x0, int y0, int z0, int x1, int y1, int z1, boolean interpolate) {
         int dx = (x1 - x0);
