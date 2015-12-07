@@ -754,6 +754,14 @@ public abstract class ImageHandler {
 
     public abstract void setPixel(int x, int y, int z, float value);
 
+    public void setPixelIncrement(int x, int y, int z, float inc) {
+        setPixel(x, y, z, getPixel(x, y, z) + inc);
+    }
+
+    public void setPixelIncrement(Point3D P, float inc) {
+        setPixel(P, getPixel(P) + inc);
+    }
+
     public abstract void setPixel(int xy, int z, float value);
 
     public abstract Object getArray1D();
@@ -1068,7 +1076,7 @@ public abstract class ImageHandler {
 
         return line;
     }
-    
+
     public double[] getLineY(int x0, int y0, int z0, int length) {
         int y1 = y0 + length;
         x0 = max(0, x0);
@@ -1083,8 +1091,8 @@ public abstract class ImageHandler {
 
         return line;
     }
-    
-     public double[] getLineZ(int x0, int y0, int z0, int length) {
+
+    public double[] getLineZ(int x0, int y0, int z0, int length) {
         int z1 = z0 + length;
         x0 = max(0, x0);
         y0 = max(0, y0);
@@ -1098,10 +1106,6 @@ public abstract class ImageHandler {
 
         return line;
     }
-    
-    
-    
-    
 
     public void setLineX(int x0, int y0, int z0, double[] line) {
         int length = line.length;
@@ -1116,7 +1120,7 @@ public abstract class ImageHandler {
         }
 
     }
-    
+
     public void setLineY(int x0, int y0, int z0, double[] line) {
         int length = line.length;
         int y1 = y0 + length;
@@ -1130,7 +1134,7 @@ public abstract class ImageHandler {
         }
 
     }
-    
+
     public void setLineZ(int x0, int y0, int z0, double[] line) {
         int length = line.length;
         int z1 = z0 + length;
@@ -1144,8 +1148,6 @@ public abstract class ImageHandler {
         }
 
     }
-    
-    
 
     public double[] extractLine(int x0, int y0, int z0, int x1, int y1, int z1, boolean interpolate) {
         int dx = (x1 - x0);
