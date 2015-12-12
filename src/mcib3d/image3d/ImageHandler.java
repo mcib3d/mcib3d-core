@@ -11,13 +11,12 @@ import ij.measure.Calibration;
 import ij.plugin.ContrastEnhancer;
 import ij.plugin.ZProjector;
 import ij.process.ImageProcessor;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.awt.image.IndexColorModel;
-import java.awt.image.WritableRaster;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -57,7 +56,8 @@ import mcib3d.utils.exceptionPrinter;
  * @author Thomas Boudier
  */
 public abstract class ImageHandler {
-    public static double defZoomFactor=1d;
+
+    public static double defZoomFactor = 1d;
     public int sizeX, sizeY, sizeZ, sizeXY, sizeXYZ, offsetX, offsetY, offsetZ;
     protected ImagePlus img;
     protected String title;
@@ -228,6 +228,37 @@ public abstract class ImageHandler {
             }
         }
         res.setSize(idx);
+        return res;
+    }
+
+    public ArrayList<Voxel3D> getNeighborhood3x3x3ListCenter(int x, int y, int z) {
+        ArrayList<Voxel3D> res = new ArrayList<Voxel3D>(27);
+        for (int k = z - 1; k <= z + 1; k++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if ((i >= 0) && (j >= 0) && (k >= 0) && (i < sizeX) && (j < sizeY) && (k < sizeZ)) {
+                        res.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+    public ArrayList<Voxel3D> getNeighborhood3x3x3ListNoCenter(int x, int y, int z) {
+        ArrayList<Voxel3D> res = new ArrayList<Voxel3D>(27);
+        for (int k = z - 1; k <= z + 1; k++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if ((i == x) && (j == y) && (k == z)) {
+                        continue;
+                    }
+                    if ((i >= 0) && (j >= 0) && (k >= 0) && (i < sizeX) && (j < sizeY) && (k < sizeZ)) {
+                        res.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
+                    }
+                }
+            }
+        }
         return res;
     }
 
@@ -722,6 +753,14 @@ public abstract class ImageHandler {
 
     public abstract void setPixel(int x, int y, int z, float value);
 
+    public void setPixelIncrement(int x, int y, int z, float inc) {
+        setPixel(x, y, z, getPixel(x, y, z) + inc);
+    }
+
+    public void setPixelIncrement(Point3D P, float inc) {
+        setPixel(P, getPixel(P) + inc);
+    }
+
     public abstract void setPixel(int xy, int z, float value);
 
     public abstract Object getArray1D();
@@ -944,14 +983,12 @@ public abstract class ImageHandler {
             setPixel(i, this.getPixel(i) / coeff);
         }
     }
-    
+
     public void multiplyByValue(float coeff) {
         for (int i = 0; i < sizeXYZ; i++) {
             setPixel(i, this.getPixel(i) * coeff);
         }
     }
-    
-    
 
     public void addValue(float val) {
         for (int i = 0; i < sizeXYZ; i++) {
@@ -1022,6 +1059,93 @@ public abstract class ImageHandler {
 
     public double getMean() {
         return getImageStats(new BlankMask(this)).getMean();
+    }
+
+    public double[] getLineX(int x0, int y0, int z0, int length) {
+        int x1 = x0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        x1 = min(sizeX - 1, x1);
+
+        double[] line = new double[x1 - x0 + 1];
+        for (int i = x0; i <= x1; i++) {
+            line[i - x0] = getPixel(i, y0, z0);
+        }
+
+        return line;
+    }
+
+    public double[] getLineY(int x0, int y0, int z0, int length) {
+        int y1 = y0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        y1 = min(sizeY - 1, y1);
+
+        double[] line = new double[y1 - y0 + 1];
+        for (int i = y0; i <= y1; i++) {
+            line[i - y0] = getPixel(x0, i, z0);
+        }
+
+        return line;
+    }
+
+    public double[] getLineZ(int x0, int y0, int z0, int length) {
+        int z1 = z0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        z1 = min(sizeZ - 1, z1);
+
+        double[] line = new double[z1 - z0 + 1];
+        for (int i = z0; i <= z1; i++) {
+            line[i - z0] = getPixel(x0, y0, i);
+        }
+
+        return line;
+    }
+
+    public void setLineX(int x0, int y0, int z0, double[] line) {
+        int length = line.length;
+        int x1 = x0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        x1 = min(sizeX - 1, x1);
+
+        for (int i = x0; i <= x1; i++) {
+            setPixel(i, y0, z0, (float) line[i - x0]);
+        }
+
+    }
+
+    public void setLineY(int x0, int y0, int z0, double[] line) {
+        int length = line.length;
+        int y1 = y0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        y1 = min(sizeY - 1, y1);
+
+        for (int i = y0; i <= y1; i++) {
+            setPixel(x0, i, z0, (float) line[i - y0]);
+        }
+
+    }
+
+    public void setLineZ(int x0, int y0, int z0, double[] line) {
+        int length = line.length;
+        int z1 = z0 + length;
+        x0 = max(0, x0);
+        y0 = max(0, y0);
+        z0 = max(0, z0);
+        z1 = min(sizeZ - 1, z1);
+
+        for (int i = z0; i <= z1; i++) {
+            setPixel(x0, y0, i, (float) line[i - z0]);
+        }
+
     }
 
     public double[] extractLine(int x0, int y0, int z0, int x1, int y1, int z1, boolean interpolate) {
@@ -1203,18 +1327,20 @@ public abstract class ImageHandler {
         ip.show();
         zoom(ip, defZoomFactor);
     }
-    
+
     public static void zoom(ImagePlus image, double magnitude) {
         ImageCanvas ic = image.getCanvas();
-        if (ic==null) return;
+        if (ic == null) {
+            return;
+        }
         ic.zoom100Percent();
-        if (magnitude>1) {
-            for (int i = 0; i<(int)(magnitude+0.5); i++) {
-                ic.zoomIn(image.getWidth()/2, image.getHeight()/2);
+        if (magnitude > 1) {
+            for (int i = 0; i < (int) (magnitude + 0.5); i++) {
+                ic.zoomIn(image.getWidth() / 2, image.getHeight() / 2);
             }
-        } else if (magnitude>0 && magnitude<1) {
-            for (int i =0; i<(int)(1/magnitude+0.5); i++) {
-                ic.zoomOut(image.getWidth()/2, image.getHeight()/2);
+        } else if (magnitude > 0 && magnitude < 1) {
+            for (int i = 0; i < (int) (1 / magnitude + 0.5); i++) {
+                ic.zoomOut(image.getWidth() / 2, image.getHeight() / 2);
             }
         }
     }
@@ -1300,18 +1426,18 @@ public abstract class ImageHandler {
     public byte[] getThumbNail(int sizeX, int sizeY, ImageInt mask) {
         //projection
         ImagePlus im;
-        ImageProcessor imMask=null;
+        ImageProcessor imMask = null;
         this.setMinAndMax(mask);
         if (sizeZ > 1) {
             ZProjector proj = new ZProjector(img);
             proj.setMethod(ZProjector.MAX_METHOD);
             proj.doProjection();
             im = proj.getProjection();
-            
+
         } else {
             im = img;
         }
-        if (mask!=null) {
+        if (mask != null) {
             if (mask.sizeZ > 1) {
                 ZProjector proj = new ZProjector(mask.img);
                 proj.setMethod(ZProjector.MAX_METHOD);
@@ -1324,15 +1450,19 @@ public abstract class ImageHandler {
             // ensure byte mask
             if (!(mask instanceof ImageByte)) {
                 imMask = imMask.convertToByte(false);
-                
+
             }
         }
         ContrastEnhancer ch = new ContrastEnhancer();
         //ch.setNormalize(true);
         //ch.stretchHistogram(im, 0.5);        
-        if(im.getBitDepth()<32) ch.equalize(im);
+        if (im.getBitDepth() < 32) {
+            ch.equalize(im);
+        }
         ImageProcessor ip = im.getProcessor().resize(sizeX, sizeY, true);
-        if (imMask!=null) ip.setMask(imMask);
+        if (imMask != null) {
+            ip.setMask(imMask);
+        }
         ip = ip.convertToByte(true);
         ip.setMinAndMax(ip.getMin(), ip.getMax());
         im = new ImagePlus(img.getShortTitle() + "_tmb", ip);
@@ -1380,7 +1510,6 @@ public abstract class ImageHandler {
         }
         return null;
     }
-    
 
     public boolean touchBorders(int x, int y, int z) {
         return (x == 0 || y == 0 || z == 0 || x == (sizeX - 1) || y == (sizeY - 1) || (z == sizeZ - 1));
@@ -1638,6 +1767,8 @@ public abstract class ImageHandler {
 
     public abstract void intersectMask(ImageInt mask);
 
+    public abstract void intersectMask2D(ImageInt mask, int z);
+
     public ImageFloat getDistanceMap(float thld, float scaleXY, float scaleZ, boolean invert, int nbCPUs) {
         return EDT.run(this, thld, scaleXY, scaleZ, invert, nbCPUs);
     }
@@ -1714,6 +1845,11 @@ public abstract class ImageHandler {
         return mini;
     }
 
+    public double[] radialDistribution(int x0, int y0, int z0, int maxR, ImageInt water) {
+        return radialDistribution(x0, y0, z0, maxR, Object3D.MEASURE_INTENSITY_AVG, water);
+
+    }
+
     /**
      * Radial distribution of pixels mean values in layers
      *
@@ -1724,7 +1860,7 @@ public abstract class ImageHandler {
      * @param water
      * @return arry with mean radial values
      */
-    public double[] radialDistribution(int x0, int y0, int z0, int maxR, ImageInt water) {
+    public double[] radialDistribution(int x0, int y0, int z0, int maxR, int measure, ImageInt water) {
         //int maxR = 10;
         double[] radPlot = new double[2 * maxR + 1];
         ArrayUtil raddist;
@@ -1732,12 +1868,25 @@ public abstract class ImageHandler {
         int c = 0;
         int r;
 
-        // compute radial means
+        // compute radial means // FIXME optimise since symmetric ;)
         for (int i = -maxR; i <= 0; i++) {
             r = -i;
             raddist = getNeighborhoodLayer(x0, y0, z0, r, r + 1, water);
             if (raddist != null) {
-                radPlot[c] = raddist.getMean();
+                if (measure == Object3D.MEASURE_INTENSITY_AVG) {
+                    radPlot[c] = raddist.getMean();
+                } else if (measure == Object3D.MEASURE_INTENSITY_MAX) {
+                    radPlot[c] = raddist.getMaximum();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_MEDIAN) {
+                    radPlot[c] = raddist.median();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_MIN) {
+                    radPlot[c] = raddist.getMinimum();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_SD) {
+                    radPlot[c] = raddist.getStdDev();
+                }
             } else {
                 radPlot[c] = Double.NaN;
             }
@@ -1747,7 +1896,20 @@ public abstract class ImageHandler {
             r = i;
             raddist = getNeighborhoodLayer(x0, y0, z0, r, r + 1, water);
             if (raddist != null) {
-                radPlot[c] = raddist.getMean();
+                if (measure == Object3D.MEASURE_INTENSITY_AVG) {
+                    radPlot[c] = raddist.getMean();
+                } else if (measure == Object3D.MEASURE_INTENSITY_MAX) {
+                    radPlot[c] = raddist.getMaximum();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_MEDIAN) {
+                    radPlot[c] = raddist.median();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_MIN) {
+                    radPlot[c] = raddist.getMinimum();
+                }
+                if (measure == Object3D.MEASURE_INTENSITY_SD) {
+                    radPlot[c] = raddist.getStdDev();
+                }
             } else {
                 radPlot[c] = Double.NaN;
             }
@@ -1767,7 +1929,7 @@ public abstract class ImageHandler {
      * @return arry with mean radial values
      */
     public double[] radialDistribution(int x0, int y0, int z0, int maxR) {
-        return this.radialDistribution(x0, y0, z0, maxR, null);
+        return this.radialDistribution(x0, y0, z0, maxR, Object3D.MEASURE_INTENSITY_AVG, null);
     }
 
     public boolean hasOneValue(float f) {

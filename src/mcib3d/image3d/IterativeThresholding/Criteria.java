@@ -32,11 +32,11 @@ import mcib3d.geom.Object3D;
  *
  * @author thomas
  */
-public class Classification {
+public class Criteria {
 
     ArrayList<Criterion> criterions;
 
-    public Classification() {
+    public Criteria() {
         criterions = new ArrayList<Criterion>();
     }
 
@@ -63,8 +63,8 @@ public class Classification {
     
     public ArrayList<Double> getArrayList(){
         ArrayList<Double> list=new ArrayList();
-        for(int i=0;i<criterions.size();i++){
-            list.addAll(criterions.get(i).getArrayListMinMax());
+        for (Criterion criterion : criterions) {
+            list.addAll(criterion.getArrayListMinMax());
         }
         return list;
     }

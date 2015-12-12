@@ -1,16 +1,21 @@
 package mcib3d.image3d;
 
-import ij.*;
-import ij.process.*;
-import ij.gui.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import mcib3d.image3d.legacy.IntImage3D;
-import java.util.TreeMap;
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.Prefs;
+import ij.gui.NewImage;
+import ij.process.ImageProcessor;
+import ij.process.ShortProcessor;
+import ij.process.StackProcessor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import mcib3d.geom.*;
+import java.util.TreeMap;
+import mcib3d.geom.Object3D;
+import mcib3d.geom.Object3DVoxels;
+import mcib3d.geom.Point3D;
+import mcib3d.geom.Voxel3D;
+import mcib3d.image3d.legacy.IntImage3D;
 
 /**
  *
@@ -349,6 +354,30 @@ public class ImageShort extends ImageInt {
     }
 
     @Override
+    public void setPixelCross3D(int x, int y, int z, int value) {
+        short val = (short) value;
+        pixels[z][x + y * sizeX] = val;
+        if (x - 1 >= 0) {
+            pixels[z][(x - 1) + y * sizeX] = val;
+        }
+        if (y - 1 >= 0) {
+            pixels[z][x + (y - 1) * sizeX] = val;
+        }
+        if (z - 1 >= 0) {
+            pixels[z - 1][x + y * sizeX] = val;
+        }
+        if (x + 1 < sizeX) {
+            pixels[z][(x + 1) + y * sizeX] = val;
+        }
+        if (y + 1 < sizeY) {
+            pixels[z][x + (y + 1) * sizeX] = val;
+        }
+        if (z + 1 < sizeZ) {
+            pixels[z + 1][x + y * sizeX] = val;
+        }
+    }
+
+    @Override
     public void setPixel(int xy, int z, int value) {
         pixels[z][xy] = (short) value;
     }
@@ -447,42 +476,40 @@ public class ImageShort extends ImageInt {
     public IntImage3D getImage3D() {
         return new IntImage3D(img.getImageStack());
     }
-    
+
     @Override
-    public ImageByte thresholdRangeInclusive(float min, float max){
+    public ImageByte thresholdRangeInclusive(float min, float max) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
         res.offsetX = offsetX;
         res.offsetY = offsetY;
         res.offsetZ = offsetZ;
-        
-         for (int z = 0; z < sizeZ; z++) {
-                for (int xy = 0; xy < sizeXY; xy++) {
-                    if (((pixels[z][xy] & 0xFFFF) >=min)&&(((pixels[z][xy] & 0xFFFF) <=max))) {
-                        res.pixels[z][xy] = (byte) 255;
-                    }
+
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (((pixels[z][xy] & 0xFFFF) >= min) && (((pixels[z][xy] & 0xFFFF) <= max))) {
+                    res.pixels[z][xy] = (byte) 255;
                 }
             }
+        }
         return res;
     }
-    
+
     @Override
-    public ImageByte thresholdRangeExclusive(float min, float max){
+    public ImageByte thresholdRangeExclusive(float min, float max) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
         res.offsetX = offsetX;
         res.offsetY = offsetY;
         res.offsetZ = offsetZ;
-        
-         for (int z = 0; z < sizeZ; z++) {
-                for (int xy = 0; xy < sizeXY; xy++) {
-                    if (((pixels[z][xy] & 0xFFFF) >min)&&(((pixels[z][xy] & 0xFFFF) <max))) {
-                        res.pixels[z][xy] = (byte) 255;
-                    }
+
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (((pixels[z][xy] & 0xFFFF) > min) && (((pixels[z][xy] & 0xFFFF) < max))) {
+                    res.pixels[z][xy] = (byte) 255;
                 }
             }
+        }
         return res;
     }
-    
-    
 
     @Override
     public ImageByte threshold(float thld, boolean keepUnderThld, boolean strict) {
@@ -844,10 +871,10 @@ public class ImageShort extends ImageInt {
                 res.deleteSlice(1);
             }
         }
-        ImageShort r =  new ImageShort(new ImagePlus(title + "::resized", res));
-        r.offsetX=offsetX-dX;
-        r.offsetY=offsetY-dY;
-        r.offsetZ=offsetZ-dZ;
+        ImageShort r = new ImageShort(new ImagePlus(title + "::resized", res));
+        r.offsetX = offsetX - dX;
+        r.offsetY = offsetY - dY;
+        r.offsetZ = offsetZ - dZ;
         return r;
     }
 
@@ -1042,7 +1069,9 @@ public class ImageShort extends ImageInt {
 
     @Override
     public void intersectMask(ImageInt mask) {
-        if (mask==null) return;
+        if (mask == null) {
+            return;
+        }
         for (int z = 0; z < sizeZ; z++) {
             for (int xy = 0; xy < sizeXY; xy++) {
                 if (mask.getPixel(xy, z) == 0) {
@@ -1061,29 +1090,44 @@ public class ImageShort extends ImageInt {
     public int getType() {
         return ImagePlus.GRAY16;
     }
-    
-    @Override 
+
+    @Override
     public ImageByte toMask() {
         ImageByte res = new ImageByte("mask", this.sizeX, this.sizeY, this.sizeZ);
         res.setScale(this);
         res.setOffset(this);
-        for (int z = 0; z<sizeZ; z++) {
-            for (int xy = 0; xy<sizeXY; xy++) {
-                if (pixels[z][xy]!=0) res.pixels[z][xy]=(byte)255;
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (pixels[z][xy] != 0) {
+                    res.pixels[z][xy] = (byte) 255;
+                }
             }
         }
         return res;
     }
-    
-    @Override 
+
+    @Override
     public int countMaskVolume() {
         int count = 0;
-        for (int z = 0; z<sizeZ; z++) {
-            for (int xy = 0; xy<sizeXY; xy++) {
-                if (pixels[z][xy]!=0) count++;
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (pixels[z][xy] != 0) {
+                    count++;
+                }
             }
         }
         return count;
     }
-    
+
+    @Override
+    public void intersectMask2D(ImageInt mask, int z) {
+        if (mask == null) {
+            return;
+        }
+        for (int xy = 0; xy < sizeXY; xy++) {
+            if (mask.getPixel(xy, 0) == 0) {
+                pixels[z][xy] = 0;
+            }
+        }
+    }
 }

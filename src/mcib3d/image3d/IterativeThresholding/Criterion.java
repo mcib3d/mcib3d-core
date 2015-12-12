@@ -64,8 +64,8 @@ public class Criterion {
     
     public ArrayList<Double> getArrayListMinMax(){
         ArrayList<Double> list=new ArrayList();
-        list.add(new Double(minValue));
-        list.add(new Double(maxValue));
+        list.add(minValue);
+        list.add(maxValue);
         
         return list;
     }

@@ -77,6 +77,24 @@ public class ArrayUtil {
         }
     }
 
+    public void fromArrayListInt(ArrayList<Integer> arr) {
+        this.size = arr.size();
+        sorted = false;
+        values = new double[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = (int) (arr.get(i));
+        }
+    }
+
+    public void fromArrayListDouble(ArrayList<Double> arr) {
+        this.size = arr.size();
+        sorted = false;
+        values = new double[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = arr.get(i);
+        }
+    }
+
     /**
      * put a value to a index
      *
@@ -133,16 +151,24 @@ public class ArrayUtil {
     public double[] getArray() {
         return values;
     }
-    
-     public ArrayList<Double> getArrayList() {
-        ArrayList<Double> list=new ArrayList<Double>(this.getSize());
-        for(int i=0;i<this.getSize();i++){
+
+    public int[] getArrayInt() {
+        int[] res = new int[this.getSize()];
+        for (int i = 0; i < res.length; i++) {
+            res[i] = (int) values[i];
+        }
+
+        return res;
+    }
+
+    public ArrayList<Double> getArrayList() {
+        ArrayList<Double> list = new ArrayList<Double>(this.getSize());
+        for (int i = 0; i < this.getSize(); i++) {
             list.add(this.getValue(i));
         }
-        
+
         return list;
     }
-    
 
     /**
      * new size of the array (can incresase size of array)
@@ -183,9 +209,9 @@ public class ArrayUtil {
      * @return max value
      */
     public double getMaximum() {
-        double max = values[0];
-        for (int i = 1; i < size; i++) {
-            if (values[i] > max) {
+        double max = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < size; i++) {
+            if ((!Double.isNaN(values[i])) && (values[i] > max)) {
                 max = values[i];
             }
         }
@@ -212,10 +238,10 @@ public class ArrayUtil {
     }
 
     public double[] getMaximumStarting(int th) {
-        double max = Double.MIN_VALUE;
+        double max = Double.NEGATIVE_INFINITY;
         double maxIdx = -1;
         for (int i = th; i < size; i++) {
-            if (values[i] > max) {
+            if ((!Double.isNaN(values[i])) && (values[i] > max)) {
                 max = values[i];
                 maxIdx = i;
             }
@@ -1260,7 +1286,11 @@ public class ArrayUtil {
      * @return
      */
     public ArrayUtil getIntegerHistogram() {
-        double[] ynumber = new double[(int) getMaximum() + 1];
+        int max = (int) getMaximum();
+        if (max < 0) {
+            return null;
+        }
+        double[] ynumber = new double[max + 1];
         int nbins = ynumber.length;
         double val;
         int bi;
@@ -1270,6 +1300,9 @@ public class ArrayUtil {
         }
         for (int i = 0; i < si; i++) {
             val = this.getValue(i);
+            if (Double.isNaN(val)) {
+                continue;
+            }
             bi = (int) (val);
             if (bi >= nbins) {
                 bi = nbins - 1;
@@ -1284,10 +1317,18 @@ public class ArrayUtil {
     }
 
     public int getMode() {
-        return getIntegerHistogram().getMaximumIndex();
+        ArrayUtil hist = getIntegerHistogram();
+        if (hist == null) {
+            return -1;
+        }
+        return hist.getMaximumIndex();
     }
 
     public int getModeNonZero() {
+        ArrayUtil hist = getIntegerHistogram();
+        if (hist == null) {
+            return -1;
+        }
         return (int) getIntegerHistogram().getMaximumStarting(1)[1];
     }
 

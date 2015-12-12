@@ -47,6 +47,7 @@ public class Segment3DSpots {
     ImageHandler seedsImage; // positions of seeds
     ImageInt watershedImage = null; // watershed from seeds
     ImageHandler labelImage = null; // labelled image with objects
+    ImageHandler indexImage = null; // indexed image with objects
     int seedsThreshold = -1; // global threshold (min value from seeds)
     // methods of segmentation
     public final static int SEG_CLASSICAL = 1;
@@ -165,8 +166,24 @@ public class Segment3DSpots {
      *
      * @return
      */
-    public ImageHandler getLabelImage() {
+    public ImageHandler getInternalLabelImage() {
+
         return labelImage;
+    }
+
+    public ImageHandler getLabelImage() {
+        IJ.log("Create label image with " + segmentedObjects.size() + " objects");
+        if (indexImage == null) {
+            if (!bigLabel) {
+                indexImage = new ImageShort("Index", rawImage.sizeX, rawImage.sizeY, rawImage.sizeZ);
+            } else {
+                indexImage = new ImageFloat("Index", rawImage.sizeX, rawImage.sizeY, rawImage.sizeZ);
+            }
+        }
+        for (Object3D obj : segmentedObjects) {
+            obj.draw(indexImage, obj.getValue());
+        }
+        return indexImage;
     }
 
     /**
@@ -278,8 +295,20 @@ public class Segment3DSpots {
     }
 
     private void computeWatershed() {
-        Watershed3D wat3D = new Watershed3D(rawImage, seedsImage, noiseWatershed, seedsThreshold);
+//        Watershed3D_old wat3D = new Watershed3D_old(rawImage, seedsImage, noiseWatershed, seedsThreshold);
+//        watershedImage = wat3D.getWatershedImage3D();
+        // watershed is used to separate spots, not for segmentation
+        // so based on edt of background
+        ImageByte seedsTh = seedsImage.thresholdAboveExclusive(seedsThreshold);
+        ImageFloat edt = EDT.run(seedsTh, 0, (float) rawImage.getScaleXY(), (float) rawImage.getScaleZ(), true, 0);
+        ImageShort edt16 = edt.convertToShort(true);
+        edt16.invert();
+        Watershed3D wat3D = new Watershed3D(edt16, seedsImage, 0, 0);
+        //Watershed3D wat3D = new Watershed3D(rawImage, seedsImage, noiseWatershed, seedsThreshold);
         watershedImage = wat3D.getWatershedImage3D();
+//        watershedImage.show();
+//        seedsTh.show();
+//        edt16.show();
     }
 
     /**
@@ -401,7 +430,7 @@ public class Segment3DSpots {
         double[] gaussFit;
         double[] params;
         if (WATERSHED) {
-            gaussFit = rawImage.radialDistribution(x, y, z, GAUSS_MAXR, watershedImage);
+            gaussFit = rawImage.radialDistribution(x, y, z, GAUSS_MAXR, Object3D.MEASURE_INTENSITY_AVG, watershedImage);
         } else {
             gaussFit = rawImage.radialDistribution(x, y, z, GAUSS_MAXR);
         }
@@ -433,7 +462,6 @@ public class Segment3DSpots {
     public void segmentAll() {
         segmentedObjects = new ArrayList();
         ArrayList<Voxel3D> obj;
-        Voxel3D vox;
         int o = 1;
         int localThreshold = localValue;
         if (labelImage == null) {
@@ -442,6 +470,7 @@ public class Segment3DSpots {
         // locate seeds
         for (int z = 0; z < seedsImage.sizeZ; z++) {
             IJ.showStatus("Segmenting slice " + (z + 1));
+            //IJ.log("Segmenting slice " + (z + 1));
             for (int y = 0; y < seedsImage.sizeY; y++) {
                 for (int x = 0; x < seedsImage.sizeX; x++) {
                     if (seedsImage.getPixel(x, y, z) > seedsThreshold) {
@@ -478,13 +507,12 @@ public class Segment3DSpots {
                         }
                         if ((obj != null) && (obj.size() >= volMin) && (obj.size() <= volMax)) {
                             segmentedObjects.add(new Object3DVoxels(obj));
+                            //IJ.log("obj size: "+obj.size());
                             o++;
                         } else if (obj != null) {
                             // erase from label image
-                            Iterator it = obj.iterator();
-                            while (it.hasNext()) {
-                                vox = (Voxel3D) it.next();
-                                labelImage.setPixel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), 0);
+                            for (Voxel3D vo : obj) {
+                                labelImage.setPixel(vo.getRoundX(), vo.getRoundY(), vo.getRoundZ(), 0);
                             }
                             if (show) {
                                 IJ.log("object volume outside range : " + obj.size());
@@ -743,6 +771,9 @@ public class Segment3DSpots {
 
                             if (ok) {
                                 changement = true;
+                                if (neigh.size() > volMax) {
+                                    return null;
+                                }
                                 it = neigh.iterator();
                                 while (it.hasNext()) {
                                     tmpneigh = (Voxel3D) it.next();
@@ -796,7 +827,7 @@ public class Segment3DSpots {
             }// k
             sens *= -1;
         }//while      
-
+        //IJ.log("obj size: ");
         return object;
     }
 
@@ -1015,8 +1046,8 @@ public class Segment3DSpots {
             int cpus = ThreadUtil.getNbCpus();
             // FIXME variable multithread
             ImageFloat edt3d = EDT.run(seg, 1f, false, cpus);
-            // 3D filtering of the edt t oremove small local maxima
-            edt3d=FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
+            // 3D filtering of the edt to remove small local maxima
+            edt3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
             //edt3d.showDuplicate("edt");
 
             //ImageStack localMax = FastFilters3D.filterFloatImageStack(edt3d.getImageStack(), FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
@@ -1117,12 +1148,16 @@ public class Segment3DSpots {
             seeds.setPixel(PP1.getRoundX(), PP1.getRoundY(), PP1.getRoundZ(), 255);
             seeds.setPixel(PP2.getRoundX(), PP2.getRoundY(), PP2.getRoundZ(), 255);
             //seeds.show();
-            Watershed3D wat = new Watershed3D(edt3d, seeds, 0, 0);
+//            Watershed3D_old wat = new Watershed3D_old(edt3d, seeds, 0, 0);
+//            ImageInt wat2 = wat.getWatershedImage3D();
+            ImageHandler edt16 = edt3d.convertToShort(true);
+            Watershed3D wat = new Watershed3D(edt16, seeds, 0, 0);
             ImageInt wat2 = wat.getWatershedImage3D();
             //wat2.show();
             // in watershed label starts at 2
             Object3DVoxels ob1 = new Object3DVoxels(wat2, 2);
             Object3DVoxels ob2 = new Object3DVoxels(wat2, 3);
+            //IJ.log("split1="+ob1+" split2="+ob2);
             // translate objects if needed by miniseg
             //ob1.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
             //new ImagePlus("wat", wat2.getStack()).show();

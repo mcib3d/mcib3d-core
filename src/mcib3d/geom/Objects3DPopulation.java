@@ -32,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
@@ -78,6 +79,14 @@ public class Objects3DPopulation {
         this.addObjects(objs);
     }
 
+    public Objects3DPopulation(ArrayList objs) {
+        objects = new ArrayList();
+        hashValue = new HashMap<Integer, Integer>();
+        hashName = new HashMap<String, Integer>();
+        calibration = new Calibration();
+        this.addObjects(objs);
+    }
+
     public Objects3DPopulation(Object3D[] objs, Calibration cal) {
         objects = new ArrayList();
         hashValue = new HashMap<Integer, Integer>();
@@ -96,6 +105,8 @@ public class Objects3DPopulation {
         hashName = new HashMap<String, Integer>();
         addImagePlus(plus);
     }
+    
+    
 
     public Objects3DPopulation(ImageInt plus) {
         objects = new ArrayList();
@@ -263,7 +274,10 @@ public class Objects3DPopulation {
         if (kdtree != null) {
             createKDTreeCenters();
         }
-        //IJ.log("adding ob " + obj.getValue() + " " + obj.getCenterAsPoint());
+//        if (obj.getValue() == 0) {
+//            IJ.log("adding ob " + obj.getValue() + " " + obj.getCenterAsPoint());
+//            IJ.log("hash "+hashValue.get(0));
+//        }
     }
 
     public final void addObjects(Object3D[] objs) {
@@ -288,10 +302,56 @@ public class Objects3DPopulation {
         }
     }
 
+    public void removeObjectsTouchingBorders(ImageHandler img, boolean Z) {
+        ArrayList<Object3D> toRemove = new ArrayList<Object3D>();
+        for (Object3D obj : objects) {
+            if (obj.touchBorders(img, Z)) {
+                toRemove.add(obj);
+            }
+        }
+        for (Object3D obj : toRemove) {
+            removeObject(obj);
+            //IJ.log("removing touching " + obj);
+        }
+        buildHash();
+    }
+
+    public void removeObjectsTouchingBorders(ImagePlus img, boolean Z) {
+        ArrayList<Object3D> toRemove = new ArrayList<Object3D>();
+        for (Object3D obj : objects) {
+            if (obj.touchBorders(img, Z)) {
+                toRemove.add(obj);
+            }
+        }
+        for (Object3D obj : toRemove) {
+            removeObject(obj);
+            //IJ.log("removing touching " + obj);
+        }
+        buildHash();
+    }
+
     public void removeObject(int i) {
         hashValue.remove(objects.get(i).getValue());
         hashName.remove(objects.get(i).getName());
         objects.remove(i);
+        // rebuild hash ;) + KD tree (?)
+    }
+
+    public void removeObject(Object3D obj) {
+        hashValue.remove(obj.getValue());
+        hashName.remove(obj.getName());
+        if(!objects.remove(obj)) IJ.log("Pb removing "+obj);
+    }
+
+    public void buildHash() {
+        hashName.clear();
+        hashValue.clear();
+
+        for (int i = 0; i < getNbObjects(); i++) {
+            Object3D O = getObject(i);
+            hashName.put(O.getName(), i);
+            hashValue.put(O.getValue(), i);
+        }
     }
 
     public void addPoints(Point3D[] points) {
@@ -354,13 +414,14 @@ public class Objects3DPopulation {
      * @param cali
      */
     public void addImage(ImageInt seg, int threshold, Calibration cali) {
-        int min = (int) seg.getMinAboveValue(0);
+        seg.resetStats(null);
+        int min = (int) seg.getMinAboveValue(threshold);
         int max = (int) seg.getMax();
         if (max == 0) {
             IJ.log("No objects found");
             return;
         }
-        //IJ.log("min-max " + min + " " + max);
+        //IJ.log("mm "+min+" "+max);
         // iterate in image  and constructs objects
         calibration = cali;
         ArrayList<Voxel3D>[] objectstmp = new ArrayList[max - min + 1];
@@ -386,11 +447,10 @@ public class Objects3DPopulation {
         for (int i = 0; i < max - min + 1; i++) {
             if (!objectstmp[i].isEmpty()) {
                 Object3DVoxels ob = new Object3DVoxels(objectstmp[i]);
-                ob.setLabelImage(seg);
+                //ob.setLabelImage(null);// the image can be closed anytime
                 ob.setCalibration(cali);
                 ob.setName("Obj" + (i + 1));
                 addObject(ob);
-                //IJ.log("adding ob " + ob.getValue() + " " + ob.getCenterAsPoint());
             }
         }
     }
@@ -442,19 +502,19 @@ public class Objects3DPopulation {
     public Object3D getObject(int i) {
         return objects.get(i);
     }
-    
-    public void setObject(int i, Object3D obj){  
+
+    public void setObject(int i, Object3D obj) {
         // remove old name
-        Object3D old=objects.get(i);
+        Object3D old = objects.get(i);
         hashName.remove(old.getName());
         // set new object
         obj.setCalibration(calibration);
-        objects.set(i, obj);      
+        objects.set(i, obj);
         hashName.put(obj.getName(), i);
         // update kdtree if available // FIXME UPDATE kdtree
         if (kdtree != null) {
             createKDTreeCenters();
-        }        
+        }
     }
 
     public Object3D getObjectByValue(int val) {
@@ -1176,15 +1236,15 @@ public class Objects3DPopulation {
         ArrayList<Object3D> shuObj = new ArrayList<Object3D>();
 
         int maxr = 1000;
-        Object3DVoxels mav = mask.getObject3DVoxels();
-        if (mav.isEmpty()) {
+        Object3DVoxels maskVox = mask.getObject3DVoxels();
+        if (maskVox.isEmpty()) {
             IJ.log("Could'nt shuffle, mask is empty");
             return null;
         }
 //        ImageInt labelm = new ImageShort("", mask.getXmax(), mask.getYmax(), mask.getZmax());
 //        mav.draw(labelm);
 //        labelm.show();
-        
+
         //ImageInt label2 = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
         ImageInt label2 = new ImageShort("", mask.getXmax(), mask.getYmax(), mask.getZmax());
         Random ra = new Random();
@@ -1199,14 +1259,14 @@ public class Objects3DPopulation {
             while ((!ok) && (c < maxr)) {
                 ok = true;
                 c++;
-                Voxel3D test = mav.getRandomvoxel(ra);
+                Voxel3D test = maskVox.getRandomvoxel(ra);
                 Vtest.draw(labelTest, 0);
                 Vtest.setNewCenter(test.getX(), test.getY(), test.getZ());
                 Vtest.draw(labelTest);
                 Vtest.setLabelImage(labelTest);
 
                 if (mask.getColoc(Vtest) < Vtest.getVolumePixels()) {
-                    //IJ.log("PB coloc mask ");
+                    System.out.println("PB coloc mask ");
                     ok = false;
                 }
 
@@ -1214,16 +1274,19 @@ public class Objects3DPopulation {
                 for (Object3D O : shuObj) {
                     if (O.getColoc(Vtest) > 0) {
                         ok = false;
-                         //IJ.log("PB coloc others");
+                        System.out.println("PB coloc others");
                     }
                 }
             }
 
             if (c == maxr) {
                 IJ.log("Could not shuffle " + obj + " " + i + " " + idx.getValue(i));
+                shuObj.add(obj);
+                obj.draw(label2);
+                obj.setLabelImage(label2);
             } else {
                 shuObj.add(Vtest);
-                Vtest.draw(label2); 
+                Vtest.draw(label2);
                 Vtest.setLabelImage(label2);
             }
         }
@@ -1415,6 +1478,12 @@ public class Objects3DPopulation {
         }
 
         return true;
+    }
+
+    public void sortPopulation() {
+        // sort object3D based on filed compare
+        Collections.sort(objects);
+        buildHash();
     }
 
     public void loadObjects(String path) {

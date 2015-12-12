@@ -114,7 +114,9 @@ public class MereoAnalysis {
                 relationships[a][o] = MereoObject3D.DC;
             }
             Object3D A = popA.getObject(a);
-            Object3D Adil = A.getDilatedObject(RadX, RadY, RadZ, false);
+            Object3D Adil = A.getDilatedObject(RadX, RadY, RadZ);
+            // TEST 
+            //Adil.getLabelImage().show("dilated "+Adil);
             ArrayList<Voxel3D> al = Adil.listVoxels(segB);
             for (Voxel3D vox : al) {
                 int pix = (int) vox.getValue();

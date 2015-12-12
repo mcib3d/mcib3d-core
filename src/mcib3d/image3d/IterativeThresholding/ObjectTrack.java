@@ -57,7 +57,7 @@ public class ObjectTrack {
     public static int STATE_MOVE = 3;
     private int state = STATE_UNKNOWN;
     // classification
-    Classification classification = null;
+    Criteria classification = null;
 
     public ObjectTrack() {
     }

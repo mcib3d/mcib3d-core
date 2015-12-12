@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.BlankMask;
@@ -93,10 +92,9 @@ public class TrackThreshold {
         this.criteria_method = criteria_method;
     }
 
-    public ImagePlus segment(ImagePlus input, boolean show) {
+    private ArrayList<ImageHandler> process(ImageHandler img, boolean show) {
         int T0 = 0, Tmax = Integer.MAX_VALUE, T1;
         int[] histoThreshold = new int[0];
-        ImageHandler img = ImageHandler.wrap(input);
         ImageLabeller labeler = new ImageLabeller(volMin, volMax);
         if (threshold_method == THRESHOLD_METHOD_STEP) {
             // use start for step method
@@ -128,26 +126,6 @@ public class TrackThreshold {
         } else if (threshold_method == THRESHOLD_METHOD_VOLUME) {
             histoThreshold = constantVoxelsHistogram(img, nbClasses, startThreshold);
         }
-
-        // TEST
-        //IJ.log("Thresholds:" + Arrays.toString(kmeansHisto));
-//        int[] hist;
-//        // optimize histogram for 16 bits
-//        if ((img instanceof ImageShort)) {
-//            hist = this.constantVoxelsHistogram(img, (int) Math.max(1, 0.75 * volMin));
-//        } else {
-//            hist = new int[256];
-//            for (int i = 0; i < 256; i++) {
-//                hist[i] = i;
-//            }
-//        }
-//
-//        int T1;
-//        int idxT = 0;
-//        while (hist[idxT] < T0) {
-//            idxT++;
-//        }
-//        T0 = hist[idxT];
         T1 = T0;
         ImageHandler bin1 = img.thresholdAboveInclusive(T1);
 
@@ -255,23 +233,23 @@ public class TrackThreshold {
                 ArrayUtil list = obt.getObject().listValues(labels2);
                 list = list.distinctValues();
                 // 1<->1
-                if (list.getSize() == 1) {
-                    ObjectTrack child = hash.get((int) list.getValue(0));
-                    // check if change in volume
-                    if (child != null) {
-                        //if (child.volume != obt.volume) {
-                        obt.addChild(child);
-                        child.setParent(obt);
-                        obt.setObject(null);
-                        //} else {
-                        //    frame2.add(obt);
-                        //}
-                    } else {
-                        obt.setObject(null);
-                    }
-                }
+//                if (list.getSize() == 1) {
+//                    ObjectTrack child = hash.get((int) list.getValue(0));
+//                    // check if change in volume
+//                    if (child != null) {
+//                        //if (child.volume != obt.volume) {
+//                        obt.addChild(child);
+//                        child.setParent(obt);
+//                        obt.setObject(null);
+//                        //} else {
+//                        //    frame2.add(obt);
+//                        //}
+//                    } else {
+//                        obt.setObject(null);
+//                    }
+//                }
                 // association 1<->n
-                if (list.getSize() > 1) {
+                if (list.getSize() > 0) {
                     obt.setObject(null);
                     for (int i = 0; i < list.getSize(); i++) {
                         ObjectTrack child = hash.get((int) list.getValue(i));
@@ -293,7 +271,7 @@ public class TrackThreshold {
             frame1 = frame2;
         } // thresholding
         if (verbose) {
-            IJ.log("Finished thresholding");
+            IJ.log("Iterative Thresholding fnished");
         }
 
         // get results from the tree with different levels of objects
@@ -384,16 +362,36 @@ public class TrackThreshold {
                 }
             }
             allFrames.removeAll(toBeRemoved);
-        } // drawing results
+        }
 
+        allFrames = null;
+        System.gc();
+
+        return drawsReconstruct;
+    }
+
+    public ImageHandler segment(ImageHandler input, boolean show) {
+        ArrayList<ImageHandler> res = process(input, show);
+        if (!res.isEmpty()) {
+            return res.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public ArrayList<ImageHandler> segmentAll(ImageHandler input, boolean show) {
+        return process(input, show);
+    }
+
+    public ImagePlus segment(ImagePlus input, boolean show) {
+        ArrayList<ImageHandler> drawsReconstruct = process(ImageHandler.wrap(input), show);
+
+        // drawing results
         ImageHandler[] drawsTab = new ImageHandler[drawsReconstruct.size()];
         for (int i = 0; i < drawsTab.length; i++) {
             drawsTab[i] = drawsReconstruct.get(i);
         }
         ImagePlus plusDraw = ImageHandler.getHyperStack("draw", drawsTab);
-
-        allFrames = null;
-        System.gc();
 
         return plusDraw;
     }

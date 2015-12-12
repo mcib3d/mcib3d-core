@@ -28,7 +28,6 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageLabeller;
 import mcib3d.image3d.ImageShort;
-import mcib3d.image3d.processing.BinaryMorpho;
 import mcib3d.image3d.processing.FillHoles3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
@@ -291,6 +290,9 @@ public class Object3DVoxels extends Object3D {
         init();
         value = other.getValue();
         this.labelImage = other.getLabelImage();
+        this.offX = other.offX;
+        this.offY = other.offY;
+        this.offZ = other.offZ;
         this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
@@ -300,6 +302,9 @@ public class Object3DVoxels extends Object3D {
         init();
         value = other.getValue();
         this.labelImage = other.getLabelImage();
+        this.offX = other.offX;
+        this.offY = other.offY;
+        this.offZ = other.offZ;
         this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
@@ -476,7 +481,8 @@ public class Object3DVoxels extends Object3D {
     }
 
     public boolean isConnex() {
-        ImageShort seg = (ImageShort) this.createSegImageMini(1, 1);
+        //ImageShort seg = (ImageShort) this.createSegImageMini(1, 1);
+        ImageInt seg = this.getLabelImage();
         // label the seg image
         ImageLabeller labeler = new ImageLabeller();
         return (labeler.getNbObjectsTotal(seg) == 1);
@@ -487,13 +493,25 @@ public class Object3DVoxels extends Object3D {
 //        return !seg.hasOneValueInt(1);
     }
 
+    public ArrayList<Object3DVoxels> getConnexComponents() {
+        ImageInt seg = this.getLabelImage();
+        ImageLabeller labeler = new ImageLabeller();
+        ArrayList<Object3DVoxels> objs = labeler.getObjects(seg);
+        for (Object3DVoxels O : objs) {
+            O.translate(offX, offY, offZ);
+        }
+
+        return objs;
+    }
+
     public Object3DVoxels getInterior3DFill() {
-        ImageHandler seg = createSegImageMini(255, 1);
+        //ImageHandler seg = createSegImageMini(255, 1);
+        ImageInt seg = this.getLabelImage();
         ImageHandler fill = seg.duplicate();
-        FillHoles3D.process(fill, 255, 0, false);
+        FillHoles3D.process(fill, value, 0, false);
         ImageFloat res = fill.substractImage(seg);
-        Object3DVoxels inte = new Object3DVoxels(res, 255);
-        inte.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
+        Object3DVoxels inte = new Object3DVoxels(res);
+        inte.translate(this.offX, this.offY, this.offZ);
         return inte;
     }
 
@@ -562,6 +580,7 @@ public class Object3DVoxels extends Object3D {
     /**
      * Computation of the dispersion tensor with units value
      */
+    @Override
     protected void computeMoments2(boolean normalize) {
         s200 = 0;
         s110 = 0;
@@ -605,6 +624,7 @@ public class Object3DVoxels extends Object3D {
         eigen = null;
     }
 
+    @Override
     public void computeMoments3() {
         s300 = s030 = s003 = 0;
         s210 = s201 = s120 = s021 = s102 = s012 = s111 = 0;
@@ -643,6 +663,7 @@ public class Object3DVoxels extends Object3D {
         s111 *= resXY * resXY * resZ;
     }
 
+    @Override
     public void computeMoments4() {
         s400 = s040 = s040 = s220 = s202 = s022 = s121 = s112 = s211 = 0;
         s103 = s301 = s130 = s310 = s013 = s031 = 0;
@@ -695,18 +716,17 @@ public class Object3DVoxels extends Object3D {
     /**
      * Compute the barycenter and the volume
      */
+    @Override
     protected void computeCenter() {
         bx = 0;
         by = 0;
         bz = 0;
-        Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D vox : voxels) {
             bx += vox.getX();
             by += vox.getY();
             bz += vox.getZ();
         }
+
         int sum = voxels.size();
         bx /= sum;
         by /= sum;
@@ -729,6 +749,8 @@ public class Object3DVoxels extends Object3D {
      * Compute the contours of the object rad=0.5
      */
     private void computeContours(ImageInt segImage, int x0, int y0, int z0) {
+        //IJ.log("computing contours for "+this+"  "+x0+" "+y0+" "+z0+" "+xmin+" "+ymin+" "+zmin);
+        //segImage.show(""+this);
         // init kdtree
         kdtreeContours = new KDTreeC(3);
         kdtreeContours.setScale3(this.resXY, this.resXY, this.resZ);
@@ -748,6 +770,12 @@ public class Object3DVoxels extends Object3D {
         int class3or4;
         int class1 = 0, class2 = 0, class3 = 0, class4 = 0, class5 = 0, class6 = 0;
 
+        int val = value;
+        // special case value=0
+        if (val == 0) {
+            val = (int) segImage.getMinAboveValue(0);
+        }
+
         // TODO parcourir seulement les objets de arraylist voxels et non la bounding box!
         // pb ??
 //       for (Voxel3D vox : voxels) {
@@ -763,7 +791,7 @@ public class Object3DVoxels extends Object3D {
                     cont = false;
                     if (segImage.contains(i, j, k)) {
                         pix0 = segImage.getPixelInt(i, j, k);
-                        if (pix0 == value) {
+                        if (pix0 == val) {
                             face = 0;
                             class3or4 = 0;
                             if (i + 1 < sx) {
@@ -796,46 +824,46 @@ public class Object3DVoxels extends Object3D {
                             } else {
                                 pix6 = 0;
                             }
-                            if (pix1 != value) {
+                            if (pix1 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
-                                if (pix2 != value) {
+                                if (pix2 != val) {
                                     class3or4 = 1;
                                 }
                             }
-                            if (pix2 != value) {
+                            if (pix2 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
                             }
-                            if (pix3 != value) {
+                            if (pix3 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
-                                if (pix4 != value) {
+                                if (pix4 != val) {
                                     class3or4 = 1;
                                 }
                             }
-                            if (pix4 != value) {
+                            if (pix4 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
                                 areaContactVoxels++;
                                 face++;
                             }
-                            if (pix5 != value) {
+                            if (pix5 != val) {
                                 cont = true;
                                 areaContactUnit += XX;
                                 areaContactVoxels++;
                                 face++;
-                                if (pix6 != value) {
+                                if (pix6 != val) {
                                     class3or4 = 1;
                                 }
                             }
-                            if (pix6 != value) {
+                            if (pix6 != val) {
                                 cont = true;
                                 areaContactUnit += XX;
                                 areaContactVoxels++;
@@ -843,7 +871,7 @@ public class Object3DVoxels extends Object3D {
                             }
                             if (cont) {
                                 areaNbVoxels++;
-                                Voxel3D voxC = new Voxel3D(i + x0, j + y0, k + z0, value);
+                                Voxel3D voxC = new Voxel3D(i + x0, j + y0, k + z0, val);
                                 contours.add(voxC);
                                 kdtreeContours.add(voxC.getArray(), voxC);
                                 // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
@@ -875,6 +903,7 @@ public class Object3DVoxels extends Object3D {
                 }
             }
         }
+        //IJ.log("contours "+contours.size());
         // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
         double w1 = 0.894, w2 = 1.3409, w3 = 1.5879, w4 = 2.0, w5 = 8.0 / 3.0, w6 = 10.0 / 3.0;
         correctedSurfaceArea = (class1 * w1 + class2 * w2 + class3 * w3 + class4 * w4 + class5 * w5 + class6 * w6);
@@ -887,13 +916,7 @@ public class Object3DVoxels extends Object3D {
 
     @Override
     public void computeContours() {
-        if (labelImage != null) {
-            this.computeContours(labelImage, 0, 0, 0);
-        } else {
-            // segImage = this.createSegImageMini(value, 1);
-            ImageInt segImage = this.getLabelImage();
-            this.computeContours(segImage, segImage.offsetX, segImage.offsetY, segImage.offsetZ);
-        }
+        this.computeContours(this.getLabelImage(), this.offX, this.offY, this.offZ);
     }
 
     /**
@@ -1004,7 +1027,7 @@ public class Object3DVoxels extends Object3D {
             return 0;
         }
         // if labels images for both objects, use them
-        if ((this.getLabelImage() != null) && (obj.getLabelImage() != null)) {
+        if ((labelImage != null) && (obj.getLabelImage() != null)) {
             //IJ.log("using coloc image with labels");
             //this.getLabelImage().duplicate().show("this coloc");
             //obj.getLabelImage().duplicate().show("other coloc");
@@ -1012,7 +1035,7 @@ public class Object3DVoxels extends Object3D {
         }
 
         // thresgold on size of objects
-        int thres = 100;
+        int thres = 1000;
         // if one object has size > threshold use images else use voxels
         if ((this.getVolumePixels() > thres) && (obj.getVolumePixels() > thres)) {
             //IJ.log("Using coloc image");
@@ -1075,6 +1098,7 @@ public class Object3DVoxels extends Object3D {
 
         int val = obj.getValue();
         ImageInt otherseg = obj.getLabelImage();
+        ImageInt label = this.getLabelImage();
 
 //        int offX0 = labelImage.offsetX;
 //        int offY0 = labelImage.offsetY;
@@ -1105,8 +1129,8 @@ public class Object3DVoxels extends Object3D {
         zmax0 = Math.min(zmax0, obj.getZmax());
 
         //IJ.log("" + xmin0 + "-" + xmax0 + " " + ymin0 + "-" + ymax0 + " " + zmin0 + "-" + zmax0);
-        //labelImage.show("this");
-        //otherseg.show("other");
+        //labelImage.show("this_"+this);
+        //otherseg.show("other_"+obj);
         for (int k = zmin0; k <= zmax0; k++) {
             for (int j = ymin0; j <= ymax0; j++) {
                 for (int i = xmin0; i <= xmax0; i++) {
@@ -1117,8 +1141,8 @@ public class Object3DVoxels extends Object3D {
                     int xx = i - offX1;
                     int yy = j - offY1;
                     int zz = k - offZ1;
-                    if ((labelImage.contains(x, y, z)) && (otherseg.contains(xx, yy, zz))) {
-                        if ((labelImage.getPixel(x, y, z) == value) && (otherseg.getPixel(xx, yy, zz) == val)) {
+                    if ((label.contains(x, y, z)) && (otherseg.contains(xx, yy, zz))) {
+                        if ((label.getPixel(x, y, z) == value) && (otherseg.getPixel(xx, yy, zz) == val)) {
                             count++;
                         }
                     }
@@ -1163,61 +1187,60 @@ public class Object3DVoxels extends Object3D {
         return cpt;
     }
 
-    private boolean hasOneVoxelColocImage(Object3D obj) {
-        if (this.disjointBox(obj)) {
-            return false;
-        }
-        if ((this.getLabelImage() == null) || (obj.getLabelImage() == null)) {
-            return false;
-        }
-        // taken from object3DLabel
-        int xmin0;
-        int ymin0;
-        int zmin0;
-        int xmax0;
-        int ymax0;
-        int zmax0;
-
-        int val = obj.getValue();
-        ImageInt otherseg = obj.getLabelImage();
-
-        xmin0 = getXmin();
-        ymin0 = getYmin();
-        zmin0 = getZmin();
-        xmax0 = getXmax();
-        ymax0 = getYmax();
-        zmax0 = getZmax();
-
-        xmin0 = Math.max(xmin0, obj.getXmin());
-        ymin0 = Math.max(ymin0, obj.getYmin());
-        zmin0 = Math.max(zmin0, obj.getZmin());
-        xmax0 = Math.min(xmax0, obj.getXmax());
-        ymax0 = Math.min(ymax0, obj.getYmax());
-        zmax0 = Math.min(zmax0, obj.getZmax());
-
-        //IJ.log(""+xmin0+"-"+xmax0+" "+ymin0+"-"+ymax0+" "+zmin0+"-"+zmax0+" "+otherseg);
-        //labelImage.show("this");
-        //otherseg.show("other");
-        int offX0 = labelImage.offsetX;
-        int offY0 = labelImage.offsetY;
-        int offZ0 = labelImage.offsetZ;
-        int offX1 = otherseg.offsetX;
-        int offY1 = otherseg.offsetY;
-        int offZ1 = otherseg.offsetZ;
-
-        for (int k = zmin0; k <= zmax0; k++) {
-            for (int j = ymin0; j <= ymax0; j++) {
-                for (int i = xmin0; i <= xmax0; i++) {
-                    if ((labelImage.getPixel(i - offX0, j - offY0, k - offZ0) == value) && (otherseg.getPixel(i - offX1, j - offY1, k - offZ1) == val)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
+//    private boolean hasOneVoxelColocImage(Object3D obj) {
+//        if (this.disjointBox(obj)) {
+//            return false;
+//        }
+//        if ((this.getLabelImage() == null) || (obj.getLabelImage() == null)) {
+//            return false;
+//        }
+//        // taken from object3DLabel
+//        int xmin0;
+//        int ymin0;
+//        int zmin0;
+//        int xmax0;
+//        int ymax0;
+//        int zmax0;
+//
+//        int val = obj.getValue();
+//        ImageInt otherseg = obj.getLabelImage();
+//
+//        xmin0 = getXmin();
+//        ymin0 = getYmin();
+//        zmin0 = getZmin();
+//        xmax0 = getXmax();
+//        ymax0 = getYmax();
+//        zmax0 = getZmax();
+//
+//        xmin0 = Math.max(xmin0, obj.getXmin());
+//        ymin0 = Math.max(ymin0, obj.getYmin());
+//        zmin0 = Math.max(zmin0, obj.getZmin());
+//        xmax0 = Math.min(xmax0, obj.getXmax());
+//        ymax0 = Math.min(ymax0, obj.getYmax());
+//        zmax0 = Math.min(zmax0, obj.getZmax());
+//
+//        //IJ.log(""+xmin0+"-"+xmax0+" "+ymin0+"-"+ymax0+" "+zmin0+"-"+zmax0+" "+otherseg);
+//        //labelImage.show("this");
+//        //otherseg.show("other");
+//        int offX0 = labelImage.offsetX;
+//        int offY0 = labelImage.offsetY;
+//        int offZ0 = labelImage.offsetZ;
+//        int offX1 = otherseg.offsetX;
+//        int offY1 = otherseg.offsetY;
+//        int offZ1 = otherseg.offsetZ;
+//
+//        for (int k = zmin0; k <= zmax0; k++) {
+//            for (int j = ymin0; j <= ymax0; j++) {
+//                for (int i = xmin0; i <= xmax0; i++) {
+//                    if ((labelImage.getPixel(i - offX0, j - offY0, k - offZ0) == value) && (otherseg.getPixel(i - offX1, j - offY1, k - offZ1) == val)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return false;
+//    }
     private boolean hasOneVoxelColocVoxels(Object3D obj) {
         if (this.disjointBox(obj)) {
             return false;
@@ -1357,16 +1380,21 @@ public class Object3DVoxels extends Object3D {
      * @param mask The mask image to draw
      * @param z The Z coordinate
      * @param col The value to draw
+     * @return 
      */
-    public void draw(ByteProcessor mask, int z, int col) {
+    @Override
+    public boolean draw(ByteProcessor mask, int z, int col) {
+        boolean ok=false;
         Voxel3D vox;
         Iterator it = voxels.iterator();
         while (it.hasNext()) {
             vox = (Voxel3D) it.next();
             if (Math.abs(z - vox.getZ()) < 0.5) {
                 mask.putPixel(vox.getRoundX(), vox.getRoundY(), col);
+                ok=true;
             }
         }
+        return ok;
     }
 
     /**
@@ -1542,11 +1570,12 @@ public class Object3DVoxels extends Object3D {
             double sum = 0;
             double sum2 = 0;
             double pix;
-            double pmin = Double.MAX_VALUE;
-            double pmax = -Double.MAX_VALUE;
+            double pmin = Double.POSITIVE_INFINITY;
+            double pmax = Double.NEGATIVE_INFINITY;
 
             double i, j, k;
             Voxel3D vox;
+            int nb = 0;
             Iterator it = voxels.iterator();
             while (it.hasNext()) {
                 vox = (Voxel3D) it.next();
@@ -1555,16 +1584,19 @@ public class Object3DVoxels extends Object3D {
                 k = vox.getZ();
                 if (ima.contains(vox)) {
                     pix = ima.getPixel(vox);
-                    cx += i * pix;
-                    cy += j * pix;
-                    cz += k * pix;
-                    sum += pix;
-                    sum2 += pix * pix;
-                    if (pix > pmax) {
-                        pmax = pix;
-                    }
-                    if (pix < pmin) {
-                        pmin = pix;
+                    if (!Double.isNaN(pix)) {
+                        nb++;
+                        cx += i * pix;
+                        cy += j * pix;
+                        cz += k * pix;
+                        sum += pix;
+                        sum2 += pix * pix;
+                        if (pix > pmax) {
+                            pmax = pix;
+                        }
+                        if (pix < pmin) {
+                            pmin = pix;
+                        }
                     }
                 }
             }
@@ -1573,9 +1605,17 @@ public class Object3DVoxels extends Object3D {
             cz /= sum;
 
             integratedDensity = sum;
+            meanDensity = integratedDensity / (double) nb;
 
             pixmin = pmin;
             pixmax = pmax;
+
+            if (pmin == Double.POSITIVE_INFINITY) {
+                pixmin = Double.NaN;
+            }
+            if (pmax == Double.NEGATIVE_INFINITY) {
+                pixmax = Double.NaN;
+            }
 
             // standard dev
             int vol = getVolumePixels();
@@ -1807,19 +1847,24 @@ public class Object3DVoxels extends Object3D {
     }
 
     public Object3DVoxels dilate(float dilateSize, ImageInt mask, int nbCPUs) {
-        ImageInt oldMiniLabelImage = this.miniLabelImage;
-        ImageInt seg = this.createSegImageMini(1, 0);
-        float dilateSizeZ = (float) (dilateSize * this.resXY / this.resZ);
-        ImageInt dil = BinaryMorpho.binaryDilate(seg, dilateSize, dilateSizeZ, true, type);
+        // use getdilatedObject
+        Object3DVoxels dilated = this.getDilatedObject(dilateSize, dilateSize, dilateSize);
+        ImageInt seg = dilated.getLabelImage();
+
+//        ImageInt oldMiniLabelImage = this.miniLabelImage;
+//        ImageInt seg = this.createSegImageMini(1, 0);
+//        float dilateSizeZ = (float) (dilateSize * this.resXY / this.resZ);
+//        ImageInt dil = BinaryMorpho.binaryDilate(seg, dilateSize, dilateSizeZ, true, type);
+//        //dil.show("Dilate");
         ArrayList<Voxel3D> vox = new ArrayList<Voxel3D>();
         int xx, yy, zz;
-        for (int z = 0; z < dil.sizeZ; z++) {
-            for (int y = 0; y < dil.sizeY; y++) {
-                for (int x = 0; x < dil.sizeX; x++) {
-                    if (dil.getPixelInt(x, y, z) != 0) {
-                        xx = x + dil.offsetX;
-                        yy = y + dil.offsetY;
-                        zz = z + dil.offsetZ;
+        for (int z = 0; z < seg.sizeZ; z++) {
+            for (int y = 0; y < seg.sizeY; y++) {
+                for (int x = 0; x < seg.sizeX; x++) {
+                    if (seg.getPixelInt(x, y, z) != 0) {
+                        xx = x + this.offX;
+                        yy = y + this.offY;
+                        zz = z + this.offZ;
                         if (mask == null || (mask.contains(xx, yy, zz) && (mask.getPixel(xx, yy, zz) == 0 || mask.getPixel(xx, yy, zz) == this.value))) {
                             vox.add(new Voxel3D(xx, yy, zz, value));
                         }
@@ -1827,7 +1872,7 @@ public class Object3DVoxels extends Object3D {
                 }
             }
         }
-        this.miniLabelImage = oldMiniLabelImage;
+//        this.miniLabelImage = oldMiniLabelImage;
         Object3DVoxels res = new Object3DVoxels(vox);
         res.setResXY(resXY);
         res.setResZ(resZ);

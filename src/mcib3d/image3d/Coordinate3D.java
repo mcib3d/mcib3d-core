@@ -8,9 +8,10 @@ import mcib3d.geom.Voxel3D;
 public class Coordinate3D {
 
     public int sizeX, sizeY, sizeZ, sizeXY, sizeXYZ;
-    public int coord, x, y, z;
-    public int[][] vois; //res[0] = array of x's
-    public float[] distances;
+    private int coord;
+    public int x, y, z;
+    private int[][] vois; //res[0] = array of x's
+    private float[] distances;
 
     public Coordinate3D(int coord, int sizeX, int sizeY, int sizeZ) {
         this.coord = coord;
@@ -68,6 +69,11 @@ public class Coordinate3D {
 
     public String print() {
         return " x:" + x + " y:" + y + " z:" + z;
+    }
+
+    @Override
+    public String toString() {
+        return print();
     }
 
     public ArrayList<Integer> getVois1() {
@@ -251,17 +257,11 @@ public class Coordinate3D {
         System.arraycopy(temp[1], 0, vois[1], 0, count);
         System.arraycopy(temp[2], 0, vois[2], 0, count);
 
-
-
-
-
         /*
          * for (int i = 0; i<distances.length; i++) { ij.IJ.log("x:"+vois[0][i]+
          * " y:"+vois[1][i]+" z:"+vois[2][i]+" distance:"+distances[i]); }
          *
          */
-
-
     }
 
     public void setVois1(float scaleZ) {

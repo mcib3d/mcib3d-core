@@ -4,10 +4,8 @@
  */
 package mcib3d.geom;
 
-import ij.IJ;
 import java.util.ArrayList;
 import java.util.Iterator;
-import javax.swing.border.EmptyBorder;
 
 /**
  *
@@ -172,6 +170,7 @@ public class MereoObject3D {
         //IJ.log("Building intersection object");
 
         inter = A.getIntersectionObject(B);
+        
 
         if ((contourtest) && (inter != null)) {
             Iterator<Voxel3D> it = inter.getVoxels().iterator();
@@ -194,10 +193,11 @@ public class MereoObject3D {
             disjoint = (inter.getVolumePixels() == 0);
         }
         if ((!A.isEmpty()) && (!B.isEmpty())) {
-            distBB = A.distBorderUnit(B);
+            distBB = A.distBorderPixel(B);
         } else {
             distBB = Double.NaN;
         }
+        
     }
 
     /////////////////////////////////////////////////
@@ -389,14 +389,14 @@ public class MereoObject3D {
     //////////////////////////////////////////////////
     private Object3D getDilatedA() {
         if (Adilated == null) {
-            Adilated = A.getDilatedObject(RadX, RadY, RadZ, false);
+            Adilated = A.getDilatedObject(RadX, RadY, RadZ);
         }
         return Adilated;
     }
 
     private Object3D getDilatedB() {
         if (Bdilated == null) {
-            Bdilated = B.getDilatedObject(RadX, RadY, RadZ, false);
+            Bdilated = B.getDilatedObject(RadX, RadY, RadZ);
         }
         return Bdilated;
     }
