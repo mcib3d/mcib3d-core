@@ -62,7 +62,6 @@ public abstract class ImageHandler {
     protected ImagePlus img;
     protected String title;
     HashMap<ImageHandler, ImageStats> stats = new HashMap<ImageHandler, ImageStats>(2);
-
     protected ImageHandler(ImagePlus img) {
         this.img = img;
         this.title = img.getShortTitle();
