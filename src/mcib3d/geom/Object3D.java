@@ -562,6 +562,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * Compute the moments of the object (for ellipsoid orientation)
+     *
      * @param normalize
      */
     protected abstract void computeMoments2(boolean normalize); // order 2
@@ -666,7 +667,8 @@ public abstract class Object3D implements Comparable<Object3D> {
      * orientation. Reference: F. A. Sadjadi and E. L. Hall, Three-Dimensional
      * Moment Invariants, IEEE Transactions on Pattern Analysis and Machine
      * Intelligence, vol. PAMI-2, no. 2, pp. 127-136, March 1980.
-     * @return 
+     *
+     * @return
      */
     public double[] getMoments3D() {
         computeMoments2(false);
@@ -825,7 +827,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param mask the byte processor
      * @param z the z slice
      * @param col the color(grey level)
-     * @return 
+     * @return
      */
     public abstract boolean draw(ByteProcessor mask, int z, int col);
 
@@ -3154,7 +3156,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         if ((bb[1] >= img.sizeX - 1) || (bb[3] >= img.sizeY - 1)) {
             return true;
         }
-        return Z && (bb[5] >= img.sizeZ);
+        return Z && (bb[5] >= img.sizeZ - 1);
     }
 
     public boolean touchBorders(ImagePlus img, boolean Z) {
@@ -3170,7 +3172,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         if ((bb[1] >= img.getWidth() - 1) || (bb[3] >= img.getHeight() - 1)) {
             return true;
         }
-        return Z && (bb[5] >= img.getNSlices());
+        return Z && (bb[5] >= img.getNSlices() - 1);
     }
 
     private Object3DVoxels getMorphoObject(int op, float radX, float radY, float radZ) {
