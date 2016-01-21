@@ -452,11 +452,7 @@ public abstract class ImageInt extends ImageHandler {
     public boolean isBinary(int background) {
         float mi1 = this.getMinAboveValue(background);
         float mi2 = this.getMinAboveValue(mi1);
-        if (mi2 == Float.MAX_VALUE) {
-            return true;
-        } else {
-            return false;
-        }
+        return mi2 == Float.MAX_VALUE;
     }
 
     @Override

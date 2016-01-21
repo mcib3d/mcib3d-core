@@ -105,8 +105,6 @@ public class Objects3DPopulation {
         hashName = new HashMap<String, Integer>();
         addImagePlus(plus);
     }
-    
-    
 
     public Objects3DPopulation(ImageInt plus) {
         objects = new ArrayList();
@@ -340,7 +338,9 @@ public class Objects3DPopulation {
     public void removeObject(Object3D obj) {
         hashValue.remove(obj.getValue());
         hashName.remove(obj.getName());
-        if(!objects.remove(obj)) IJ.log("Pb removing "+obj);
+        if (!objects.remove(obj)) {
+            IJ.log("Pb removing " + obj);
+        }
     }
 
     public void buildHash() {
@@ -776,7 +776,7 @@ public class Objects3DPopulation {
         // geometrical mesure volume (pix and unit) and surface (pix and unit)
         ArrayList<double[]> al = new ArrayList<double[]>();
         for (Object3D ob : objects) {
-            double[] mes = {ob.getPixMeanValue(raw), ob.getPixStdDevValue(raw), ob.getPixMinValue(raw), ob.getPixMaxValue(raw), ob.getIntegratedDensity(raw)};
+            double[] mes = {ob.getValue(), ob.getPixMeanValue(raw), ob.getPixStdDevValue(raw), ob.getPixMinValue(raw), ob.getPixMaxValue(raw), ob.getIntegratedDensity(raw)};
             al.add(mes);
         }
 
