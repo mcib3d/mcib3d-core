@@ -4,6 +4,8 @@
  */
 package mcib3d.geom;
 
+import com.github.quickhull3d.Point3d;
+import com.github.quickhull3d.QuickHull3D;
 import ij.IJ;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -27,8 +29,6 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 import mcib3d.utils.ThreadUtil;
-import quickhull3d.Point3d;
-import quickhull3d.QuickHull3D;
 
 /**
  *

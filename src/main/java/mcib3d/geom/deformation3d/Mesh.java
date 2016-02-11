@@ -1,6 +1,8 @@
 package mcib3d.geom.deformation3d;
 
 
+import com.github.quickhull3d.Point3d;
+import com.github.quickhull3d.QuickHull3D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -8,8 +10,6 @@ import java.util.List;
 import javax.vecmath.Point3f;
 import mcib3d.geom.Object3DSurface;
 import mcib3d.geom.Voxel3D;
-import quickhull3d.Point3d;
-import quickhull3d.QuickHull3D;
 //import com.sun.j3d.*;
 
 
