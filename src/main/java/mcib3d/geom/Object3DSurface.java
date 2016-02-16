@@ -30,6 +30,8 @@ import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 import mcib3d.utils.ThreadUtil;
 
+//import org.scijava.vecmath.Point3f;
+
 /**
  *
  **
@@ -1909,6 +1911,8 @@ public class Object3DSurface extends Object3D {
     }
 
     public Content drawContent(Image3DUniverse univ, Color3f co, String name) {
+        //List<org.scijava.vecmath.Point3f> test=faces;
+        univ.addTriangleMesh(faces, co, name);
         return univ.addTriangleMesh(faces, co, name);
     }
 
