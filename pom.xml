@@ -63,11 +63,13 @@
 			<artifactId>ij</artifactId>
 			<version>RELEASE</version>
 		</dependency>
+                <!--
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>Image_5D</artifactId>
 			<version>RELEASE</version>
 		</dependency>
+                -->
 		<dependency>
 			<groupId>java3d</groupId>
 			<artifactId>j3d-core</artifactId>
@@ -83,16 +85,20 @@
 			<artifactId>vecmath</artifactId>
 			<version>RELEASE</version>
 		</dependency>
+                <!--
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>imagescience</artifactId>
 			<version>RELEASE</version>
 		</dependency>
+                 -->
+                 <!--
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>imageware</artifactId>
 			<version>2.0.0-SNAPSHOT</version>
                 </dependency>
+                 -->
                 <dependency>
                         <groupId>com.googlecode.combinatoricslib</groupId>
                         <artifactId>combinatoricslib</artifactId>
@@ -143,8 +149,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
+					<source>1.6</source>
+					<target>1.6</target>
 				</configuration>
 			</plugin>
 			
