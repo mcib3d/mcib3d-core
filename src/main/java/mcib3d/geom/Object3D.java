@@ -5,6 +5,7 @@ package mcib3d.geom;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.process.ByteProcessor;
@@ -887,6 +888,23 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return the contour roi in slice z
      */
     public abstract Roi createRoi(int z);
+
+    public PolygonRoi getPolygonRoi(int z) {
+        ArrayList<Voxel3D> contours3D = this.getContours();
+        int[] x = new int[contours3D.size()];
+        int[] y = new int[contours3D.size()];
+        int nbPoint = -1;
+        for (Voxel3D contour : contours3D) {
+            if (Math.abs(z - contour.z) < 0.5) {
+                nbPoint++;
+                x[nbPoint] = (int) contour.x;
+                y[nbPoint] = (int) contour.y;
+            }
+        }
+        PolygonRoi pRoi = new PolygonRoi(x, y, nbPoint, Roi.POLYGON);
+        return pRoi;
+        //return (new PolygonRoi(pRoi.getConvexHull(), Roi.POLYGON));
+    }
 
     /**
      * Init default values and compute contours and center
