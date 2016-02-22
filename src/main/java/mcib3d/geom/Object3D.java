@@ -897,11 +897,15 @@ public abstract class Object3D implements Comparable<Object3D> {
         for (Voxel3D contour : contours3D) {
             if (Math.abs(z - contour.z) < 0.5) {
                 nbPoint++;
-                x[nbPoint] = (int) contour.x;
-                y[nbPoint] = (int) contour.y;
+                x[nbPoint] = contour.getRoundX();
+                y[nbPoint] = contour.getRoundY();
             }
         }
-        PolygonRoi pRoi = new PolygonRoi(x, y, nbPoint, Roi.POLYGON);
+        int[] xx = new int[nbPoint + 1];
+        int[] yy = new int[nbPoint + 1];
+        System.arraycopy(x, 0, xx, 0, nbPoint + 1);
+        System.arraycopy(y, 0, yy, 0, nbPoint + 1);
+        PolygonRoi pRoi = new PolygonRoi(xx, yy, nbPoint, Roi.POLYGON);
         return pRoi;
         //return (new PolygonRoi(pRoi.getConvexHull(), Roi.POLYGON));
     }
