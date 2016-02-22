@@ -1,173 +1,178 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
 	http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<properties>
-		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
+    </properties>
 
-	<groupId>mcib</groupId>
-	<artifactId>mcib-core</artifactId>
-	<version>3.2.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+    <groupId>mcib</groupId>
+    <artifactId>mcib-core</artifactId>
+    <version>3.2.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
-	<name>MCIB-CORE</name>
-	<description>The mcib3d library is the core for most of the mcib3d plugins developed.</description>
-	<url>http://sites.imagej.net/Tboudier/plugins/mcib3d-suite/</url>
-	<inceptionYear>2012</inceptionYear>
+    <name>MCIB-CORE</name>
+    <description>The mcib3d library is the core for most of the mcib3d plugins developed.</description>
+    <url>http://sites.imagej.net/Tboudier/plugins/mcib3d-suite/</url>
+    <inceptionYear>2012</inceptionYear>
 
-	<licenses>
-		<license>
-			<name>GNU General Public License</name>
-			<url>https://gnu.org/licenses/gpl.html</url>
-			<distribution>repo</distribution>
-			<comments>Version 3 of the License or (at your option) any later version.</comments>
-		</license>
-	</licenses>
+    <licenses>
+        <license>
+            <name>GNU General Public License</name>
+            <url>https://gnu.org/licenses/gpl.html</url>
+            <distribution>repo</distribution>
+            <comments>Version 3 of the License or (at your option) any later version.</comments>
+        </license>
+    </licenses>
 
-	<developers>
-		<developer>
-			<name>Thomas Boudier</name>
-			<email>thomas.boudier@upmc.fr</email>
-			<roles>
-				<role>developer</role>
-			</roles>
-		</developer>
-	</developers>
+    <developers>
+        <developer>
+            <name>Thomas Boudier</name>
+            <email>thomas.boudier@upmc.fr</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
 
-	<contributors>
-		<contributor>
-			<name>Ollion Jean</name>
-			<email>ollion@mnhn.fr</email>
-			<roles>
-				<role>past developer</role>
-			</roles>
-		</contributor>
-	</contributors>
+    <contributors>
+        <contributor>
+            <name>Ollion Jean</name>
+            <email>ollion@mnhn.fr</email>
+            <roles>
+                <role>past developer</role>
+            </roles>
+        </contributor>
+    </contributors>
 
-	<scm>
-                <connection>scm:git:git://github.com/salsaj-boudier/mcib3d-core</connection>
-                <developerConnection>scm:git:git@github.com:salsaj-boudier/mcib3d-core</developerConnection>
-                <tag>HEAD</tag>
-		<url>https://github.com/salsaj-boudier/mcib3d-core</url>
-	</scm>
-	<!--
-	TODO add a issueManagement field once there is a bug tracker
-	-->
+    <scm>
+        <connection>scm:git:git://github.com/salsaj-boudier/mcib3d-core</connection>
+        <developerConnection>scm:git:git@github.com:salsaj-boudier/mcib3d-core</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/salsaj-boudier/mcib3d-core</url>
+    </scm>
+    <!--
+    TODO add a issueManagement field once there is a bug tracker
+    -->
 
-	<dependencies>
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>ij</artifactId>
-			<version>RELEASE</version>
-		</dependency>
-                <!--
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>Image_5D</artifactId>
-			<version>RELEASE</version>
-		</dependency>
-                -->
-		<dependency>
-			<groupId>java3d</groupId>
-			<artifactId>j3d-core</artifactId>
-			<version>RELEASE</version>
-		</dependency>
-		<dependency>
-			<groupId>java3d</groupId>
-			<artifactId>j3d-core-utils</artifactId>
-			<version>RELEASE</version>
-		</dependency>
-		<dependency>
-			<groupId>java3d</groupId>
-			<artifactId>vecmath</artifactId>
-			<version>RELEASE</version>
-		</dependency>
-                <!--
-		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>imagescience</artifactId>
-			<version>RELEASE</version>
-		</dependency>
-                 -->
-                 <!--
-		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>imageware</artifactId>
-			<version>2.0.0-SNAPSHOT</version>
-                </dependency>
-                 -->
-                <dependency>
-                        <groupId>com.googlecode.combinatoricslib</groupId>
-                        <artifactId>combinatoricslib</artifactId>
-                        <version>2.0</version>
-                </dependency>
-                <dependency>
-                        <groupId>com.github.quickhull3d</groupId>
-                        <artifactId>quickhull3d</artifactId>
-                        <version>1.0.0</version>
-                </dependency>
-	 <dependency>
-	  <groupId>sc.fiji</groupId>
-	  <artifactId>3D_Viewer</artifactId>
-	  <version>3.1.0</version>
-	  <type>jar</type>
-	 </dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>ij</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <!--
+        <dependency>
+                <groupId>net.imagej</groupId>
+                <artifactId>Image_5D</artifactId>
+                <version>RELEASE</version>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>java3d</groupId>
+            <artifactId>j3d-core</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>java3d</groupId>
+            <artifactId>j3d-core-utils</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>java3d</groupId>
+            <artifactId>vecmath</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <!--
+       <dependency>
+               <groupId>sc.fiji</groupId>
+               <artifactId>imagescience</artifactId>
+               <version>RELEASE</version>
+       </dependency>
+        -->
+        <!--
+       <dependency>
+               <groupId>sc.fiji</groupId>
+               <artifactId>imageware</artifactId>
+               <version>2.0.0-SNAPSHOT</version>
+       </dependency>
+        -->
+        <dependency>
+            <groupId>com.googlecode.combinatoricslib</groupId>
+            <artifactId>combinatoricslib</artifactId>
+            <version>2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.quickhull3d</groupId>
+            <artifactId>quickhull3d</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>3D_Viewer</artifactId>
+            <version>3.1.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>weka</groupId>
+            <artifactId>weka</artifactId>
+            <version>3.7.6</version>
+        </dependency>
+    </dependencies>
 
-	<repositories>
-		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
-		</repository>
-		<repository>
-			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
-		</repository>
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>imagej.public</id>
+            <url>http://maven.imagej.net/content/groups/public</url>
+        </repository>
 		
-	</repositories>
-<!-- 	<pluginRepositories>
-	<pluginRepository>
-    <id>sonatype-public-repository</id>
-    <url>https://oss.sonatype.org/content/groups/public</url>
-    <snapshots>
-        <enabled>true</enabled>
-    </snapshots>
-    <releases>
-        <enabled>true</enabled>
-    </releases>
+    </repositories>
+    <!-- 	<pluginRepositories>
+    <pluginRepository>
+<id>sonatype-public-repository</id>
+<url>https://oss.sonatype.org/content/groups/public</url>
+<snapshots>
+    <enabled>true</enabled>
+</snapshots>
+<releases>
+    <enabled>true</enabled>
+</releases>
 </pluginRepository>
-	</pluginRepositories> -->
-	<build>
-	   <pluginManagement>
-		<plugins>
-			<plugin>
-				<!-- We depend on at least java 1.5. -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
+    </pluginRepositories> -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <!-- We depend on at least java 1.5. -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.3.2</version>
+                    <configuration>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                    </configuration>
+                </plugin>
 			
-		</plugins>
-		   </pluginManagement>
-	 <plugins>
-	  <plugin>
-	   <groupId>org.apache.maven.plugins</groupId>
-	   <artifactId>maven-compiler-plugin</artifactId>
-	   <version>2.3.2</version>
-	   <configuration>
-	    <showDeprecation>true</showDeprecation>
-	    <source>1.6</source>
-	    <target>1.6</target>
-	   </configuration>
-	  </plugin>
-	 </plugins>
-	</build>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <showDeprecation>true</showDeprecation>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
