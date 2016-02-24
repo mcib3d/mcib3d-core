@@ -455,6 +455,10 @@ public abstract class ImageInt extends ImageHandler {
         return mi2 == Float.MAX_VALUE;
     }
 
+    public boolean isBinary() {
+        return isBinary(0);
+    }
+
     @Override
     public abstract ImageInt resample(int newX, int newY, int newZ, int method);
 
