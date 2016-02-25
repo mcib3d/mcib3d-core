@@ -31,7 +31,6 @@ import mcib3d.utils.KDTreeC;
 import mcib3d.utils.ThreadUtil;
 
 //import org.scijava.vecmath.Point3f;
-
 /**
  *
  **
@@ -522,8 +521,12 @@ public class Object3DSurface extends Object3D {
         Point3f P2 = faces.get(ba + 1);
         Point3f P3 = faces.get(ba + 2);
 
-        Vector3D P1P2 = new Vector3D(P1, P2);
-        Vector3D P1P3 = new Vector3D(P1, P3);
+        //Vector3D P1P2 = new Vector3D(P1, P2);
+        //Vector3D P1P3 = new Vector3D(P1, P3);
+        Vector3D P1P2 = new Vector3D();
+        P1P2.setVectorTwoPoint3f(P1, P2);
+        Vector3D P1P3 = new Vector3D();
+        P1P3.setVectorTwoPoint3f(P1, P3);
 
         N = P1P2.crossProduct(P1P3);
         N.normalize();
@@ -573,8 +576,13 @@ public class Object3DSurface extends Object3D {
         Point3f P = vertices.get(idx);
         for (int i : list) {
             Point3f C = getCenterFace(i);
-            Vector3D V = new Vector3D(P, C);
-            Vector3D Nf = new Vector3D(getNormalFace(i));
+            //Vector3D V = new Vector3D(P, C);
+            //Vector3D Nf = new Vector3D(getNormalFace(i));
+            Vector3D V = new Vector3D();
+            V.setVectorTwoPoint3f(P, C);
+            Vector3D Nf = new Vector3D();
+            Nf.setVectorPoint3f(getNormalFace(i));
+
             Nf.multiplyMe(1.0 / V.getLength());
             N.addMe(Nf);
             // TEST
@@ -590,7 +598,9 @@ public class Object3DSurface extends Object3D {
     public void computeVerticesNormals() {
         verticesNormals = new ArrayList<Vector3D>();
         for (int i = 0; i < vertices.size(); i++) {
-            verticesNormals.add(new Vector3D(getNormalVertex(i)));
+            Vector3D tmp = new Vector3D();
+            tmp.setVectorPoint3f(getNormalVertex(i));
+            verticesNormals.add(tmp);
         }
 
 //        ArrayList<Vector3D> facesNormals = computeSurfaceNormalsFaces();
@@ -621,13 +631,20 @@ public class Object3DSurface extends Object3D {
     public void computeVerticesNormalsWeighted() {
         verticesNormals = new ArrayList<Vector3D>();
         for (int i = 0; i < vertices.size(); i++) {
-            verticesNormals.add(new Vector3D(getNormalVertexWeighted(i)));
+            Vector3D tmp = new Vector3D();
+            tmp.setVectorPoint3f(getNormalVertexWeighted(i));
+            verticesNormals.add(tmp);
         }
     }
 
     public Point3f getTangentVector(int v0, int v1) {
-        Vector3D PPi = new Vector3D(vertices.get(v0), vertices.get(v1));
-        double ppiN = PPi.dotProduct(new Vector3D(getNormalVertex(v0)));
+        //Vector3D PPi = new Vector3D(vertices.get(v0), vertices.get(v1));
+        Vector3D PPi = new Vector3D();
+        PPi.setVectorTwoPoint3f(vertices.get(v0), vertices.get(v1));
+        Vector3D tmp = new Vector3D();
+        tmp.setVectorPoint3f(getNormalVertex(v0));
+        double ppiN = PPi.dotProduct(tmp);
+
         Vector3D proj = PPi.multiply(ppiN);
         Vector3D res = new Vector3D(proj, PPi);
         res.normalize();
@@ -636,8 +653,12 @@ public class Object3DSurface extends Object3D {
     }
 
     public double getCurvatureTangent(int v0, int v1) {
-        Vector3D PPi = new Vector3D(vertices.get(v0), vertices.get(v1));
-        Vector3D NNi = new Vector3D(getNormalVertexWeighted(v0), getNormalVertexWeighted(v1));
+        //Vector3D PPi = new Vector3D(vertices.get(v0), vertices.get(v1));
+        //Vector3D NNi = new Vector3D(getNormalVertexWeighted(v0), getNormalVertexWeighted(v1));
+        Vector3D PPi = new Vector3D();
+        PPi.setVectorTwoPoint3f(vertices.get(v0), vertices.get(v1));
+        Vector3D NNi = new Vector3D();
+        NNi.setVectorTwoPoint3f(getNormalVertexWeighted(v0), getNormalVertexWeighted(v1));
 
         double a = PPi.dotProduct(NNi);
         double b = PPi.dotProduct(PPi);
@@ -650,11 +671,11 @@ public class Object3DSurface extends Object3D {
         double kmax = Double.NEGATIVE_INFINITY;
         int kid = -1;
 
-        for (int i = 0; i < li.size(); i++) {
-            double k = getCurvatureTangent(v0, li.get(i));
+        for (Integer li1 : li) {
+            double k = getCurvatureTangent(v0, li1);
             if (k > kmax) {
                 kmax = k;
-                kid = li.get(i);
+                kid = li1;
             }
         }
         // ERROR
@@ -665,8 +686,12 @@ public class Object3DSurface extends Object3D {
     }
 
     private double angleTangent(int v0, int v1, Point3f P) {
-        Vector3D PP = new Vector3D(P);
-        Vector3D P0P1 = new Vector3D(vertices.get(v0), vertices.get(v1));
+//        Vector3D PP = new Vector3D(P);
+//        Vector3D P0P1 = new Vector3D(vertices.get(v0), vertices.get(v1));
+        Vector3D PP = new Vector3D();
+        PP.setVectorPoint3f(P);
+        Vector3D P0P1 = new Vector3D();
+        P0P1.setVectorTwoPoint3f(vertices.get(v0), vertices.get(v1));
 
         return P0P1.angle(PP);
     }
@@ -683,18 +708,31 @@ public class Object3DSurface extends Object3D {
             double angle = 0;
             // vertex is first angle 12,13
             if (v1 == ve) {
-                Vector3D P1P2 = new Vector3D(vertices.get(v1), vertices.get(v2));
-                Vector3D P1P3 = new Vector3D(vertices.get(v1), vertices.get(v3));
+                //Vector3D P1P2 = new Vector3D(vertices.get(v1), vertices.get(v2));
+                //Vector3D P1P3 = new Vector3D(vertices.get(v1), vertices.get(v3));
+                Vector3D P1P2 = new Vector3D();
+                P1P2.setVectorTwoPoint3f(vertices.get(v1), vertices.get(v2));
+                Vector3D P1P3 = new Vector3D();
+                P1P3.setVectorTwoPoint3f(vertices.get(v1), vertices.get(v3));
                 angle = P1P2.angle(P1P3);
             } // vertex is second angle 23,21
             else if (v2 == ve) {
-                Vector3D P2P3 = new Vector3D(vertices.get(v2), vertices.get(v2));
-                Vector3D P2P1 = new Vector3D(vertices.get(v2), vertices.get(v1));
+                //Vector3D P2P3 = new Vector3D(vertices.get(v2), vertices.get(v2));
+                //Vector3D P2P1 = new Vector3D(vertices.get(v2), vertices.get(v1));
+                Vector3D P2P3 = new Vector3D();
+                P2P3.setVectorTwoPoint3f(vertices.get(v2), vertices.get(v3));
+                Vector3D P2P1 = new Vector3D();
+                P2P1.setVectorTwoPoint3f(vertices.get(v2), vertices.get(v1));
+
                 angle = P2P3.angle(P2P1);
             } // vertex is second angle 31,32
             else if (v3 == ve) {
-                Vector3D P3P1 = new Vector3D(vertices.get(v3), vertices.get(v1));
-                Vector3D P3P2 = new Vector3D(vertices.get(v3), vertices.get(v2));
+                //Vector3D P3P1 = new Vector3D(vertices.get(v3), vertices.get(v1));
+                //Vector3D P3P2 = new Vector3D(vertices.get(v3), vertices.get(v2));
+                Vector3D P3P1 = new Vector3D();
+                P3P1.setVectorTwoPoint3f(vertices.get(v3), vertices.get(v1));
+                Vector3D P3P2 = new Vector3D();
+                P3P2.setVectorTwoPoint3f(vertices.get(v3), vertices.get(v2));
                 angle = P3P1.angle(P3P2);
             } else {
                 IJ.log("PB angle vertex " + ve + " " + v1 + " " + v2 + " " + v3);
@@ -715,8 +753,12 @@ public class Object3DSurface extends Object3D {
             int v2 = faces_vertices_index.get(base + 1);
             int v3 = faces_vertices_index.get(base + 2);
             double area;
-            Vector3D P1P2 = new Vector3D(vertices.get(v1), vertices.get(v2));
-            Vector3D P1P3 = new Vector3D(vertices.get(v1), vertices.get(v3));
+//            Vector3D P1P2 = new Vector3D(vertices.get(v1), vertices.get(v2));
+//            Vector3D P1P3 = new Vector3D(vertices.get(v1), vertices.get(v3));
+            Vector3D P1P2 = new Vector3D();
+            P1P2.setVectorTwoPoint3f(vertices.get(v1), vertices.get(v2));
+            Vector3D P1P3 = new Vector3D();
+            P1P3.setVectorTwoPoint3f(vertices.get(v1), vertices.get(v3));
             area = 0.5 * P1P2.crossProduct(P1P3).getLength();
             areas.add(area);
         }
@@ -790,7 +832,9 @@ public class Object3DSurface extends Object3D {
 
         }
         int imax = getMaxCurvatureTangentIndex(v);
-        Vector3D MaxTang = new Vector3D(vertices.get(v), vertices.get(imax));
+        //Vector3D MaxTang = new Vector3D(vertices.get(v), vertices.get(imax));
+        Vector3D MaxTang = new Vector3D();
+        MaxTang.setVectorTwoPoint3f(vertices.get(v), vertices.get(imax));
         MaxTang.normalize();
         ArrayList<Integer> nei = getNeighborVertices(v);
         int si = nei.size();
@@ -1327,8 +1371,12 @@ public class Object3DSurface extends Object3D {
         //A = vertices.get(t.getVertices().get(0));
         //B = vertices.get(t.getVertices().get(1));
         //C = vertices.get(t.getVertices().get(2));
-        u = new Vector3D(A, B);
-        v = new Vector3D(A, C);
+//        u = new Vector3D(A, B);
+//        v = new Vector3D(A, C);
+        u = new Vector3D();
+        u.setVectorTwoPoint3f(A, B);
+        v = new Vector3D();
+        v.setVectorTwoPoint3f(A, C);
 
         Vector3D n = u.crossProduct(v);
         Point3D intersectionPoint;
@@ -1382,8 +1430,12 @@ public class Object3DSurface extends Object3D {
         //A = vertices.get(t.getVertices().get(0));
         //B = vertices.get(t.getVertices().get(1));
         //C = vertices.get(t.getVertices().get(2));
-        u = new Vector3D(A, B);
-        v = new Vector3D(A, C);
+//        u = new Vector3D(A, B);
+//        v = new Vector3D(A, C);
+        u = new Vector3D();
+        u.setVectorTwoPoint3f(A, B);
+        v = new Vector3D();
+        v.setVectorTwoPoint3f(A, C);
 
         Vector3D n = u.crossProduct(v);
         Point3D intersectionPoint;
@@ -1869,11 +1921,11 @@ public class Object3DSurface extends Object3D {
 
     @Override
     public boolean draw(ByteProcessor mask, int z, int col) {
-        boolean ok=false;
+        boolean ok = false;
         for (Voxel3D vox : this.getVoxels()) {
             if (Math.abs(z - vox.getZ()) < 0.5) {
                 mask.putPixel((int) (Math.round(vox.getX())), (int) (Math.round(vox.getY())), col);
-                ok=true;
+                ok = true;
             }
         }
         return ok;
@@ -2080,7 +2132,9 @@ public class Object3DSurface extends Object3D {
         Point3D center = this.getCenterAsVector();
         for (int i = 0; i < faces.size(); i++) {
             Point3f P = this.getVertex(i);
-            Point3D P0 = new Vector3D(P);
+            //Point3D P0 = new Vector3D(P);
+            Point3D P0 = new Point3D(P);
+
             Vector3D V0 = new Vector3D(center, P0);
             Vector3D V1 = V0.multiply(scale);
             Point3D P1 = new Vector3D(center);
@@ -2096,7 +2150,8 @@ public class Object3DSurface extends Object3D {
         Point3D center = this.getCenterAsVector();
         for (int i = 0; i < faces.size(); i++) {
             Point3f P = this.getVertex(i);
-            Point3D P0 = new Vector3D(P);
+            //Point3D P0 = new Vector3D(P);
+            Point3D P0 = new Point3D(P);
             Vector3D V0 = new Vector3D(center, P0);
             double orient = Math.abs((V0.getNormalizedVector()).dotProduct(dirN));
             double sca = 1 + orient * orient * (scale - 1);
@@ -2116,7 +2171,9 @@ public class Object3DSurface extends Object3D {
         Vector3D center = this.getCenterAsVector();
 
         for (Point3f v : faces) {
-            Vector3D tv = trans.getVectorTransformed(new Vector3D(v), center);
+            Vector3D tmp = new Vector3D();
+            tmp.setVectorPoint3f(v);
+            Vector3D tv = trans.getVectorTransformed(tmp, center);
             v.set((float) tv.getX(), (float) tv.getY(), (float) tv.getZ());
         }
 
@@ -2129,7 +2186,9 @@ public class Object3DSurface extends Object3D {
         Vector3D center = this.getCenterAsVector();
         ArrayList<Point3f> res = new ArrayList(faces.size());
         for (Point3f v : faces) {
-            Vector3D tv = trans.getVectorTransformed(new Vector3D(v), center);
+            Vector3D tmp = new Vector3D();
+            tmp.setVectorPoint3f(v);
+            Vector3D tv = trans.getVectorTransformed(tmp, center);
             res.add(new Point3f((float) tv.getX(), (float) tv.getY(), (float) tv.getZ()));
         }
         return res;

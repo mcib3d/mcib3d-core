@@ -1,6 +1,5 @@
 package mcib3d.geom;
 
-import ij.IJ;
 import java.text.NumberFormat;
 import javax.vecmath.Point3f;
 
@@ -95,12 +94,23 @@ public class Vector3D extends Point3D {
      * @param P1 first point
      * @param P2 second point
      */
-    public Vector3D(Point3f P1, Point3f P2) {
-        super(P2.x - P1.x, P2.y - P1.y, P2.z - P1.z);
+//    public Vector3D(Point3f P1, Point3f P2) {
+//        super(P2.x - P1.x, P2.y - P1.y, P2.z - P1.z);
+//    }
+//
+//    public Vector3D(Point3f P) {
+//        super(P.x, P.y, P.z);
+//    }
+    public void setVectorPoint3f(Point3f P) {
+        this.x = P.x;
+        this.y = P.y;
+        this.z = P.z;
     }
 
-    public Vector3D(Point3f P) {
-        super(P.x, P.y, P.z);
+    public void setVectorTwoPoint3f(Point3f P1, Point3f P2) {
+        this.x = P2.x - P1.x;
+        this.y = P2.y - P1.y;
+        this.z = P2.z - P1.z;
     }
 
     /**
@@ -308,7 +318,7 @@ public class Vector3D extends Point3D {
         return alpha;
     }
 
-    public double anglePlane(double a, double b, double c, double d) {        
+    public double anglePlane(double a, double b, double c, double d) {
         Vector3D proj = new Vector3D(projectionPlane(a, b, c, d));
         if (proj.getLength() > 0) {
             return angle(proj);

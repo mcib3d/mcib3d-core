@@ -250,8 +250,8 @@ public class DeformableMesh extends Object3DSurface {
         double r;
         int cpt = 0;
         for (int i = 0; i < forces.size(); i++) {
-            Point3D P0 = new Vector3D(this.getUniqueVertex(i));
-            Point3D P1 = new Vector3D(this.getUniqueVertex(i));
+            Point3D P0 = new Point3D(this.getUniqueVertex(i));
+            Point3D P1 = new Point3D(this.getUniqueVertex(i));
             Vector3D force = forces.get(i);
             //IJ.log("Force " + i + " " + force);
             if (force != null) {
@@ -298,8 +298,8 @@ public class DeformableMesh extends Object3DSurface {
         double r;
         double cpt = 0;
         for (int i = 0; i < forces.size(); i++) {
-            Point3D P0 = new Vector3D(this.getUniqueVertex(i));
-            Point3D P1 = new Vector3D(this.getUniqueVertex(i));
+            Point3D P0 = new Point3D(this.getUniqueVertex(i));
+            Point3D P1 = new Point3D(this.getUniqueVertex(i));
             Vector3D force = forces.get(i);
             //IJ.log("Force " + i + " " + force);
             if (force != null) {
