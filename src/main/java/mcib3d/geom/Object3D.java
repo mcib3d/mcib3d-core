@@ -389,6 +389,10 @@ public abstract class Object3D implements Comparable<Object3D> {
         return labelImage;
     }
 
+    public ImageInt getMaxLabelImage(int val) {
+        return createMaxSegImage(val);
+    }
+
     /**
      * Sets the label image of the object (should start at 0,0,0)
      *
@@ -1142,6 +1146,10 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public void setNewCenter(double x, double y, double z) {
         translate(x - this.getCenterX(), y - this.getCenterY(), z - this.getCenterZ());
+    }
+
+    public void setNewCenter(Object3D obj) {
+        translate(obj.getCenterX() - this.getCenterX(), obj.getCenterY() - this.getCenterY(), obj.getCenterZ() - this.getCenterZ());
     }
 
     /**
@@ -2955,6 +2963,10 @@ public abstract class Object3D implements Comparable<Object3D> {
         } else {
             return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, 1);
         }
+    }
+
+    private ImageInt createMaxSegImage(int val) {
+        return createSegImage(0, 0, 0, xmax, ymax, zmax, val);
     }
 
     /**

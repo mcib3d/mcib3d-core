@@ -1225,6 +1225,44 @@ public class Objects3DPopulation {
     }
 
     public ArrayList<Object3D> shuffle() {
+        ArrayList<Object3D> shuObj = new ArrayList<Object3D>();
+        Random ra = new Random();
+        ImageInt maskimg = mask.getMaxLabelImage(1);
+        Object3DVoxels maskVox = mask.getObject3DVoxels();
+        for (int i = 0; i < getNbObjects(); i++) {
+            Object3DVoxels obj = new Object3DVoxels(getObject(i));
+            boolean ok = false;
+            int it = 0;
+            while (!ok) {
+                IJ.showStatus("Shuffling " + getObject(i).getValue() + " " + it);
+                Voxel3D vox = maskVox.getRandomvoxel(ra);
+                obj.setNewCenter(vox.getX(), vox.getY(), vox.getZ());
+                ok = true;
+                it++;
+                if (maskVox.includesBox(obj)) {
+                    if (obj.getPixMinValue(maskimg) < 1) {
+                        ok = false;
+                    }
+                } else {
+                    ok = false;
+                }
+                if (it >= 1000) {
+                    ok = true;
+                }
+            }
+            if (it == 1000) {
+                IJ.log("Could not shuffle " + getObject(i).getValue());
+                obj.setNewCenter(getObject(i));
+            }
+            shuObj.add(obj);
+            // update mask
+            obj.draw(maskimg, 0);
+            //maskimg.duplicate().show("mask " + getObject(i).getValue());
+        }
+        return shuObj;
+    }
+
+    public ArrayList<Object3D> shuffle0() {
         int si = this.getNbObjects();
         ArrayUtil idx = new ArrayUtil(si);
         for (int i = 0; i < si; i++) {
@@ -1266,7 +1304,7 @@ public class Objects3DPopulation {
                 Vtest.setLabelImage(labelTest);
 
                 if (mask.getColoc(Vtest) < Vtest.getVolumePixels()) {
-                    System.out.println("PB coloc mask ");
+                    IJ.log("PB coloc mask ");
                     ok = false;
                 }
 
@@ -1274,7 +1312,7 @@ public class Objects3DPopulation {
                 for (Object3D O : shuObj) {
                     if (O.getColoc(Vtest) > 0) {
                         ok = false;
-                        System.out.println("PB coloc others");
+                        IJ.log("PB coloc others");
                     }
                 }
             }

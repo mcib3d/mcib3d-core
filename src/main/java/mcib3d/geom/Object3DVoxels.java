@@ -301,7 +301,7 @@ public class Object3DVoxels extends Object3D {
         addVoxels(other.getVoxels());
         init();
         value = other.getValue();
-        this.labelImage = other.getLabelImage();
+        //this.labelImage = other.getLabelImage();
         this.offX = other.offX;
         this.offY = other.offY;
         this.offZ = other.offZ;
