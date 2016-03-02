@@ -199,8 +199,30 @@ public class AboutMCIB extends JFrame {
                         }
                     }
                 });
+        
+        JLabel suite;
+        url = getClass().getResource("/icons/suite.png");
+        image = Toolkit.getDefaultToolkit().getImage(url);
+        icon = new ImageIcon(image);
+        suite = new JLabel(icon, JLabel.CENTER);
+        suite.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        suite.addMouseListener(
+                new MouseAdapter() {
+
+                    @Override
+                    public void mouseClicked(MouseEvent me) {
+                        try {
+                            BrowserLauncher.openURL("http://imagejdocu.tudor.lu/doku.php?id=plugin:stacks:3d_ij_suite:start");
+                        } catch (IOException ioe) {
+                            IJ.log("cannot open url http://imagejdocu.tudor.lu/doku.php?id=plugin:stacks:3d_ij_suite:start\n" + ioe);
+                        }
+                    }
+                });
+        
+        
         //inst.add(curie);
         inst.add(upmc);
+        inst.add(suite);
         //inst.add(cnrs);
         //inst.add(inserm);
 
