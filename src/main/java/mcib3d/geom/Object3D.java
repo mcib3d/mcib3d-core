@@ -893,7 +893,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public abstract Roi createRoi(int z);
 
-    public PolygonRoi getPolygonRoi(int z) {
+    public PolygonRoi getConvexPolygonRoi(int z) {
         ArrayList<Voxel3D> contours3D = this.getContours();
         int[] x = new int[contours3D.size()];
         int[] y = new int[contours3D.size()];
@@ -910,8 +910,8 @@ public abstract class Object3D implements Comparable<Object3D> {
         System.arraycopy(x, 0, xx, 0, nbPoint + 1);
         System.arraycopy(y, 0, yy, 0, nbPoint + 1);
         PolygonRoi pRoi = new PolygonRoi(xx, yy, nbPoint, Roi.POLYGON);
-        return pRoi;
-        //return (new PolygonRoi(pRoi.getConvexHull(), Roi.POLYGON));
+        // if not convex, the contours points are not ordered
+        return (new PolygonRoi(pRoi.getConvexHull(), Roi.POLYGON));
     }
 
     /**
