@@ -10,7 +10,7 @@
 
     <groupId>mcib</groupId>
     <artifactId>mcib-core</artifactId>
-    <version>3.2.1-SNAPSHOT</version>
+    <version>3.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>MCIB-CORE</name>
