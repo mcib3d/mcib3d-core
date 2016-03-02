@@ -8,4 +8,7 @@ Jean Ollion.
   J. Ollion, J. Cochennec, F. Loll, C. Escudé, and T. Boudier (2013). 
   TANGO: a generic tool for high-throughput 3D image analysis for studying nuclear organization.
   Bioinformatics 29(14):1840-1. doi: 10.1093/bioinformatics/btt276.
+  
+  Documentations are available on the Imagej wiki website : 
+  http://imagejdocu.tudor.lu/doku.php?id=plugin:stacks:3d_ij_suite:start
 
