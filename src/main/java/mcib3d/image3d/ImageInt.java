@@ -14,6 +14,7 @@ import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.geom.Point3D;
 import mcib3d.geom.Voxel3D;
+import mcib3d.geom.Voxel3DComparable;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
@@ -633,6 +634,34 @@ public abstract class ImageInt extends ImageHandler {
                 }
             }
         }
+    }
+
+    public ArrayList<Voxel3DComparable> getListMaxima(float radx, float rady, float radz, int zmin, int zmax) {
+        ArrayList<Voxel3DComparable> res = new ArrayList<Voxel3DComparable>();
+        int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
+        int nb = FastFilters3D.getNbFromKernel(ker);
+        if (zmin < 0) {
+            zmin = 0;
+        }
+        if (zmax > this.sizeZ) {
+            zmax = this.sizeZ;
+        }
+        int value;
+        ArrayUtil tab;
+        for (int k = zmin; k < zmax; k++) {
+            IJ.showStatus("3D filter : " + (k + 1) + "/" + zmax);
+            for (int j = 0; j < sizeY; j++) {
+                for (int i = 0; i < sizeX; i++) {
+                    tab = this.getNeighborhoodKernel(ker, nb, i, j, k, radx, rady, radz);
+                    value = this.getPixelInt(i, j, k);
+                    if (tab.isMaximum(value)) {
+                        res.add(new Voxel3DComparable(i, j, k, value, 1));
+                    }
+                }
+            }
+        }
+
+        return res;
     }
 
     public void filterGeneric(ImageInt out, Object3DVoxels obj, int zmin, int zmax, int filter) {

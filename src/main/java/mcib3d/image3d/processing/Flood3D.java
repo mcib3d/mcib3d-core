@@ -1,10 +1,12 @@
 package mcib3d.image3d.processing;
 
+import ij.IJ;
 import java.util.ArrayList;
 import mcib3d.geom.IntCoord3D;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
+
 /**
  *
  **
@@ -85,6 +87,43 @@ public class Flood3D {
         }
     }
 
+    public static void flood3DNoiseShort6(ImageShort img, IntCoord3D seed, short limit, short newVal) {
+        short[][] pixels = img.pixels;
+        int sizeX = img.sizeX;
+        int sizeY = img.sizeY;
+        int sizeZ = img.sizeZ;
+        int oldVal = pixels[seed.z][seed.x + seed.y * sizeX];
+        //int limit=oldVal-noise;
+        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        queue.add(seed);
+        while (!queue.isEmpty()) {
+            IntCoord3D curCoord = queue.remove(0); // FIXME last element?
+            IJ.log("processing " + curCoord.x + " " + curCoord.y + " " + curCoord.z + " " + oldVal + " " + limit);
+            int xy = curCoord.x + curCoord.y * sizeX;
+            if (pixels[curCoord.z][xy] >= limit) {
+                pixels[curCoord.z][xy] = newVal;
+                if (curCoord.x > 0 && pixels[curCoord.z][xy - 1] >= limit) {
+                    queue.add(new IntCoord3D(curCoord.x - 1, curCoord.y, curCoord.z));
+                }
+                if (curCoord.x < (sizeX - 1) && pixels[curCoord.z][xy + 1] >= limit) {
+                    queue.add(new IntCoord3D(curCoord.x + 1, curCoord.y, curCoord.z));
+                }
+                if (curCoord.y > 0 && pixels[curCoord.z][xy - sizeX] >= limit) {
+                    queue.add(new IntCoord3D(curCoord.x, curCoord.y - 1, curCoord.z));
+                }
+                if (curCoord.y < (sizeY - 1) && pixels[curCoord.z][xy + sizeX] >= limit) {
+                    queue.add(new IntCoord3D(curCoord.x, curCoord.y + 1, curCoord.z));
+                }
+                if (curCoord.z > 0 && pixels[curCoord.z - 1][xy] >= limit) {
+                    queue.add(new IntCoord3D(curCoord.x, curCoord.y, curCoord.z - 1));
+                }
+                if (curCoord.z < (sizeZ - 1) && pixels[curCoord.z + 1][xy] >= limit) {
+                    queue.add(new IntCoord3D(curCoord.x, curCoord.y, curCoord.z + 1));
+                }
+            }
+        }
+    }
+
     private static void flood3DByte6(ImageByte img, IntCoord3D seed, byte newVal) {
         byte[][] pixels = img.pixels;
         int sizeX = img.sizeX;
@@ -144,6 +183,43 @@ public class Flood3D {
                                     curX = curCoord.x + xx;
                                     if (curX > 0 && curX < (sizeX - 1) && (xx != 0 || yy != 0 || zz != 0)) {
                                         if (pixels[curZ][curX + curY * sizeX] == oldVal) {
+                                            queue.add(new IntCoord3D(curX, curY, curZ));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static void flood3DNoiseShort26(ImageShort img, IntCoord3D seed, short limit, short newVal) {
+        short[][] pixels = img.pixels;
+        int sizeX = img.sizeX;
+        int sizeY = img.sizeY;
+        int sizeZ = img.sizeZ;
+        short oldVal = pixels[seed.z][seed.x + seed.y * sizeX];
+        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        queue.add(seed);
+        while (!queue.isEmpty()) {
+            IntCoord3D curCoord = queue.remove(0); // FIXME last element?
+            int xy = curCoord.x + curCoord.y * sizeX;
+            if (pixels[curCoord.z][xy] >= limit) {
+                //IJ.log("Flood "+curCoord.x+" "+curCoord.y+" "+curCoord.z);
+                pixels[curCoord.z][xy] = newVal;
+                int curZ, curY, curX;
+                for (int zz = -1; zz < 2; zz++) {
+                    curZ = curCoord.z + zz;
+                    if ((curZ >= 0) && (curZ <= (sizeZ - 1))) {
+                        for (int yy = -1; yy < 2; yy++) {
+                            curY = curCoord.y + yy;
+                            if ((curY >= 0) && (curY <= (sizeY - 1))) {
+                                for (int xx = -1; xx < 2; xx++) {
+                                    curX = curCoord.x + xx;
+                                    if ((curX >= 0) && (curX <= (sizeX - 1))) {
+                                        if (pixels[curZ][curX + curY * sizeX] >= limit) {
                                             queue.add(new IntCoord3D(curX, curY, curZ));
                                         }
                                     }
