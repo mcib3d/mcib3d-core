@@ -5,12 +5,7 @@
  */
 package mcib3d.Classification;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import weka.core.Instances;
-import weka.core.converters.CSVLoader;
 
 /**
  *

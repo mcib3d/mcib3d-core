@@ -7,16 +7,12 @@ package mcib3d.image3d.processing;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
-import ij.gui.PointRoi;
-import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Toolbar;
-import ij.plugin.PlugIn;
 import ij.plugin.frame.RoiManager;
 import ij.process.ImageProcessor;
 import mcib3d.utils.ArrayUtil;
 import java.awt.Color;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -25,7 +21,6 @@ import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.*;
-import mcib3d.utils.HistogramUtil;
 
 /**
  *

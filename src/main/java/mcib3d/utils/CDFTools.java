@@ -23,8 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package mcib3d.utils;
 
-import ij.IJ;
-
 /**
  *
  * @author Philippe Andrey

@@ -6,6 +6,7 @@
 package mcib3d.Classification;
 
 import ij.IJ;
+import mcib3d.utils.ThreadUtil;
 import weka.classifiers.trees.RandomForest;
 
 /**
@@ -19,7 +20,7 @@ public class Classifier {
     public Classifier() {
         classifier = new RandomForest();
         classifier.setNumTrees(200);
-
+        classifier.setNumExecutionSlots(ThreadUtil.getNbCpus());
     }
 
     public void trainClassifier(DataSet data) {

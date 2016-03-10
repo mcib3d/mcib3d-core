@@ -1,5 +1,4 @@
 package mcib3d.geom;
-import java.util.ArrayList;
 
 public class IntCoord3D {
     public int x, y, z;

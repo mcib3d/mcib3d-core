@@ -210,6 +210,7 @@ public class BinaryMorpho {
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
+                        @Override
                         public void run() {
                             for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
                                 for (int y = 0; y < in.sizeY; y++) {
@@ -229,6 +230,7 @@ public class BinaryMorpho {
         for (int i = 0; i < tr2.threads.length; i++) {
             tr2.threads[i] = new Thread(
                     new Runnable() {
+                        @Override
                         public void run() {
                             for (int z = tr2.ai.getAndIncrement(); z < tr2.end; z = tr2.ai.getAndIncrement()) {
                                 for (int y = 0; y < in.sizeY; y++) {
@@ -258,6 +260,7 @@ public class BinaryMorpho {
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
+                        @Override
                         public void run() {
                             for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
                                 for (int y = 0; y < in.sizeY; y++) {
@@ -287,6 +290,7 @@ public class BinaryMorpho {
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
+                        @Override
                         public void run() {
                             for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
                                 for (int y = 0; y < in.sizeY; y++) {
@@ -318,6 +322,7 @@ public class BinaryMorpho {
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
+                        @Override
                         public void run() {
                             for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
                                 for (int y = 0; y < in.sizeY; y++) {
@@ -349,6 +354,7 @@ public class BinaryMorpho {
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
+                        @Override
                         public void run() {
                             for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
                                 for (int y = 0; y < max.sizeY; y++) {
@@ -398,6 +404,7 @@ public class BinaryMorpho {
         for (int i = 0; i < tr.threads.length; i++) {
             tr.threads[i] = new Thread(
                     new Runnable() {
+                        @Override
                         public void run() {
                             for (int z = tr.ai.getAndIncrement(); z < tr.end; z = tr.ai.getAndIncrement()) {
                                 for (int y = 0; y < max.sizeY; y++) {
@@ -417,6 +424,7 @@ public class BinaryMorpho {
         for (int i = 0; i < tr2.threads.length; i++) {
             tr2.threads[i] = new Thread(
                     new Runnable() {
+                        @Override
                         public void run() {
                             for (int z = tr2.ai.getAndIncrement(); z < tr2.end; z = tr2.ai.getAndIncrement()) {
                                 for (int y = 0; y < in.sizeY; y++) {
