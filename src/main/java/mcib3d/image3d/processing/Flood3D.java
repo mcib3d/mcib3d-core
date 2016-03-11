@@ -4,6 +4,7 @@ import ij.IJ;
 import java.util.ArrayList;
 import mcib3d.geom.IntCoord3D;
 import mcib3d.image3d.ImageByte;
+import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 
@@ -195,7 +196,7 @@ public class Flood3D {
         }
     }
 
-    public static void flood3DNoiseShort26(ImageShort img, IntCoord3D seed, int limit, int newVal) {
+    public static void flood3DNoise26(ImageHandler img, IntCoord3D seed, int limit, int newVal) {
         //short[][] pixels = img.pixels;
         int sizeX = img.sizeX;
         int sizeY = img.sizeY;

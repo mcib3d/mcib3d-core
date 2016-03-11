@@ -1,9 +1,11 @@
 package mcib3d.image3d.processing;
 
 import ij.ImageStack;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
+import mcib3d.geom.Voxel3DComparable;
 import mcib3d.image3d.*;
 import mcib3d.utils.ThreadUtil;
 
@@ -52,6 +54,88 @@ public class FastFilters3D {
 
     public static ImageStack filterIntImageStack(ImageStack stackorig, int filter, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
         return filterIntImage(ImageInt.wrap(stackorig), filter, vx, vy, vz, nbcpus, showstatus).getImageStack();
+    }
+
+    public static ArrayList<Voxel3DComparable> getListMaxima(ImageHandler stackorig, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
+        if ((stackorig instanceof ImageByte) || (stackorig instanceof ImageShort)) {
+            return getListMaximaInt((ImageInt) stackorig, vx, vy, vz, nbcpus, showstatus);
+        } else if (stackorig instanceof ImageFloat) {
+            return getListMaximaFloat((ImageFloat) stackorig, vx, vy, vz, nbcpus, showstatus);
+        } else {
+            return null;
+        }
+    }
+
+    public static ArrayList<Voxel3DComparable> getListMaximaInt(ImageInt stackorig, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
+        // get stack info
+        final float voisx = vx;
+        final float voisy = vy;
+        final float voisz = vz;
+
+        final ImageInt ima = stackorig;
+        // PARALLEL 
+        final AtomicInteger ai = new AtomicInteger(0);
+        final int n_cpus = nbcpus == 0 ? ThreadUtil.getNbCpus() : nbcpus;
+        final int dec = (int) Math.ceil((double) ima.sizeZ / (double) n_cpus);
+        Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
+        final ArrayList<Voxel3DComparable>[] listes = new ArrayList[n_cpus];
+        for (int ithread = 0; ithread < threads.length; ithread++) {
+            threads[ithread] = new Thread() {
+                @Override
+                public void run() {
+                    ImageInt image = ima;
+                    //image.setShowStatus(show);
+                    for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
+                        //IJ.log("filtering " + k);
+                        listes[k] = image.getListMaxima(voisx, voisy, voisz, dec * k, dec * (k + 1));
+                    }
+                }
+            };
+        }
+        ThreadUtil.startAndJoin(threads);
+
+        final ArrayList<Voxel3DComparable> liste = new ArrayList<Voxel3DComparable>();
+        for (ArrayList<Voxel3DComparable> li : listes) {
+            liste.addAll(li);
+        }
+
+        return liste;
+    }
+
+    public static ArrayList<Voxel3DComparable> getListMaximaFloat(ImageFloat stackorig, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
+        // get stack info
+        final float voisx = vx;
+        final float voisy = vy;
+        final float voisz = vz;
+
+        final ImageFloat ima = stackorig;
+        // PARALLEL 
+        final AtomicInteger ai = new AtomicInteger(0);
+        final int n_cpus = nbcpus == 0 ? ThreadUtil.getNbCpus() : nbcpus;
+        final int dec = (int) Math.ceil((double) ima.sizeZ / (double) n_cpus);
+        Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
+        final ArrayList<Voxel3DComparable>[] listes = new ArrayList[n_cpus];
+        for (int ithread = 0; ithread < threads.length; ithread++) {
+            threads[ithread] = new Thread() {
+                @Override
+                public void run() {
+                    ImageFloat image = ima;
+                    //image.setShowStatus(show);
+                    for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
+                        //IJ.log("filtering " + k);
+                        listes[k] = image.getListMaxima(voisx, voisy, voisz, dec * k, dec * (k + 1));
+                    }
+                }
+            };
+        }
+        ThreadUtil.startAndJoin(threads);
+
+        final ArrayList<Voxel3DComparable> liste = new ArrayList<Voxel3DComparable>();
+        for (ArrayList<Voxel3DComparable> li : listes) {
+            liste.addAll(li);
+        }
+
+        return liste;
     }
 
     public static ImageInt filterIntImage(ImageInt stackorig, int filter, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
@@ -285,7 +369,6 @@ public class FastFilters3D {
     public static ImageStack filterFloatImageStack(ImageStack stackorig, int filter, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
         return filterFloatImage((ImageFloat) ImageFloat.wrap(stackorig), filter, vx, vy, vz, nbcpus, showstatus).getImageStack();
 
-
     }
 
     /**
@@ -306,7 +389,6 @@ public class FastFilters3D {
         double rx2 = radx * radx;
         double ry2 = rady * rady;
         double rz2 = radz * radz;
-
 
         if (rx2 != 0) {
             rx2 = 1.0 / rx2;

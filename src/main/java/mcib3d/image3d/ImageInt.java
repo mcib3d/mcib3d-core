@@ -663,6 +663,8 @@ public abstract class ImageInt extends ImageHandler {
 
         return res;
     }
+    
+    
 
     public void filterGeneric(ImageInt out, Object3DVoxels obj, int zmin, int zmax, int filter) {
         if (zmin < 0) {
