@@ -58,6 +58,7 @@ public class Segment3DSpots {
     public final static int LOCAL_CONSTANT = 1;
     public final static int LOCAL_MEAN = 2;
     public final static int LOCAL_GAUSS = 3;
+    public final static int LOCAL_DIFF = 4;
     int localValue = -1;
     int localMethod = 1; // local threshold (to find spots)
     float radius0, radius1, radius2; // local mean
@@ -70,11 +71,11 @@ public class Segment3DSpots {
     private int volMin = 2;
     // option watershed
     private boolean WATERSHED = false;
-    private int noiseWatershed = 0;
     public boolean show = true;
     public boolean multithread = true;
     // special case more than 2^16 labels
     public boolean bigLabel = false;
+    private float diff;
 
     /**
      *
@@ -218,8 +219,9 @@ public class Segment3DSpots {
      *
      * @param noiseWatershed
      */
+    @Deprecated
     public void setNoiseWatershed(int noiseWatershed) {
-        this.noiseWatershed = noiseWatershed;
+        //this.noiseWatershed = noiseWatershed;
     }
 
     /**
@@ -230,6 +232,10 @@ public class Segment3DSpots {
      */
     public void setRadiusLocalMean(float r0, float r1, float r2) {
         setRadiusLocalMean(r0, r1, r2, 0.5);
+    }
+
+    public void setLocalDiff(int d) {
+        diff = d;
     }
 
     /**
@@ -295,8 +301,6 @@ public class Segment3DSpots {
     }
 
     private void computeWatershed() {
-//        Watershed3D_old wat3D = new Watershed3D_old(rawImage, seedsImage, noiseWatershed, seedsThreshold);
-//        watershedImage = wat3D.getWatershedImage3D();
         // watershed is used to separate spots, not for segmentation
         // so based on edt of background
         ImageByte seedsTh = seedsImage.thresholdAboveExclusive(seedsThreshold);
@@ -304,11 +308,7 @@ public class Segment3DSpots {
         ImageShort edt16 = edt.convertToShort(true);
         edt16.invert();
         Watershed3D wat3D = new Watershed3D(edt16, seedsImage, 0, 0);
-        //Watershed3D wat3D = new Watershed3D(rawImage, seedsImage, noiseWatershed, seedsThreshold);
         watershedImage = wat3D.getWatershedImage3D();
-//        watershedImage.show();
-//        seedsTh.show();
-//        edt16.show();
     }
 
     /**
@@ -485,6 +485,8 @@ public class Segment3DSpots {
                                 //IJ.log("gauss sigma : " + gauss[3] + " thresh=" + thresh);
                                 localThreshold = (int) thresh;
                             }
+                        } else if (localMethod == LOCAL_DIFF) {
+                            localThreshold = (int) Math.max(1, seedsImage.getPixel(x, y, z) - diff);
                         }
                         if (localThreshold > 0) {
                             if (show) {
