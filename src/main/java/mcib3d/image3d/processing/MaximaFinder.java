@@ -22,21 +22,24 @@ import mcib3d.image3d.ImageShort;
 public class MaximaFinder {
 
     ImageHandler img;
-    ImageHandler peaks;
+    ImageHandler peaks = null;
     float noiseTolerance;
     ArrayList<Voxel3DComparable> maxima;
+    float radXY, radZ;
 
     public MaximaFinder(ImageHandler ima, float noiseTolerance) {
-        img = ima;
+        img = ima.duplicate();
         this.noiseTolerance = noiseTolerance;
+        radXY = 1.5f;
+        radZ = 1.5f;
     }
 
     public MaximaFinder(ImageHandler ima) {
-        img = ima;
+        img = ima.duplicate();
         noiseTolerance = 0;
     }
 
-    public void computeMaximaList() {
+    private void computeMaximaList() {
         maxima = new ArrayList<Voxel3DComparable>();
 
         if (img.getType() == ImagePlus.GRAY16) {
@@ -45,30 +48,27 @@ public class MaximaFinder {
         Collections.sort(maxima);
     }
 
-    public void drawPeaks() {
+    private void computePeaks() {
         peaks = new ImageShort("peaks", img.sizeX, img.sizeY, img.sizeZ);
         IJ.log("Finding all peaks");
+        computeMaximaList();
         for (Voxel3DComparable V : maxima) {
             peaks.setPixel(V, (float) V.getValue());
         }
-        IJ.log("Removing peaks above noise " + maxima.size());
+        IJ.log(maxima.size() + " peaks found");
+        IJ.log("Removing peaks below noise");
         ArrayList<Voxel3DComparable> toKeep = new ArrayList<Voxel3DComparable>();
         for (Voxel3DComparable V : maxima) {
             if (img.getPixel(V) > 0) {
                 if (V.getValue() > noiseTolerance) {
                     toKeep.add(V);
-                    IJ.showStatus("processing " + V + " " + (V.getValue() - noiseTolerance));
-                    Flood3D.flood3DNoiseShort26((ImageShort) img, new IntCoord3D(V.getRoundX(), V.getRoundY(), V.getRoundZ()), (short) (Math.max(1, V.getValue() - noiseTolerance)), (short) 0);
-                } else {
-                    //toRemove.add(V);
+                    IJ.showStatus("Processing peak" + V);
+                    Flood3D.flood3DNoiseShort26((ImageShort) img, new IntCoord3D(V.getRoundX(), V.getRoundY(), V.getRoundZ()), (int) (Math.max(1, V.getValue() - noiseTolerance)), 0);
                 }
-            } else {
-                //toRemove.add(V);
             }
         }
-        IJ.log("Creating final peaks ");
-        //maxima.removeAll(toRemove);
-        IJ.log("Final peaks " + toKeep.size());
+        IJ.log(toKeep.size() + " peaks found");
+        IJ.log("Creating final peaks");
         peaks.fill(0);
         for (Voxel3DComparable V : toKeep) {
             peaks.setPixel(V, (float) V.getValue());
@@ -76,7 +76,25 @@ public class MaximaFinder {
     }
 
     public ImageHandler getPeaks() {
+        if (peaks == null) {
+            computePeaks();
+        }
         return peaks;
     }
 
+    public void setImage(ImageHandler img) {
+        this.img = img;
+        peaks = null;
+    }
+
+    public void setNoiseTolerance(float noiseTolerance) {
+        this.noiseTolerance = noiseTolerance;
+        peaks = null;
+    }
+
+    public void setRadii(float rxy, float rz) {
+        radXY = rxy;
+        radZ = rz;
+        peaks = null;
+    }
 }

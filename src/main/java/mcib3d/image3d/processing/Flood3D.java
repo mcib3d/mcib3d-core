@@ -195,20 +195,22 @@ public class Flood3D {
         }
     }
 
-    public static void flood3DNoiseShort26(ImageShort img, IntCoord3D seed, short limit, short newVal) {
-        short[][] pixels = img.pixels;
+    public static void flood3DNoiseShort26(ImageShort img, IntCoord3D seed, int limit, int newVal) {
+        //short[][] pixels = img.pixels;
         int sizeX = img.sizeX;
         int sizeY = img.sizeY;
         int sizeZ = img.sizeZ;
-        short oldVal = pixels[seed.z][seed.x + seed.y * sizeX];
+        //short oldVal = pixels[seed.z][seed.x + seed.y * sizeX];
+        //short newval = (short) newVal;
         ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
         queue.add(seed);
         while (!queue.isEmpty()) {
             IntCoord3D curCoord = queue.remove(0); // FIXME last element?
-            int xy = curCoord.x + curCoord.y * sizeX;
-            if (pixels[curCoord.z][xy] >= limit) {
-                //IJ.log("Flood "+curCoord.x+" "+curCoord.y+" "+curCoord.z);
-                pixels[curCoord.z][xy] = newVal;
+            //int xy = curCoord.x + curCoord.y * sizeX;
+            if (img.getPixel(curCoord.x, curCoord.y, curCoord.z) >= limit) {
+                //IJ.log("Flood " + curCoord.x + " " + curCoord.y + " " + curCoord.z + " " + img.getPixel(curCoord.x, curCoord.y, curCoord.z) + " " + limit);
+                img.setPixel(curCoord.x, curCoord.y, curCoord.z, newVal);
+                //pixels[curCoord.z][xy] = newval;
                 int curZ, curY, curX;
                 for (int zz = -1; zz < 2; zz++) {
                     curZ = curCoord.z + zz;
@@ -219,7 +221,7 @@ public class Flood3D {
                                 for (int xx = -1; xx < 2; xx++) {
                                     curX = curCoord.x + xx;
                                     if ((curX >= 0) && (curX <= (sizeX - 1))) {
-                                        if (pixels[curZ][curX + curY * sizeX] >= limit) {
+                                        if (img.getPixel(curX, curY, curZ) >= limit) {
                                             queue.add(new IntCoord3D(curX, curY, curZ));
                                         }
                                     }
