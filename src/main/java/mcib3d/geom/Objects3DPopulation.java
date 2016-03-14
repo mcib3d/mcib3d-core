@@ -343,7 +343,19 @@ public class Objects3DPopulation {
         }
     }
 
+    @Deprecated
     public void buildHash() {
+        hashName.clear();
+        hashValue.clear();
+
+        for (int i = 0; i < getNbObjects(); i++) {
+            Object3D O = getObject(i);
+            hashName.put(O.getName(), i);
+            hashValue.put(O.getValue(), i);
+        }
+    }
+
+    public void updateNamesAndValues() {
         hashName.clear();
         hashValue.clear();
 
@@ -443,14 +455,16 @@ public class Objects3DPopulation {
                 }
             }
         }
-        // ARRAYLIST   
+        // ARRAYLIST 
+        int c = 1;
         for (int i = 0; i < max - min + 1; i++) {
             if (!objectstmp[i].isEmpty()) {
                 Object3DVoxels ob = new Object3DVoxels(objectstmp[i]);
                 //ob.setLabelImage(null);// the image can be closed anytime
                 ob.setCalibration(cali);
-                ob.setName("Obj" + (i + 1));
+                ob.setName("Obj" + c);
                 addObject(ob);
+                c++;
             }
         }
     }
@@ -522,11 +536,14 @@ public class Objects3DPopulation {
         if (idxI == null) {
             return null;
         }
-        return objects.get(idxI.intValue());
+        return objects.get(idxI);
     }
 
     public Object3D getObjectByName(String name) {
-        int nb = hashName.get(name);
+        Integer nb = hashName.get(name);
+        if (nb == null) {
+            return null;
+        }
         return objects.get(nb);
     }
 
