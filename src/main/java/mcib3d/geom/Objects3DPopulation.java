@@ -57,8 +57,8 @@ public class Objects3DPopulation {
     private Calibration calibration = null;
     private KDTreeC kdtree = null;
     // link between values and index
-    private final HashMap<Integer, Integer> hashValue;
-    private final HashMap<String, Integer> hashName;
+    private HashMap<Integer, Integer> hashValue = null;
+    private HashMap<String, Integer> hashName = null;
     //private ImageInt labelImage = null;
 
     /**
@@ -66,31 +66,31 @@ public class Objects3DPopulation {
      */
     public Objects3DPopulation() {
         objects = new ArrayList();
-        hashValue = new HashMap<Integer, Integer>();
-        hashName = new HashMap<String, Integer>();
+        //hashValue = new HashMap<Integer, Integer>();
+        //hashName = new HashMap<String, Integer>();
         calibration = new Calibration();
     }
 
     public Objects3DPopulation(Object3D[] objs) {
         objects = new ArrayList();
-        hashValue = new HashMap<Integer, Integer>();
-        hashName = new HashMap<String, Integer>();
+        //hashValue = new HashMap<Integer, Integer>();
+        //hashName = new HashMap<String, Integer>();
         calibration = new Calibration();
         this.addObjects(objs);
     }
 
     public Objects3DPopulation(ArrayList objs) {
         objects = new ArrayList();
-        hashValue = new HashMap<Integer, Integer>();
-        hashName = new HashMap<String, Integer>();
+        // hashValue = new HashMap<Integer, Integer>();
+        // hashName = new HashMap<String, Integer>();
         calibration = new Calibration();
         this.addObjects(objs);
     }
 
     public Objects3DPopulation(Object3D[] objs, Calibration cal) {
         objects = new ArrayList();
-        hashValue = new HashMap<Integer, Integer>();
-        hashName = new HashMap<String, Integer>();
+        //hashValue = new HashMap<Integer, Integer>();
+        //hashName = new HashMap<String, Integer>();
         if (cal != null) {
             calibration = cal;
         } else {
@@ -101,15 +101,15 @@ public class Objects3DPopulation {
 
     public Objects3DPopulation(ImagePlus plus) {
         objects = new ArrayList();
-        hashValue = new HashMap<Integer, Integer>();
-        hashName = new HashMap<String, Integer>();
+        //hashValue = new HashMap<Integer, Integer>();
+        //hashName = new HashMap<String, Integer>();
         addImagePlus(plus);
     }
 
     public Objects3DPopulation(ImageInt plus) {
         objects = new ArrayList();
-        hashValue = new HashMap<Integer, Integer>();
-        hashName = new HashMap<String, Integer>();
+        // hashValue = new HashMap<Integer, Integer>();
+        // hashName = new HashMap<String, Integer>();
         Calibration cal = plus.getCalibration();
         if (cal == null) {
             cal = new Calibration();
@@ -119,8 +119,8 @@ public class Objects3DPopulation {
 
     public Objects3DPopulation(ImageInt plus, int threshold) {
         objects = new ArrayList();
-        hashValue = new HashMap<Integer, Integer>();
-        hashName = new HashMap<String, Integer>();
+        //hashValue = new HashMap<Integer, Integer>();
+        //hashName = new HashMap<String, Integer>();
         Calibration cal = plus.getCalibration();
         if (cal == null) {
             cal = new Calibration();
@@ -266,12 +266,15 @@ public class Objects3DPopulation {
     public void addObject(Object3D obj) {
         obj.setCalibration(calibration);
         objects.add(obj);
-        hashValue.put(obj.getValue(), objects.size() - 1);
-        hashName.put(obj.getName(), objects.size() - 1);
+        //hashValue.put(obj.getValue(), objects.size() - 1);
+        // hashName.put(obj.getName(), objects.size() - 1);
         // update kdtree if available // FIXME UPDATE kdtree
         if (kdtree != null) {
             createKDTreeCenters();
         }
+        // need to update hash tables
+        hashValue = null;
+        hashName = null;
 //        if (obj.getValue() == 0) {
 //            IJ.log("adding ob " + obj.getValue() + " " + obj.getCenterAsPoint());
 //            IJ.log("hash "+hashValue.get(0));
@@ -311,7 +314,9 @@ public class Objects3DPopulation {
             removeObject(obj);
             //IJ.log("removing touching " + obj);
         }
-        buildHash();
+        // need to update hash tables
+        hashValue = null;
+        hashName = null;
     }
 
     public void removeObjectsTouchingBorders(ImagePlus img, boolean Z) {
@@ -325,19 +330,23 @@ public class Objects3DPopulation {
             removeObject(obj);
             //IJ.log("removing touching " + obj);
         }
-        buildHash();
+        // need to update hash tables
+        hashValue = null;
+        hashName = null;
     }
 
     public void removeObject(int i) {
-        hashValue.remove(objects.get(i).getValue());
-        hashName.remove(objects.get(i).getName());
+        // need to update hash tables
+        hashValue = null;
+        hashName = null;
         objects.remove(i);
         // rebuild hash ;) + KD tree (?)
     }
 
     public void removeObject(Object3D obj) {
-        hashValue.remove(obj.getValue());
-        hashName.remove(obj.getName());
+        // need to update hash tables
+        hashValue = null;
+        hashName = null;
         if (!objects.remove(obj)) {
             IJ.log("Pb removing " + obj);
         }
@@ -345,8 +354,9 @@ public class Objects3DPopulation {
 
     @Deprecated
     public void buildHash() {
-        hashName.clear();
-        hashValue.clear();
+        // need to update hash tables
+        hashName = new HashMap<String, Integer>(getNbObjects());
+        hashValue = new HashMap<Integer, Integer>(getNbObjects());
 
         for (int i = 0; i < getNbObjects(); i++) {
             Object3D O = getObject(i);
@@ -356,8 +366,8 @@ public class Objects3DPopulation {
     }
 
     public void updateNamesAndValues() {
-        hashName.clear();
-        hashValue.clear();
+        hashName = new HashMap<String, Integer>(getNbObjects());
+        hashValue = new HashMap<Integer, Integer>(getNbObjects());
 
         for (int i = 0; i < getNbObjects(); i++) {
             Object3D O = getObject(i);
@@ -520,18 +530,25 @@ public class Objects3DPopulation {
     public void setObject(int i, Object3D obj) {
         // remove old name
         Object3D old = objects.get(i);
-        hashName.remove(old.getName());
+        //hashName.remove(old.getName());
         // set new object
         obj.setCalibration(calibration);
         objects.set(i, obj);
-        hashName.put(obj.getName(), i);
+        //hashName.put(obj.getName(), i);
         // update kdtree if available // FIXME UPDATE kdtree
         if (kdtree != null) {
             createKDTreeCenters();
         }
+
+        // need to update hash tables
+        hashValue = null;
+        hashName = null;
     }
 
     public Object3D getObjectByValue(int val) {
+        if (hashValue == null) {
+            updateNamesAndValues();
+        }
         Integer idxI = hashValue.get(val);
         if (idxI == null) {
             return null;
@@ -540,6 +557,9 @@ public class Objects3DPopulation {
     }
 
     public Object3D getObjectByName(String name) {
+        if (hashName == null) {
+            updateNamesAndValues();
+        }
         Integer nb = hashName.get(name);
         if (nb == null) {
             return null;
@@ -548,10 +568,16 @@ public class Objects3DPopulation {
     }
 
     public int getIndexFromName(String name) {
+        if (hashName == null) {
+            updateNamesAndValues();
+        }
         return hashName.get(name);
     }
 
     public int getIndexFromValue(int val) {
+        if (hashValue == null) {
+            updateNamesAndValues();
+        }
         return hashValue.get(val);
     }
 
@@ -1536,9 +1562,9 @@ public class Objects3DPopulation {
     }
 
     public void sortPopulation() {
-        // sort object3D based on filed compare
+        // sort object3D based on field compare
         Collections.sort(objects);
-        buildHash();
+        updateNamesAndValues();
     }
 
     public void loadObjects(String path) {
