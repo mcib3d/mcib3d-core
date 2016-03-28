@@ -9,6 +9,7 @@ import ij.IJ;
 import java.util.ArrayList;
 import java.util.Collections;
 import mcib3d.geom.IntCoord3D;
+import mcib3d.geom.Voxel3D;
 import mcib3d.geom.Voxel3DComparable;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageShort;
@@ -27,7 +28,7 @@ public class MaximaFinder {
     /**
      * The image with the final peaks
      */
-    protected ImageHandler peaks = null;
+    protected ImageHandler imagePeaks = null;
 
     /**
      * The noise tolerance around each peak
@@ -37,7 +38,7 @@ public class MaximaFinder {
     /**
      * The list of peaks
      */
-    protected ArrayList<Voxel3DComparable> maxima;
+    protected ArrayList<Voxel3D> maxima;
 
     /**
      * The radius XY to find local maxima
@@ -86,6 +87,7 @@ public class MaximaFinder {
 
     /**
      * Constructor with default values
+     *
      * @param ima The raw image
      */
     public MaximaFinder(ImageHandler ima) {
@@ -94,90 +96,108 @@ public class MaximaFinder {
     }
 
     private void computePeaks() {
-        peaks = new ImageShort("peaks", img.sizeX, img.sizeY, img.sizeZ);
+        imagePeaks = new ImageShort("peaks", img.sizeX, img.sizeY, img.sizeZ);
         if (show) {
             IJ.log("Finding all peaks");
         }
-        maxima = FastFilters3D.getListMaxima(img, radXY, radXY, radZ, nbCpus, false);
-        Collections.sort(maxima);
-        for (Voxel3DComparable V : maxima) {
-            peaks.setPixel(V, (float) V.getValue());
+        ArrayList<Voxel3DComparable> maximaTmp = FastFilters3D.getListMaxima(img, radXY, radXY, radZ, nbCpus, false);
+        Collections.sort(maximaTmp);
+        for (Voxel3DComparable V : maximaTmp) {
+            imagePeaks.setPixel(V, (float) V.getValue());
         }
         if (show) {
-            IJ.log(maxima.size() + " peaks found");
+            IJ.log(maximaTmp.size() + " peaks found");
         }
         if (show) {
             IJ.log("Removing peaks below noise");
         }
-        ArrayList<Voxel3DComparable> toKeep = new ArrayList<Voxel3DComparable>();
-        for (Voxel3DComparable V : maxima) {
+        maxima = new ArrayList<Voxel3D>();
+
+        int c = 1;
+        int nb = maximaTmp.size();
+        for (Voxel3DComparable V : maximaTmp) {
             if (img.getPixel(V) > 0) {
                 if (V.getValue() > noiseTolerance) {
-                    toKeep.add(V);
+                    maxima.add(V);
                     if (show) {
-                        IJ.showStatus("Processing peak" + V);
+                        IJ.showStatus("Processing peak " + c + "/" + nb + " " + V);
+                        c++;
                     }
                     Flood3D.flood3DNoise26(img, new IntCoord3D(V.getRoundX(), V.getRoundY(), V.getRoundZ()), (int) (Math.max(1, V.getValue() - noiseTolerance)), 0);
                 }
             }
         }
+
         if (show) {
-            IJ.log(toKeep.size() + " peaks found");
+            IJ.log(maxima.size() + " peaks found");
         }
         if (show) {
             IJ.log("Creating final peaks");
         }
-        peaks.fill(0);
-        for (Voxel3DComparable V : toKeep) {
-            peaks.setPixel(V, (float) V.getValue());
+        imagePeaks.fill(0);
+        for (Voxel3D V : maxima) {
+            imagePeaks.setPixel(V, (float) V.getValue());
         }
         if (show) {
-            IJ.log("Maximafinder3D finished.");
+            IJ.log("MaximaFinder3D finished.");
         }
     }
 
     /**
      * Do the computation and returns the result
-     * @return The image with peaks 
+     *
+     * @return The image with peaks
      */
-    public ImageHandler getPeaks() {
-        if (peaks == null) {
+    public ImageHandler getImagePeaks() {
+        if (imagePeaks == null) {
             computePeaks();
         }
-        return peaks;
+        return imagePeaks;
+    }
+
+    public ArrayList<Voxel3D> getListPeaks() {
+        if (imagePeaks == null) {
+            computePeaks();
+        }
+
+        return maxima;
     }
 
     /**
      * A new image to process
+     *
      * @param img The image
      */
     public void setImage(ImageHandler img) {
         this.img = img;
-        peaks = null;
+        imagePeaks = null;
     }
 
     /**
-     * The noise tolerance 
+     * The noise tolerance
+     *
      * @param noiseTolerance The noise tolerance
      */
     public void setNoiseTolerance(float noiseTolerance) {
         this.noiseTolerance = noiseTolerance;
-        peaks = null;
+        imagePeaks = null;
     }
 
     /**
      * The radii to compute local maxima
+     *
      * @param rxy The radius XY to find local maxima
      * @param rz The radius Z to find local maxima
      */
     public void setRadii(float rxy, float rz) {
         radXY = rxy;
         radZ = rz;
-        peaks = null;
+        imagePeaks = null;
     }
 
     /**
      * Number of Cpus
+     *
      * @param nbCpus Number of cpus
      */
     public void setNbCpus(int nbCpus) {
@@ -186,6 +206,7 @@ public class MaximaFinder {
 
     /**
      * Display information
+     *
      * @param show Display information
      */
     public void setShow(boolean show) {

@@ -1175,10 +1175,10 @@ public class Objects3DPopulation {
         ArrayList<Object3D> list = new ArrayList();
         // first method tet all distances
         // FIXME use kdtree
-        for (int i = 0; i < objects.size(); i++) {
-            double tmp = ob.distCenterUnit(objects.get(i));
+        for (Object3D object : objects) {
+            double tmp = ob.distCenterUnit(object);
             if (tmp <= dist) {
-                list.add(objects.get(i));
+                list.add(object);
             }
         }
 
@@ -1187,10 +1187,10 @@ public class Objects3DPopulation {
 
     public ArrayList<Object3D> getObjectsWithinDistanceBorder(Object3D ob, double dist) {
         ArrayList<Object3D> list = new ArrayList();
-        for (int i = 0; i < objects.size(); i++) {
-            double tmp = ob.distBorderUnit(objects.get(i));
+        for (Object3D object : objects) {
+            double tmp = ob.distBorderUnit(object);
             if (tmp <= dist) {
-                list.add(objects.get(i));
+                list.add(object);
             }
         }
 
