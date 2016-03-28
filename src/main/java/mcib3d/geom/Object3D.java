@@ -2829,6 +2829,10 @@ public abstract class Object3D implements Comparable<Object3D> {
         }
         return pixmin;
     }
+    
+    public void resetQuantifImage(){
+        currentQuantifImage=null;        
+    }
 
     /**
      * Gets the SD of pixels in object

@@ -1274,6 +1274,7 @@ public class Objects3DPopulation {
         Object3DVoxels maskVox = mask.getObject3DVoxels();
         for (int i = 0; i < getNbObjects(); i++) {
             Object3DVoxels obj = new Object3DVoxels(getObject(i));
+            Point3D center=obj.getCenterAsPoint();
             boolean ok = false;
             int it = 0;
             while (!ok) {
@@ -1282,6 +1283,7 @@ public class Objects3DPopulation {
                 obj.setNewCenter(vox.getX(), vox.getY(), vox.getZ());
                 ok = true;
                 it++;
+                obj.resetQuantifImage();
                 if (maskVox.includesBox(obj)) {
                     if (obj.getPixMinValue(maskimg) < 1) {
                         ok = false;
@@ -1295,11 +1297,11 @@ public class Objects3DPopulation {
             }
             if (it == 1000) {
                 IJ.log("Could not shuffle " + getObject(i).getValue());
-                obj.setNewCenter(getObject(i));
+                obj.setNewCenter(center.x, center.y, center.z);
             }
             shuObj.add(obj);
             // update mask
-            obj.draw(maskimg, 0);
+            obj.draw(maskimg, 0);            
             //maskimg.duplicate().show("mask " + getObject(i).getValue());
         }
         return shuObj;
