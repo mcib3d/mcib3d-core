@@ -5,9 +5,9 @@ Jean Ollion.
 
 Please follow these instructions to download and compile the source code : 
 
-git clone https://github.com/mcib3d/mcib3d-core.git
+`git clone https://github.com/mcib3d/mcib3d-core.git`
 
-mvn clean process-resources
+`mvn clean process-resources`
 
 You then should be able to open the project in Netbeans or Eclipse. 
 
