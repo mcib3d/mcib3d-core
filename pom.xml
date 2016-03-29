@@ -10,7 +10,7 @@
 
     <groupId>mcib</groupId>
     <artifactId>mcib-core</artifactId>
-    <version>3.74-SNAPSHOT</version>
+    <version>master-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>MCIB-CORE</name>
@@ -51,7 +51,7 @@
         <connection>scm:git:git://github.com/salsaj-boudier/mcib3d-core</connection>
         <developerConnection>scm:git:git@github.com:salsaj-boudier/mcib3d-core</developerConnection>
         <tag>HEAD</tag>
-        <url>https://github.com/salsaj-boudier/mcib3d-core</url>
+        <url>https://github.com/mcib3d/mcib3d-core</url>
     </scm>
     <!--
     TODO add a issueManagement field once there is a bug tracker
