@@ -1302,78 +1302,7 @@ public class Objects3DPopulation {
             shuObj.add(obj);
             // update mask
             obj.draw(maskimg, 0);            
-            //maskimg.duplicate().show("mask " + getObject(i).getValue());
         }
-        return shuObj;
-    }
-
-    public ArrayList<Object3D> shuffle0() {
-        int si = this.getNbObjects();
-        ArrayUtil idx = new ArrayUtil(si);
-        for (int i = 0; i < si; i++) {
-            idx.addValue(i, i);
-        }
-        idx.shuffle();
-        int c;
-
-        ArrayList<Object3D> shuObj = new ArrayList<Object3D>();
-
-        int maxr = 1000;
-        Object3DVoxels maskVox = mask.getObject3DVoxels();
-        if (maskVox.isEmpty()) {
-            IJ.log("Could'nt shuffle, mask is empty");
-            return null;
-        }
-//        ImageInt labelm = new ImageShort("", mask.getXmax(), mask.getYmax(), mask.getZmax());
-//        mav.draw(labelm);
-//        labelm.show();
-
-        //ImageInt label2 = new ImageShort("", this.getObject(0).getLabelImage().sizeX, this.getObject(0).getLabelImage().sizeY, this.getObject(0).getLabelImage().sizeZ);
-        ImageInt label2 = new ImageShort("", mask.getXmax(), mask.getYmax(), mask.getZmax());
-        Random ra = new Random();
-        for (int i = 0; i < si; i++) {
-            boolean ok = false;
-            int objIdx = (int) idx.getValue(i);
-            Object3D obj = this.getObject(objIdx);
-            c = 0;
-            Object3DVoxels Vtest = new Object3DVoxels(obj);
-
-            ImageInt labelTest = label2.duplicate();
-            while ((!ok) && (c < maxr)) {
-                ok = true;
-                c++;
-                Voxel3D test = maskVox.getRandomvoxel(ra);
-                Vtest.draw(labelTest, 0);
-                Vtest.setNewCenter(test.getX(), test.getY(), test.getZ());
-                Vtest.draw(labelTest);
-                Vtest.setLabelImage(labelTest);
-
-                if (mask.getColoc(Vtest) < Vtest.getVolumePixels()) {
-                    IJ.log("PB coloc mask ");
-                    ok = false;
-                }
-
-                // coloc with other objects
-                for (Object3D O : shuObj) {
-                    if (O.getColoc(Vtest) > 0) {
-                        ok = false;
-                        IJ.log("PB coloc others");
-                    }
-                }
-            }
-
-            if (c == maxr) {
-                IJ.log("Could not shuffle " + obj + " " + i + " " + idx.getValue(i));
-                shuObj.add(obj);
-                obj.draw(label2);
-                obj.setLabelImage(label2);
-            } else {
-                shuObj.add(Vtest);
-                Vtest.draw(label2);
-                Vtest.setLabelImage(label2);
-            }
-        }
-
         return shuObj;
     }
 
