@@ -122,7 +122,7 @@ public class EdtShort {
         } catch (InterruptedException ie) {
             IJ.error("A thread was interrupted in step 3 .");
         }
-	//Find the largest distance for scaling
+        //Find the largest distance for scaling
         //Also fill in the background values.
         float distMax = 0;
         int wh = w * h;
@@ -148,7 +148,6 @@ public class EdtShort {
     }
 
     //Modified from ImageJ code by Wayne Rasband
-
     String stripExtension(String name) {
         if (name != null) {
             int dotIndex = name.lastIndexOf(".");
@@ -309,6 +308,7 @@ public class EdtShort {
             this.scaleZ = scaleZ * scaleZ;
         }
 
+        @Override
         public void run() {
             int zStart, zStop, zBegin, zEnd;
             float[] sk;
@@ -353,7 +353,7 @@ public class EdtShort {
                         for (int k = 0; k < d; k++) {
                             //Limit to the non-background to save time,
                             if (((data[k][i + w * j] & 0xffff) > thresh)) {
-                                min = Math.min(k + 1, k - d);
+                                min = Math.min(k + 1, d - k);// bug fixed
                                 min *= min * scaleZ;
                                 zBegin = zStart;
                                 zEnd = zStop;

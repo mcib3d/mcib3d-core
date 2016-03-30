@@ -109,7 +109,7 @@ public class LocalThickness {
 			for (int j = 0; j < h; j++){
 				for (int i = 0; i < w; i++){
 					ind = i + w*j;
-					if(sk[ind] > 0){;
+					if(sk[ind] > 0){
 						iRidgeK[iR] = i;
 						jRidgeK[iR] = j;
 						rRidgeK[iR++] = sk[ind];

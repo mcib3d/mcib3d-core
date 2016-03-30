@@ -8,49 +8,49 @@ import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 
 /* Bob Dougherty 8/8/2006
-Saito-Toriwaki algorithm for Euclidian Distance Transformation.
-Direct application of Algorithm 1.
-Version S1A: lower memory usage.
-Version S1A.1 A fixed indexing bug for 666-bin data set
-Version S1A.2 Aug. 9, 2006.  Changed noResult value.
-Version S1B Aug. 9, 2006.  Faster.
-Version S1B.1 Sept. 6, 2006.  Changed comments.
-Version S1C Oct. 1, 2006.  Option for inverse case.
-Fixed inverse behavior in y and z directions.
-Version D July 30, 2007.  Multithread processing for step 2.
+ Saito-Toriwaki algorithm for Euclidian Distance Transformation.
+ Direct application of Algorithm 1.
+ Version S1A: lower memory usage.
+ Version S1A.1 A fixed indexing bug for 666-bin data set
+ Version S1A.2 Aug. 9, 2006.  Changed noResult value.
+ Version S1B Aug. 9, 2006.  Faster.
+ Version S1B.1 Sept. 6, 2006.  Changed comments.
+ Version S1C Oct. 1, 2006.  Option for inverse case.
+ Fixed inverse behavior in y and z directions.
+ Version D July 30, 2007.  Multithread processing for step 2.
 
-This version assumes the input stack is already in memory, 8-bit, and
-outputs to a new 32-bit stack.  Versions that are more stingy with memory
-may be forthcoming.
+ This version assumes the input stack is already in memory, 8-bit, and
+ outputs to a new 32-bit stack.  Versions that are more stingy with memory
+ may be forthcoming.
 
-License:
-Copyright (c) 2006, OptiNav, Inc.
-All rights reserved.
+ License:
+ Copyright (c) 2006, OptiNav, Inc.
+ All rights reserved.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
 
-Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-Neither the name of OptiNav, Inc. nor the names of its contributors
-may be used to endorse or promote products derived from this software
-without specific prior written permission.
+ Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ Neither the name of OptiNav, Inc. nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
 public class EdtByte {
@@ -59,7 +59,7 @@ public class EdtByte {
         int w = imp.sizeX;
         int h = imp.sizeY;
         int d = imp.sizeZ;
-        float scale=scaleZ/scaleXY;
+        float scale = scaleZ / scaleXY;
         byte[][] data = imp.pixels;
         int nThreads = nbCPUs;
         //Create 32 bit floating point stack for output, s.  Will also use it for g in Transormation 1.
@@ -128,7 +128,7 @@ public class EdtByte {
             }
         }
 
-       ImageFloat res = (ImageFloat)ImageFloat.wrap(sStack);
+        ImageFloat res = (ImageFloat) ImageFloat.wrap(sStack);
         res.setScale(imp);
         res.setOffset(imp);
         res.setMinAndMax(0, distMax);
@@ -136,8 +136,6 @@ public class EdtByte {
     }
     //Modified from ImageJ code by Wayne Rasband
 
-		
-	
     String stripExtension(String name) {
         if (name != null) {
             int dotIndex = name.lastIndexOf(".");
@@ -167,6 +165,7 @@ public class EdtByte {
             this.scaleZ = scaleZ * scaleZ;
         }
 
+        @Override
         public void run() {
             float[] sk;
             byte[] dk;
@@ -189,8 +188,8 @@ public class EdtByte {
                         background[i] = ((dk[i + w * j] & 255) <= thresh);
                     }
                     for (int i = 0; i < w; i++) {
-                        min = Math.min(i+1, w-i); // distance minimale = distance au bord le plus proche + 1
-                        min*=min;
+                        min = Math.min(i + 1, w - i); // distance minimale = distance au bord le plus proche + 1
+                        min *= min;
                         for (int x = i; x < w; x++) {
                             if (background[x]) {
                                 test = i - x;
@@ -259,8 +258,8 @@ public class EdtByte {
                     }
                     if (nonempty) {
                         for (int j = 0; j < h; j++) {
-                            min = Math.min(j+1, h-j);
-                            min*=min;
+                            min = Math.min(j + 1, h - j);
+                            min *= min;
                             delta = j;
                             for (int y = 0; y < h; y++) {
                                 test = tempS[y] + delta * delta--;
@@ -338,11 +337,10 @@ public class EdtByte {
                         if (zStop < (d - 1)) {
                             zStop++;
                         }
-
                         for (int k = 0; k < d; k++) {
                             //Limit to the non-background to save time,
                             if (((data[k][i + w * j] & 255) > thresh)) {
-                                min=Math.min(k+1, k-d);
+                                min = Math.min(k + 1, d - k);// BUG fixed
                                 min *= min * scaleZ;
                                 zBegin = zStart;
                                 zEnd = zStop;
@@ -353,7 +351,6 @@ public class EdtByte {
                                     zEnd = k;
                                 }
                                 delta = (k - zBegin);
-
                                 for (int z = zBegin; z <= zEnd; z++) {
                                     test = tempS[z] + delta * delta-- * scaleZ;
                                     if (test < min) {
