@@ -57,7 +57,7 @@ public class MaximaFinder {
     /**
      * Do we display information ?
      */
-    protected boolean show = true;
+    protected boolean verbose = true;
 
     /**
      * Constructor with default values for radii
@@ -97,7 +97,7 @@ public class MaximaFinder {
 
     private void computePeaks() {
         imagePeaks = new ImageShort("peaks", img.sizeX, img.sizeY, img.sizeZ);
-        if (show) {
+        if (verbose) {
             IJ.log("Finding all peaks");
         }
         ArrayList<Voxel3DComparable> maximaTmp = FastFilters3D.getListMaxima(img, radXY, radXY, radZ, nbCpus, false);
@@ -105,10 +105,10 @@ public class MaximaFinder {
         for (Voxel3DComparable V : maximaTmp) {
             imagePeaks.setPixel(V, (float) V.getValue());
         }
-        if (show) {
+        if (verbose) {
             IJ.log(maximaTmp.size() + " peaks found");
         }
-        if (show) {
+        if (verbose) {
             IJ.log("Removing peaks below noise");
         }
         maxima = new ArrayList<Voxel3D>();
@@ -119,7 +119,7 @@ public class MaximaFinder {
             if (img.getPixel(V) > 0) {
                 if (V.getValue() > noiseTolerance) {
                     maxima.add(V);
-                    if (show) {
+                    if (verbose) {
                         IJ.showStatus("Processing peak " + c + "/" + nb + " " + V);
                         c++;
                     }
@@ -128,17 +128,17 @@ public class MaximaFinder {
             }
         }
 
-        if (show) {
+        if (verbose) {
             IJ.log(maxima.size() + " peaks found");
         }
-        if (show) {
+        if (verbose) {
             IJ.log("Creating final peaks");
         }
         imagePeaks.fill(0);
         for (Voxel3D V : maxima) {
             imagePeaks.setPixel(V, (float) V.getValue());
         }
-        if (show) {
+        if (verbose) {
             IJ.log("MaximaFinder3D finished.");
         }
     }
@@ -209,7 +209,7 @@ public class MaximaFinder {
      *
      * @param show Display information
      */
-    public void setShow(boolean show) {
-        this.show = show;
+    public void setVerbose(boolean show) {
+        this.verbose = show;
     }
 }
