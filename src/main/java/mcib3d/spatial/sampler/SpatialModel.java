@@ -3,21 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package spatial.descriptors;
+package mcib3d.spatial.sampler;
 
 import mcib3d.geom.Objects3DPopulation;
-import mcib3d.utils.ArrayUtil;
 
 /**
  *
  * @author thomasb
  */
-public interface SpatialDescriptor {
-
+public interface SpatialModel {
     public boolean init();
-
-    public ArrayUtil compute(Objects3DPopulation pop);
-
-    public String getName();
-
+    Objects3DPopulation getSample();    
 }

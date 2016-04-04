@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package spatial.sampler;
+package mcib3d.spatial.sampler;
 
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;

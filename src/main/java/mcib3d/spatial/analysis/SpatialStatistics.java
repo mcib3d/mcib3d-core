@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package spatial.analysis;
+package mcib3d.spatial.analysis;
 
 import ij.IJ;
 import ij.gui.Plot;
@@ -13,8 +13,8 @@ import mcib3d.geom.Objects3DPopulation;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.CDFTools;
 import mcib3d.utils.ThreadUtil;
-import spatial.descriptors.SpatialDescriptor;
-import spatial.sampler.SpatialModel;
+import mcib3d.spatial.descriptors.SpatialDescriptor;
+import mcib3d.spatial.sampler.SpatialModel;
 
 /**
  *
