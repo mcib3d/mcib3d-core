@@ -168,8 +168,8 @@ public class EDT {
         if (idx[idx.length - 1].index == 0) {
             idx[idx.length - 1].index = idx.length - 1;
         }
-        for (int i = 0; i < idx.length; i++) {
-            distanceMap.pixels[idx[i].z][idx[i].xy] = (float) (idx[i].index / volume);
+        for (VoxEVF idx1 : idx) {
+            distanceMap.pixels[idx1.z][idx1.xy] = (float) (idx1.index / volume);
         }
     }
 }

@@ -385,6 +385,9 @@ public class Objects3DPopulation {
 
     public void addPoints(Point3D[] points) {
         int inc = objects.size();
+        if (kdtree == null) {
+            createKDTreeCenters();
+        }
         for (int i = 0; i < points.length; i++) {
             Point3D P = points[i];
             Voxel3D v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) i + inc);
@@ -396,9 +399,7 @@ public class Objects3DPopulation {
             addObject(ob);
         }
         // update kdtree if available // FIXME UPDATE kdtree
-        if (kdtree != null) {
-            createKDTreeCenters();
-        }
+        
     }
 
     /**
@@ -1273,7 +1274,7 @@ public class Objects3DPopulation {
 
         return res;
     }
-    
+
     public ArrayList<Object3D> shuffle() {
         ArrayList<Object3D> shuObj = new ArrayList<Object3D>();
         Random ra = new Random();
