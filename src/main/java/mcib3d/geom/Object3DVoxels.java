@@ -1422,6 +1422,7 @@ public class Object3DVoxels extends Object3D {
         }
     }
 
+    @Override
     public void draw(ImageStack mask, int r, int g, int b) {
         Voxel3D vox;
         ImageProcessor tmp;

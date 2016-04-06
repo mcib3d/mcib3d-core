@@ -165,7 +165,9 @@ public class Objects3DPopulation {
         double HardCoreDistUnit = hardcore;
 
         // first point
-        P = getRandomPointInMask();
+        Object3DVoxels maskVox = mask.getObject3DVoxels();
+        Random ra = new Random();
+        P = maskVox.getRandomvoxel(ra);
         v = new Voxel3D(P.getX(), P.getY(), P.getZ(), 1);
         voxlist = new ArrayList(1);
         voxlist.add(v);
@@ -173,11 +175,14 @@ public class Objects3DPopulation {
         ob.setCalibration(calibration);
         addObject(ob);
         for (int i = 1; i < nb; i++) {
-            dist = -1;
+            P = maskVox.getRandomvoxel(ra);
+            closest = closestCenter(P);
+            dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
             while (dist < HardCoreDistUnit) {
                 P = getRandomPointInMask();
                 closest = closestCenter(P);
                 dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
+                IJ.showStatus("***");
             }
             v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) (i + 1));
             voxlist = new ArrayList(1);
@@ -209,12 +214,12 @@ public class Objects3DPopulation {
     }
 
     public void createKDTreeCenters() {
-        kdtree = new KDTreeC(3, this.getNbObjects());
+        kdtree = new KDTreeC(3, 64);
+        double[] tmp = {calibration.pixelWidth, calibration.pixelHeight, calibration.pixelDepth};
+        kdtree.setScale(tmp);
         for (int i = 0; i < this.getNbObjects(); i++) {
             kdtree.add(this.getObject(i).getCenterAsArray(), this.getObject(i));
         }
-        double[] tmp = {calibration.pixelWidth, calibration.pixelHeight, calibration.pixelDepth};
-        kdtree.setScale(tmp);
     }
 
     /**
@@ -269,8 +274,10 @@ public class Objects3DPopulation {
         //hashValue.put(obj.getValue(), objects.size() - 1);
         // hashName.put(obj.getName(), objects.size() - 1);
         // update kdtree if available // FIXME UPDATE kdtree
-        if (kdtree != null) {
+        if (kdtree == null) {
             createKDTreeCenters();
+        } else {
+            kdtree.add(obj.getCenterAsArray(), obj);
         }
         // need to update hash tables
         hashValue = null;
@@ -1266,7 +1273,7 @@ public class Objects3DPopulation {
 
         return res;
     }
-
+    
     public ArrayList<Object3D> shuffle() {
         ArrayList<Object3D> shuObj = new ArrayList<Object3D>();
         Random ra = new Random();
@@ -1274,11 +1281,11 @@ public class Objects3DPopulation {
         Object3DVoxels maskVox = mask.getObject3DVoxels();
         for (int i = 0; i < getNbObjects(); i++) {
             Object3DVoxels obj = new Object3DVoxels(getObject(i));
-            Point3D center=obj.getCenterAsPoint();
+            Point3D center = obj.getCenterAsPoint();
             boolean ok = false;
             int it = 0;
             while (!ok) {
-                IJ.showStatus("Shuffling " + getObject(i).getValue() + " " + it);
+                IJ.showStatus("Shuffling " + getObject(i).getValue());
                 Voxel3D vox = maskVox.getRandomvoxel(ra);
                 obj.setNewCenter(vox.getX(), vox.getY(), vox.getZ());
                 ok = true;
@@ -1301,7 +1308,7 @@ public class Objects3DPopulation {
             }
             shuObj.add(obj);
             // update mask
-            obj.draw(maskimg, 0);            
+            obj.draw(maskimg, 0);
         }
         return shuObj;
     }
