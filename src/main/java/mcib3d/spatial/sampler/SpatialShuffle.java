@@ -15,11 +15,11 @@ import mcib3d.image3d.ImageShort;
  *
  * @author thomasb
  */
-public class Shuffle implements SpatialModel {
+public class SpatialShuffle implements SpatialModel {
 
     private Objects3DPopulation population;
 
-    public Shuffle(Objects3DPopulation pop) {
+    public SpatialShuffle(Objects3DPopulation pop) {
         population = pop;
     }
 

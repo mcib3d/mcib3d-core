@@ -79,7 +79,7 @@ public class SpatialStatistics {
         if (verbose) {
             IJ.log("Average : Computing " + descriptor.getName() + " for " + nbSamples + " " + model.getName() + " data");
         }
-        model.getSampleImage().show();
+        //model.getSampleImage().show();
         ArrayUtil[] samplesDesc = getSamples();
         // x values for computation
         xEvals = new ArrayUtil(nbSamples * nbDesc);
@@ -202,7 +202,7 @@ public class SpatialStatistics {
             plotmaxX = obsDesc.getMaximum();
         }
         // create the plot
-        plot = new Plot(descriptor.getName(), "distance", "cumulated frequency");
+        plot = new Plot(descriptor.getName() + "_" + model.getName(), "distance", "cumulated frequency");
         plot.setLimits(0, plotmaxX, 0, plotmaxY);
 
         // enveloppe

@@ -27,15 +27,16 @@ import mcib3d.image3d.ImageShort;
  *
  *
  * /**
- * Creation de forme primitive dans une image
+ * Create 3D shapes
  *
- * @author cedric @created 3 mars 2004
+ * cedric started 3 mars 2004
+ *
  */
 public class ObjectCreator3D {
-    //  Le volume qui va contenir les formes
 
+    //  The image to store the shape
     ImageHandler img;
-    // Spacings
+    // calibration
     double resXY = 1.0;
     double resZ = 1.0;
     String unit = "pix";
@@ -60,24 +61,9 @@ public class ObjectCreator3D {
     /**
      * Constructor for the ObjectCreator3D object
      *
-     * @param sizex Taille x du volume
-     * @param sizey Taille y du volume
-     * @param sizez Taille z du volume
-     * @param type Type du volume (entier ou réel)
-     */
-//    public ObjectCreator3D(int sizex, int sizey, int sizez, int type) {
-//        if (type == Image3D.FLOAT) {
-//            img = new RealImage3D(sizex, sizey, sizez);
-//        } else {
-//            img = new IntImage3D(sizex, sizey, sizez, type);
-//        }
-//    }
-    /**
-     * Constructor for the ObjectCreator3D object
-     *
-     * @param sizex Taille x du volume
-     * @param sizey Taille y du volume
-     * @param sizez Taille z du volume
+     * @param sizex Size x of the image
+     * @param sizey Size y of the image
+     * @param sizez Size z of the image
      */
     public ObjectCreator3D(int sizex, int sizey, int sizez) {
         img = new ImageShort("creator", sizex, sizey, sizez);
@@ -127,14 +113,57 @@ public class ObjectCreator3D {
     /**
      * Description of the Method
      *
-     * @param centerx Description of the Parameter
-     * @param centery Description of the Parameter
-     * @param centerz Description of the Parameter
-     * @param rx Description of the Parameter
-     * @param ry Description of the Parameter
-     * @param rz Description of the Parameter
-     * @param value Description of the Parameter
-     * @param gauss Description of the Parameter
+     * @param centerx Centre X of the sphere
+     * @param centery Centre Y of the sphere
+     * @param centerz Centre Z of the sphere
+     * @param radius Radius of the sphere
+     * @param value Value of the pixel in the image
+     * @param gauss Is gaussian decrease of the intensity
+     */
+    public void createSphereUnit(double centerx, double centery, double centerz, double radius, float value, boolean gauss) {
+        // scale radius to pixel unit
+        double rx = radius / resXY;
+        double ry = radius / resXY;
+        double rz = radius / resXY;
+
+        // scale radius to pixel unit
+        centerx /= resXY;
+        centery /= resXY;
+        centerz /= resZ;
+
+        createEllipsoid((int) Math.round(centerx), (int) Math.round(centery), (int) Math.round(centerz), rx, ry, rz, value, gauss);
+
+    }
+
+    /**
+     * Description of the Method
+     *
+     * @param centerx Centre X of the sphere
+     * @param centery Centre Y of the sphere
+     * @param centerz Centre Z of the sphere
+     * @param radius Radius of the sphere
+     * @param value Value of the pixel in the image
+     * @param gauss Is gaussian decrease of the intensity
+     */
+    public void createSphere(double centerx, double centery, double centerz, double radius, float value, boolean gauss) {
+        double rx = radius;
+        double ry = radius;
+        double rz = radius;
+
+        createEllipsoid((int) Math.round(centerx), (int) Math.round(centery), (int) Math.round(centerz), rx, ry, rz, value, gauss);
+    }
+
+    /**
+     * Description of the Method
+     *
+     * @param centerx Centre X of the ellipsoid
+     * @param centery Centre Y of the ellipsoid
+     * @param centerz Centre Z of the ellipsoid
+     * @param rx Radius X of the ellipsoid
+     * @param ry Radius X of the ellipsoid
+     * @param rz Radius X of the ellipsoid
+     * @param value Value of the pixel in the image
+     * @param gauss Is gaussian decrease of the intensity
      */
     public void createEllipsoidUnit(double centerx, double centery, double centerz, double rx, double ry, double rz, float value, boolean gauss) {
         // scale radius to pixel unit
@@ -190,11 +219,6 @@ public class ObjectCreator3D {
      * @param gauss uniform or ramp values
      */
     public void createEllipsoid(int centerx, int centery, int centerz, double rx, double ry, double rz, float value, boolean gauss) {
-        // scale radius to pixel unit
-        //rx /= resXY;
-        //ry /= resXY;
-        //rz /= resZ;
-
         int startx = (int) Math.round(centerx - rx);
         if (startx < 0) {
             startx = 0;
@@ -1219,7 +1243,6 @@ public class ObjectCreator3D {
     public Object3DVoxels getObject3DVoxels(int val) {
         return new Object3DVoxels(img, val);
     }
-
 
     /**
      *

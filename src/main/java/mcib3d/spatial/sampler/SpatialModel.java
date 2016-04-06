@@ -13,8 +13,12 @@ import mcib3d.image3d.ImageHandler;
  * @author thomasb
  */
 public interface SpatialModel {
+
     public boolean init();
-    Objects3DPopulation getSample();  
+
+    Objects3DPopulation getSample();
+
     ImageHandler getSampleImage();
+
     String getName();
 }
