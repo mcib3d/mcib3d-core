@@ -19,5 +19,4 @@ public interface SpatialDescriptor {
     public ArrayUtil compute(Objects3DPopulation pop);
 
     public String getName();
-
 }

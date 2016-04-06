@@ -6,6 +6,7 @@
 package mcib3d.spatial.sampler;
 
 import mcib3d.geom.Objects3DPopulation;
+import mcib3d.image3d.ImageHandler;
 
 /**
  *
@@ -13,5 +14,7 @@ import mcib3d.geom.Objects3DPopulation;
  */
 public interface SpatialModel {
     public boolean init();
-    Objects3DPopulation getSample();    
+    Objects3DPopulation getSample();  
+    ImageHandler getSampleImage();
+    String getName();
 }
