@@ -11,6 +11,14 @@ Please follow these instructions to download and compile the source code :
 
 You then should be able to open the project in Netbeans or Eclipse. 
 
+If you want to include this library as part as your maven project, use : 
+
+`<dependency>`
+		`<groupId>com.github.mcib3d</groupId>`
+		`<artifactId>mcib3d-core</artifactId>`
+		`<version>master-SNAPSHOT</version>`
+`</dependency>`
+
   
   If you use MCIB library or plugins in your experiments, please cite : 
   J. Ollion, J. Cochennec, F. Loll, C. Escudé, and T. Boudier (2013). 
