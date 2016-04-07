@@ -15,11 +15,11 @@ If you want to include this library as part as your maven project, use this depe
 
 `<dependency>`
 
-		`<groupId>com.github.mcib3d</groupId>`
+		<groupId>com.github.mcib3d</groupId>
 		
-		`<artifactId>mcib3d-core</artifactId>`
+		<artifactId>mcib3d-core</artifactId>
 		
-		`<version>master-SNAPSHOT</version>`
+		<version>master-SNAPSHOT</version>
 		
 `</dependency>`
 
@@ -27,9 +27,9 @@ and
 
 `<repository>`
 			
-	`<id>jitpack.io</id>`
+	<id>jitpack.io</id>
 	
-	`<url>https://jitpack.io</url>`
+	<url>https://jitpack.io</url>
 	
 `</repository>`
 
