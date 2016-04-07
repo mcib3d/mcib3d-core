@@ -11,10 +11,9 @@ Please follow these instructions to download and compile the source code :
 
 You then should be able to open the project in Netbeans or Eclipse. 
 
-If you want to include this library as part as your maven project, use : 
+If you want to include this library as part as your maven project, use this dependency : 
 
 `<dependency>`
-
 		`<groupId>com.github.mcib3d</groupId>`
 		
 		`<artifactId>mcib3d-core</artifactId>`
@@ -22,6 +21,16 @@ If you want to include this library as part as your maven project, use :
 		`<version>master-SNAPSHOT</version>`
 		
 `</dependency>`
+
+and 
+
+`<repository>`
+			
+	`<id>jitpack.io</id>`
+	
+	`<url>https://jitpack.io</url>`
+	
+`</repository>`
 
   
   If you use MCIB library or plugins in your experiments, please cite : 
