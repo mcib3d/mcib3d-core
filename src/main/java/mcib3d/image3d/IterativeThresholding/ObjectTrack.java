@@ -36,8 +36,10 @@ import mcib3d.image3d.ImageHandler;
  */
 public class ObjectTrack {
 
+
     private Object3D object = null;
-    // measurments
+    // measurements
+    public double valueCriteria;
     public double sphericity;
     public double elongation;
     public double DCavg;
@@ -56,19 +58,17 @@ public class ObjectTrack {
     public static int STATE_DIVIDE = 2;
     public static int STATE_MOVE = 3;
     private int state = STATE_UNKNOWN;
-    // classification
-    Criteria classification = null;
 
     public ObjectTrack() {
     }
 
-    public Object3D getObject() {
-        return object;
-    }
+    //public Object3D getObject() {
+    //    return object;
+    //}
 
-    public void setObject(Object3D object) {
-        this.object = object;
-    }
+   // public void setObject(Object3D object) {
+     //   this.object = object;
+   // }
 
     public ObjectTrack getParent() {
         return parent;
@@ -178,4 +178,18 @@ public class ObjectTrack {
 
         return list;
     }
+
+    public Object3D getObject() {
+        return object;
+    }
+
+    public void setObject(Object3D object) {
+        this.object = object;
+    }
+
+    public void computeCriterion(Criterion criterion){
+        criterion.computeCriterion(getObject());
+    }
+
+
 }
