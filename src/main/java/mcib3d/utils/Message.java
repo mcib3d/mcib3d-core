@@ -123,7 +123,7 @@ public class Message {
 				data = in.readLine();
 			}
 		} catch (IOException e) {
-			IJ.write("Pb fichier message");
+			IJ.log("Pb fichier message");
 		} catch (java.lang.NullPointerException e) {
 			;
 		}
@@ -145,7 +145,7 @@ public class Message {
 			bw.close();
 			fw.close();
 		} catch (IOException e) {
-			IJ.write("Pb fichier message:" + FichierMessages);
+			IJ.log("Pb fichier message:" + FichierMessages);
 		} catch (java.lang.NullPointerException e) {
 			;
 		}
@@ -176,7 +176,7 @@ public class Message {
 			bw.close();
 			in.close();
 		} catch (IOException e) {
-			IJ.write("Pb fichier message:" + FichierMessages);
+			IJ.log("Pb fichier message:" + FichierMessages);
 		} catch (java.lang.NullPointerException e) {
 			;
 		}

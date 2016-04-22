@@ -7,36 +7,36 @@ import ij.gui.NewImage;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 import ij.process.StackProcessor;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.TreeMap;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Point3D;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.legacy.IntImage3D;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.TreeMap;
+
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2012 Jean Ollion
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of tango
- *
+ * <p>
  * tango is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -50,21 +50,6 @@ public class ImageShort extends ImageInt {
     public ImageShort(ImagePlus img) {
         super(img);
         buildPixels();
-    }
-
-    private void buildPixels() {
-        pixels = new short[sizeZ][];
-        if (img.getImageStack() != null) {
-            for (int i = 0; i < sizeZ; i++) {
-                //IJ.log("pixels="+img.getImageStack().getPixels(i + 1));
-                pixels[i] = (short[]) img.getImageStack().getPixels(i + 1);
-            }
-        } else {
-            ImageStack st = new ImageStack(sizeX, sizeY);
-            st.addSlice(img.getProcessor());
-            pixels[0] = (short[]) img.getProcessor().getPixels();
-            this.img.setStack(null, st);
-        }
     }
 
     public ImageShort(ImageStack img) {
@@ -120,22 +105,6 @@ public class ImageShort extends ImageInt {
             System.arraycopy((short[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
             offZ += sizeXY;
         }
-        return res;
-    }
-
-    public Object getArray1D() {
-        short[] res = new short[sizeXYZ];
-        int offZ = 0;
-        for (int slice = 0; slice < img.getNSlices(); slice++) {
-            System.arraycopy((short[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
-            offZ += sizeXY;
-        }
-        return res;
-    }
-
-    public Object getArray1D(int z) {
-        short[] res = new short[sizeXY];
-        System.arraycopy((short[]) img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
         return res;
     }
 
@@ -196,6 +165,37 @@ public class ImageShort extends ImageInt {
         for (int i = 0; i < input.length; i++) {
             res[i] = (short) (input[i]);
         }
+        return res;
+    }
+
+    private void buildPixels() {
+        pixels = new short[sizeZ][];
+        if (img.getImageStack() != null) {
+            for (int i = 0; i < sizeZ; i++) {
+                //IJ.log("pixels="+img.getImageStack().getPixels(i + 1));
+                pixels[i] = (short[]) img.getImageStack().getPixels(i + 1);
+            }
+        } else {
+            ImageStack st = new ImageStack(sizeX, sizeY);
+            st.addSlice(img.getProcessor());
+            pixels[0] = (short[]) img.getProcessor().getPixels();
+            this.img.setStack(null, st);
+        }
+    }
+
+    public Object getArray1D() {
+        short[] res = new short[sizeXYZ];
+        int offZ = 0;
+        for (int slice = 0; slice < img.getNSlices(); slice++) {
+            System.arraycopy((short[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
+            offZ += sizeXY;
+        }
+        return res;
+    }
+
+    public Object getArray1D(int z) {
+        short[] res = new short[sizeXY];
+        System.arraycopy((short[]) img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
         return res;
     }
 
@@ -454,7 +454,7 @@ public class ImageShort extends ImageInt {
         if (mask == null) {
             mask = new BlankMask(this);
         }
-        double scale = (double) nBins / (max - min);
+        double scale = (double) nBins / (max - min + 1);
         int[] hist = new int[nBins];
         int index;
         for (int z = 0; z < sizeZ; z++) {

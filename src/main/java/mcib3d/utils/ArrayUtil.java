@@ -5,6 +5,7 @@ import ij.ImagePlus;
 import ij.gui.Plot;
 import ij.measure.CurveFitter;
 import ij.process.ByteProcessor;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,20 +16,21 @@ import java.util.logging.Logger;
 
 /**
  * Copyright (C) Thomas Boudier
- *
+ * <p>
  * License: This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 /**
  * class allowing : <BR> storage of arrays with util function such as statistics
  * and sorting
@@ -77,6 +79,149 @@ public class ArrayUtil {
         }
     }
 
+    /**
+     * Fit a gaussian to the values (radial distribution)
+     *
+     * @param values to fit
+     * @param initSD
+     * @param maxR   maximum interval
+     * @return the gaussian fitted values
+     */
+    public static double[] fitGaussian(double[] values, double initSD, int maxR) {
+        //IJ.log("\nGaussian Fitting ");
+        // find extrem NaN
+        int cm = 0;
+        while (Double.isNaN(values[cm])) {
+            cm++;
+        }
+        // copy
+        if (cm > 0) {
+            maxR -= cm;
+            double[] vv = new double[values.length - 2 * cm];
+            for (int i = 0; i < vv.length; i++) {
+                vv[i] = values[i + cm];
+            }
+            values = vv;
+        }
+        double[] id = new double[values.length];
+        int c = 0;
+        double minVal = values[0];
+        double maxVal = values[0];
+        double val;
+        for (int i = -maxR; i <= maxR; i++) {
+            val = values[c];
+            if (val > maxVal) {
+                maxVal = val;
+            }
+            if (val < minVal) {
+                minVal = val;
+            }
+            id[c] = i;
+            c++;
+        }
+        //IJ.log("min=" + minVal + " max=" + maxVal);
+        // fitting by a gaussian
+        CurveFitter fit = new CurveFitter(id, values);
+        double[] params = new double[4];
+        params[0] = minVal;
+        params[1] = maxVal;
+        params[2] = 0;
+        params[3] = initSD;
+        //IJ.log("res=" + params[0] + " " + params[1] + " " + params[2] + " " + params[3]);
+
+        fit.setInitialParameters(params);
+        fit.setMaxIterations(10000);
+        fit.setRestarts(1000);
+        fit.doFit(CurveFitter.GAUSSIAN);
+        params = fit.getParams();
+        //IJ.log("res=" + params[0] + " " + params[1] + " " + params[2] + " " + params[3]);
+        //IJ.log("error=" + fit.getRSquared());
+        if (Double.isNaN(params[0])) {
+            return null;
+        }
+
+        return params;
+    }
+
+    /**
+     * COPIED FROM ICY (A. DUFOUR) KMeans classification algorithm, optimized
+     * for 1D histogram data. The algorithm is initialized by spacing the class
+     * centers equally
+     *
+     * @param histogram the histogram to classify
+     * @param nbClasses the number of classes to extract
+     * @return the optimal class centers after convergence
+     */
+    public static int[] kMeans_Histogram1D(int[] histogram, int nbClasses, int thmin) {
+        int[] centers = new int[nbClasses];
+        double[] sums = new double[nbClasses];
+        double[] nbElements = new double[nbClasses];
+
+        // get first and last non-zero
+        ArrayUtil tab = new ArrayUtil(histogram);
+        int start = tab.getLimitInf(0);
+        int end = tab.getLimitSup();
+        if ((thmin > start) && (thmin < end)) {
+            start = thmin;
+        }
+        double step = (end - start) / (nbClasses);
+
+        for (int i = 0; i < nbClasses; i++) {
+            centers[i] = (int) (start + (i + 1) * step);
+        }
+
+        // basic class initialization : regularly divide the space
+//        for (int i = 0; i < nbClasses; i++) {
+//            centers[i] = (int) ((histogram.length - 1f) * (i + 1f) / (nbClasses + 1f));
+//        }
+        // main loop
+        boolean convergence = false;
+        int count = 1;
+        while (!convergence) {
+            IJ.showStatus("K-means " + count);
+            count++;
+            // assume the convergence is reached
+            // (invalidate this assumption later if class means move)
+            convergence = true;
+            java.util.Arrays.fill(nbElements, 0);
+            java.util.Arrays.fill(sums, 0);
+
+            for (int i = thmin; i < histogram.length; i++) {
+                if (histogram[i] == 0) {
+                    continue;
+                }
+                int closestClass = 0;
+                double minDistance = Double.MAX_VALUE;
+                // compute the shortest distance from the current bin
+                // to a class center and assign the bin to that class
+                for (int k = 0; k < nbClasses; k++) {
+                    double distance = Math.abs(i - centers[k]);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestClass = k;
+                    }
+                }
+
+                // to update each class center to the mean,
+                // accumulate both number and sum per class
+                double nbElemInCurrentBin = histogram[i];
+                sums[closestClass] += i * nbElemInCurrentBin;
+                nbElements[closestClass] += nbElemInCurrentBin;
+            }
+
+            // once all bins have been assigned to a class,
+            // the class centers can be moved toward the new means
+            for (int k = 0; k < nbClasses; k++) {
+                int oldCenter = centers[k];
+                int newCenter = (int) (sums[k] / nbElements[k]);
+                convergence &= (oldCenter == newCenter);
+                centers[k] = newCenter;
+            }
+        }
+
+        return centers;
+    }
+
     public void fromArrayListInt(ArrayList<Integer> arr) {
         this.size = arr.size();
         sorted = false;
@@ -98,7 +243,7 @@ public class ArrayUtil {
     /**
      * put a value to a index
      *
-     * @param pos position in the array
+     * @param pos   position in the array
      * @param value value to put
      * @return false if position does not exist
      */
@@ -144,6 +289,21 @@ public class ArrayUtil {
     }
 
     /**
+     * new size of the array (can incresase size of array)
+     *
+     * @param size The new size value
+     */
+    public void setSize(int size) {
+        if (size > this.size) {
+            double[] temp = new double[size];
+            System.arraycopy(values, 0, temp, 0, this.size);
+            values = temp;
+        }
+        this.size = size;
+        sorted = false;
+    }
+
+    /**
      * Gets the array attribute of the ArrayUtil object
      *
      * @return The array value
@@ -171,22 +331,6 @@ public class ArrayUtil {
     }
 
     /**
-     * new size of the array (can incresase size of array)
-     *
-     * @param size The new size value
-     */
-    public void setSize(int size) {
-        if (size > this.size) {
-            double[] temp = new double[size];
-            System.arraycopy(values, 0, temp, 0, this.size);
-            values = temp;
-        }
-        this.size = size;
-        sorted = false;
-    }
-
-    /**
-     *
      * @param val
      */
     public void fillValue(double val) {
@@ -323,7 +467,6 @@ public class ArrayUtil {
     }
 
     /**
-     *
      * @param val
      * @return
      */
@@ -341,7 +484,6 @@ public class ArrayUtil {
     }
 
     /**
-     *
      * @param th
      * @return
      */
@@ -579,7 +721,6 @@ public class ArrayUtil {
     }
 
     /**
-     *
      * @param hmean
      * @return
      */
@@ -677,7 +818,7 @@ public class ArrayUtil {
      * Addition a value at a index
      *
      * @param position the position index
-     * @param value the value to add
+     * @param value    the value to add
      * @return true if position < size
      */
     public boolean addValue(int position, double value) {
@@ -690,7 +831,6 @@ public class ArrayUtil {
     }
 
     /**
-     *
      * @param value
      */
     public void divideAll(double value) {
@@ -703,7 +843,6 @@ public class ArrayUtil {
     }
 
     /**
-     *
      * @return
      */
     public boolean isSorted() {
@@ -858,7 +997,7 @@ public class ArrayUtil {
      * Convolution with a kernel
      *
      * @param kernel the kernel
-     * @param D the divisor
+     * @param D      the divisor
      * @return the convolved value
      */
     public double convolve(double[] kernel, double D) {
@@ -876,7 +1015,6 @@ public class ArrayUtil {
     }
 
     /**
-     *
      * @param value
      * @return
      */
@@ -935,7 +1073,7 @@ public class ArrayUtil {
     /**
      * One of the values are in the array ?
      *
-     * @param val the values
+     * @param vals the values
      * @return true if one of the values is in the array
      */
     public boolean hasOneValue(ArrayList vals) {
@@ -955,7 +1093,7 @@ public class ArrayUtil {
      * One of the values are in the array ? For int values (does not work if
      * ArrayList is int and values is double)
      *
-     * @param val the values
+     * @param vals the values
      * @return true if one of the values is in the array
      */
     public boolean hasOneValueInt(ArrayList vals) {
@@ -991,7 +1129,7 @@ public class ArrayUtil {
     /**
      * test if array has only particular values
      *
-     * @param val the value
+     * @param vals the value
      * @return true if only this value is inside the array
      */
     public boolean hasOnlyValuesInt(ArrayList vals) {
@@ -1147,7 +1285,7 @@ public class ArrayUtil {
      *
      * @param other the other array
      * @param begin start index
-     * @param end end index
+     * @param end   end index
      * @return The equal value
      */
     public boolean isEqual(ArrayUtil other, int begin, int end) {
@@ -1199,8 +1337,18 @@ public class ArrayUtil {
         // does not change sorted state
     }
 
+    public int removeValues(double val) {
+        int remove = 0;
+        for (int i = size - 1; i >= 0; i--) {
+            if (values[i] == val) {
+                removeValueAt(i);
+                remove++;
+            }
+        }
+        return remove;
+    }
+
     /**
-     *
      * @param tabToAdd
      */
     public void addValueArray(ArrayUtil tabToAdd) {
@@ -1252,15 +1400,15 @@ public class ArrayUtil {
     /**
      * extract a sub-array from this array
      *
-     * @param startindex start index
-     * @param newsize new size
+     * @param startIndex start index
+     * @param newSize    new size
      * @return The subTabUtil value
      */
-    public ArrayUtil getSubTabUtil(int startindex, int newsize) {
+    public ArrayUtil getSubTabUtil(int startIndex, int newSize) {
 
-        ArrayUtil tmp = new ArrayUtil(newsize);
-        for (int i = 0; i < newsize; i++, startindex++) {
-            tmp.putValue(i, getValue(startindex));
+        ArrayUtil tmp = new ArrayUtil(newSize);
+        for (int i = 0; i < newSize; i++, startIndex++) {
+            tmp.putValue(i, getValue(startIndex));
         }
         return tmp;
     }
@@ -1282,7 +1430,6 @@ public class ArrayUtil {
     }
 
     /**
-     *
      * @return
      */
     public ArrayUtil getIntegerHistogram() {
@@ -1330,149 +1477,6 @@ public class ArrayUtil {
             return -1;
         }
         return (int) getIntegerHistogram().getMaximumStarting(1)[1];
-    }
-
-    /**
-     * Fit a gaussian to the values (radial distribution)
-     *
-     * @param values to fit
-     * @param initSD
-     * @param maxR maximum interval
-     * @return the gaussian fitted values
-     */
-    public static double[] fitGaussian(double[] values, double initSD, int maxR) {
-        //IJ.log("\nGaussian Fitting ");
-        // find extrem NaN
-        int cm = 0;
-        while (Double.isNaN(values[cm])) {
-            cm++;
-        }
-        // copy
-        if (cm > 0) {
-            maxR -= cm;
-            double[] vv = new double[values.length - 2 * cm];
-            for (int i = 0; i < vv.length; i++) {
-                vv[i] = values[i + cm];
-            }
-            values = vv;
-        }
-        double[] id = new double[values.length];
-        int c = 0;
-        double minVal = values[0];
-        double maxVal = values[0];
-        double val;
-        for (int i = -maxR; i <= maxR; i++) {
-            val = values[c];
-            if (val > maxVal) {
-                maxVal = val;
-            }
-            if (val < minVal) {
-                minVal = val;
-            }
-            id[c] = i;
-            c++;
-        }
-        //IJ.log("min=" + minVal + " max=" + maxVal);
-        // fitting by a gaussian
-        CurveFitter fit = new CurveFitter(id, values);
-        double[] params = new double[4];
-        params[0] = minVal;
-        params[1] = maxVal;
-        params[2] = 0;
-        params[3] = initSD;
-        //IJ.log("res=" + params[0] + " " + params[1] + " " + params[2] + " " + params[3]);
-
-        fit.setInitialParameters(params);
-        fit.setMaxIterations(10000);
-        fit.setRestarts(1000);
-        fit.doFit(CurveFitter.GAUSSIAN);
-        params = fit.getParams();
-        //IJ.log("res=" + params[0] + " " + params[1] + " " + params[2] + " " + params[3]);
-        //IJ.log("error=" + fit.getRSquared());
-        if (Double.isNaN(params[0])) {
-            return null;
-        }
-
-        return params;
-    }
-
-    /**
-     * COPIED FROM ICY (A. DUFOUR) KMeans classification algorithm, optimized
-     * for 1D histogram data. The algorithm is initialized by spacing the class
-     * centers equally
-     *
-     * @param histogram the histogram to classify
-     * @param nbClasses the number of classes to extract
-     * @return the optimal class centers after convergence
-     */
-    public static int[] kMeans_Histogram1D(int[] histogram, int nbClasses, int thmin) {
-        int[] centers = new int[nbClasses];
-        double[] sums = new double[nbClasses];
-        double[] nbElements = new double[nbClasses];
-
-        // get first and last non-zero
-        ArrayUtil tab = new ArrayUtil(histogram);
-        int start = tab.getLimitInf(0);
-        int end = tab.getLimitSup();
-        if ((thmin > start) && (thmin < end)) {
-            start = thmin;
-        }
-        double step = (end - start) / (nbClasses);
-
-        for (int i = 0; i < nbClasses; i++) {
-            centers[i] = (int) (start + (i + 1) * step);
-        }
-
-        // basic class initialization : regularly divide the space
-//        for (int i = 0; i < nbClasses; i++) {
-//            centers[i] = (int) ((histogram.length - 1f) * (i + 1f) / (nbClasses + 1f));
-//        }
-        // main loop
-        boolean convergence = false;
-        int count = 1;
-        while (!convergence) {
-            IJ.showStatus("K-means " + count);
-            count++;
-            // assume the convergence is reached
-            // (invalidate this assumption later if class means move)
-            convergence = true;
-            java.util.Arrays.fill(nbElements, 0);
-            java.util.Arrays.fill(sums, 0);
-
-            for (int i = thmin; i < histogram.length; i++) {
-                if (histogram[i] == 0) {
-                    continue;
-                }
-                int closestClass = 0;
-                double minDistance = Double.MAX_VALUE;
-                // compute the shortest distance from the current bin
-                // to a class center and assign the bin to that class
-                for (int k = 0; k < nbClasses; k++) {
-                    double distance = Math.abs(i - centers[k]);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestClass = k;
-                    }
-                }
-
-                // to update each class center to the mean,
-                // accumulate both number and sum per class
-                double nbElemInCurrentBin = histogram[i];
-                sums[closestClass] += i * nbElemInCurrentBin;
-                nbElements[closestClass] += nbElemInCurrentBin;
-            }
-
-            // once all bins have been assigned to a class,
-            // the class centers can be moved toward the new means
-            for (int k = 0; k < nbClasses; k++) {
-                int oldCenter = centers[k];
-                int newCenter = (int) (sums[k] / nbElements[k]);
-                convergence &= (oldCenter == newCenter);
-                centers[k] = newCenter;
-            }
-        }
-
-        return centers;
     }
 
     public void saveArray(String dir, String file, String header) {

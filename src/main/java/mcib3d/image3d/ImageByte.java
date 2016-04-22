@@ -7,33 +7,30 @@ import ij.gui.NewImage;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
+import mcib3d.geom.*;
+import mcib3d.image3d.legacy.IntImage3D;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
-import mcib3d.geom.IntCoord3D;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.Point3D;
-import mcib3d.geom.Voxel3D;
-import mcib3d.image3d.legacy.IntImage3D;
 
 /**
  * Copyright (C) 2012 Jean Ollion
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of tango
- *
+ * <p>
  * tango is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -52,20 +49,6 @@ public class ImageByte extends ImageInt {
     public ImageByte(ImageStack stack) {
         super(stack);
         buildPixels();
-    }
-
-    private void buildPixels() {
-        pixels = new byte[sizeZ][];
-        if (img.getImageStack() != null) {
-            for (int i = 0; i < sizeZ; i++) {
-                pixels[i] = (byte[]) img.getImageStack().getPixels(i + 1);
-            }
-        } else {
-            ImageStack st = new ImageStack(sizeX, sizeY);
-            st.addSlice(img.getProcessor());
-            pixels[0] = (byte[]) img.getProcessor().getPixels();
-            this.img.setStack(null, st);
-        }
     }
 
     public ImageByte(byte[][] pixels, String title, int sizeX) {
@@ -123,23 +106,6 @@ public class ImageByte extends ImageInt {
         return res;
     }
 
-    public Object getArray1D() {
-        byte[] res = new byte[sizeXYZ];
-        int offZ = 0;
-        for (int slice = 0; slice < img.getNSlices(); slice++) {
-            System.arraycopy((byte[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
-            offZ += sizeXY;
-        }
-        return res;
-    }
-
-    public Object getArray1D(int z) {
-        byte[] res = new byte[sizeXY];
-        System.arraycopy((byte[]) img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
-
-        return res;
-    }
-
     public static ImagePlus getImagePlus(byte[] pixels, int sizeX, int sizeY, int sizeZ, boolean setMinAndMax) {
         if (pixels == null) {
             return null;
@@ -165,68 +131,6 @@ public class ImageByte extends ImageInt {
             res.getProcessor().setMinAndMax(min, max);
         }
         return res;
-    }
-    /*
-     * public static ImagePlus convert(ImagePlus img, boolean scaling) { double
-     * max=0; double min=0; int sizeX=img.getWidth(); int sizeY=img.getHeight();
-     * ImageStack is = img.getImageStack(); for (int z = 0; z<img.getNSlices();
-     * z++) { for (int y = 0; y<sizeY; y++) { for (int x=0; x<sizeX; x++) { if
-     * (is.getVoxel(x, y, z) >max) max = is.getVoxel(x, y, z); if
-     * (is.getVoxel(x, y, z) <min) min = is.getVoxel(x, y, z); } } }
-     * img.getProcessor().setMinAndMax(min, max); StackConverter conv = new
-     * StackConverter (img); ImageConverter.setDoScaling(scaling);
-     * conv.convertToGray8(); return img; }
-     *
-     */
-
-    public ImageShort convertToShort(boolean scaling) {
-        if (scaling) {
-            setMinAndMax(null);
-        }
-        ImageStats s = getImageStats(null);
-        int currentSlice = img.getCurrentSlice();
-        ImageProcessor ip;
-        ImageStack stack2 = new ImageStack(sizeX, sizeY);
-        String label;
-        ImageStack stack1 = img.getImageStack();
-        for (int i = 1; i <= sizeZ; i++) {
-            label = stack1.getSliceLabel(i);
-            ip = stack1.getProcessor(i);
-            if (scaling) {
-                ip.setMinAndMax(s.getMin(), s.getMax());
-            }
-            stack2.addSlice(label, ip.convertToShort(scaling));
-        }
-        ImagePlus imp2 = new ImagePlus(img.getTitle(), stack2);
-        imp2.setCalibration(img.getCalibration()); //update calibration
-        imp2.setSlice(currentSlice);
-        imp2.getProcessor().setMinAndMax(0, 255);
-        return (ImageShort) ImageHandler.wrap(imp2);
-    }
-
-    public ImageFloat convertToFloat(boolean scaling) {
-        if (scaling) {
-            setMinAndMax(null);
-        }
-        ImageStats s = getImageStats(null);
-        int currentSlice = img.getCurrentSlice();
-        ImageProcessor ip;
-        ImageStack stack2 = new ImageStack(sizeX, sizeY);
-        String label;
-        ImageStack stack1 = img.getImageStack();
-        for (int i = 1; i <= sizeZ; i++) {
-            label = stack1.getSliceLabel(i);
-            ip = stack1.getProcessor(i);
-            if (scaling) {
-                ip.setMinAndMax(s.getMin(), s.getMax());
-            }
-            stack2.addSlice(label, ip.convertToFloat());
-        }
-        ImagePlus imp2 = new ImagePlus(img.getTitle(), stack2);
-        imp2.setCalibration(img.getCalibration()); //update calibration
-        imp2.setSlice(currentSlice);
-        imp2.getProcessor().setMinAndMax(0, 255);
-        return (ImageFloat) ImageHandler.wrap(imp2);
     }
 
     public static byte[] convert(float[] input, boolean scaling) {
@@ -277,6 +181,99 @@ public class ImageByte extends ImageInt {
             }
         }
         return res;
+    }
+
+    private void buildPixels() {
+        pixels = new byte[sizeZ][];
+        if (img.getImageStack() != null) {
+            for (int i = 0; i < sizeZ; i++) {
+                pixels[i] = (byte[]) img.getImageStack().getPixels(i + 1);
+            }
+        } else {
+            ImageStack st = new ImageStack(sizeX, sizeY);
+            st.addSlice(img.getProcessor());
+            pixels[0] = (byte[]) img.getProcessor().getPixels();
+            this.img.setStack(null, st);
+        }
+    }
+    /*
+     * public static ImagePlus convert(ImagePlus img, boolean scaling) { double
+     * max=0; double min=0; int sizeX=img.getWidth(); int sizeY=img.getHeight();
+     * ImageStack is = img.getImageStack(); for (int z = 0; z<img.getNSlices();
+     * z++) { for (int y = 0; y<sizeY; y++) { for (int x=0; x<sizeX; x++) { if
+     * (is.getVoxel(x, y, z) >max) max = is.getVoxel(x, y, z); if
+     * (is.getVoxel(x, y, z) <min) min = is.getVoxel(x, y, z); } } }
+     * img.getProcessor().setMinAndMax(min, max); StackConverter conv = new
+     * StackConverter (img); ImageConverter.setDoScaling(scaling);
+     * conv.convertToGray8(); return img; }
+     *
+     */
+
+    public Object getArray1D() {
+        byte[] res = new byte[sizeXYZ];
+        int offZ = 0;
+        for (int slice = 0; slice < img.getNSlices(); slice++) {
+            System.arraycopy((byte[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
+            offZ += sizeXY;
+        }
+        return res;
+    }
+
+    public Object getArray1D(int z) {
+        byte[] res = new byte[sizeXY];
+        System.arraycopy((byte[]) img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
+
+        return res;
+    }
+
+    public ImageShort convertToShort(boolean scaling) {
+        if (scaling) {
+            setMinAndMax(null);
+        }
+        ImageStats s = getImageStats(null);
+        int currentSlice = img.getCurrentSlice();
+        ImageProcessor ip;
+        ImageStack stack2 = new ImageStack(sizeX, sizeY);
+        String label;
+        ImageStack stack1 = img.getImageStack();
+        for (int i = 1; i <= sizeZ; i++) {
+            label = stack1.getSliceLabel(i);
+            ip = stack1.getProcessor(i);
+            if (scaling) {
+                ip.setMinAndMax(s.getMin(), s.getMax());
+            }
+            stack2.addSlice(label, ip.convertToShort(scaling));
+        }
+        ImagePlus imp2 = new ImagePlus(img.getTitle(), stack2);
+        imp2.setCalibration(img.getCalibration()); //update calibration
+        imp2.setSlice(currentSlice);
+        imp2.getProcessor().setMinAndMax(0, 255);
+        return (ImageShort) ImageHandler.wrap(imp2);
+    }
+
+    public ImageFloat convertToFloat(boolean scaling) {
+        if (scaling) {
+            setMinAndMax(null);
+        }
+        ImageStats s = getImageStats(null);
+        int currentSlice = img.getCurrentSlice();
+        ImageProcessor ip;
+        ImageStack stack2 = new ImageStack(sizeX, sizeY);
+        String label;
+        ImageStack stack1 = img.getImageStack();
+        for (int i = 1; i <= sizeZ; i++) {
+            label = stack1.getSliceLabel(i);
+            ip = stack1.getProcessor(i);
+            if (scaling) {
+                ip.setMinAndMax(s.getMin(), s.getMax());
+            }
+            stack2.addSlice(label, ip.convertToFloat());
+        }
+        ImagePlus imp2 = new ImagePlus(img.getTitle(), stack2);
+        imp2.setCalibration(img.getCalibration()); //update calibration
+        imp2.setSlice(currentSlice);
+        imp2.getProcessor().setMinAndMax(0, 255);
+        return (ImageFloat) ImageHandler.wrap(imp2);
     }
 
     @Override
@@ -472,7 +469,7 @@ public class ImageByte extends ImageInt {
         if (mask == null) {
             mask = new BlankMask(this);
         }
-        double scale = (double) nBins / (max - min);
+        double scale = (double) nBins / (max - min + 1);
         int[] hist = new int[nBins];
         int idx;
         for (int z = 0; z < sizeZ; z++) {

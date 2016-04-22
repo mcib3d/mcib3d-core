@@ -8,41 +8,36 @@ import ij.gui.NewImage;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import mcib3d.geom.IntCoord3D;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.Point3D;
-import mcib3d.geom.Voxel3D;
-import mcib3d.geom.Voxel3DComparable;
+import mcib3d.geom.*;
 import mcib3d.image3d.legacy.IntImage3D;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.ThreadUtil;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2012 Jean Ollion
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of tango
- *
+ * <p>
  * tango is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -61,20 +56,6 @@ public class ImageFloat extends ImageHandler {
     public ImageFloat(ImageStack img) {
         super(img);
         buildPixels();
-    }
-
-    private void buildPixels() {
-        pixels = new float[sizeZ][];
-        if (img.getImageStack() != null) { //img.getImageStackSize() > 1
-            for (int i = 0; i < sizeZ; i++) {
-                pixels[i] = (float[]) img.getImageStack().getPixels(i + 1);
-            }
-        } else {
-            ImageStack st = new ImageStack(sizeX, sizeY);
-            st.addSlice(img.getProcessor());
-            pixels[0] = (float[]) img.getProcessor().getPixels();
-            this.img.setStack(null, st);
-        }
     }
 
     public ImageFloat(float[][] pixels, String title, int sizeX) {
@@ -119,13 +100,6 @@ public class ImageFloat extends ImageHandler {
         }
     }
 
-    public static ImageFloat newBlankImageFloat(String title, ImageHandler ih) {
-        ImageFloat res = new ImageFloat(title, ih.sizeX, ih.sizeY, ih.sizeZ);
-        res.setScale(ih);
-        res.setOffset(ih);
-        return res;
-    }
-
     public ImageFloat(float[][] matrix) {
         super("matrix", matrix[0].length, matrix.length, 1);
         img = NewImage.createFloatImage(title, sizeX, sizeY, sizeZ, 1);
@@ -138,6 +112,13 @@ public class ImageFloat extends ImageHandler {
         }
     }
 
+    public static ImageFloat newBlankImageFloat(String title, ImageHandler ih) {
+        ImageFloat res = new ImageFloat(title, ih.sizeX, ih.sizeY, ih.sizeZ);
+        res.setScale(ih);
+        res.setOffset(ih);
+        return res;
+    }
+
     public static float[] getArray1DFloat(ImagePlus img) {
         float[] res = new float[img.getNSlices() * img.getWidth() * img.getHeight()];
         int offZ = 0;
@@ -146,22 +127,6 @@ public class ImageFloat extends ImageHandler {
             System.arraycopy((float[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
             offZ += sizeXY;
         }
-        return res;
-    }
-
-    public Object getArray1D() {
-        float[] res = new float[sizeXYZ];
-        int offZ = 0;
-        for (int slice = 0; slice < img.getNSlices(); slice++) {
-            System.arraycopy((float[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
-            offZ += sizeXY;
-        }
-        return res;
-    }
-
-    public Object getArray1D(int z) {
-        float[] res = new float[sizeXY];
-        System.arraycopy((float[]) img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
         return res;
     }
 
@@ -222,6 +187,52 @@ public class ImageFloat extends ImageHandler {
         return res;
     }
 
+    public static float[] convert(short[] input) {
+        float[] res = new float[input.length];
+        for (int i = 0; i < input.length; i++) {
+            res[i] = (float) (input[i] + 0.5f);
+        }
+        return res;
+    }
+
+    public static float[] convert(byte[] input) {
+        float[] res = new float[input.length];
+        for (int i = 0; i < input.length; i++) {
+            res[i] = (float) (input[i]);
+        }
+        return res;
+    }
+
+    private void buildPixels() {
+        pixels = new float[sizeZ][];
+        if (img.getImageStack() != null) { //img.getImageStackSize() > 1
+            for (int i = 0; i < sizeZ; i++) {
+                pixels[i] = (float[]) img.getImageStack().getPixels(i + 1);
+            }
+        } else {
+            ImageStack st = new ImageStack(sizeX, sizeY);
+            st.addSlice(img.getProcessor());
+            pixels[0] = (float[]) img.getProcessor().getPixels();
+            this.img.setStack(null, st);
+        }
+    }
+
+    public Object getArray1D() {
+        float[] res = new float[sizeXYZ];
+        int offZ = 0;
+        for (int slice = 0; slice < img.getNSlices(); slice++) {
+            System.arraycopy((float[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
+            offZ += sizeXY;
+        }
+        return res;
+    }
+
+    public Object getArray1D(int z) {
+        float[] res = new float[sizeXY];
+        System.arraycopy((float[]) img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
+        return res;
+    }
+
     public ImageShort convertToShort(boolean scaling) {
         if (scaling) {
             setMinAndMax(null);
@@ -274,22 +285,6 @@ public class ImageFloat extends ImageHandler {
         }
         res.setScale(this);
         res.setOffset(this);
-        return res;
-    }
-
-    public static float[] convert(short[] input) {
-        float[] res = new float[input.length];
-        for (int i = 0; i < input.length; i++) {
-            res[i] = (float) (input[i] + 0.5f);
-        }
-        return res;
-    }
-
-    public static float[] convert(byte[] input) {
-        float[] res = new float[input.length];
-        for (int i = 0; i < input.length; i++) {
-            res[i] = (float) (input[i]);
-        }
         return res;
     }
 
@@ -361,7 +356,7 @@ public class ImageFloat extends ImageHandler {
 
     @Override
     public void setPixel(Point3D point, float value) {
-        pixels[ point.getRoundZ()][point.getRoundX() + point.getRoundY() * sizeX] = value;
+        pixels[point.getRoundZ()][point.getRoundX() + point.getRoundY() * sizeX] = value;
     }
 
     @Override
@@ -441,7 +436,7 @@ public class ImageFloat extends ImageHandler {
         if (mask == null) {
             mask = new BlankMask(this);
         }
-        double coeff = (double) nBins / (max - min);
+        double coeff = (double) nBins / (max - min + 1);
         int[] hist = new int[nBins];
         int idx;
         for (int z = 0; z < sizeZ; z++) {
@@ -789,7 +784,7 @@ public class ImageFloat extends ImageHandler {
         return new ImageFloat(r.zScale(img, newZ, method));
     }
 
-//    @Override
+    //    @Override
 //    public ImageFloat grayscaleOpen(final int radXY, final int radZ, ImageHandler res, ImageHandler temp, boolean multithread) {
 //        ImageFloat min = this.grayscaleFilter(radXY, radZ, FastFilters3D.MIN, temp, multithread);
 //        ImageFloat open = min.grayscaleFilter(radXY, radZ, FastFilters3D.MAX, res, multithread);
@@ -1004,9 +999,9 @@ public class ImageFloat extends ImageHandler {
      * 3D filter using threads
      *
      * @param out
-     * @param radx Radius of mean filter in x
-     * @param rady Radius of mean filter in y
-     * @param radz Radius of mean filter in z
+     * @param radx   Radius of mean filter in x
+     * @param rady   Radius of mean filter in y
+     * @param radz   Radius of mean filter in z
      * @param zmin
      * @param zmax
      * @param filter

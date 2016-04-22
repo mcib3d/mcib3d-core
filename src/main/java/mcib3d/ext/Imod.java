@@ -236,7 +236,7 @@ public class Imod {
 				A = new Float(data);
 				a[index] = A.floatValue();
 				if (debug) {
-					IJ.write("data angle=" + data + " index=" + index + "/" + nbimage + " a=" + a[index]);
+					IJ.log("data angle=" + data + " index=" + index + "/" + nbimage + " a=" + a[index]);
 				}
 				data = bw.readLine();
 				index++;
@@ -250,14 +250,14 @@ public class Imod {
 		croissant = (a[i] < a[i + 1]);
 		while (((i < index - 1) && (a[i] < a[i + 1]) && (croissant)) || ((i < index - 1) && (a[i] > a[i + 1]) && (!croissant))) {
 			if (debug) {
-				IJ.write("a[" + i + "]=" + a[i] + " a[" + (i + 1) + "]=" + a[i + 1] + " /" + index);
+				IJ.log("a[" + i + "]=" + a[i] + " a[" + (i + 1) + "]=" + a[i + 1] + " /" + index);
 			}
 			i++;
 		}
 
 		if (i < index - 1) {
-			IJ.write("Test angle");
-			IJ.write("a[i]=" + a[i] + " a[i+1]=" + a[i + 1]);
+			IJ.log("Test angle");
+			IJ.log("a[i]=" + a[i] + " a[i+1]=" + a[i + 1]);
 			return false;
 		} else {
 			return true;
@@ -372,7 +372,7 @@ public class Imod {
 					if (data.indexOf("thickness") > 0) {
 						extra = data.substring(75, 79).trim();
 						f = new Float(extra);
-						IJ.write("Computed thickness : " + f);
+						IJ.log("Computed thickness : " + f);
 						// on ne tient pas compte de  cette épaisseur
 					}
 				}

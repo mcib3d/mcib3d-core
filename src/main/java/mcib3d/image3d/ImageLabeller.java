@@ -487,8 +487,8 @@ public class ImageLabeller {
                 for (Vox3D vox : a) {
                     voxels3D.add(new Voxel3D(vox.xy % sizeX, vox.xy / sizeX, vox.z, label));
                 }
-                ArrayList noduplicate = new ArrayList(new HashSet(voxels3D));
-                objects.add(new Object3DVoxels(noduplicate));
+                ArrayList noDuplicate = new ArrayList(new HashSet(voxels3D));
+                objects.add(new Object3DVoxels(noDuplicate));
                 label++;
             }
         }

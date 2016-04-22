@@ -479,7 +479,7 @@ public class Align2D {
 		toty /= sizez;
 		for (int i = 0; i < sizez; i++) {
 			serie[i].addTranslation(-totx, -toty);
-			IJ.write(" final image " + i + " : tx ="
+			IJ.log(" final image " + i + " : tx ="
 					 + serie[i].getTx() + ", ty="
 					 + serie[i].getTy());
 		}
@@ -595,7 +595,7 @@ public class Align2D {
 		int nbrot = serie.length;
 		int nbtr = serie.length;
 		if (nbpoints < 3) {
-			IJ.write("not enough points for mean square method ! call basic translation computing method instead.");
+			IJ.log("not enough points for mean square method ! call basic translation computing method instead.");
 			return basicTranslation(points);
 		}
 
@@ -1016,7 +1016,7 @@ public class Align2D {
 			}
 			totangles += bestangle;
 			serie[i].addRotation(totangles);
-			IJ.write("adding to " + i + " a rotation of " + totangles + " rotation to precedent image " + bestangle);
+			IJ.log("adding to " + i + " a rotation of " + totangles + " rotation to precedent image " + bestangle);
 			img1 = img2;
 			time.stop();
 			String strtime = "rotation : " + 100 * i / (sizez - 1) + "% remaining " + time.remainString(i);
@@ -1025,7 +1025,7 @@ public class Align2D {
 
 		}
 		totangles /= sizez - 1;
-		IJ.write("adding to all a rotation of " + (-totangles));
+		IJ.log("adding to all a rotation of " + (-totangles));
 		for (int i = 0; i < sizez; i++) {
 			serie[i].addRotation(-totangles);
 		}
@@ -1071,14 +1071,14 @@ public class Align2D {
 
 			}
 			serie[i].addRotation(bestangle);
-			IJ.write("adding to " + i + " a rotation of " + bestangle);
+			IJ.log("adding to " + i + " a rotation of " + bestangle);
 			totangles += bestangle;
 			img1 = serie[i].getImage(true);
 			rx1 = rx2;
 			ry1 = ry2;
 		}
 		totangles /= sizez - 1;
-		IJ.write("adding to all a rotation of " + (-totangles));
+		IJ.log("adding to all a rotation of " + (-totangles));
 		for (int i = 0; i < sizez; i++) {
 			serie[i].addRotation(-totangles);
 		}

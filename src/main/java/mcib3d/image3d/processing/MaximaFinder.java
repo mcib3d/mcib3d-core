@@ -212,4 +212,11 @@ public class MaximaFinder {
     public void setVerbose(boolean show) {
         this.verbose = show;
     }
+    
+    @Deprecated
+    public void setShow(boolean show) {
+        this.verbose = show;
+    }
+    
+    
 }
