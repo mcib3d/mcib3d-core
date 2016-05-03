@@ -4,31 +4,31 @@
  */
 package mcib3d.image3d.IterativeThresholding;
 
-import java.util.ArrayList;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.ImageHandler;
 
+import java.util.ArrayList;
+
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2008- 2012 Thomas Boudier and others
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of mcib3d
- *
+ * <p>
  * mcib3d is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -37,7 +37,10 @@ import mcib3d.image3d.ImageHandler;
 public class ObjectTrack {
 
 
-    private Object3D object = null;
+    public static int STATE_UNKNOWN = 0;
+    public static int STATE_DIE = 1;
+    public static int STATE_DIVIDE = 2;
+    public static int STATE_MOVE = 3;
     // measurements
     public double valueCriteria;
     public double sphericity;
@@ -49,14 +52,11 @@ public class ObjectTrack {
     public Voxel3D seed;
     public int threshold;
     public ImageHandler rawImage;
+    private Object3D object = null;
     private double time = 0;
     private int frame = 0;
     private ArrayList<ObjectTrack> children = null;
     private ObjectTrack parent = null;
-    public static int STATE_UNKNOWN = 0;
-    public static int STATE_DIE = 1;
-    public static int STATE_DIVIDE = 2;
-    public static int STATE_MOVE = 3;
     private int state = STATE_UNKNOWN;
 
     public ObjectTrack() {
@@ -66,9 +66,9 @@ public class ObjectTrack {
     //    return object;
     //}
 
-   // public void setObject(Object3D object) {
-     //   this.object = object;
-   // }
+    // public void setObject(Object3D object) {
+    //   this.object = object;
+    // }
 
     public ObjectTrack getParent() {
         return parent;
@@ -94,6 +94,10 @@ public class ObjectTrack {
         return state;
     }
 
+    public void setState(int state) {
+        this.state = state;
+    }
+
     public boolean isNew() {
         return parent == null;
     }
@@ -104,10 +108,6 @@ public class ObjectTrack {
         } else {
             return children.size();
         }
-    }
-
-    public void setState(int state) {
-        this.state = state;
     }
 
     public void addChild(ObjectTrack child) {
@@ -187,8 +187,8 @@ public class ObjectTrack {
         this.object = object;
     }
 
-    public void computeCriterion(Criterion criterion){
-        criterion.computeCriterion(getObject());
+    public void computeCriterion(Criterion criterion) {
+        valueCriteria = criterion.computeCriterion(getObject());
     }
 
 

@@ -134,19 +134,22 @@ public class TrackThreshold {
     }
 
     private int[] initHistogram(ImageHandler img) {
-        int[] histoThreshold = new int[0];
+        int[] histogramThreshold = new int[0];
         if (threshold_method == THRESHOLD_METHOD_STEP) {
             int min = (int) img.getMin();
             int max = (int) img.getMax();
             ImageInt mask = null;
-            int[] histogramImage = img.getHistogram(mask, max - min + 1, min, max);
+            int[] histogramImage = img.getHistogram(mask, 65536, 0, 65535);
             ArrayList<Integer> histogramTmp = new ArrayList<Integer>();
-            for (int i = 0; i < histogramImage.length; i++) {
-                if (histogramImage[i] > 0) histogramTmp.add(i);
+            int i = startThreshold;
+            while (i < max) {
+                while ((histogramImage[i] == 0) && (i < max)) i++;
+                histogramTmp.add(i);
+                i += step;
             }
-            histoThreshold = new int[histogramTmp.size()];
-            for (int i = 0; i < histogramTmp.size(); i++) {
-                histoThreshold[i] = histogramTmp.get(i);
+            histogramThreshold = new int[histogramTmp.size()];
+            for (i = 0; i < histogramTmp.size(); i++) {
+                histogramThreshold[i] = histogramTmp.get(i);
             }
         } else if (threshold_method == THRESHOLD_METHOD_KMEANS) {
             // K-means
@@ -155,12 +158,12 @@ public class TrackThreshold {
             if (verbose) {
                 IJ.log("Computing k-means");
             }
-            histoThreshold = ArrayUtil.kMeans_Histogram1D(h, nbClasses, startThreshold);
-            Arrays.sort(histoThreshold);
+            histogramThreshold = ArrayUtil.kMeans_Histogram1D(h, nbClasses, startThreshold);
+            Arrays.sort(histogramThreshold);
         } else if (threshold_method == THRESHOLD_METHOD_VOLUME)
-            histoThreshold = constantVoxelsHistogram(img, nbClasses, startThreshold);
+            histogramThreshold = constantVoxelsHistogram(img, nbClasses, startThreshold);
 
-        return histoThreshold;
+        return histogramThreshold;
     }
 
     private ArrayList<ObjectTrack> computeAssociation(ArrayList<ObjectTrack> frame1, ArrayList<ObjectTrack> frame2, ArrayList<ObjectTrack> allFrames, ImageHandler labels2) {
@@ -222,10 +225,6 @@ public class TrackThreshold {
             // add measurements
             obt.computeCriterion(criterion);
             obt.volume = ob.getVolumePixels();
-            obt.sphericity = ob.getCompactness();
-            obt.elongation = ob.getMainElongation();
-            obt.DCavg = ob.getDistCenterMean();
-            obt.DCsd = ob.getDistCenterSigma();
             obt.seed = ob.getFirstVoxel();
             obt.threshold = threshold;
             obt.rawImage = img;
@@ -241,12 +240,14 @@ public class TrackThreshold {
         else
             criterion = new CriterionElongation();
         BestCriterion bestCriterion;
-        if (criteria_method == CRITERIA_METHOD_MAX_VOLUME) bestCriterion = new BestCriteriaMax();
-        else bestCriterion = new BestCriteriaMin();
-        int T0, Tmaximum, T1;
+        if (criteria_method == CRITERIA_METHOD_MAX_VOLUME)
+            bestCriterion = new BestCriteriaMax();
+        else
+            bestCriterion = new BestCriteriaMin();
+        int T0, TMaximum, T1;
         int[] histogramThreshold;
         ImageLabeller labeler = new ImageLabeller(volMin, volMax);
-        Tmaximum = (int) img.getMax();
+        TMaximum = (int) img.getMax();
 
         if (verbose) IJ.log("Analysing histogram ...");
         histogramThreshold = initHistogram(img);
@@ -268,8 +269,8 @@ public class TrackThreshold {
         allFrames.addAll(frame1);
         // use histogram and unique values to loop over pixel values
         GlobalThreshold = 1;
-        while (T1 <= Tmaximum) {
-            int T2 = computeNextThreshold(T1, Tmaximum, img, histogramThreshold);
+        while (T1 <= TMaximum) {
+            int T2 = computeNextThreshold(T1, TMaximum, img, histogramThreshold);
             if (T2 < 0) break;
             if (verbose) IJ.log(update + "Computing frame for threshold " + T2 + "                   ");
 
@@ -320,43 +321,19 @@ public class TrackThreshold {
                     }
                     ArrayList<ObjectTrack> list = obt.getLineageTo(anc);
 
-                    // test maximal volume //or one with minimal elongation
-                    // get all values
-                    ArrayUtil vols = new ArrayUtil(list.size());
-                    for (int i = 0; i < vols.getSize(); i++) {
-                        if ((criteria_method == CRITERIA_METHOD_MAX_VOLUME) || (criteria_method == CRITERIA_METHOD_MSER)) {
-                            vols.putValue(i, list.get(i).volume);
-                        } else if (criteria_method == CRITERIA_METHOD_MIN_ELONGATION) {
-                            vols.putValue(i, list.get(i).elongation);
-                        }
-                    }
-                    int imax = 0;
-                    if (criteria_method == CRITERIA_METHOD_MAX_VOLUME) {
-                        imax = vols.getMaximumIndex();
-                        imax = bestCriterion.computeBestCriterion(vols);
-                    } else if (criteria_method == CRITERIA_METHOD_MIN_ELONGATION) {
-                        imax = vols.getMinimumIndex();
-                    } else if (criteria_method == CRITERIA_METHOD_MSER) {
-                        if (vols.getSize() == 1) {
-                            imax = 0;
-                        } else {
-                            ArrayUtil diff = vols.getDifferenceNextAbs();
-                            imax = diff.getMinimumIndex();
-                        }
-                    }
+                    ObjectTrack bestObject = computeBestObject(list, bestCriterion);
+
                     // segment spot
                     Voxel3D seed = anc.seed;
                     int threshold = anc.threshold;
-                    ObjectTrack obdraw = anc;
-                    if (imax >= 0) {
-                        obdraw = list.get(imax);
-                        seed = obdraw.seed;
-                        threshold = obdraw.threshold;
+                    ObjectTrack objectSegment = anc;
+                    if (bestObject != null) {
+                        objectSegment = bestObject;
+                        seed = objectSegment.seed;
+                        threshold = objectSegment.threshold;
                     }
-                    Segment3DSpots segspot = new Segment3DSpots(obdraw.rawImage, null);
-                    ArrayList<Voxel3D> vox = segspot.segmentSpotClassical(seed.getRoundX(), seed.getRoundY(), seed.getRoundZ(), threshold, idx);
-                    Object3DVoxels obnew = new Object3DVoxels(vox);
-                    obnew.draw(draw, idx);
+                    Segment3DSpots SegmentSpot = new Segment3DSpots(objectSegment.rawImage, null);
+                    new Object3DVoxels(SegmentSpot.segmentSpotClassical(seed.getRoundX(), seed.getRoundY(), seed.getRoundZ(), threshold, idx)).draw(draw, idx);
                     // set to remove all objects in list
                     toBeRemoved.addAll(list);
                     idx++;
@@ -382,25 +359,43 @@ public class TrackThreshold {
         return drawsReconstruct;
     }
 
+    private ObjectTrack computeBestObject(ArrayList<ObjectTrack> list, BestCriterion bestCriterion) {
+        // test maximal volume //or one with minimal elongation
+        // get all values
+        ArrayUtil valueCriterion = new ArrayUtil(list.size());
+        for (int i = 0; i < valueCriterion.getSize(); i++) {
+            valueCriterion.putValue(i, list.get(i).valueCriteria);
+        }
+
+        int indexBest = 0;
+        if (criteria_method == CRITERIA_METHOD_MAX_VOLUME) {
+            //indexBest = valueCriterion.getMaximumIndex();
+            indexBest = bestCriterion.computeBestCriterion(valueCriterion);
+        } else if (criteria_method == CRITERIA_METHOD_MIN_ELONGATION) {
+            //indexBest = valueCriterion.getMinimumIndex();
+            indexBest = bestCriterion.computeBestCriterion(valueCriterion);
+        } else if (criteria_method == CRITERIA_METHOD_MSER) {
+            if (valueCriterion.getSize() == 1) {
+                indexBest = 0;
+            } else {
+                ArrayUtil diff = valueCriterion.getDifferenceNextAbs();
+                indexBest = diff.getMinimumIndex();
+            }
+        }
+        return list.get(indexBest);
+    }
+
     private int computeNextThreshold(int T1, int Tmax, ImageHandler img, int[] histogram) {
         int T2 = T1;
         if (T2 < Tmax) {
-            if (threshold_method == THRESHOLD_METHOD_STEP) {
-                T2 = T1 + step;
-                while ((!img.hasOneValue(T2)) && (T2 <= Tmax + 1)) {
-                    T2++;
-                }
-                if (T2 > Tmax + 1) T2 = -1;
-            } else if ((threshold_method == THRESHOLD_METHOD_KMEANS) || (threshold_method == THRESHOLD_METHOD_VOLUME)) {
+            T2 = histogram[GlobalThreshold];
+            GlobalThreshold++;
+            while ((T2 == 0) && (T2 <= Tmax + 1) && (GlobalThreshold < histogram.length)) {
                 T2 = histogram[GlobalThreshold];
                 GlobalThreshold++;
-                while ((T2 == 0) && (T2 <= Tmax + 1) && (GlobalThreshold < histogram.length)) {
-                    T2 = histogram[GlobalThreshold];
-                    GlobalThreshold++;
-                }
-                if ((T2 > Tmax + 1) || (GlobalThreshold >= histogram.length)) {
-                    T2 = -1;
-                }
+            }
+            if ((T2 > Tmax + 1) || (GlobalThreshold >= histogram.length)) {
+                T2 = -1;
             }
         } else if (T2 == Tmax) {
             // use extra threshold to finalize all objects without any child

@@ -844,10 +844,10 @@ public class Segment3DSpots {
      * @return true if object cold be segmented
      */
     public ArrayList<Voxel3D> segmentSpotClassical(int xdep, int ydep, int zdep, int lcThreshold, int val) {
-        boolean changement = true;
-        int xfin = xdep + 1;
-        int yfin = ydep + 1;
-        int zfin = zdep + 1;
+        boolean change = true;
+        int xEnd = xdep + 1;
+        int yEnd = ydep + 1;
+        int zEnd = zdep + 1;
         int sens = 1;
         int value = val;
         if (labelImage == null) {
@@ -872,11 +872,11 @@ public class Segment3DSpots {
         int waterCenter = 0;
         int water = 0;
 
-        while (changement) {
-            changement = false;
-            for (k = sens == 1 ? zdep : zfin; ((sens == 1 && k <= zfin) || (sens == -1 && k >= zdep)); k += sens) {
-                for (j = sens == 1 ? ydep : yfin; ((sens == 1 && j <= yfin) || (sens == -1 && j >= ydep)); j += sens) {
-                    for (i = sens == 1 ? xdep : xfin; ((sens == 1 && i <= xfin) || (sens == -1 && i >= xdep)); i += sens) {
+        while (change) {
+            change = false;
+            for (k = sens == 1 ? zdep : zEnd; ((sens == 1 && k <= zEnd) || (sens == -1 && k >= zdep)); k += sens) {
+                for (j = sens == 1 ? ydep : yEnd; ((sens == 1 && j <= yEnd) || (sens == -1 && j >= ydep)); j += sens) {
+                    for (i = sens == 1 ? xdep : xEnd; ((sens == 1 && i <= xEnd) || (sens == -1 && i >= xdep)); i += sens) {
                         if (labelImage.contains(i, j, k) && labelImage.getPixel(i, j, k) == value) {
                             if (WATERSHED) {
                                 waterCenter = watershedImage.getPixelInt(i, j, k);
@@ -904,22 +904,22 @@ public class Segment3DSpots {
                                                 if (l < xdep) {
                                                     xdep--;
                                                 }
-                                                if (l > xfin) {
-                                                    xfin++;
+                                                if (l > xEnd) {
+                                                    xEnd++;
                                                 }
                                                 if (m < ydep) {
                                                     ydep--;
                                                 }
-                                                if (m > yfin) {
-                                                    yfin++;
+                                                if (m > yEnd) {
+                                                    yEnd++;
                                                 }
                                                 if (n < zdep) {
                                                     zdep--;
                                                 }
-                                                if (n > zfin) {
-                                                    zfin++;
+                                                if (n > zEnd) {
+                                                    zEnd++;
                                                 }
-                                                changement = true;
+                                                change = true;
                                             }
                                         }
                                     }
