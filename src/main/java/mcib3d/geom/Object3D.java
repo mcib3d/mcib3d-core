@@ -502,7 +502,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * Gets the list of values inside an image as an array
      *
-     * @param the image
+     * @param ima image
      * @return the array of pixel values
      */
     public float[] getArrayValues(ImageHandler ima) {
@@ -524,8 +524,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * Gets the quantile value of the object in the image
      *
-     * @param the image
-     * @param the quantile (0-1)
+     * @param ima image
      * @return the quantile value
      */
     public double getQuantilePixValue(ImageHandler ima, double quantile) {
@@ -788,9 +787,9 @@ public abstract class Object3D implements Comparable<Object3D> {
         if (this instanceof Object3DSurface) {
             return (Object3DSurface) this;
         } else if (this instanceof Object3DVoxels) {
-            return new Object3DSurface(((Object3DVoxels) (this)).computeMeshSurface(true));
+            return new Object3DSurface(this.computeMeshSurface(true));
         } else if (this instanceof Object3DLabel) {
-            return new Object3DSurface(((Object3DLabel) (this)).computeMeshSurface(true));
+            return new Object3DSurface(this.computeMeshSurface(true));
         } else {
             return null;
         }
@@ -857,7 +856,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * Drawing inside an image, with default value = object value
      *
-     * @param the image
+     * @param mask image
      */
     public void draw(ImageHandler mask) {
         draw(mask, this.getValue());
@@ -866,9 +865,9 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * Drawing links between two objects
      *
-     * @param image
-     * @param object
-     * @param color
+     * @param mask
+     * @param other
+     * @param col
      */
     public void drawLink(ImageHandler mask, Object3D other, int col) {
         ObjectCreator3D create = new ObjectCreator3D(mask);
@@ -1408,7 +1407,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         double ccz = cen[2];
 
         ArrayList<Voxel3D> cont = getContours();
-        ArrayList<Voxel3D> orientedCont = new ArrayList();
+        ArrayList<Voxel3D> orientedCont = new ArrayList<Voxel3D>();
         for (Voxel3D vox : cont) {
             double nx = v0x * (vox.getX() - ccx) + v1x * (vox.getY() - ccy) + v2x * (vox.getZ() - ccz) + ccx;
             double ny = v0y * (vox.getX() - ccx) + v1y * (vox.getY() - ccy) + v2y * (vox.getZ() - ccz) + ccy;
@@ -1514,9 +1513,8 @@ public abstract class Object3D implements Comparable<Object3D> {
     public Vector3D getVectorAxis(int order) {
         computeEigen();
         Matrix evect = eigen.getV();
-        Vector3D res = new Vector3D(evect.get(0, order), evect.get(1, order), evect.get(2, order));
 
-        return res;
+        return new Vector3D(evect.get(0, order), evect.get(1, order), evect.get(2, order));
     }
 
     /**
@@ -1563,7 +1561,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public void computeContours(ImageHandler ima) {
         areaNbVoxels = 0;
-        contours = new ArrayList();
+        contours = new ArrayList<Voxel3D>();
         for (int k = zmin; k <= zmax; k++) {
             for (int j = ymin; j <= ymax; j++) {
                 for (int i = xmin; i <= xmax; i++) {
@@ -1659,7 +1657,6 @@ public abstract class Object3D implements Comparable<Object3D> {
             ArrayList cont = this.getContours();
 
             int s = getContours().size();
-            double sd = s;
             //Voxel3D tmpmin = null;
 
             for (int j = 0; j < s; j++) {
@@ -1680,8 +1677,8 @@ public abstract class Object3D implements Comparable<Object3D> {
 
             distcentermax = Math.sqrt(distmax);
             distcentermin = Math.sqrt(distmin);
-            distcentermean = distsum / sd;
-            distcentersigma = Math.sqrt((distsum2 - ((distsum * distsum) / sd)) / (sd - 1));
+            distcentermean = distsum / (double) s;
+            distcentersigma = Math.sqrt((distsum2 - ((distsum * distsum) / (double) s)) / ((double) s - 1));
         }
     }
 
@@ -1816,8 +1813,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return distance
      */
     public double distCenterUnit(Object3D autre) {
-        double dist = Math.sqrt((bx - autre.bx) * (bx - autre.bx) * resXY * resXY + (by - autre.by) * (by - autre.by) * resXY * resXY + (bz - autre.bz) * (bz - autre.bz) * resZ * resZ);
-        return dist;
+        return Math.sqrt((bx - autre.bx) * (bx - autre.bx) * resXY * resXY + (by - autre.by) * (by - autre.by) * resXY * resXY + (bz - autre.bz) * (bz - autre.bz) * resZ * resZ);
     }
 
     /**
@@ -1827,8 +1823,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return distance
      */
     public double distCenter2DUnit(Object3D autre) {
-        double dist = Math.sqrt((bx - autre.bx) * (bx - autre.bx) * resXY * resXY + (by - autre.by) * (by - autre.by) * resXY * resXY);
-        return dist;
+        return Math.sqrt((bx - autre.bx) * (bx - autre.bx) * resXY * resXY + (by - autre.by) * (by - autre.by) * resXY * resXY);
     }
 
     /**
@@ -1932,9 +1927,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         if (contours == null) {
             this.computeContours();
         }
-        Iterator<Voxel3D> it = contours.iterator();
-        while (it.hasNext()) {
-            Voxel3D v = it.next();
+        for (Voxel3D v : contours) {
             if (v.distBlock(vox) < 0.001) {
                 return true;
             }
@@ -1951,11 +1944,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return true or false
      */
     public boolean insideBounding(double x, double y, double z) {
-        if ((x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax) && (z >= zmin) && (z <= zmax)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax) && (z >= zmin) && (z <= zmax);
     }
 
     /**
@@ -1967,11 +1956,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return true or false
      */
     public boolean insideBounding(float x, float y, float z) {
-        if ((x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax) && (z >= zmin) && (z <= zmax)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (x >= xmin) && (x <= xmax) && (y >= ymin) && (y <= ymax) && (z >= zmin) && (z <= zmax);
     }
 
     /**
@@ -1985,11 +1970,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return
      */
     public boolean insideBounding(double x, double y, double z, int rx, int ry, int rz) {
-        if ((x >= xmin - rx) && (x <= xmax + rx) && (y >= ymin - ry) && (y <= ymax + ry) && (z >= zmin - rz) && (z <= zmax + rz)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (x >= xmin - rx) && (x <= xmax + rx) && (y >= ymin - ry) && (y <= ymax + ry) && (z >= zmin - rz) && (z <= zmax + rz);
     }
 
     public boolean inside(Point3D P) {
@@ -2064,11 +2045,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         int oymax = autre.getYmax();
         int ozmin = autre.getZmin();
         int ozmax = autre.getZmax();
-        if (insideBounding(oxmin, oymin, ozmin) && insideBounding(oxmin, oymax, ozmin) && insideBounding(oxmax, oymin, ozmin) && insideBounding(oxmax, oymax, ozmin) && insideBounding(oxmin, oymin, ozmax) && insideBounding(oxmin, oymax, ozmax) && insideBounding(oxmax, oymin, ozmax) && insideBounding(oxmax, oymax, ozmax)) {
-            return true;
-        } else {
-            return false;
-        }
+        return insideBounding(oxmin, oymin, ozmin) && insideBounding(oxmin, oymax, ozmin) && insideBounding(oxmax, oymin, ozmin) && insideBounding(oxmax, oymax, ozmin) && insideBounding(oxmin, oymin, ozmax) && insideBounding(oxmin, oymax, ozmax) && insideBounding(oxmax, oymin, ozmax) && insideBounding(oxmax, oymax, ozmax);
     }
 
     /**
@@ -2268,7 +2245,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
         // FIXME use kd-tree for optimisation
         for (int i = 0; i < s; i++) {
-            p0 = (Voxel3D) contours.get(i);
+            p0 = contours.get(i);
             j0 = -1;
             // if voxel inside other object does not count it
             if (other.inside(p0)) {
@@ -2417,19 +2394,17 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     public Voxel3D[] VoxelsBorderBorder(Object3D other) {
-        double distmin = Double.MAX_VALUE;
+        double distanceMinimum = Double.MAX_VALUE;
         Voxel3D otherBorder = null, thisBorder = null;
         KDTreeC tree = this.getKdtreeContours();
-        //IJ.log("border " + tree + " " + this.getContours().size() + " " + other.getContours().size());
 
-        for (Voxel3D othervox : other.getContours()) {
-            double[] pos = othervox.getArray();
+        for (Voxel3D otherVoxel : other.getContours()) {
+            double[] pos = otherVoxel.getArray();
             Item item = tree.getNearestNeighbor(pos, 1)[0];
-            //IJ.log("pixelborder " + item);
-            if (item.distanceSq < distmin) {
-                otherBorder = othervox;
+            if (item.distanceSq < distanceMinimum) {
+                otherBorder = otherVoxel;
                 thisBorder = (Voxel3D) item.obj;
-                distmin = item.distanceSq;
+                distanceMinimum = item.distanceSq;
             }
         }
 
@@ -2480,9 +2455,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public Vector3D vectorCenterBorder(Object3D other) {
 
-        Vector3D V = other.vectorPixelBorder(this.getCenterAsVector());
-
-        return V;
+        return other.vectorPixelBorder(this.getCenterAsVector());
 
         /*
          * double distmin = Double.MAX_VALUE; double dist; Voxel3D p1 = new
@@ -2515,9 +2488,8 @@ public abstract class Object3D implements Comparable<Object3D> {
         double[] pos = {x, y, z};
         Item item = getKdtreeContours().getNearestNeighbor(pos, 1)[0];
         //System.out.println("object:"+this.getValue()+" contour: "+this.contours.size()+ " item null?"+(item==null));
-        Voxel3D vox = (Voxel3D) item.obj;
 
-        return vox;
+        return (Voxel3D) item.obj;
     }
 
     /**
@@ -2619,10 +2591,9 @@ public abstract class Object3D implements Comparable<Object3D> {
         Voxel3D stock = new Voxel3D();
         Vector3D here = new Vector3D(x, y, z);
         Vector3D rad;
-        ArrayList cont = this.getContours();
-        Iterator it = cont.iterator();
-        while (it.hasNext()) {
-            edge = (Voxel3D) it.next();
+        ArrayList<Voxel3D> cont = this.getContours();
+        for (Voxel3D aCont : cont) {
+            edge = aCont;
             rad = new Vector3D(here, edge);
             rad.multiply(resXY, resXY, resZ);
             dist = (1.0 - dir.colinear(rad));
@@ -2696,8 +2667,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         double OF = this.distCenterUnit(b);
         double IF = a.distCenterUnit(b);
         double cosangle = (IF * IF - OF * OF - OI * OI) / (-2.0 * OF * OI);
-        double angledeg = Math.toDegrees(Math.acos(cosangle));
-        return angledeg;
+        return Math.toDegrees(Math.acos(cosangle));
     }
 
     /**
@@ -2936,9 +2906,8 @@ public abstract class Object3D implements Comparable<Object3D> {
         Voxel3D vox;
         double xx;
         double yy;
-        Iterator it = getVoxels().iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D o : getVoxels()) {
+            vox = o;
             xx = vox.getX() - xm;
             yy = vox.getY() - ym;
             // TODO suface vertices may have coordinates < 0 if touching edges 
@@ -2991,9 +2960,8 @@ public abstract class Object3D implements Comparable<Object3D> {
         this.offY = ymi;
         this.offZ = zmi;
         Voxel3D vox;
-        Iterator it = getVoxels().iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D o : getVoxels()) {
+            vox = o;
             if (SegImage.contains(vox.getRoundX() - offX, vox.getRoundY() - offY, vox.getRoundZ() - offZ)) {
                 SegImage.setPixel(vox.getRoundX() - offX, vox.getRoundY() - offY, vox.getRoundZ() - offZ, val);
             }
@@ -3116,11 +3084,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         // use coloc
         int co = this.getColoc(obj);
         //IJ.log("includes " + co + " " + obj.getVolumePixels());
-        if (co == obj.getVolumePixels()) {
-            return true;
-        } else {
-            return false;
-        }
+        return co == obj.getVolumePixels();
 
 //        ImageInt inter = this.createIntersectionImage(obj, 1, 2);
 //        int[] hist = inter.getHistogram(new BlankMask(inter), 256, 0, 255);
@@ -3326,7 +3290,6 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param radX
      * @param radY
      * @param radZ
-     * @param createLabelImage
      * @return
      */
     public Object3DVoxels getDilatedObject(float radX, float radY, float radZ) {
@@ -3338,7 +3301,6 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param radX
      * @param radY
      * @param radZ
-     * @param createLabelImage
      * @return
      */
     public Object3DVoxels getErodedObject(float radX, float radY, float radZ) {
@@ -3350,7 +3312,6 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param radX
      * @param radY
      * @param radZ
-     * @param createLabelImage
      * @return
      */
     public Object3DVoxels getClosedObject(float radX, float radY, float radZ) {
@@ -3362,7 +3323,6 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param radX
      * @param radY
      * @param radZ
-     * @param createLabelImage
      * @return
      */
     public Object3DVoxels getOpenedObject(float radX, float radY, float radZ) {

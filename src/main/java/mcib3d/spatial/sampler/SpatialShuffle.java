@@ -31,9 +31,8 @@ public class SpatialShuffle implements SpatialModel {
     @Override
     public Objects3DPopulation getSample() {
         ArrayList<Object3D> shuObj = population.shuffle();
-        Objects3DPopulation pop = new Objects3DPopulation(shuObj);
 
-        return pop;
+        return new Objects3DPopulation(shuObj);
     }
 
     @Override

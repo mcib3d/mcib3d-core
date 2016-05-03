@@ -146,11 +146,8 @@ public class ObjectCreator3D {
      * @param gauss Is gaussian decrease of the intensity
      */
     public void createSphere(double centerx, double centery, double centerz, double radius, float value, boolean gauss) {
-        double rx = radius;
-        double ry = radius;
-        double rz = radius;
 
-        createEllipsoid((int) Math.round(centerx), (int) Math.round(centery), (int) Math.round(centerz), rx, ry, rz, value, gauss);
+        createEllipsoid((int) Math.round(centerx), (int) Math.round(centery), (int) Math.round(centerz), radius, radius, radius, value, gauss);
     }
 
     /**
@@ -1157,13 +1154,13 @@ public class ObjectCreator3D {
         int bottom = (int) (centery + ry - 1);
         int back = (int) (centerz + rz - 1);
 
-        int drawingLeft = (int) Math.max(left, 0);
-        int drawingTop = (int) Math.max(top, 0);
-        int drawingFront = (int) Math.max(front, 0);
+        int drawingLeft = Math.max(left, 0);
+        int drawingTop = Math.max(top, 0);
+        int drawingFront = Math.max(front, 0);
 
-        int drawingRight = (int) Math.min(right, img.sizeX);
-        int drawingBottom = (int) Math.min(bottom, img.sizeY);
-        int drawingBack = (int) Math.min(back, img.sizeZ);
+        int drawingRight = Math.min(right, img.sizeX);
+        int drawingBottom = Math.min(bottom, img.sizeY);
+        int drawingBack = Math.min(back, img.sizeZ);
 
         double lpr2 = (double) (left + right) / 2;
         double tpb2 = (double) (top + bottom) / 2;
@@ -1184,7 +1181,7 @@ public class ObjectCreator3D {
                         double pcentY = (double) (y - top) / bmt;
                         double pcentZ = (double) (z - front) / bmf;
 
-                        float imgPx = (int) Math.round(img.getPixel(x, y, z));
+                        float imgPx = Math.round(img.getPixel(x, y, z));
 
                         int pixel;
                         if (sphere) {
@@ -1210,9 +1207,8 @@ public class ObjectCreator3D {
      * @return The IJstack
      */
     public ImageStack getStack() {
-        ImageStack stack = img.getImageStack();
         // should calibrate the IJstack
-        return stack;
+        return img.getImageStack();
     }
 
     public ImagePlus getPlus() {

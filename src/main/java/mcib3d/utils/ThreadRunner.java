@@ -66,16 +66,16 @@ public class ThreadRunner {
     
     
     protected static void startAndJoin(Thread[] threads) {
-        for (int ithread = 0; ithread < threads.length; ++ithread) {
-            threads[ithread].setPriority(Thread.NORM_PRIORITY);
-            threads[ithread].start();
+        for (Thread thread : threads) {
+            thread.setPriority(Thread.NORM_PRIORITY);
+            thread.start();
             //SwingUtilities.invokeLater(threads[ithread]);
-            
+
         }
 
         try {
-            for (int ithread = 0; ithread < threads.length; ++ithread) {
-                threads[ithread].join();
+            for (Thread thread : threads) {
+                thread.join();
             }
         } catch (InterruptedException ie) {
             throw new RuntimeException(ie);

@@ -357,8 +357,8 @@ public class Deriche {
         int c1, c2;
         double val;
 
-        for (int i = 0; i < voxels.size(); i++) {
-            val = s.getVoxel(voxels.get(i).getRoundX(), voxels.get(i).getRoundY(), voxels.get(i).getRoundZ());
+        for (Voxel3D voxel : voxels) {
+            val = s.getVoxel(voxel.getRoundX(), voxel.getRoundY(), voxel.getRoundZ());
 
         }
 

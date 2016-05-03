@@ -142,7 +142,7 @@ public abstract class ImageInt extends ImageHandler {
     public ArrayList<Integer> getUniqueValues(int th) {
         boolean[] vals = new boolean[(int) (getMax() + 1)];
         Arrays.fill(vals, false);
-        ArrayList<Integer> list = new ArrayList();
+        ArrayList<Integer> list = new ArrayList<Integer>();
         for (int c = 0; c < sizeXYZ; c++) {
             int pix = getPixelInt(c);
             if ((pix > th) && (!vals[pix])) {
@@ -379,8 +379,8 @@ public abstract class ImageInt extends ImageHandler {
     /**
      * Replace a pixel value by another
      *
-     * @param val the value to be replaced
-     * @param rep the new value
+     * @param val1 the value to be replaced
+     * @param rep1 the new value
      */
     public void replacePixelsValue(int val1, int rep1, int val2, int rep2) {
         for (int k = 0; k < sizeXYZ; k++) {
@@ -412,8 +412,8 @@ public abstract class ImageInt extends ImageHandler {
     /**
      * Replace pixel values by others
      *
-     * @param val the values to be replaced
-     * @param rep the new values
+     * @param values the values to be replaced
+     * @param replace the new values
      */
     public void replacePixelsValue(int[] values, int[] replace) {
         for (int k = 0; k < sizeXYZ; k++) {
@@ -430,8 +430,8 @@ public abstract class ImageInt extends ImageHandler {
     /**
      * Replace a pixel values by another
      *
-     * @param val the values to be replaced
-     * @param rep the new value
+     * @param values the values to be replaced
+     * @param replace the new value
      */
     public void replacePixelsValue(int[] values, int replace) {
         for (int k = 0; k < sizeXYZ; k++) {
@@ -483,7 +483,7 @@ public abstract class ImageInt extends ImageHandler {
 
     public ImageInt addImage(ImageInt other) {
         ImageInt res;
-        if (!this.sameDimentions(other)) {
+        if (!this.sameDimensions(other)) {
             return null;
         }
         // both images are byte then return byte
@@ -502,7 +502,7 @@ public abstract class ImageInt extends ImageHandler {
 
     public ImageInt diffAbsImage(ImageHandler other) {
         ImageInt res;
-        if (!this.sameDimentions(other)) {
+        if (!this.sameDimensions(other)) {
             return null;
         }
         // both images are byte then return byte
@@ -524,7 +524,7 @@ public abstract class ImageInt extends ImageHandler {
 
     public ImageInt substractImage(ImageInt other) {
         ImageInt res;
-        if (!this.sameDimentions(other)) {
+        if (!this.sameDimensions(other)) {
             return null;
         }
         // both images are byte then return byte
@@ -762,8 +762,7 @@ public abstract class ImageInt extends ImageHandler {
      * @return 3D filtered image
      */
     public ImageInt adaptiveFilter(float radx, float rady, float radz, int nbcpus) {
-        ImageInt adaptimg = (ImageInt) this.createSameDimensions();
-        final ImageInt adaptimg2 = adaptimg;
+        final ImageInt adaptimg2 = (ImageInt) this.createSameDimensions();
 
         // create kernel
         final int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
@@ -800,12 +799,12 @@ public abstract class ImageInt extends ImageHandler {
                         for (int j = 0; j < sizeY; j++) {
                             for (int i = 0; i < sizeX; i++) {
                                 tab[0] = getNeighborhoodKernel(ker, nb2, i, j, k, radX2, radY2, radZ2);
-                                tab[1] = getNeighborhoodKernel(ker, nb2, (int) (i + dep), j, k, radX2, radY2, radZ2);
-                                tab[2] = getNeighborhoodKernel(ker, nb2, (int) (i - dep), j, k, radX2, radY2, radZ2);
-                                tab[3] = getNeighborhoodKernel(ker, nb2, i, (int) (j + dep), k, radX2, radY2, radZ2);
-                                tab[4] = getNeighborhoodKernel(ker, nb2, i, (int) (j - dep), k, radX2, radY2, radZ2);
-                                tab[5] = getNeighborhoodKernel(ker, nb2, i, j, (int) (k + dep), radX2, radY2, radZ2);
-                                tab[6] = getNeighborhoodKernel(ker, nb2, i, j, (int) (k - dep), radX2, radY2, radZ2);
+                                tab[1] = getNeighborhoodKernel(ker, nb2, i + dep, j, k, radX2, radY2, radZ2);
+                                tab[2] = getNeighborhoodKernel(ker, nb2, i - dep, j, k, radX2, radY2, radZ2);
+                                tab[3] = getNeighborhoodKernel(ker, nb2, i, j + dep, k, radX2, radY2, radZ2);
+                                tab[4] = getNeighborhoodKernel(ker, nb2, i, j - dep, k, radX2, radY2, radZ2);
+                                tab[5] = getNeighborhoodKernel(ker, nb2, i, j, k + dep, radX2, radY2, radZ2);
+                                tab[6] = getNeighborhoodKernel(ker, nb2, i, j, k - dep, radX2, radY2, radZ2);
                                 mes = 0;
                                 mins = Float.MAX_VALUE;
                                 for (int c = 0; c < 7; c++) {

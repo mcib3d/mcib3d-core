@@ -70,18 +70,17 @@ public class FillHoles3D {
                         public void run() {
                             for (int idx = tr.ai.getAndIncrement(); idx < tr.end; idx = tr.ai.getAndIncrement()) {
                                 try {
-                                    byte mid = midValue;
                                     int offsetY = sizeX * idx;
                                     for (int x = 0; x < sizeX; x++) {
                                         int z = 0;
                                         while (z < sizeZ && pixels[z][x + offsetY] == 0) {
-                                            pixels[z][x + offsetY] = mid;
+                                            pixels[z][x + offsetY] = midValue;
                                             z++;
                                         }
                                         if (z < (sizeZ - 1)) {
                                             z = sizeZ - 1;
                                             while (z >= 0 && pixels[z][x + offsetY] == 0) {
-                                                pixels[z][x + offsetY] = mid;
+                                                pixels[z][x + offsetY] = midValue;
                                                 z--;
                                             }
                                         }
@@ -104,29 +103,27 @@ public class FillHoles3D {
                         public void run() {
                             for (int idx = tr2.ai.getAndIncrement(); idx < tr2.end; idx = tr2.ai.getAndIncrement()) {
                                 try {
-                                    byte mid = midValue;
-                                    byte fg = fgValue;
                                     for (int y = 0; y < sizeY; y++) {
                                         int offsetY = sizeX * y;
                                         boolean bcg = pixels[idx][offsetY] == 0;
                                         for (int x = 0; x < sizeX; x++) {
                                             byte value = pixels[idx][offsetY + x];
-                                            if (value == fg) {
+                                            if (value == fgValue) {
                                                 bcg = false;
                                             } else if (value == 0 && bcg) {
-                                                pixels[idx][offsetY + x] = mid;
-                                            } else if (value == mid) {
+                                                pixels[idx][offsetY + x] = midValue;
+                                            } else if (value == midValue) {
                                                 bcg = true;
                                             }
                                         }
                                         bcg = pixels[idx][offsetY + sizeX - 1] == 0;
                                         for (int x = sizeX - 1; x >= 0; x--) {
                                             byte value = pixels[idx][offsetY + x];
-                                            if (value == fg) {
+                                            if (value == fgValue) {
                                                 bcg = false;
                                             } else if (value == 0 && bcg) {
-                                                pixels[idx][offsetY + x] = mid;
-                                            } else if (value == mid) {
+                                                pixels[idx][offsetY + x] = midValue;
+                                            } else if (value == midValue) {
                                                 bcg = true;
                                             }
                                         }
@@ -149,29 +146,27 @@ public class FillHoles3D {
                         public void run() {
                             for (int idx = tr3.ai.getAndIncrement(); idx < tr3.end; idx = tr3.ai.getAndIncrement()) {
                                 try {
-                                    byte mid = midValue;
-                                    byte fg = fgValue;
                                     for (int x = 0; x < sizeX; x++) {
 
                                         boolean bcg = pixels[idx][x] == 0;
                                         for (int y = 0; y < sizeY; y++) {
                                             byte value = pixels[idx][y * sizeX + x];
-                                            if (value == fg) {
+                                            if (value == fgValue) {
                                                 bcg = false;
                                             } else if (value == 0 && bcg) {
-                                                pixels[idx][y * sizeX + x] = mid;
-                                            } else if (value == mid) {
+                                                pixels[idx][y * sizeX + x] = midValue;
+                                            } else if (value == midValue) {
                                                 bcg = true;
                                             }
                                         }
                                         bcg = pixels[idx][(sizeY - 1) * sizeX + x] == 0;
                                         for (int y = sizeY - 1; y >= 0; y--) {
                                             byte value = pixels[idx][y * sizeX + x];
-                                            if (value == fg) {
+                                            if (value == fgValue) {
                                                 bcg = false;
                                             } else if (value == 0 && bcg) {
-                                                pixels[idx][y * sizeX + x] = mid;
-                                            } else if (value == mid) {
+                                                pixels[idx][y * sizeX + x] = midValue;
+                                            } else if (value == midValue) {
                                                 bcg = true;
                                             }
                                         }
@@ -240,13 +235,11 @@ public class FillHoles3D {
                         public void run() {
                             for (int idx = tr4.ai.getAndIncrement(); idx < tr4.end; idx = tr4.ai.getAndIncrement()) {
                                 try {
-                                    byte mid = midValue;
-                                    byte fg = fgValue;
                                     for (int xy = 0; xy < sizeX * sizeY; xy++) {
-                                        if (pixels[idx][xy] == mid) {
+                                        if (pixels[idx][xy] == midValue) {
                                             pixels[idx][xy] = 0;
                                         } else if (pixels[idx][xy] == 0) {
-                                            pixels[idx][xy] = fg;
+                                            pixels[idx][xy] = fgValue;
                                         }
                                     }
                                 } catch (Exception e) {
@@ -306,18 +299,17 @@ public class FillHoles3D {
                         public void run() {
                             for (int idx = tr.ai.getAndIncrement(); idx < tr.end; idx = tr.ai.getAndIncrement()) {
                                 try {
-                                    short mid = midValue;
                                     int offsetY = sizeX * idx;
                                     for (int x = 0; x < sizeX; x++) {
                                         int z = 0;
                                         while (z < sizeZ && pixels[z][x + offsetY] == 0) {
-                                            pixels[z][x + offsetY] = mid;
+                                            pixels[z][x + offsetY] = midValue;
                                             z++;
                                         }
                                         if (z < (sizeZ - 1)) {
                                             z = sizeZ - 1;
                                             while (z >= 0 && pixels[z][x + offsetY] == 0) {
-                                                pixels[z][x + offsetY] = mid;
+                                                pixels[z][x + offsetY] = midValue;
                                                 z--;
                                             }
                                         }
@@ -340,29 +332,27 @@ public class FillHoles3D {
                         public void run() {
                             for (int idx = tr2.ai.getAndIncrement(); idx < tr2.end; idx = tr2.ai.getAndIncrement()) {
                                 try {
-                                    short mid = midValue;
-                                    short fg = fgValue;
                                     for (int y = 0; y < sizeY; y++) {
                                         int offsetY = sizeX * y;
                                         boolean bcg = pixels[idx][offsetY] == 0;
                                         for (int x = 0; x < sizeX; x++) {
                                             short value = pixels[idx][offsetY + x];
-                                            if (value == fg) {
+                                            if (value == fgValue) {
                                                 bcg = false;
                                             } else if (value == 0 && bcg) {
-                                                pixels[idx][offsetY + x] = mid;
-                                            } else if (value == mid) {
+                                                pixels[idx][offsetY + x] = midValue;
+                                            } else if (value == midValue) {
                                                 bcg = true;
                                             }
                                         }
                                         bcg = pixels[idx][offsetY + sizeX - 1] == 0;
                                         for (int x = sizeX - 1; x >= 0; x--) {
                                             short value = pixels[idx][offsetY + x];
-                                            if (value == fg) {
+                                            if (value == fgValue) {
                                                 bcg = false;
                                             } else if (value == 0 && bcg) {
-                                                pixels[idx][offsetY + x] = mid;
-                                            } else if (value == mid) {
+                                                pixels[idx][offsetY + x] = midValue;
+                                            } else if (value == midValue) {
                                                 bcg = true;
                                             }
                                         }
@@ -385,29 +375,27 @@ public class FillHoles3D {
                         public void run() {
                             for (int idx = tr3.ai.getAndIncrement(); idx < tr3.end; idx = tr3.ai.getAndIncrement()) {
                                 try {
-                                    short mid = midValue;
-                                    short fg = fgValue;
                                     for (int x = 0; x < sizeX; x++) {
 
                                         boolean bcg = pixels[idx][x] == 0;
                                         for (int y = 0; y < sizeY; y++) {
                                             short value = pixels[idx][y * sizeX + x];
-                                            if (value == fg) {
+                                            if (value == fgValue) {
                                                 bcg = false;
                                             } else if (value == 0 && bcg) {
-                                                pixels[idx][y * sizeX + x] = mid;
-                                            } else if (value == mid) {
+                                                pixels[idx][y * sizeX + x] = midValue;
+                                            } else if (value == midValue) {
                                                 bcg = true;
                                             }
                                         }
                                         bcg = pixels[idx][(sizeY - 1) * sizeX + x] == 0;
                                         for (int y = sizeY - 1; y >= 0; y--) {
                                             short value = pixels[idx][y * sizeX + x];
-                                            if (value == fg) {
+                                            if (value == fgValue) {
                                                 bcg = false;
                                             } else if (value == 0 && bcg) {
-                                                pixels[idx][y * sizeX + x] = mid;
-                                            } else if (value == mid) {
+                                                pixels[idx][y * sizeX + x] = midValue;
+                                            } else if (value == midValue) {
                                                 bcg = true;
                                             }
                                         }
@@ -470,13 +458,11 @@ public class FillHoles3D {
                         public void run() {
                             for (int idx = tr4.ai.getAndIncrement(); idx < tr4.end; idx = tr4.ai.getAndIncrement()) {
                                 try {
-                                    short mid = midValue;
-                                    short fg = fgValue;
                                     for (int xy = 0; xy < sizeX * sizeY; xy++) {
-                                        if (pixels[idx][xy] == mid) {
+                                        if (pixels[idx][xy] == midValue) {
                                             pixels[idx][xy] = 0;
                                         } else if (pixels[idx][xy] == 0) {
-                                            pixels[idx][xy] = fg;
+                                            pixels[idx][xy] = fgValue;
                                         }
                                     }
                                 } catch (Exception e) {

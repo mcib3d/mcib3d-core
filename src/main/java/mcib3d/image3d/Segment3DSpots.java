@@ -460,7 +460,7 @@ public class Segment3DSpots {
      *
      */
     public void segmentAll() {
-        segmentedObjects = new ArrayList();
+        segmentedObjects = new ArrayList<Object3D>();
         ArrayList<Voxel3D> obj;
         int o = 1;
         int localThreshold = localValue;
@@ -582,7 +582,6 @@ public class Segment3DSpots {
         int yfin = ydep + 1;
         int zfin = zdep + 1;
         int sens = 1;
-        int value = val;
         if (labelImage == null) {
             this.createLabelImage();
         }
@@ -590,9 +589,9 @@ public class Segment3DSpots {
         if (labelImage.getPixel(xdep, ydep, zdep) > 0) {
             return null;
         }
-        labelImage.setPixel(xdep, ydep, zdep, value);
-        ArrayList<Voxel3D> object = new ArrayList();
-        object.add(new Voxel3D(xdep, ydep, zdep, value));
+        labelImage.setPixel(xdep, ydep, zdep, val);
+        ArrayList<Voxel3D> object = new ArrayList<Voxel3D>();
+        object.add(new Voxel3D(xdep, ydep, zdep, val));
         int volume = 1;
         int i;
         int j;
@@ -612,9 +611,9 @@ public class Segment3DSpots {
             for (k = sens == 1 ? zdep : zfin; ((sens == 1 && k <= zfin) || (sens == -1 && k >= zdep)); k += sens) {
                 for (j = sens == 1 ? ydep : yfin; ((sens == 1 && j <= yfin) || (sens == -1 && j >= ydep)); j += sens) {
                     for (i = sens == 1 ? xdep : xfin; ((sens == 1 && i <= xfin) || (sens == -1 && i >= xdep)); i += sens) {
-                        if (labelImage.getPixel(i, j, k) == value) {
+                        if (labelImage.getPixel(i, j, k) == val) {
                             // create neighbors list
-                            neigh = new ArrayList();
+                            neigh = new ArrayList<Voxel3D>();
                             for (n = k - 1; n < k + 2; n++) {
                                 for (m = j - 1; m < j + 2; m++) {
                                     for (l = i - 1; l < i + 2; l++) {
@@ -633,8 +632,8 @@ public class Segment3DSpots {
                                     l = tmpneigh.getRoundX();
                                     m = tmpneigh.getRoundY();
                                     n = tmpneigh.getRoundZ();
-                                    labelImage.setPixel(l, m, n, value);
-                                    object.add(new Voxel3D(l, m, n, value));
+                                    labelImage.setPixel(l, m, n, val);
+                                    object.add(new Voxel3D(l, m, n, val));
                                     volume++;
                                     if (volume > volMax) {
                                         if (show) {
@@ -689,7 +688,6 @@ public class Segment3DSpots {
         int yfin = ydep + 1;
         int zfin = zdep + 1;
         int sens = 1;
-        int value = val;
         if (labelImage == null) {
             this.createLabelImage();
         }
@@ -697,9 +695,9 @@ public class Segment3DSpots {
         if (labelImage.getPixel(xdep, ydep, zdep) > 0) {
             return null;
         }
-        labelImage.setPixel(xdep, ydep, zdep, value);
-        ArrayList<Voxel3D> object = new ArrayList();
-        object.add(new Voxel3D(xdep, ydep, zdep, value));
+        labelImage.setPixel(xdep, ydep, zdep, val);
+        ArrayList<Voxel3D> object = new ArrayList<Voxel3D>();
+        object.add(new Voxel3D(xdep, ydep, zdep, val));
         int volume = 1;
         int i;
         int j;
@@ -728,13 +726,13 @@ public class Segment3DSpots {
             for (k = sens == 1 ? zdep : zfin; ((sens == 1 && k <= zfin) || (sens == -1 && k >= zdep)); k += sens) {
                 for (j = sens == 1 ? ydep : yfin; ((sens == 1 && j <= yfin) || (sens == -1 && j >= ydep)); j += sens) {
                     for (i = sens == 1 ? xdep : xfin; ((sens == 1 && i <= xfin) || (sens == -1 && i >= xdep)); i += sens) {
-                        if (labelImage.contains(i, j, k) && labelImage.getPixel(i, j, k) == value) {
+                        if (labelImage.contains(i, j, k) && labelImage.getPixel(i, j, k) == val) {
                             pixelCenter = original.getPixel(i, j, k);
                             if (WATERSHED) {
                                 water = watershedImage.getPixelInt(i, j, k);
                             }
                             // create neighbors list
-                            neigh = new ArrayList();
+                            neigh = new ArrayList<Voxel3D>();
                             for (n = k - 1; n < k + 2; n++) {
                                 for (m = j - 1; m < j + 2; m++) {
                                     for (l = i - 1; l < i + 2; l++) {
@@ -782,8 +780,8 @@ public class Segment3DSpots {
                                     l = tmpneigh.getRoundX();
                                     m = tmpneigh.getRoundY();
                                     n = tmpneigh.getRoundZ();
-                                    labelImage.setPixel(l, m, n, value);
-                                    object.add(new Voxel3D(l, m, n, value));
+                                    labelImage.setPixel(l, m, n, val);
+                                    object.add(new Voxel3D(l, m, n, val));
                                     volume++;
                                     if (volume > volMax) {
                                         if (show) {
@@ -849,7 +847,6 @@ public class Segment3DSpots {
         int yEnd = ydep + 1;
         int zEnd = zdep + 1;
         int sens = 1;
-        int value = val;
         if (labelImage == null) {
             this.createLabelImage();
         }
@@ -857,9 +854,9 @@ public class Segment3DSpots {
         if (labelImage.getPixel(xdep, ydep, zdep) > 0) {
             return null;
         }
-        labelImage.setPixel(xdep, ydep, zdep, value);
-        ArrayList<Voxel3D> object = new ArrayList();
-        object.add(new Voxel3D(xdep, ydep, zdep, value));
+        labelImage.setPixel(xdep, ydep, zdep, val);
+        ArrayList<Voxel3D> object = new ArrayList<Voxel3D>();
+        object.add(new Voxel3D(xdep, ydep, zdep, val));
         int volume = 1;
         int i;
         int j;
@@ -877,7 +874,7 @@ public class Segment3DSpots {
             for (k = sens == 1 ? zdep : zEnd; ((sens == 1 && k <= zEnd) || (sens == -1 && k >= zdep)); k += sens) {
                 for (j = sens == 1 ? ydep : yEnd; ((sens == 1 && j <= yEnd) || (sens == -1 && j >= ydep)); j += sens) {
                     for (i = sens == 1 ? xdep : xEnd; ((sens == 1 && i <= xEnd) || (sens == -1 && i >= xdep)); i += sens) {
-                        if (labelImage.contains(i, j, k) && labelImage.getPixel(i, j, k) == value) {
+                        if (labelImage.contains(i, j, k) && labelImage.getPixel(i, j, k) == val) {
                             if (WATERSHED) {
                                 waterCenter = watershedImage.getPixelInt(i, j, k);
                             }
@@ -889,10 +886,10 @@ public class Segment3DSpots {
                                                 water = watershedImage.getPixelInt(l, m, n);
                                             }
                                             if ((labelImage.getPixel(l, m, n) == 0) && (original.getPixel(l, m, n) >= lcThreshold) && (water == waterCenter)) {
-                                                labelImage.setPixel(l, m, n, value);
+                                                labelImage.setPixel(l, m, n, val);
                                                 // original.putPixel(l, m, n, 0);
                                                 // add voxel to object
-                                                object.add(new Voxel3D(l, m, n, value));
+                                                object.add(new Voxel3D(l, m, n, val));
                                                 volume++;
                                                 if (volume > volMax) {
                                                     if (show) {
@@ -953,8 +950,6 @@ public class Segment3DSpots {
 
         int sens = 1;
 
-        int value = val;
-
         if (labelImage == null) {
             this.createLabelImage();
         }
@@ -962,10 +957,10 @@ public class Segment3DSpots {
         if (labelImage.getPixel(xdep, ydep, zdep) > 0) {
             return null;
         }
-        labelImage.setPixel(xdep, ydep, zdep, value);
+        labelImage.setPixel(xdep, ydep, zdep, val);
         //volume++;
-        ArrayList<Voxel3D> object = new ArrayList();
-        object.add(new Voxel3D(xdep, ydep, zdep, value));
+        ArrayList<Voxel3D> object = new ArrayList<Voxel3D>();
+        object.add(new Voxel3D(xdep, ydep, zdep, val));
 
         int i;
         int j;
@@ -984,7 +979,7 @@ public class Segment3DSpots {
             for (k = sens == 1 ? zdep : zfin; ((sens == 1 && k <= zfin) || (sens == -1 && k >= zdep)); k += sens) {
                 for (j = sens == 1 ? ydep : yfin; ((sens == 1 && j <= yfin) || (sens == -1 && j >= ydep)); j += sens) {
                     for (i = sens == 1 ? xdep : xfin; ((sens == 1 && i <= xfin) || (sens == -1 && i >= xdep)); i += sens) {
-                        if (labelImage.contains(i, j, k) && labelImage.getPixel(i, j, k) == value) {
+                        if (labelImage.contains(i, j, k) && labelImage.getPixel(i, j, k) == val) {
                             if (WATERSHED) {
                                 waterCenter = watershedImage.getPixelInt(i, j, k);
                             }
@@ -997,10 +992,10 @@ public class Segment3DSpots {
                                                 water = watershedImage.getPixelInt(l, m, n);
                                             }
                                             if ((labelImage.getPixel(l, m, n) == 0) && (original.getPixel(l, m, n) >= lcThreshold) && (original.getPixel(l, m, n) <= pixelCenter) && (water == waterCenter)) {
-                                                labelImage.setPixel(l, m, n, value);
+                                                labelImage.setPixel(l, m, n, val);
                                                 //original.putPixel(l, m, n, 0);
                                                 // add voxel to object
-                                                object.add(new Voxel3D(l, m, n, value));
+                                                object.add(new Voxel3D(l, m, n, val));
                                                 // update min-max
                                                 if (l < xdep) {
                                                     xdep--;
@@ -1111,18 +1106,18 @@ public class Segment3DSpots {
                 P2.setX(PP2.getX());
                 P2.setY(PP2.getY());
                 P2.setZ(PP2.getZ());
-                for (int i = 0; i < nb; i++) {
-                    d1 = P1.distance(locals.get(i));
-                    d2 = P2.distance(locals.get(i));
+                for (Voxel3D local : locals) {
+                    d1 = P1.distance(local);
+                    d2 = P2.distance(local);
                     if (d1 < d2) {
-                        cx1 += locals.get(i).getX();
-                        cy1 += locals.get(i).getY();
-                        cz1 += locals.get(i).getZ();
+                        cx1 += local.getX();
+                        cy1 += local.getY();
+                        cz1 += local.getZ();
                         nb1++;
                     } else {
-                        cx2 += locals.get(i).getX();
-                        cy2 += locals.get(i).getY();
-                        cz2 += locals.get(i).getZ();
+                        cx2 += local.getX();
+                        cy2 += local.getY();
+                        cz2 += local.getZ();
                         nb2++;
                     }
                 }
@@ -1202,7 +1197,7 @@ public class Segment3DSpots {
         }
         //proj = (IntImage3D) proj.medianFilter(1, 1, 0);
         float radz = (dim == 2) ? 0 : rad;
-        IntImage3D maxi = (IntImage3D) proj.createLocalMaximaImage(rad, rad, radz, false);
+        IntImage3D maxi = proj.createLocalMaximaImage(rad, rad, radz, false);
         //IntImage3D seg = f.getSegImage();
         if (debug) {
             System.out.println("Separe2D " + val);
@@ -1233,7 +1228,7 @@ public class Segment3DSpots {
          *
          */
         // with ArrayList
-        ArrayList<Voxel3D> list = ((Object3DVoxels) f).getVoxels();
+        ArrayList<Voxel3D> list = f.getVoxels();
         ArrayList<Voxel3D> maxlo = new ArrayList<Voxel3D>();
 
         Iterator it = list.iterator();

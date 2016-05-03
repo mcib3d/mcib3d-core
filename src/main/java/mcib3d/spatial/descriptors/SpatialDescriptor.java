@@ -14,9 +14,9 @@ import mcib3d.utils.ArrayUtil;
  */
 public interface SpatialDescriptor {
 
-    public boolean init();
+    boolean init();
 
-    public ArrayUtil compute(Objects3DPopulation pop);
+    ArrayUtil compute(Objects3DPopulation pop);
 
-    public String getName();
+    String getName();
 }

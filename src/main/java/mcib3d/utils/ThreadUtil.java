@@ -34,14 +34,14 @@ public class ThreadUtil {
      * @param threads 
      */
     public static void startAndJoin(Thread[] threads) {
-        for (int ithread = 0; ithread < threads.length; ++ithread) {
-            threads[ithread].setPriority(Thread.NORM_PRIORITY);
-            threads[ithread].start();
+        for (Thread thread : threads) {
+            thread.setPriority(Thread.NORM_PRIORITY);
+            thread.start();
         }
 
         try {
-            for (int ithread = 0; ithread < threads.length; ++ithread) {
-                threads[ithread].join();
+            for (Thread thread : threads) {
+                thread.join();
             }
         } catch (InterruptedException ie) {
             throw new RuntimeException(ie);
@@ -57,9 +57,8 @@ public class ThreadUtil {
         if (nb == 0) {
             nb = getNbCpus();
         }
-        Thread[] threads = new Thread[nb];
 
-        return threads;
+        return new Thread[nb];
     }
 
     /**

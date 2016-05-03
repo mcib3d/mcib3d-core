@@ -76,11 +76,11 @@ public class StackFolderOpener {
 		ImageStack stack = null;
 
 		try {
-			for (int i = 0; i < list.length; i++) {
-				if (list[i].endsWith(".txt")) {
+			for (String aList : list) {
+				if (aList.endsWith(".txt")) {
 					continue;
 				}
-				ImagePlus imp = new Opener().openImage(directory, list[i]);
+				ImagePlus imp = new Opener().openImage(directory, aList);
 				if (imp != null) {
 					width = imp.getWidth();
 					height = imp.getHeight();

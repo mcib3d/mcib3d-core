@@ -14,7 +14,7 @@ import mcib3d.image3d.ImageHandler;
  */
 public interface SpatialModel {
 
-    public boolean init();
+    boolean init();
 
     Objects3DPopulation getSample();
 

@@ -71,7 +71,6 @@ public class EdtFloatInv {
         int d = imp.sizeZ;
         float scale = scaleZ / scaleXY;
         float[][] data = imp.pixels;
-        int nThreads = nbCPUs;
         //Create 32 bit floating point stack for output, s.  Will also use it for g in Transormation 1.
         ImageStack sStack = new ImageStack(w, h);
         float[][] s = new float[d][];
@@ -82,39 +81,39 @@ public class EdtFloatInv {
         }
         float[] sk;
         //Transformation 1.  Use s to store g.
-        Step1Thread[] s1t = new Step1Thread[nThreads];
-        for (int thread = 0; thread < nThreads; thread++) {
-            s1t[thread] = new Step1Thread(thread, nThreads, w, h, d, thresh, s, data);
+        Step1Thread[] s1t = new Step1Thread[nbCPUs];
+        for (int thread = 0; thread < nbCPUs; thread++) {
+            s1t[thread] = new Step1Thread(thread, nbCPUs, w, h, d, thresh, s, data);
             s1t[thread].start();
         }
         try {
-            for (int thread = 0; thread < nThreads; thread++) {
+            for (int thread = 0; thread < nbCPUs; thread++) {
                 s1t[thread].join();
             }
         } catch (InterruptedException ie) {
             IJ.error("A thread was interrupted in step 1 .");
         }
         //Transformation 2.  g (in s) -> h (in s)
-        Step2Thread[] s2t = new Step2Thread[nThreads];
-        for (int thread = 0; thread < nThreads; thread++) {
-            s2t[thread] = new Step2Thread(thread, nThreads, w, h, d, s);
+        Step2Thread[] s2t = new Step2Thread[nbCPUs];
+        for (int thread = 0; thread < nbCPUs; thread++) {
+            s2t[thread] = new Step2Thread(thread, nbCPUs, w, h, d, s);
             s2t[thread].start();
         }
         try {
-            for (int thread = 0; thread < nThreads; thread++) {
+            for (int thread = 0; thread < nbCPUs; thread++) {
                 s2t[thread].join();
             }
         } catch (InterruptedException ie) {
             IJ.error("A thread was interrupted in step 2 .");
         }
         //Transformation 3. h (in s) -> s
-        Step3Thread[] s3t = new Step3Thread[nThreads];
-        for (int thread = 0; thread < nThreads; thread++) {
-            s3t[thread] = new Step3Thread(thread, nThreads, w, h, d, s, data, thresh, scale);
+        Step3Thread[] s3t = new Step3Thread[nbCPUs];
+        for (int thread = 0; thread < nbCPUs; thread++) {
+            s3t[thread] = new Step3Thread(thread, nbCPUs, w, h, d, s, data, thresh, scale);
             s3t[thread].start();
         }
         try {
-            for (int thread = 0; thread < nThreads; thread++) {
+            for (int thread = 0; thread < nbCPUs; thread++) {
                 s3t[thread].join();
             }
         } catch (InterruptedException ie) {

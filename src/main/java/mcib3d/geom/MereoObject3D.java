@@ -173,9 +173,7 @@ public class MereoObject3D {
         
 
         if ((contourtest) && (inter != null)) {
-            Iterator<Voxel3D> it = inter.getVoxels().iterator();
-            while (it.hasNext()) {
-                Voxel3D vox = it.next();
+            for (Voxel3D vox : inter.getVoxels()) {
                 boolean conta = A.isContour(vox);
                 boolean contb = B.isContour(vox);
                 int cc = 0;
@@ -532,9 +530,7 @@ public class MereoObject3D {
             val2 = 3;
         }
         ArrayList<Voxel3D> list = inter.getVoxels();
-        Iterator<Voxel3D> it = list.iterator();
-        while (it.hasNext()) {
-            Voxel3D vox = it.next();
+        for (Voxel3D vox : list) {
             if ((vox.getValue() == val1) || (vox.getValue() == val2)) {
                 c++;
             }

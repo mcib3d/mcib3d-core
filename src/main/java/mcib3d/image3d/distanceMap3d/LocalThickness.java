@@ -119,20 +119,19 @@ public class LocalThickness {
 				}
 			}
 		}
-		int nThreads = nbCPUs;
-		
-                final Object[] resources = new Object[d];//For synchronization
+
+		final Object[] resources = new Object[d];//For synchronization
 		for(int k = 0; k < d; k++){
 			resources[k] = new Object();
 		}
-		LTThread[] ltt = new LTThread[nThreads];
-		for(int thread = 0; thread < nThreads; thread++){
-			ltt[thread] = new LTThread(thread,nThreads,w,h,d,nRidge,
+		LTThread[] ltt = new LTThread[nbCPUs];
+		for(int thread = 0; thread < nbCPUs; thread++){
+			ltt[thread] = new LTThread(thread, nbCPUs,w,h,d,nRidge,
 					 				s,iRidge,jRidge,rRidge,resources);
 			ltt[thread].start();
 		}
 		try{
-			for(int thread = 0; thread< nThreads; thread++){
+			for(int thread = 0; thread< nbCPUs; thread++){
 				ltt[thread].join();
 			}
 		}catch(InterruptedException ie){

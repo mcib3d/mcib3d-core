@@ -115,14 +115,25 @@ public abstract class ImageHandler {
         return title;
     }
 
+    @Deprecated
     public boolean sameDimentions(ImageHandler other) {
+       return sameDimensions(other);
+    }
+
+    public boolean sameDimensions(ImageHandler other) {
         if (other == null) {
             return false;
         }
         return (sizeX == other.sizeX && sizeY == other.sizeY && sizeZ == other.sizeZ);
     }
 
+
+    @Deprecated
     public boolean sameDimentions(ImagePlus other) {
+       return sameDimensions(other);
+    }
+
+    public boolean sameDimensions(ImagePlus other) {
         if (other == null) {
             return false;
         }
@@ -696,7 +707,6 @@ public abstract class ImageHandler {
      * @param z Coordinate z of the pixel
      * @param r0 Minimun radius value
      * @param r1 Maximum radius value
-     * @param water
      * @return
      */
     public ArrayUtil getNeighborhoodLayerAngle(int x, int y, int z, float r0, float r1, double angRef, Vector3D ref) {
@@ -1584,17 +1594,17 @@ public abstract class ImageHandler {
             return out;
         }
         int offset = 1;
-        for (int idx = 0; idx < images.length; idx++) {
-            int min = (short) images[idx].getMinAboveValue(0);
-            int max = (short) images[idx].getMax();
-            for (int z = 0; z < images[idx].sizeZ; z++) {
-                for (int y = 0; y < images[idx].sizeY; y++) {
-                    for (int x = 0; x < images[idx].sizeX; x++) {
-                        if (images[idx].getPixel(x, y, z) != 0) {
-                            int val = images[idx].getPixelInt(x, y, z);
-                            int xx = x + images[idx].offsetX;
-                            int yy = y + images[idx].offsetY;
-                            int zz = z + images[idx].offsetZ;
+        for (ImageInt image : images) {
+            int min = (short) image.getMinAboveValue(0);
+            int max = (short) image.getMax();
+            for (int z = 0; z < image.sizeZ; z++) {
+                for (int y = 0; y < image.sizeY; y++) {
+                    for (int x = 0; x < image.sizeX; x++) {
+                        if (image.getPixel(x, y, z) != 0) {
+                            int val = image.getPixelInt(x, y, z);
+                            int xx = x + image.offsetX;
+                            int yy = y + image.offsetY;
+                            int zz = z + image.offsetZ;
                             if (zz >= 0 && zz < sizeZ && xx >= 0 && xx < sizeX && yy >= 0 && yy < sizeY) {
                                 out.pixels[zz][xx + yy * sizeX] = (short) (val - min + offset);
                             }
@@ -1702,10 +1712,10 @@ public abstract class ImageHandler {
             }
         }
         for (int slice = 1; slice <= images[0].sizeZ; slice++) {
-            for (int channel = 0; channel < images.length; channel++) {
+            for (ImageHandler image : images) {
                 //System.out.println("slice:"+slice+" channel:"+channel+ " bit depth:"+images[channel].img.getBitDepth());
 
-                stack.setPixels(images[channel].img.getStack().getPixels(slice), count);
+                stack.setPixels(image.img.getStack().getPixels(slice), count);
                 count++;
             }
         }

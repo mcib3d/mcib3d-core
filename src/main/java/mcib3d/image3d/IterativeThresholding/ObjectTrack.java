@@ -164,7 +164,7 @@ public class ObjectTrack {
     }
 
     public ArrayList<ObjectTrack> getLineageTo(ObjectTrack anc) {
-        ArrayList<ObjectTrack> list = new ArrayList();
+        ArrayList<ObjectTrack> list = new ArrayList<ObjectTrack>();
         ObjectTrack par = this;
         list.add(par);
         while (!par.equals(anc)) {

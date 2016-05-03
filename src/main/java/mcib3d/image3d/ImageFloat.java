@@ -144,12 +144,12 @@ public class ImageFloat extends ImageHandler {
         if (setMinAndMax) {
             float max = 0;
             float min = 0;
-            for (int i = 0; i < pixels.length; i++) {
-                if ((pixels[i]) > max) {
-                    max = pixels[i];
+            for (float pixel : pixels) {
+                if ((pixel) > max) {
+                    max = pixel;
                 }
-                if ((pixels[i]) < min) {
-                    min = pixels[i];
+                if ((pixel) < min) {
+                    min = pixel;
                 }
             }
             res.getProcessor().setMinAndMax(min, max);
@@ -174,12 +174,12 @@ public class ImageFloat extends ImageHandler {
         if (setMinAndMax) {
             float max = 0;
             float min = 0;
-            for (int i = 0; i < pixels.length; i++) {
-                if ((pixels[i]) > max) {
-                    max = pixels[i];
+            for (int pixel : pixels) {
+                if ((pixel) > max) {
+                    max = pixel;
                 }
-                if ((pixels[i]) < min) {
-                    min = pixels[i];
+                if ((pixel) < min) {
+                    min = pixel;
                 }
             }
             res.getProcessor().setMinAndMax(min, max);
@@ -1009,8 +1009,8 @@ public class ImageFloat extends ImageHandler {
     public void filterGeneric(ImageFloat out, float radx, float rady, float radz, int zmin, int zmax, int filter) {
         int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
         int nb = 0;
-        for (int i = 0; i < ker.length; i++) {
-            nb += ker[i];
+        for (int aKer : ker) {
+            nb += aKer;
         }
         if (zmin < 0) {
             zmin = 0;
@@ -1141,14 +1141,13 @@ public class ImageFloat extends ImageHandler {
      * @return 3D filtered image
      */
     public ImageFloat adaptiveFilter(float radx, float rady, float radz, int nbcpus) {
-        ImageFloat adaptimg = (ImageFloat) this.createSameDimensions();
-        final ImageFloat adaptimg2 = adaptimg;
+        final ImageFloat adaptimg2 = (ImageFloat) this.createSameDimensions();
 
         // create kernel
         final int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
         int nb = 0;
-        for (int i = 0; i < ker.length; i++) {
-            nb += ker[i];
+        for (int aKer : ker) {
+            nb += aKer;
         }
         final int nb2 = nb;
         final float radX2 = radx;
@@ -1235,9 +1234,7 @@ public class ImageFloat extends ImageHandler {
         int z1 = Math.min(sizeZ, Math.max(zmin, zmax));
         int newSize = z1 - z0 + 1;
         float[][] newPixels = new float[newSize][];
-        for (int i = 0; i < newSize; i++) {
-            newPixels[i] = pixels[i + z0 - 1];
-        }
+        System.arraycopy(pixels, 0 + z0 - 1, newPixels, 0, newSize);
         if (this.img != null) {
             ImageStack stack = img.getImageStack();
             for (int i = 1; i < z0; i++) {

@@ -155,8 +155,8 @@ public class Watershed3D {
         boolean loop = true;
         // test tree set
         ComparatorVoxel comp = new ComparatorVoxel();
-        TreeSet<Voxel3DComparable> tree = new TreeSet(comp);
-        TreeSet<Voxel3DComparable> tree2 = new TreeSet(comp);
+        TreeSet<Voxel3DComparable> tree = new TreeSet<Voxel3DComparable>(comp);
+        TreeSet<Voxel3DComparable> tree2 = new TreeSet<Voxel3DComparable>(comp);
         int idx = 1;
         for (Voxel3DComparable V : voxels) {
             V.setMax(idx++, 0);
@@ -166,7 +166,7 @@ public class Watershed3D {
 
         while (newt) {
             newt = false;
-            while ((!tree.isEmpty()) && (loop)) {
+            while (!tree.isEmpty()) {
                 //IJ.wait((int) step);
                 Voxel3DComparable V = tree.pollFirst();
                 ArrayList<Voxel3D> Nei = watershedImage.getNeighborhood3x3x3ListNoCenter(V.getRoundX(), V.getRoundY(), V.getRoundZ());
@@ -230,7 +230,7 @@ public class Watershed3D {
     }
 
     private void createNeigList() {
-        voxels = new LinkedList();
+        voxels = new LinkedList<Voxel3DComparable>();
         int sx = rawImage.sizeX;
         int sy = rawImage.sizeY;
         int sz = rawImage.sizeZ;

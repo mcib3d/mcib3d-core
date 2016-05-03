@@ -43,7 +43,6 @@ public class ArrayUtil {
     private double values[];
     private int size;
     private boolean sorted;
-    private boolean debug = false;
 
     /**
      * constructeur
@@ -98,9 +97,7 @@ public class ArrayUtil {
         if (cm > 0) {
             maxR -= cm;
             double[] vv = new double[values.length - 2 * cm];
-            for (int i = 0; i < vv.length; i++) {
-                vv[i] = values[i + cm];
-            }
+            System.arraycopy(values, 0 + cm, vv, 0, vv.length);
             values = vv;
         }
         double[] id = new double[values.length];
@@ -227,7 +224,7 @@ public class ArrayUtil {
         sorted = false;
         values = new double[size];
         for (int i = 0; i < size; i++) {
-            values[i] = (int) (arr.get(i));
+            values[i] = arr.get(i);
         }
     }
 
@@ -640,7 +637,7 @@ public class ArrayUtil {
                 total *= fsize / ((fsize - 1) * (fsize - 2));
             }
         } else {
-            total = (double) 0.0;
+            total = 0.0;
         }
         return total;
     }
@@ -716,8 +713,7 @@ public class ArrayUtil {
             total2 += values[i] * values[i];
         }
 
-        double var = (double) ((total2 - (total * total / size)) / (size - 1));
-        return var;
+        return (double) ((total2 - (total * total / size)) / (size - 1));
     }
 
     /**
@@ -1157,6 +1153,7 @@ public class ArrayUtil {
         double nombre_pixels;
         int nb = 0;
 
+        boolean debug = false;
         while ((Math.abs(m0 - m1) > 2) && (nb < size)) {
             nb++;
             m0 = m1;
@@ -1331,9 +1328,7 @@ public class ArrayUtil {
      */
     public void removeValueAt(int index) {
         size--;
-        for (int i = index; i < size; i++) {
-            values[i] = values[i + 1];
-        }
+        System.arraycopy(values, index + 1, values, index, size - index);
         // does not change sorted state
     }
 

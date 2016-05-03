@@ -574,9 +574,9 @@ public class BinaryMorpho {
                 if (radiusXY < 1 && radiusZ < 1) {
                     ihs[idx] = binaryCloseRad1(ihs[idx], 1, nbCPUs);
                 } else if (radiusXY < 2 && radiusZ < 2) {
-                    ihs[idx] = (ImageByte) binaryCloseRad1diag(ihs[idx], 1, nbCPUs);
+                    ihs[idx] = binaryCloseRad1diag(ihs[idx], 1, nbCPUs);
                 } else {
-                    ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY, radiusZ, nbCPUs);
+                    ihs[idx] = binaryClose(ihs[idx], radiusXY, radiusZ, nbCPUs);
                 }
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
@@ -602,9 +602,9 @@ public class BinaryMorpho {
                 if (radiusXY < 1 && radiusZ < 1) {
                     ihs[idx] = binaryDilateRad1(ihs[idx], 1, nbCPUs);
                 } else if (radiusXY < 2 && radiusZ < 2) {
-                    ihs[idx] = (ImageByte) binaryDilateRad1diag(ihs[idx], 1, nbCPUs);
+                    ihs[idx] = binaryDilateRad1diag(ihs[idx], 1, nbCPUs);
                 } else {
-                    ihs[idx] = (ImageByte) binaryDilate(ihs[idx], radiusXY, radiusZ, nbCPUs);
+                    ihs[idx] = binaryDilate(ihs[idx], radiusXY, radiusZ, nbCPUs);
                 }
             }
             //ihs[0].show("crop binary 0 dilated");
@@ -627,9 +627,9 @@ public class BinaryMorpho {
                 if (radiusXY[idx] <= 1 && radiusZ[idx] <= 1) {
                     ihs[idx] = BinaryMorpho.binaryCloseRad1(ihs[idx], 1, nbCPUs);
                 } else {
-                    ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY[idx], radiusZ[idx], nbCPUs);
+                    ihs[idx] = binaryClose(ihs[idx], radiusXY[idx], radiusZ[idx], nbCPUs);
                 }
-                ihs[idx] = (ImageByte) binaryClose(ihs[idx], radiusXY[idx], radiusZ[idx], nbCPUs);
+                ihs[idx] = binaryClose(ihs[idx], radiusXY[idx], radiusZ[idx], nbCPUs);
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
@@ -647,7 +647,7 @@ public class BinaryMorpho {
         if (ihs != null) {
             //ij.IJ.log("BinaryClose multilabel nb :"+ihs.length);
             for (int idx = 0; idx < ihs.length; idx++) {
-                ihs[idx] = (ImageByte) binaryDilate(ihs[idx], radiusXY[idx], radiusZ[idx], nbCPUs);
+                ihs[idx] = binaryDilate(ihs[idx], radiusXY[idx], radiusZ[idx], nbCPUs);
             }
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);

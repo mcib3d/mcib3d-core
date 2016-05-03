@@ -80,14 +80,14 @@ public class CDFTools {
     static public ArrayUtil cdfAverage(ArrayUtil[] x) {
         final int n = x.length;
         int total_size = 0;
-        for (int i = 0; i < n; i++) {
-            total_size += x[i].getSize();
+        for (ArrayUtil aX : x) {
+            total_size += aX.getSize();
         }
         ArrayUtil xEvals = new ArrayUtil(total_size);
         total_size = 0;
-        for (int i = 0; i < n; ++i) {
-            xEvals.insertValues(total_size, x[i]);
-            total_size += x[i].getSize();
+        for (ArrayUtil aX : x) {
+            xEvals.insertValues(total_size, aX);
+            total_size += aX.getSize();
         }
 
         return cdfAverage(x, xEvals);
@@ -104,8 +104,8 @@ public class CDFTools {
         final int numEvals = xEvals.getSize();
         ArrayUtil y = new ArrayUtil(numEvals);
 
-        for (int i = 0; i < n; ++i) {
-            y.addValueArray(cdf(x[i], xEvals));
+        for (ArrayUtil aX : x) {
+            y.addValueArray(cdf(aX, xEvals));
         }
         y.divideAll(n);
 

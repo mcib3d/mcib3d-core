@@ -6,48 +6,39 @@ package mcib3d.geom;
 
 /**
  * Copyright (C) Thomas Boudier
- *
+ * <p>
  * License: This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
- *
  */
 //import ij.IJ;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
-import mcib3d.image3d.ImageShort;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 import mcib3d.utils.KDTreeC.Item;
 
+import java.io.*;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
 /**
- *
  * @author thomas
  */
 public class Objects3DPopulation {
@@ -65,22 +56,22 @@ public class Objects3DPopulation {
      * Conctructor
      */
     public Objects3DPopulation() {
-        objects = new ArrayList();
+        objects = new ArrayList<Object3D>();
         //hashValue = new HashMap<Integer, Integer>();
         //hashName = new HashMap<String, Integer>();
         calibration = new Calibration();
     }
 
     public Objects3DPopulation(Object3D[] objs) {
-        objects = new ArrayList();
+        objects = new ArrayList<Object3D>();
         //hashValue = new HashMap<Integer, Integer>();
         //hashName = new HashMap<String, Integer>();
         calibration = new Calibration();
         this.addObjects(objs);
     }
 
-    public Objects3DPopulation(ArrayList objs) {
-        objects = new ArrayList();
+    public Objects3DPopulation(ArrayList<Object3D> objs) {
+        objects = new ArrayList<Object3D>();
         // hashValue = new HashMap<Integer, Integer>();
         // hashName = new HashMap<String, Integer>();
         calibration = new Calibration();
@@ -88,7 +79,7 @@ public class Objects3DPopulation {
     }
 
     public Objects3DPopulation(Object3D[] objs, Calibration cal) {
-        objects = new ArrayList();
+        objects = new ArrayList<Object3D>();
         //hashValue = new HashMap<Integer, Integer>();
         //hashName = new HashMap<String, Integer>();
         if (cal != null) {
@@ -100,14 +91,14 @@ public class Objects3DPopulation {
     }
 
     public Objects3DPopulation(ImagePlus plus) {
-        objects = new ArrayList();
+        objects = new ArrayList<Object3D>();
         //hashValue = new HashMap<Integer, Integer>();
         //hashName = new HashMap<String, Integer>();
         addImagePlus(plus);
     }
 
     public Objects3DPopulation(ImageInt plus) {
-        objects = new ArrayList();
+        objects = new ArrayList<Object3D>();
         // hashValue = new HashMap<Integer, Integer>();
         // hashName = new HashMap<String, Integer>();
         Calibration cal = plus.getCalibration();
@@ -118,7 +109,7 @@ public class Objects3DPopulation {
     }
 
     public Objects3DPopulation(ImageInt plus, int threshold) {
-        objects = new ArrayList();
+        objects = new ArrayList<Object3D>();
         //hashValue = new HashMap<Integer, Integer>();
         //hashName = new HashMap<String, Integer>();
         Calibration cal = plus.getCalibration();
@@ -129,7 +120,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @return
      */
     public Calibration getCalibration() {
@@ -137,7 +127,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param cal
      */
     public void setCalibration(Calibration cal) {
@@ -151,18 +140,17 @@ public class Objects3DPopulation {
     }
 
     // hardcore distance in unit
+
     /**
-     *
      * @param nb
      * @param hardcore
      */
     public void createRandomPopulation(int nb, double hardcore) {
-        ArrayList voxlist;
+        ArrayList<Voxel3D> voxlist;
         Voxel3D v;
         Object3D closest;
         double dist;
         Point3D P;
-        double HardCoreDistUnit = hardcore;
 
         // first point
         Object3DVoxels maskVox = mask.getObject3DVoxels();
@@ -178,14 +166,14 @@ public class Objects3DPopulation {
             P = maskVox.getRandomvoxel(ra);
             closest = closestCenter(P);
             dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
-            while (dist < HardCoreDistUnit) {
+            while (dist < hardcore) {
                 P = getRandomPointInMask();
                 closest = closestCenter(P);
                 dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
                 IJ.showStatus("***");
             }
             v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) (i + 1));
-            voxlist = new ArrayList(1);
+            voxlist = new ArrayList<Voxel3D>(1);
             voxlist.add(v);
             ob = new Object3DVoxels(voxlist);
             ob.setCalibration(calibration);
@@ -194,13 +182,12 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param nb
      * @param r0
      * @param r1
      */
     public void createRandomPopulationDistAbsMb(int nb, double r0, double r1) {
-        ArrayList voxlist;
+        ArrayList<Voxel3D> voxlist;
         Voxel3D v;
         Point3D P;
         for (int i = 0; i < nb; i++) {
@@ -223,42 +210,37 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param ima
      * @param col
      */
     public void draw(ImageStack ima, int col) {
         Object3D ob;
-        Iterator it = objects.iterator();
-        while (it.hasNext()) {
-            ob = (Object3D) it.next();
+        for (Object3D object : objects) {
+            ob = object;
             ob.draw(ima, col);
         }
     }
 
     public void draw(ImageHandler ima, int col) {
         Object3D ob;
-        Iterator it = objects.iterator();
-        while (it.hasNext()) {
-            ob = (Object3D) it.next();
+        for (Object3D object : objects) {
+            ob = object;
             ob.draw(ima, col);
         }
     }
 
     public void draw(ImageStack ima) {
         Object3D ob;
-        Iterator it = objects.iterator();
-        while (it.hasNext()) {
-            ob = (Object3D) it.next();
+        for (Object3D object : objects) {
+            ob = object;
             ob.draw(ima, ob.getValue());
         }
     }
 
     public void draw(ImageHandler ima) {
         Object3D ob;
-        Iterator it = objects.iterator();
-        while (it.hasNext()) {
-            ob = (Object3D) it.next();
+        for (Object3D object : objects) {
+            ob = object;
             ob.draw(ima, ob.getValue());
         }
     }
@@ -391,7 +373,7 @@ public class Objects3DPopulation {
         for (int i = 0; i < points.length; i++) {
             Point3D P = points[i];
             Voxel3D v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) i + inc);
-            ArrayList voxlist = new ArrayList(1);
+            ArrayList<Voxel3D> voxlist = new ArrayList<Voxel3D>(1);
             voxlist.add(v);
             Object3DVoxels ob = new Object3DVoxels(voxlist);
             ob.setCalibration(calibration);
@@ -399,7 +381,7 @@ public class Objects3DPopulation {
             addObject(ob);
         }
         // update kdtree if available // FIXME UPDATE kdtree
-        
+
     }
 
     /**
@@ -437,8 +419,8 @@ public class Objects3DPopulation {
 //            }
 //        }
 //    }
+
     /**
-     *
      * @param seg
      * @param threshold
      * @param cali
@@ -492,7 +474,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param plus
      */
     public void addImage(ImagePlus plus) {
@@ -510,7 +491,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @return
      */
     public Object3D getMask() {
@@ -518,7 +498,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param mask
      */
     public void setMask(Object3D mask) {
@@ -527,7 +506,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param i
      * @return
      */
@@ -602,7 +580,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @return
      */
     public int getNbObjects() {
@@ -628,7 +605,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @return
      */
     public Point3D getRandomPointInMask() {
@@ -679,7 +655,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param evaluationPoints
      * @return
      */
@@ -710,10 +685,10 @@ public class Objects3DPopulation {
         double dist;
 
         for (int i = 0; i < s; i++) {
-            obj1 = (Object3D) objects.get(i);
+            obj1 = objects.get(i);
             res[i][i] = 0;
             for (int j = i + 1; j < s; j++) {
-                obj2 = (Object3D) objects.get(j);
+                obj2 = objects.get(j);
                 dist = obj1.distCenterUnit(obj2);
                 res[i][j] = dist;
                 res[j][i] = dist;
@@ -736,7 +711,7 @@ public class Objects3DPopulation {
         double dist;
 
         for (int i = 0; i < s; i++) {
-            obj1 = (Object3D) objects.get(i);
+            obj1 = objects.get(i);
             res[i][i] = 0;
             for (int j = 0; j < ss; j++) {
                 obj2 = pop.getObject(j);
@@ -762,7 +737,7 @@ public class Objects3DPopulation {
         double dist;
 
         for (int i = 0; i < s; i++) {
-            obj1 = (Object3D) objects.get(i);
+            obj1 = objects.get(i);
             res[i][i] = 0;
             for (int j = 0; j < ss; j++) {
                 obj2 = pop.getObject(j);
@@ -775,7 +750,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @return
      */
     public ArrayUtil distancesAllCenter() {
@@ -795,7 +769,28 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
+     * @return
+     */
+    public ArrayUtil distancesAllBorder() {
+        double[] distances = new double[getNbObjects() * (getNbObjects() - 1) / 2];
+        int nb = this.getNbObjects();
+        Object3D ob1, ob2;
+        int count = 0;
+        for (int i = 0; i < nb; i++) {
+            ob1 = objects.get(i);
+            for (int j = i + 1; j < nb; j++) {
+                ob2 = objects.get(j);
+                distances[count] = ob1.distBorderUnit(ob2);
+                count++;
+            }
+        }
+        return new ArrayUtil(distances);
+    }
+
+
+
+
+    /**
      * @return
      */
     public ArrayUtil distancesAllClosestCenter() {
@@ -812,8 +807,23 @@ public class Objects3DPopulation {
         return tab;
     }
 
+    public ArrayUtil distancesAllClosestBorder() {
+        int nb = this.getNbObjects();
+        ArrayUtil tab = new ArrayUtil(nb);
+        Object3D cl;
+        for (int i = 0; i < nb; i++) {
+            cl = closestBorder(this.getObject(i));
+            if (cl != null) {
+                double d = cl.distBorderUnit(this.getObject(i));
+                tab.putValue(i, d);
+            }
+        }
+        return tab;
+    }
+
+
     public ArrayList<double[]> getMeasuresGeometrical() {
-        // geometrical mesure volume (pix and unit) and surface (pix and unit)
+        // geometrical measure volume (pix and unit) and surface (pix and unit)
         ArrayList<double[]> al = new ArrayList<double[]>();
         for (Object3D ob : objects) {
             double[] mes = {ob.getValue(), ob.getVolumePixels(), ob.getVolumeUnit(), ob.getAreaPixels(), ob.getAreaUnit()};
@@ -824,7 +834,7 @@ public class Objects3DPopulation {
     }
 
     public ArrayList<double[]> getMeasuresStats(ImageHandler raw) {
-        // geometrical mesure volume (pix and unit) and surface (pix and unit)
+        // geometrical measure volume (pix and unit) and surface (pix and unit)
         ArrayList<double[]> al = new ArrayList<double[]>();
         for (Object3D ob : objects) {
             double[] mes = {ob.getValue(), ob.getPixMeanValue(raw), ob.getPixStdDevValue(raw), ob.getPixMinValue(raw), ob.getPixMaxValue(raw), ob.getIntegratedDensity(raw)};
@@ -850,10 +860,10 @@ public class Objects3DPopulation {
         double dist;
 
         for (int i = 0; i < s; i++) {
-            obj1 = (Object3D) objects.get(i);
+            obj1 = objects.get(i);
             res[i][i] = 0;
             for (int j = i + 1; j < s; j++) {
-                obj2 = (Object3D) objects.get(j);
+                obj2 = objects.get(j);
                 dist = obj1.distBorderUnit(obj2);
                 res[i][j] = dist;
                 res[j][i] = dist;
@@ -929,7 +939,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param x
      * @param y
      * @param z
@@ -942,8 +951,8 @@ public class Objects3DPopulation {
         Object3D tmp;
         double d;
 
-        for (Iterator e = objects.iterator(); e.hasNext();) {
-            tmp = (Object3D) e.next();
+        for (Object3D object : objects) {
+            tmp = object;
             d = tmp.distPixelCenter(x, y, z);
             if ((d < dmin) && (d > dist)) {
                 dmin = d;
@@ -969,11 +978,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
-     * @param x
-     * @param y
-     * @param z
-     * @param dist
      * @return
      */
     public Object3D closestCenter(Object3D ob, ArrayList<Object3D> exclude) {
@@ -981,8 +985,8 @@ public class Objects3DPopulation {
         double dmin = Double.MAX_VALUE;
         Object3D tmp;
         double d;
-        for (Iterator e = objects.iterator(); e.hasNext();) {
-            tmp = (Object3D) e.next();
+        for (Object3D object : objects) {
+            tmp = object;
             if (!exclude.contains(tmp)) {
                 d = ob.distCenterUnit(tmp);
                 if (d < dmin) {
@@ -1000,8 +1004,8 @@ public class Objects3DPopulation {
         double dmin = Double.MAX_VALUE;
         Object3D tmp;
         double d;
-        for (Iterator e = objects.iterator(); e.hasNext();) {
-            tmp = (Object3D) e.next();
+        for (Object3D object : objects) {
+            tmp = object;
             if (!exclude.contains(tmp)) {
                 d = ob.distBorderUnit(tmp);
                 if (d < dmin) {
@@ -1015,7 +1019,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param x x coordinate in pixel
      * @param y y coordinate in pixel
      * @param z z coordinate in pixel
@@ -1032,7 +1035,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param P
      * @return
      */
@@ -1063,34 +1065,33 @@ public class Objects3DPopulation {
      */
     public Object3D closestBorder(Object3D O, double dist) {
         Iterator<Object3D> it;
-        double distmin = Double.MAX_VALUE;
+        double distanceMinimum = Double.MAX_VALUE;
         Object3D res = null;
-        for (it = objects.iterator(); it.hasNext();) {
-            Object3D tmp = it.next();
-            double d = O.distBorderUnit(tmp);
+        for (Object3D object3D : objects) {
+            double d = O.distBorderUnit(object3D);
             if (d > dist) {
-                if (d < distmin) {
-                    distmin = d;
-                    res = tmp;
+                if (d < distanceMinimum) {
+                    distanceMinimum = d;
+                    res = object3D;
                 }
             }
         }
+
         return res;
     }
 
     public Object3D closestBorder(Object3D O, int[] allowed, double dist) {
-        double distmin = Double.MAX_VALUE;
+        double distanceMinimum = Double.MAX_VALUE;
         Object3D res = null;
         if (allowed.length == 0) {
             return null;
         }
-        //for (it = objects.iterator(); it.hasNext();) {
         for (int ob : allowed) {
             Object3D tmp = getObject(ob);
             double d = O.distBorderUnit(tmp);
             if (d > dist) {
-                if (d < distmin) {
-                    distmin = d;
+                if (d < distanceMinimum) {
+                    distanceMinimum = d;
                     res = tmp;
                 }
             }
@@ -1099,7 +1100,7 @@ public class Objects3DPopulation {
     }
 
     public Object3D closestCenter(Object3D O, int[] allowed, double dist) {
-        double distmin = Double.MAX_VALUE;
+        double distanceMinimum = Double.MAX_VALUE;
         Object3D res = null;
         if (allowed.length == 0) {
             return null;
@@ -1109,8 +1110,8 @@ public class Objects3DPopulation {
             Object3D tmp = getObject(ob);
             double d = O.distCenterUnit(tmp);
             if (d > dist) {
-                if (d < distmin) {
-                    distmin = d;
+                if (d < distanceMinimum) {
+                    distanceMinimum = d;
                     res = tmp;
                 }
             }
@@ -1123,7 +1124,6 @@ public class Objects3DPopulation {
      * center distance
      *
      * @param obj
-     * @param dist
      * @return
      */
     public Object3D closestCenter(Object3D obj, boolean excludeInputObject) {
@@ -1139,7 +1139,6 @@ public class Objects3DPopulation {
      * border distance
      *
      * @param O
-     * @param dist
      * @return
      */
     public Object3D closestBorder(Object3D O) {
@@ -1180,7 +1179,7 @@ public class Objects3DPopulation {
     }
 
     public ArrayList<Object3D> getObjectsWithinDistanceCenter(Object3D ob, double dist) {
-        ArrayList<Object3D> list = new ArrayList();
+        ArrayList<Object3D> list = new ArrayList<Object3D>();
         // first method tet all distances
         // FIXME use kdtree
         for (Object3D object : objects) {
@@ -1194,7 +1193,7 @@ public class Objects3DPopulation {
     }
 
     public ArrayList<Object3D> getObjectsWithinDistanceBorder(Object3D ob, double dist) {
-        ArrayList<Object3D> list = new ArrayList();
+        ArrayList<Object3D> list = new ArrayList<Object3D>();
         for (Object3D object : objects) {
             double tmp = ob.distBorderUnit(object);
             if (tmp <= dist) {
@@ -1206,7 +1205,7 @@ public class Objects3DPopulation {
     }
 
     public Object3D kClosestBorder(Object3D ob, int k) {
-        ArrayList<Object3D> exclude = new ArrayList();
+        ArrayList<Object3D> exclude = new ArrayList<Object3D>();
         exclude.add(ob);
         if (k == 1) {
             return this.closestBorder(ob, exclude);
@@ -1251,7 +1250,6 @@ public class Objects3DPopulation {
     }
 
     /**
-     *
      * @param x
      * @param y
      * @param z
@@ -1263,8 +1261,8 @@ public class Objects3DPopulation {
         Object3D tmp;
         double d;
 
-        for (Iterator e = objects.iterator(); e.hasNext();) {
-            tmp = (Object3D) e.next();
+        for (Object3D object : objects) {
+            tmp = object;
             d = tmp.distPixelBorderUnit(x, y, z);
             if (d < dmin) {
                 dmin = d;
@@ -1334,8 +1332,8 @@ public class Objects3DPopulation {
         Object3D tmp;
         double d, dmin;
 
-        for (Iterator e = objects.iterator(); e.hasNext();) {
-            tmp = (Object3D) e.next();
+        for (Object3D object : objects) {
+            tmp = object;
             if (tmp.getCenterX() < xmin) {
                 xmin = tmp.getCenterX();
             }
@@ -1370,7 +1368,7 @@ public class Objects3DPopulation {
         while (loop) {
             loop = false;
             for (int i = 0; i < s; i++) {
-                tmp = (Object3D) objects.get(i);
+                tmp = objects.get(i);
                 idx = 0;
                 // for each object find the closest center
                 dmin = tmp.distPixelCenter(ck[0].getX(), ck[0].getY(), ck[0].getZ());
@@ -1395,7 +1393,7 @@ public class Objects3DPopulation {
                 nb[k] = 0;
             }
             for (int i = 0; i < s; i++) {
-                tmp = (Object3D) objects.get(i);
+                tmp = objects.get(i);
                 idx = res[i];
                 cx[idx] += tmp.getCenterX();
                 cy[idx] += tmp.getCenterY();

@@ -26,8 +26,8 @@ import javax.swing.JPanel;
  */
 public class AboutMCIB extends JFrame {
 
-    public static String name;
-    public static double VERSION = 3.74;
+    private static String name;
+    private static final double VERSION = 3.74;
 
     /**
      * Constructor for the AboutWindow object

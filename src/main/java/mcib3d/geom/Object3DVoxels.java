@@ -75,7 +75,7 @@ public class Object3DVoxels extends Object3D {
         resXY = 1.0;
         resZ = 1.0;
         units = "pix";
-        voxels = new ArrayList();
+        voxels = new ArrayList<Voxel3D>();
     }
 
     public Object3DVoxels(int val) {
@@ -83,7 +83,7 @@ public class Object3DVoxels extends Object3D {
         resXY = 1.0;
         resZ = 1.0;
         units = "pix";
-        voxels = new ArrayList();
+        voxels = new ArrayList<Voxel3D>();
     }
 
     /**
@@ -226,7 +226,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     private ArrayList<Voxel3D> createArrayList(ImageHandler ima, ImageHandler raw) {
-        ArrayList<Voxel3D> voxelsTmp = new ArrayList();
+        ArrayList<Voxel3D> voxelsTmp = new ArrayList<Voxel3D>();
         xmin = ima.sizeX;
         xmax = 0;
         ymin = ima.sizeY;
@@ -255,9 +255,9 @@ public class Object3DVoxels extends Object3D {
     public void createSphereUnit(float cx, float cy, float cz, float rad) {
         float rxy = (float) this.getCalibration().pixelWidth;
         float rz = (float) this.getCalibration().pixelDepth;
-        int ix = (int) Math.round(cx);
-        int iy = (int) Math.round(cy);
-        int iz = (int) Math.round(cz);
+        int ix = Math.round(cx);
+        int iy = Math.round(cy);
+        int iz = Math.round(cz);
         float raxy = rad / rxy;
         float raz = rad / rz;
 
@@ -273,7 +273,7 @@ public class Object3DVoxels extends Object3D {
         ell.createEllipsoid(ex, ey, ez, rx, ry, rz, 255, false);
         int tmpval = this.getValue();
         this.setValue(255);
-        voxels = createArrayList((ImageInt) ell.getImageHandler(), null);
+        voxels = createArrayList(ell.getImageHandler(), null);
         this.setValue(tmpval);
         this.translate(cx - ex, cy - ey, cz - ez);
         init();
@@ -285,7 +285,7 @@ public class Object3DVoxels extends Object3D {
      * @param other
      */
     public Object3DVoxels(Object3DVoxels other) {
-        voxels = new ArrayList();
+        voxels = new ArrayList<Voxel3D>();
         this.addVoxels(other.getVoxels());
         init();
         value = other.getValue();
@@ -297,7 +297,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     public Object3DVoxels(Object3D other) {
-        voxels = new ArrayList();
+        voxels = new ArrayList<Voxel3D>();
         addVoxels(other.getVoxels());
         init();
         value = other.getValue();
@@ -314,10 +314,10 @@ public class Object3DVoxels extends Object3D {
         ArrayList<Voxel3D> al2 = ob2.getVoxels();
         double dist = 0.25;// normally int values (0.25=0.5²)
         Voxel3D v1, v2;
-        for (Iterator it1 = al1.iterator(); it1.hasNext();) {
-            v1 = (Voxel3D) it1.next();
-            for (Iterator it2 = al2.iterator(); it2.hasNext();) {
-                v2 = (Voxel3D) it2.next();
+        for (Voxel3D anAl1 : al1) {
+            v1 = anAl1;
+            for (Voxel3D anAl2 : al2) {
+                v2 = anAl2;
                 if (v1.distanceSquare(v2) < dist) {
                     voxels.add(new Voxel3D(v1));
                     break;
@@ -335,10 +335,10 @@ public class Object3DVoxels extends Object3D {
         ArrayList<Voxel3D> al2 = objs.get(1).getVoxels();
         double dist = 0.25;// normally int values (0.25=0.5²)
         Voxel3D v1, v2;
-        for (Iterator it1 = al1.iterator(); it1.hasNext();) {
-            v1 = (Voxel3D) it1.next();
-            for (Iterator it2 = al2.iterator(); it2.hasNext();) {
-                v2 = (Voxel3D) it2.next();
+        for (Voxel3D anAl1 : al1) {
+            v1 = anAl1;
+            for (Voxel3D anAl2 : al2) {
+                v2 = anAl2;
                 if (v1.distanceSquare(v2) < dist) {
                     // test if any voxel in all other object
                     boolean ok = true;
@@ -367,12 +367,12 @@ public class Object3DVoxels extends Object3D {
         ArrayList<Voxel3D> al1 = ob1.getVoxels();
         ArrayList<Voxel3D> al2 = ob2.getVoxels();
         Voxel3D v;
-        for (Iterator it = al1.iterator(); it.hasNext();) {
-            v = (Voxel3D) it.next();
+        for (Voxel3D anAl1 : al1) {
+            v = anAl1;
             voxels.add(v);
         }
-        for (Iterator it = al2.iterator(); it.hasNext();) {
-            v = (Voxel3D) it.next();
+        for (Voxel3D anAl2 : al2) {
+            v = anAl2;
             voxels.add(v);
         }
         init();
@@ -393,7 +393,7 @@ public class Object3DVoxels extends Object3D {
     // substraction
     private void substractObjectVoxels(Object3D other) {
         ArrayList<Voxel3D> al2 = other.getVoxels();
-        ArrayList<Voxel3D> al11 = new ArrayList();
+        ArrayList<Voxel3D> al11 = new ArrayList<Voxel3D>();
         //IJ.log("sub vox " + al11.size());
         double dist = 0.25;// normally int values (0.25=0.5²)
         Voxel3D v2;
@@ -460,14 +460,14 @@ public class Object3DVoxels extends Object3D {
      *
      * @param vox
      */
-    public final void addVoxels(ArrayList vox) {
+    public final void addVoxels(ArrayList<Voxel3D> vox) {
         voxels.addAll(vox);
         init();
         contours = null;
     }
 
     public void removeVoxels(int threshold) {
-        ArrayList<Voxel3D> toRemove = new ArrayList();
+        ArrayList<Voxel3D> toRemove = new ArrayList<Voxel3D>();
         for (Voxel3D V : voxels) {
             if (V.getValue() < threshold) {
                 toRemove.add(V);
@@ -562,9 +562,8 @@ public class Object3DVoxels extends Object3D {
 
         double i, j, k;
         Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
             i = vox.getX();
             j = vox.getY();
             k = vox.getZ();
@@ -591,9 +590,8 @@ public class Object3DVoxels extends Object3D {
 
         double i, j, k;
         Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
             i = vox.getX();
             j = vox.getY();
             k = vox.getZ();
@@ -630,9 +628,8 @@ public class Object3DVoxels extends Object3D {
         s210 = s201 = s120 = s021 = s102 = s012 = s111 = 0;
         double i, j, k;
         Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
             i = vox.getX();
             j = vox.getY();
             k = vox.getZ();
@@ -670,9 +667,8 @@ public class Object3DVoxels extends Object3D {
 
         double i, j, k;
         Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
             i = vox.getX();
             j = vox.getY();
             k = vox.getZ();
@@ -757,7 +753,7 @@ public class Object3DVoxels extends Object3D {
         areaNbVoxels = 0;
         areaContactUnit = 0;
         areaContactVoxels = 0;
-        contours = new ArrayList();
+        contours = new ArrayList<Voxel3D>();
         boolean cont;
         double XZ = resXY * resZ;
         double XX = resXY * resXY;
@@ -932,9 +928,8 @@ public class Object3DVoxels extends Object3D {
         zmax = 0;
 
         Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
             if (vox.getX() < xmin) {
                 xmin = (int) Math.floor(vox.getX());
             }
@@ -1331,9 +1326,8 @@ public class Object3DVoxels extends Object3D {
      */
     public void draw(ObjectCreator3D obj, int col) {
         Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
             int vx = vox.getRoundX();
             int vy = vox.getRoundY();
             int vz = vox.getRoundZ();
@@ -1387,12 +1381,11 @@ public class Object3DVoxels extends Object3D {
     public boolean draw(ByteProcessor mask, int z, int col) {
         boolean ok=false;
         Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
             if (Math.abs(z - vox.getZ()) < 0.5) {
                 mask.putPixel(vox.getRoundX(), vox.getRoundY(), col);
-                ok=true;
+                ok = true;
             }
         }
         return ok;
@@ -1406,17 +1399,16 @@ public class Object3DVoxels extends Object3D {
     public void drawContours(ObjectCreator3D ima, int col) {
         int s = contours.size();
         Voxel3D p2;
-        for (int j = 0; j < s; j++) {
-            p2 = (Voxel3D) contours.get(j);
+        for (Voxel3D contour : contours) {
+            p2 = (Voxel3D) contour;
             ima.createPixel(p2.getRoundX(), p2.getRoundY(), p2.getRoundZ(), col);
         }
     }
 
     public void draw(ImageStack mask, int col) {
         Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
 
             mask.setVoxel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), col);
         }
@@ -1427,9 +1419,8 @@ public class Object3DVoxels extends Object3D {
         Voxel3D vox;
         ImageProcessor tmp;
         Color col = new Color(r, g, b);
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
             tmp = mask.getProcessor((int) (vox.getZ() + 1));
             tmp.setColor(col);
             tmp.drawPixel(vox.getRoundX(), vox.getRoundY());
@@ -1493,10 +1484,9 @@ public class Object3DVoxels extends Object3D {
         try {
             bf = new BufferedWriter(new FileWriter(path + name + ".3droi"));
             saveInfo(bf);
-            Iterator it = voxels.iterator();
-            while (it.hasNext()) {
+            for (Voxel3D voxel : voxels) {
                 c++;
-                pixel = new Voxel3D((Voxel3D) it.next());
+                pixel = new Voxel3D(voxel);
                 bf.write(c + "\t" + pixel.getX() + "\t" + pixel.getY() + "\t" + pixel.getZ() + "\t" + pixel.getValue() + "\n");
             }
             bf.close();
@@ -1517,7 +1507,7 @@ public class Object3DVoxels extends Object3D {
         double dx, dy, dz;
         int v;
         this.setName(name);
-        voxels = new ArrayList();
+        voxels = new ArrayList<Voxel3D>();
         try {
             bf = new BufferedReader(new FileReader(path + name));
             data = loadInfo(bf);
@@ -1578,9 +1568,8 @@ public class Object3DVoxels extends Object3D {
             double i, j, k;
             Voxel3D vox;
             int nb = 0;
-            Iterator it = voxels.iterator();
-            while (it.hasNext()) {
-                vox = (Voxel3D) it.next();
+            for (Voxel3D voxel : voxels) {
+                vox = voxel;
                 i = vox.getX();
                 j = vox.getY();
                 k = vox.getZ();
@@ -1639,9 +1628,8 @@ public class Object3DVoxels extends Object3D {
 
             double i, j, k;
             Voxel3D vox;
-            Iterator it = voxels.iterator();
-            while (it.hasNext()) {
-                vox = (Voxel3D) it.next();
+            for (Voxel3D voxel : voxels) {
+                vox = voxel;
                 if (ima.contains(vox) && mask.contains(vox) && (mask.getPixel(vox) > 0)) {
                     i = vox.getX();
                     j = vox.getY();
@@ -1702,7 +1690,7 @@ public class Object3DVoxels extends Object3D {
 
     @Override
     public ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thresh1) {
-        ArrayList<Voxel3D> list = new ArrayList();
+        ArrayList<Voxel3D> list = new ArrayList<Voxel3D>();
         Voxel3D voxel, newVoxel;
 
         Iterator<Voxel3D> it = voxels.iterator();
@@ -1753,9 +1741,8 @@ public class Object3DVoxels extends Object3D {
     @Override
     public void draw(ImageHandler mask, int col) {
         Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
             int x = vox.getRoundX();
             int y = vox.getRoundY();
             int z = vox.getRoundZ();
@@ -1768,9 +1755,8 @@ public class Object3DVoxels extends Object3D {
     @Override
     public void draw(ImageHandler mask, int col, int tx, int ty, int tz) {
         Voxel3D vox;
-        Iterator it = voxels.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
             int x = vox.getRoundX() + tx;
             int y = vox.getRoundY() + ty;
             int z = vox.getRoundZ() + tz;

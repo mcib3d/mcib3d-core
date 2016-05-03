@@ -427,9 +427,8 @@ public class Vector3D extends Point3D {
         V1.normalize();
         Vector3D V2 = new Vector3D(other);
         V2.normalize();
-        double res = V1.dotProduct(V2);
 
-        return res;
+        return V1.dotProduct(V2);
     }
 
     /**
@@ -572,8 +571,7 @@ public class Vector3D extends Point3D {
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(3);
 
-        String res = "(" + nf.format(getX()) + ", " + nf.format(getY()) + ", " + nf.format(getZ()) + ")";
-        return res;
+        return "(" + nf.format(getX()) + ", " + nf.format(getY()) + ", " + nf.format(getZ()) + ")";
     }
 
     /**

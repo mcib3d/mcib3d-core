@@ -219,7 +219,7 @@ public class Coordinate3D {
     }
 
     public void setVois(float radius, float radiusZ) {
-        float r = (float) radius / radiusZ;
+        float r = radius / radiusZ;
         int rad = (int) (radius + 0.5f);
         int radZ = (int) (radiusZ + 0.5f);
         int[][] temp = new int[3][(2 * rad + 1) * (2 * rad + 1) * (2 * radZ + 1)];

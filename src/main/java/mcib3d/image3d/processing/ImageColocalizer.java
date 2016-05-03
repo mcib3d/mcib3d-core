@@ -126,10 +126,8 @@ public class ImageColocalizer {
         if (verbose) IJ.log("\n\nUsing thresholds (thrA=" + thrA + " and thrB=" + thrB + ")");
         if (verbose) IJ.log("\nOverlap Coefficient:\nr=" + round(OverlapCoeffThr, 3));
         if (verbose) IJ.log("\nr^2=k1xk2:\nk1=" + round(numThr / den1Thr, 3) + "\nk2=" + round(numThr / den2Thr, 3));
-        
-        double[] res={OverlapCoeff,num / den1,num / den2,OverlapCoeffThr,numThr / den1Thr,numThr / den2Thr};
-        
-        return res;
+
+        return new double[]{OverlapCoeff,num / den1,num / den2,OverlapCoeffThr,numThr / den1Thr,numThr / den2Thr};
     }
 
     public double[] MM(int thrA, int thrB) {
@@ -418,7 +416,7 @@ public class ImageColocalizer {
         param = cf.getParams();
         IJ.log("\nResults for fitting CCF on a Gaussian (CCF=a+(b-a)exp(-(xshift-c)^2/(2d^2))):" + cf.getResultString() + "\nFWHM=" + Math.abs(round(2 * Math.sqrt(2 * Math.log(2)) * param[3], 3)) + " pixels");
         for (int i = 0; i < x.length; i++) {
-            CCFarray[i] = cf.f(CurveFitter.GAUSSIAN, param, x[i]);
+            CCFarray[i] = CurveFitter.f(CurveFitter.GAUSSIAN, param, x[i]);
         }
         plot.setColor(Color.BLUE);
         plot.addPoints(x, CCFarray, 2);
@@ -644,9 +642,7 @@ public class ImageColocalizer {
                     }
                 }
             }
-            for (int i = 0; i < BCostes.length; i++) {
-                BCostes[i] = BRandCostes[i];
-            }
+            System.arraycopy(BRandCostes, 0, BCostes, 0, BCostes.length);
 
             //Randomization by shifting along y axis
             for (int e = 1; e <= this.nbsliceCostes - zBlock + 1; e += zBlock) {
@@ -676,9 +672,7 @@ public class ImageColocalizer {
                     }
                 }
             }
-            for (int i = 0; i < BCostes.length; i++) {
-                BCostes[i] = BRandCostes[i];
-            }
+            System.arraycopy(BRandCostes, 0, BCostes, 0, BCostes.length);
 
             if (zRand) {
                 //Randomization by shifting along z axis
@@ -709,9 +703,7 @@ public class ImageColocalizer {
                         }
                     }
                 }
-                for (int i = 0; i < BCostes.length; i++) {
-                    BCostes[i] = BRandCostes[i];
-                }
+                System.arraycopy(BRandCostes, 0, BCostes, 0, BCostes.length);
             }
             arrayR[f] = linreg(ACostes, BCostes, 0, 0)[2];
             //if (arrayR[f]<r2test) Pval++;
@@ -842,7 +834,7 @@ public class ImageColocalizer {
 
         IJ.log("\nResults for fitting the probability density function on a Gaussian (Probability=a+(b-a)exp(-(R-c)^2/(2d^2))):" + cf.getResultString() + "\nFWHM=" + Math.abs(round(2 * Math.sqrt(2 * Math.log(2)) * param[3], 3)));
         for (i = 0; i < x.length; i++) {
-            arrayDistribR[i] = cf.f(CurveFitter.GAUSSIAN, param, x[i]);
+            arrayDistribR[i] = CurveFitter.f(CurveFitter.GAUSSIAN, param, x[i]);
         }
         plot.setColor(Color.BLUE);
         plot.addPoints(x, arrayDistribR, 2);

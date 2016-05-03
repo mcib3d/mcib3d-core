@@ -100,7 +100,7 @@ public class ImageByte extends ImageInt {
         int offZ = 0;
         int sizeXY = img.getWidth() * img.getHeight();
         for (int slice = 0; slice < img.getNSlices(); slice++) {
-            System.arraycopy((byte[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
+            System.arraycopy(img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
             offZ += sizeXY;
         }
         return res;
@@ -114,18 +114,18 @@ public class ImageByte extends ImageInt {
         int offZ = 0;
         int sizeXY = sizeX * sizeY;
         for (int z = 0; z < sizeZ; z++) {
-            System.arraycopy(pixels, offZ, (byte[]) res.getImageStack().getPixels(z + 1), 0, sizeXY);
+            System.arraycopy(pixels, offZ, res.getImageStack().getPixels(z + 1), 0, sizeXY);
             offZ += sizeXY;
         }
         if (setMinAndMax) {
             int max = 0;
             int min = 0;
-            for (int i = 0; i < pixels.length; i++) {
-                if ((pixels[i] & 0xff) > max) {
-                    max = pixels[i] & 0xff;
+            for (byte pixel : pixels) {
+                if ((pixel & 0xff) > max) {
+                    max = pixel & 0xff;
                 }
-                if ((pixels[i] & 0xff) < min) {
-                    min = pixels[i] & 0xff;
+                if ((pixel & 0xff) < min) {
+                    min = pixel & 0xff;
                 }
             }
             res.getProcessor().setMinAndMax(min, max);
@@ -213,7 +213,7 @@ public class ImageByte extends ImageInt {
         byte[] res = new byte[sizeXYZ];
         int offZ = 0;
         for (int slice = 0; slice < img.getNSlices(); slice++) {
-            System.arraycopy((byte[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
+            System.arraycopy(img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
             offZ += sizeXY;
         }
         return res;
@@ -221,7 +221,7 @@ public class ImageByte extends ImageInt {
 
     public Object getArray1D(int z) {
         byte[] res = new byte[sizeXY];
-        System.arraycopy((byte[]) img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
+        System.arraycopy(img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
 
         return res;
     }
@@ -660,8 +660,8 @@ public class ImageByte extends ImageInt {
         boolean change = false;
         int newLabel = 1;
         ArrayList<Integer> keySet = new ArrayList<Integer>(bounds.keySet());
-        for (int i = 0; i < keySet.size(); i++) {
-            int label = keySet.get(i);
+        for (Integer aKeySet : keySet) {
+            int label = aKeySet;
             if (label > newLabel) {
                 int[] bds = bounds.get(label);
                 for (int z = bds[4]; z <= bds[5]; z++) {
@@ -1048,9 +1048,7 @@ public class ImageByte extends ImageInt {
         int z1 = Math.min(sizeZ, Math.max(zmin, zmax));
         int newSize = z1 - z0 + 1;
         byte[][] newPixels = new byte[newSize][];
-        for (int i = 0; i < newSize; i++) {
-            newPixels[i] = pixels[i + z0 - 1];
-        }
+        System.arraycopy(pixels, 0 + z0 - 1, newPixels, 0, newSize);
         if (this.img != null) {
             ImageStack stack = img.getImageStack();
             for (int i = 1; i < z0; i++) {

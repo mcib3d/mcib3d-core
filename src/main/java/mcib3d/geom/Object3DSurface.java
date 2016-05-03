@@ -2093,8 +2093,7 @@ public class Object3DSurface extends Object3D {
                 ycoor[i] = vox.y;
             }
         }
-        PolygonRoi roi = new PolygonRoi(xcoor, ycoor, xcoor.length, Roi.POINT);
-        return roi;
+        return new PolygonRoi(xcoor, ycoor, xcoor.length, Roi.POINT);
     }
 
     /**

@@ -167,13 +167,13 @@ public class TrackThreshold {
     }
 
     private ArrayList<ObjectTrack> computeAssociation(ArrayList<ObjectTrack> frame1, ArrayList<ObjectTrack> frame2, ArrayList<ObjectTrack> allFrames, ImageHandler labels2) {
-        HashMap<Integer, ObjectTrack> hashObjectsT2 = new HashMap();
+        HashMap<Integer, ObjectTrack> hashObjectsT2 = new HashMap<Integer, ObjectTrack>();
         for (ObjectTrack objectTrack : frame2) {
             hashObjectsT2.put(objectTrack.getObject().getValue(), objectTrack);
         }
 
         // create association
-        ArrayList<ObjectTrack> newListTrack = new ArrayList();
+        ArrayList<ObjectTrack> newListTrack = new ArrayList<ObjectTrack>();
 
         for (ObjectTrack obt : frame1) {
             ArrayUtil list = obt.getObject().listValues(labels2, 0);
@@ -265,7 +265,7 @@ public class TrackThreshold {
 
         String update = "\\Update:";
         //update = "";
-        ArrayList<ObjectTrack> allFrames = new ArrayList();
+        ArrayList<ObjectTrack> allFrames = new ArrayList<ObjectTrack>();
         allFrames.addAll(frame1);
         // use histogram and unique values to loop over pixel values
         GlobalThreshold = 1;
@@ -310,10 +310,8 @@ public class TrackThreshold {
             }
             drawsReconstruct.add(draw);
             int idx = 1;
-            ArrayList<ObjectTrack> toBeRemoved = new ArrayList();
-            Iterator<ObjectTrack> it = allFrames.iterator();
-            while (it.hasNext()) {
-                ObjectTrack obt = it.next();
+            ArrayList<ObjectTrack> toBeRemoved = new ArrayList<ObjectTrack>();
+            for (ObjectTrack obt : allFrames) {
                 if (obt.getState() == ObjectTrack.STATE_DIE) {
                     ObjectTrack anc = obt.getAncestor();
                     if (anc == null) {
@@ -429,9 +427,8 @@ public class TrackThreshold {
         for (int i = 0; i < drawsTab.length; i++) {
             drawsTab[i] = drawsReconstruct.get(i);
         }
-        ImagePlus plusDraw = ImageHandler.getHyperStack("draw", drawsTab);
 
-        return plusDraw;
+        return ImageHandler.getHyperStack("draw", drawsTab);
     }
 
     public void setVerbose(boolean verbose) {

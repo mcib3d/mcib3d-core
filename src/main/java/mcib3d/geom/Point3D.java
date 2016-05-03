@@ -316,8 +316,7 @@ public class Point3D {
     }
 
     public double[] getArray() {
-        double[] res = {x, y, z};
-        return res;
+        return new double[]{x, y, z};
     }
 
     public boolean isInsideBoundingBox(int[] boundingBox) { //xmin, xmax, ymin, ymax, zmin, zmax
@@ -325,20 +324,12 @@ public class Point3D {
     }
 
     public boolean sameVoxel(Point3D other) { //returns true if 2 points in the same voxel
-        if (Math.abs(x - other.x) < 0.5 && Math.abs(y - other.y) < 0.5 && Math.abs(z - other.z) < 0.5) {
-            //return this.distanceSquare(other) < 0.25;
-            return true;
-        } else {
-            return false;
-        }
+        //return this.distanceSquare(other) < 0.25;
+        return Math.abs(x - other.x) < 0.5 && Math.abs(y - other.y) < 0.5 && Math.abs(z - other.z) < 0.5;
     }
 
     public boolean samePosition(Point3D other, double error) {
-        if ((other.x - x < error) && (x - other.x < error) && (other.y - y < error) && (y - other.y < error) && (other.z - z < error) && (z - other.z < error)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (other.x - x < error) && (x - other.x < error) && (other.y - y < error) && (y - other.y < error) && (other.z - z < error) && (z - other.z < error);
     }
 
     public boolean samePosition(Point3D other) {

@@ -118,11 +118,7 @@ public class Object3DLabel extends Object3D {
      * @return true or false
      */
     private boolean insideImage(double x, double y, double z) {
-        if ((x >= 0) && (x < labelImage.sizeX) && (y >= 0) && (y < labelImage.sizeY) && (z >= 0) && (z < labelImage.sizeZ)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (x >= 0) && (x < labelImage.sizeX) && (y >= 0) && (y < labelImage.sizeY) && (z >= 0) && (z < labelImage.sizeZ);
     }
 
     /**
@@ -416,10 +412,7 @@ public class Object3DLabel extends Object3D {
         }
         ArrayUtil vois = labelImage.getNeighborhood3x3x3(x, y, z);
         // different from its own value
-        if (!vois.hasOnlyValue(value)) {
-            return true;
-        }
-        return false;
+        return !vois.hasOnlyValue(value);
     }
 
     /**
