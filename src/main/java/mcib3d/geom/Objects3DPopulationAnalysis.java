@@ -9,7 +9,6 @@ import ij.ImagePlus;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import mcib3d.utils.KDTreeC;
 
 /**
  *

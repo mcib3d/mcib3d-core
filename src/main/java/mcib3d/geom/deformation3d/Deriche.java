@@ -1,6 +1,5 @@
 package mcib3d.geom.deformation3d;
 
-import ij.IJ;
 import ij.ImageStack;
 import java.util.ArrayList;
 import javax.vecmath.Point3f;

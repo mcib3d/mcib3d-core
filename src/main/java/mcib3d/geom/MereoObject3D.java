@@ -5,7 +5,6 @@
 package mcib3d.geom;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  *

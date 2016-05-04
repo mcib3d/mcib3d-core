@@ -94,7 +94,7 @@ public class Mesh {
         Point3f P;
         int cpt = 0;
         while (it.hasNext()) {
-            P = (Point3f) it.next();
+            P = it.next();
             if (!unique_vertices.contains(P)) {
                 unique_vertices.add(P);
                 indices.add(cpt);
@@ -122,9 +122,9 @@ public class Mesh {
 
             //normalization
             norm = (float) Math.sqrt((n1 * n1) + (n2 * n2) + (n3 * n3));
-            n1 = n1 / (float) norm;
-            n2 = n2 / (float) norm;
-            n3 = n3 / (float) norm;
+            n1 = n1 / norm;
+            n2 = n2 / norm;
+            n3 = n3 / norm;
 
             normal = new Point3f(n1, n2, n3);
             //System.out.println(normal.toString());
@@ -152,7 +152,7 @@ public class Mesh {
             x = y = z = 0.f;
             for (int j = 0; j < indices.size(); j++) {
                 if (indices.get(j) == i) {
-                    triangleIndex = (int) ((j) / 3);
+                    triangleIndex = (j) / 3;
                     if (!Float.isNaN(facesNormals.get(triangleIndex).x)){
                         
                     x += facesNormals.get(triangleIndex).x;
@@ -186,7 +186,7 @@ public class Mesh {
     }
 
     public float distance(Point3f p1, Point3f p2) {
-        float d = (float) (((p1.x - p2.x) * (p1.x - p2.x)) + ((p1.y - p2.y) * (p1.y - p2.y)) + ((p1.z - p2.z) * (p1.z - p2.z)));
+        float d = ((p1.x - p2.x) * (p1.x - p2.x)) + ((p1.y - p2.y) * (p1.y - p2.y)) + ((p1.z - p2.z) * (p1.z - p2.z));
         return (float) Math.sqrt(d);
     }
 

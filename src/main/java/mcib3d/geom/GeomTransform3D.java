@@ -227,9 +227,9 @@ public class GeomTransform3D {
      * @param angleDegreesZAxis The new z rotationDegrees value in degrees
      */
     public void setRotationDegrees(double angleDegreesXAxis, double angleDegreesYAxis, double angleDegreesZAxis) {
-        setRotationXAxis((double) Math.toRadians(angleDegreesXAxis));
-        setRotationYAxis((double) Math.toRadians(angleDegreesYAxis));
-        setRotationZAxis((double) Math.toRadians(angleDegreesZAxis));
+        setRotationXAxis(Math.toRadians(angleDegreesXAxis));
+        setRotationYAxis(Math.toRadians(angleDegreesYAxis));
+        setRotationZAxis(Math.toRadians(angleDegreesZAxis));
     }
 
     /**

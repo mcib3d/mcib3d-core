@@ -448,8 +448,8 @@ public class Object3DSurface extends Object3D {
         }
 
         smooth_faces = new ArrayList<Point3f>();
-        for (int j = 0; j < faces.size(); j++) {
-            smooth_faces.add(newPoints.get(faces.get(j)));
+        for (Point3f face : faces) {
+            smooth_faces.add(newPoints.get(face));
         }
     }
 
@@ -925,10 +925,9 @@ public class Object3DSurface extends Object3D {
         by = 0;
         bz = 0;
         Point3f P;
-        Iterator<Point3f> it = vertices.iterator();
 
-        while (it.hasNext()) {
-            P = it.next();
+        for (Point3f vertice : vertices) {
+            P = vertice;
             bx += P.x;
             by += P.y;
             bz += P.z;
@@ -959,9 +958,8 @@ public class Object3DSurface extends Object3D {
             double i, j, k;
             Voxel3D vox;
             int nb = 0;
-            Iterator it = getVoxels().iterator();
-            while (it.hasNext()) {
-                vox = (Voxel3D) it.next();
+            for (Voxel3D o : getVoxels()) {
+                vox = o;
                 i = vox.getX();
                 j = vox.getY();
                 k = vox.getZ();
@@ -1014,9 +1012,8 @@ public class Object3DSurface extends Object3D {
 
             double i, j, k;
             Voxel3D vox;
-            Iterator it = getVoxels().iterator();
-            while (it.hasNext()) {
-                vox = (Voxel3D) it.next();
+            for (Voxel3D o : getVoxels()) {
+                vox = o;
                 if (ima.contains(vox) && mask.contains(vox) && (mask.getPixel(vox) > 0)) {
 
                     i = vox.getX();
@@ -1063,9 +1060,8 @@ public class Object3DSurface extends Object3D {
         zmax = 0;
 
         Point3f vox;
-        Iterator it = vertices.iterator();
-        while (it.hasNext()) {
-            vox = (Point3f) it.next();
+        for (Point3f vertice : vertices) {
+            vox = vertice;
             if (vox.x < xmin) {
                 xmin = (int) vox.x;
             }
@@ -1154,9 +1150,8 @@ public class Object3DSurface extends Object3D {
         Point3f P;
         // Value ?
         double val = 1;
-        Iterator it = vertices.iterator();
-        while (it.hasNext()) {
-            P = (Point3f) it.next();
+        for (Point3f vertice : vertices) {
+            P = vertice;
             Voxel3D vox = new Voxel3D(P, val);
             contours.add(vox);
             kdtreeContours.add(vox.getArray(), vox);
@@ -1726,7 +1721,7 @@ public class Object3DSurface extends Object3D {
         Voxel3D vox;
         double i, j, k;
         while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+            vox = it.next();
             i = vox.getX();
             j = vox.getY();
             k = vox.getZ();
@@ -1799,10 +1794,8 @@ public class Object3DSurface extends Object3D {
         Voxel3D pixel;
         float pixvalue;
 
-        Iterator it = getVoxels().iterator();
-
-        while (it.hasNext()) {
-            pixel = new Voxel3D((Voxel3D) it.next());
+        for (Voxel3D o : getVoxels()) {
+            pixel = new Voxel3D(o);
             pixvalue = ima.getPixel(pixel);
             if ((pixvalue > threshold1) && (pixvalue < threshold2)) {
                 pixel.setValue(pixvalue);
@@ -1905,9 +1898,8 @@ public class Object3DSurface extends Object3D {
     public void drawMesh(ObjectCreator3D obj, int col) {
         // No volume, only contours
         Point3f vox;
-        Iterator it = vertices.iterator();
-        while (it.hasNext()) {
-            vox = (Point3f) it.next();
+        for (Point3f vertice : vertices) {
+            vox = vertice;
             obj.createPixel((int) vox.x, (int) vox.y, (int) vox.z, col);
         }
     }
@@ -2068,9 +2060,8 @@ public class Object3DSurface extends Object3D {
         Voxel3D vox;
         ImageProcessor tmp;
         Color col = new Color(r, g, b);
-        Iterator it = this.getVoxels().iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
+        for (Voxel3D o : this.getVoxels()) {
+            vox = o;
             tmp = mask.getProcessor((int) (vox.getZ() + 1));
             tmp.setColor(col);
             tmp.drawPixel((int) vox.getX(), (int) vox.getY());
@@ -2085,9 +2076,8 @@ public class Object3DSurface extends Object3D {
 
         int i = 0;
         Point3f vox;
-        Iterator it = vertices.iterator();
-        while (it.hasNext()) {
-            vox = (Point3f) it.next();
+        for (Point3f vertice : vertices) {
+            vox = vertice;
             if (Math.abs(z - vox.z) < 0.5) {
                 xcoor[i] = vox.x;
                 ycoor[i] = vox.y;
@@ -2109,8 +2099,7 @@ public class Object3DSurface extends Object3D {
     @Override
     public void translate(double x, double y, double z) {
         Point3f T = new Point3f((float) x, (float) y, (float) z);
-        for (Iterator<Point3f> it = faces.iterator(); it.hasNext();) {
-            Point3f P = it.next();
+        for (Point3f P : faces) {
             P.add(T);
         }
         init();
@@ -2119,8 +2108,7 @@ public class Object3DSurface extends Object3D {
 
     public static List translateTool(List l, float tx, float ty, float tz) {
         List lt = new ArrayList(l.size());
-        for (Iterator<Point3f> it = l.iterator(); it.hasNext();) {
-            Point3f P = it.next();
+        for (Point3f P : (Iterable<Point3f>) l) {
             Point3f Pt = new Point3f(P.x + tx, P.y + ty, P.z + tz);
             lt.add(Pt);
         }

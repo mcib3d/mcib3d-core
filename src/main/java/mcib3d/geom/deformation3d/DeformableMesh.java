@@ -359,7 +359,7 @@ public class DeformableMesh extends Object3DSurface {
             }
         }
         if (cpt > 0) {
-            moy = moy.multiply(1.0 / (double) (cpt));
+            moy = moy.multiply(1.0 / cpt);
         }
 
         return moy.getNormalizedVector();

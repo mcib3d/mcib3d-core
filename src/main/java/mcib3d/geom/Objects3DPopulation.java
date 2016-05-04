@@ -157,7 +157,7 @@ public class Objects3DPopulation {
         Random ra = new Random();
         P = maskVox.getRandomvoxel(ra);
         v = new Voxel3D(P.getX(), P.getY(), P.getZ(), 1);
-        voxlist = new ArrayList(1);
+        voxlist = new ArrayList<Voxel3D>(1);
         voxlist.add(v);
         Object3DVoxels ob = new Object3DVoxels(voxlist);
         ob.setCalibration(calibration);
@@ -191,7 +191,7 @@ public class Objects3DPopulation {
         Voxel3D v;
         Point3D P;
         for (int i = 0; i < nb; i++) {
-            voxlist = new ArrayList(1);
+            voxlist = new ArrayList<Voxel3D>(1);
             P = getRandomPointInMaskDistAbsMb(r0, r1);
             v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) i);
             voxlist.add(v);
@@ -515,7 +515,7 @@ public class Objects3DPopulation {
 
     public void setObject(int i, Object3D obj) {
         // remove old name
-        Object3D old = objects.get(i);
+        //Object3D old = objects.get(i);
         //hashName.remove(old.getName());
         // set new object
         obj.setCalibration(calibration);
@@ -788,8 +788,6 @@ public class Objects3DPopulation {
     }
 
 
-
-
     /**
      * @return
      */
@@ -879,7 +877,7 @@ public class Objects3DPopulation {
      * @return double[][] with 0 values and 1 counts
      */
     public double[][] histogramDistancesCenter(double step) {
-        int s = objects.size();
+        //int s = objects.size();
         double[][] dists = this.distancesAllPairsCenter();
 
         return histogramDistances(dists, step);
@@ -892,7 +890,7 @@ public class Objects3DPopulation {
      * @return double[][] with 0 vlaues and 1 counts
      */
     public double[][] histogramDistancesBorder(double step) {
-        int s = objects.size();
+       // int s = objects.size();
         double[][] dists = this.distancesAllPairsBorder();
 
         return histogramDistances(dists, step);
@@ -1064,7 +1062,7 @@ public class Objects3DPopulation {
      * @return
      */
     public Object3D closestBorder(Object3D O, double dist) {
-        Iterator<Object3D> it;
+        //Iterator<Object3D> it;
         double distanceMinimum = Double.MAX_VALUE;
         Object3D res = null;
         for (Object3D object3D : objects) {

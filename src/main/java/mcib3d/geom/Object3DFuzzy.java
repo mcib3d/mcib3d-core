@@ -261,7 +261,7 @@ public class Object3DFuzzy extends Object3DVoxels {
         int s = contours.size();
         Voxel3D p2;
         for (int j = 0; j < s; j++) {
-            p2 = (Voxel3D) contours.get(j);
+            p2 = contours.get(j);
             ima.createPixel((int) p2.getX(), (int) p2.getY(), (int) p2.getZ(), col);
         }
     }

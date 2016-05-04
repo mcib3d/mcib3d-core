@@ -396,7 +396,6 @@ public class Object3DVoxels extends Object3D {
         ArrayList<Voxel3D> al11 = new ArrayList<Voxel3D>();
         //IJ.log("sub vox " + al11.size());
         double dist = 0.25;// normally int values (0.25=0.5²)
-        Voxel3D v2;
         IJ.showStatus("Substracting " + other.getVolumePixels() + " voxels");
         //IJ.log("Substracting " + other.getVolumePixels() + " voxels");
         for (Voxel3D vox : voxels) {
@@ -904,10 +903,10 @@ public class Object3DVoxels extends Object3D {
         double w1 = 0.894, w2 = 1.3409, w3 = 1.5879, w4 = 2.0, w5 = 8.0 / 3.0, w6 = 10.0 / 3.0;
         correctedSurfaceArea = (class1 * w1 + class2 * w2 + class3 * w3 + class4 * w4 + class5 * w5 + class6 * w6);
 
-        if (areaNbVoxels == 0) {
+        //if (areaNbVoxels == 0) {
             //new ImagePlus("MiniSeg 0", segImage.getImageStack()).show();
             //IJ.log(" " + x0 + " " + y0 + " " + z0 + " " + xmin + " " + ymin + " " + zmin);
-        }
+        //}
     }
 
     @Override
@@ -1397,10 +1396,9 @@ public class Object3DVoxels extends Object3D {
      * @param col
      */
     public void drawContours(ObjectCreator3D ima, int col) {
-        int s = contours.size();
         Voxel3D p2;
         for (Voxel3D contour : contours) {
-            p2 = (Voxel3D) contour;
+            p2 = contour;
             ima.createPixel(p2.getRoundX(), p2.getRoundY(), p2.getRoundZ(), col);
         }
     }

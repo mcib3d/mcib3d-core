@@ -202,7 +202,7 @@ public class MeshEditor {
             this.copies.add(p);
         }
 
-        private final void reset() {
+        private void reset() {
             this.tmp.set(0, 0, 0);
             this.n = 0;
         }
@@ -213,7 +213,7 @@ public class MeshEditor {
             return v.p == this.p || (v.p.x == this.p.x && v.p.y == this.p.y && v.p.z == this.p.z);
         }
 
-        private final void average(final Vertex v) {
+        private void average(final Vertex v) {
             // Increment counter for both
             ++this.n;
             ++v.n;
@@ -226,7 +226,7 @@ public class MeshEditor {
             v.tmp.add(a);
         }
 
-        private final void smooth() {
+        private void smooth() {
             // Compute smoothed coordinates
             final float f = 0.5f / n;
             tmp.set(0.5f * p.x + f * tmp.x,
@@ -255,12 +255,12 @@ public class MeshEditor {
             return e == this || (e.v1 == this.v1 && e.v2 == this.v2) || (e.v1 == this.v2 && e.v2 == this.v1);
         }
 
-        private final void averageVertices() {
+        private void averageVertices() {
             this.v1.average(this.v2);
         }
     }
 
-    static private final Vertex uniqueVertex(final Point3f p, final HashMap<Point3f, Vertex> verts) {
+    static private Vertex uniqueVertex(final Point3f p, final HashMap<Point3f, Vertex> verts) {
         Vertex v = verts.get(p);
         if (null == v) {
             v = new Vertex(p);

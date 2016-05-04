@@ -372,7 +372,7 @@ public class Vector3D extends Point3D {
         double a = getX();
         double b = getY();
         double c = getZ();
-        double x = 0, y = 0, z = 0;
+        double x, y, z;
 
         if (c != 0) {
             x = 2 * Math.random() - 1;
@@ -456,7 +456,7 @@ public class Vector3D extends Point3D {
 
     public Vector3D getComposante(Vector3D base) {
         Vector3D cv = new Vector3D(this);
-        Vector3D ba = base.getNormalizedVector();
+        //Vector3D ba = base.getNormalizedVector();
         double co = cv.dotProduct(base);
 
         return base.multiply(co);
@@ -477,7 +477,7 @@ public class Vector3D extends Point3D {
 
         double t1 = 0;
         double t2 = 0;
-        double t = 0;
+        double t;
         int found_t = 0;
         double prec = 0.0000001;
         Vector3D r = new Vector3D(rx - x, ry - y, rz - z);

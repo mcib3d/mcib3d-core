@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.TreeMap;
 import mcib3d.image3d.ImageFloat;
-import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.utils.exceptionPrinter;
 

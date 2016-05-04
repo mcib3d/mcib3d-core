@@ -934,7 +934,7 @@ public class Object3DLabel extends Object3D {
         int zmax0;
 
         int val = other.getValue();
-        ImageInt otherseg = ((Object3DLabel) other).getLabelImage();
+        ImageInt otherseg = other.getLabelImage();
 
         xmin0 = getXmin();
         ymin0 = getYmin();

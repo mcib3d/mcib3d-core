@@ -307,9 +307,7 @@ public class Gradient {
         int[] r = new int[l + 2];
 
         r[0] = a;
-        for (int i = 0; i < l; i++) {
-            r[i + 1] = b[i];
-        }
+        System.arraycopy(b, 0, r, 1, l);
         r[l + 1] = c;
 
         return r;
@@ -320,9 +318,7 @@ public class Gradient {
         double[] r = new double[l + 2];
 
         r[0] = a;
-        for (int i = 0; i < l; i++) {
-            r[i + 1] = b[i];
-        }
+        System.arraycopy(b, 0, r, 1, l);
         r[l + 1] = c;
 
         return r;

@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
 */
 import mcib3d.image3d.legacy.Image3D;
-import mcib3d.image3d.*;
 
 /**
  *

@@ -57,6 +57,10 @@ public class AboutMCIB extends JFrame {
         return label;
     }
 
+    public static double getVERSION() {
+        return VERSION;
+    }
+
     /**
      * creates the licence label
      *

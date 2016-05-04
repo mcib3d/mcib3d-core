@@ -907,7 +907,7 @@ public class ObjectCreator3D {
         Matrix V2;
 
         // work in pixel coordinate
-        double ratio = 1.0 / (double) (endz - startz);
+        //double ratio = 1.0 / (double) (endz - startz);
         for (int k = startz; k <= endz; k++) {
             IJ.showStatus("Cylinder " + k + "/" + endz);
 
