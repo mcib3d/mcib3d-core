@@ -8,51 +8,42 @@ import ij.measure.Calibration;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import java.awt.Color;
-import java.awt.Rectangle;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import mcib3d.Jama.EigenvalueDecomposition;
+import mcib3d.Jama.Matrix;
+import mcib3d.image3d.*;
+import mcib3d.image3d.processing.FillHoles3D;
+import mcib3d.utils.ArrayUtil;
+import mcib3d.utils.KDTreeC;
+
+import java.awt.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import mcib3d.Jama.EigenvalueDecomposition;
-import mcib3d.Jama.Matrix;
-import mcib3d.image3d.ImageByte;
-import mcib3d.image3d.ImageFloat;
-import mcib3d.image3d.ImageHandler;
-import mcib3d.image3d.ImageInt;
-import mcib3d.image3d.ImageLabeller;
-import mcib3d.image3d.ImageShort;
-import mcib3d.image3d.processing.FillHoles3D;
-import mcib3d.utils.ArrayUtil;
-import mcib3d.utils.KDTreeC;
 
 /**
  * /**
  * Copyright (C) 2008- 2011 Thomas Boudier
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of mcib3d
- *
+ * <p>
  * mcib3d is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * An Object3D defined as a list of voxels
  *
  * @author thomas & Cedric
@@ -153,7 +144,7 @@ public class Object3DVoxels extends Object3D {
      * Constructor for the Object3D object
      *
      * @param plus Segmented image
-     * @param val Pixel value of the object
+     * @param val  Pixel value of the object
      */
     public Object3DVoxels(ImagePlus plus, int val) {
         value = val;
@@ -177,7 +168,7 @@ public class Object3DVoxels extends Object3D {
      * Constructor for the Object3D object
      *
      * @param plus Segmented image
-     * @param val Pixel value of the object
+     * @param val  Pixel value of the object
      */
     public Object3DVoxels(ImageStack stack, int val) {
         value = val;
@@ -191,7 +182,6 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     *
      * @param al
      */
     public Object3DVoxels(ArrayList<Voxel3D> al) {
@@ -202,6 +192,35 @@ public class Object3DVoxels extends Object3D {
         resXY = 1.0;
         resZ = 1.0;
         units = "pix";
+    }
+
+    /**
+     * copy
+     *
+     * @param other
+     */
+    public Object3DVoxels(Object3DVoxels other) {
+        voxels = new ArrayList<Voxel3D>();
+        this.addVoxels(other.getVoxels());
+        init();
+        value = other.getValue();
+        this.labelImage = other.getLabelImage();
+        this.offX = other.offX;
+        this.offY = other.offY;
+        this.offZ = other.offZ;
+        this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
+    }
+
+    public Object3DVoxels(Object3D other) {
+        voxels = new ArrayList<Voxel3D>();
+        addVoxels(other.getVoxels());
+        init();
+        value = other.getValue();
+        //this.labelImage = other.getLabelImage();
+        this.offX = other.offX;
+        this.offY = other.offY;
+        this.offZ = other.offZ;
+        this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
     // ne copie pas les voxels -> todo mettre un boolean si necessaire
@@ -218,11 +237,6 @@ public class Object3DVoxels extends Object3D {
         res.resZ = resZ;
         res.units = units;
         return res;
-    }
-
-    public void setVoxels(ArrayList<Voxel3D> al) {
-        voxels = al;
-        init();
     }
 
     private ArrayList<Voxel3D> createArrayList(ImageHandler ima, ImageHandler raw) {
@@ -279,36 +293,7 @@ public class Object3DVoxels extends Object3D {
         init();
     }
 
-    /**
-     * copy
-     *
-     * @param other
-     */
-    public Object3DVoxels(Object3DVoxels other) {
-        voxels = new ArrayList<Voxel3D>();
-        this.addVoxels(other.getVoxels());
-        init();
-        value = other.getValue();
-        this.labelImage = other.getLabelImage();
-        this.offX = other.offX;
-        this.offY = other.offY;
-        this.offZ = other.offZ;
-        this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
-    }
-
-    public Object3DVoxels(Object3D other) {
-        voxels = new ArrayList<Voxel3D>();
-        addVoxels(other.getVoxels());
-        init();
-        value = other.getValue();
-        //this.labelImage = other.getLabelImage();
-        this.offX = other.offX;
-        this.offY = other.offY;
-        this.offZ = other.offZ;
-        this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
-    }
-
-    // intersection 
+    // intersection
     public void addVoxelsIntersection(Object3D ob1, Object3D ob2) {
         ArrayList<Voxel3D> al1 = ob1.getVoxels();
         ArrayList<Voxel3D> al2 = ob2.getVoxels();
@@ -362,7 +347,7 @@ public class Object3DVoxels extends Object3D {
         init();
     }
 
-    // union 
+    // union
     public void addVoxelsUnion(Object3D ob1, Object3D ob2) {
         ArrayList<Voxel3D> al1 = ob1.getVoxels();
         ArrayList<Voxel3D> al2 = ob2.getVoxels();
@@ -438,7 +423,7 @@ public class Object3DVoxels extends Object3D {
                 }
             }
         }
-        // reset voxels 
+        // reset voxels
         voxels = createArrayList(labelImage, null);
         init();
     }
@@ -452,11 +437,7 @@ public class Object3DVoxels extends Object3D {
         }
     }
 
-    //private void addNewVoxels(ArrayList vox) {
-    //    this.addNewVoxels(vox);
-    //}
     /**
-     *
      * @param vox
      */
     public final void addVoxels(ArrayList<Voxel3D> vox) {
@@ -464,6 +445,10 @@ public class Object3DVoxels extends Object3D {
         init();
         contours = null;
     }
+
+    //private void addNewVoxels(ArrayList vox) {
+    //    this.addNewVoxels(vox);
+    //}
 
     public void removeVoxels(int threshold) {
         ArrayList<Voxel3D> toRemove = new ArrayList<Voxel3D>();
@@ -515,7 +500,6 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     *
      * @param showStatus
      */
     public void setShowStatus(boolean showStatus) {
@@ -523,7 +507,6 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     *
      * @param ima to find the maximum value
      * @return the voxel with the max value
      */
@@ -608,7 +591,7 @@ public class Object3DVoxels extends Object3D {
         s110 *= resXY * resXY;
         s101 *= resXY * resZ;
         s011 *= resXY * resZ;
-        // normalize by volume 
+        // normalize by volume
         if (normalize) {
             s200 /= volume;
             s020 /= volume;
@@ -737,9 +720,6 @@ public class Object3DVoxels extends Object3D {
         this.kdtreeContours = null; //kdTree computed if needed (getKdtreeContours())
     }
 
-    /**
-     * Compute the contours of the object rad=0.5
-     */
     /**
      * Compute the contours of the object rad=0.5
      */
@@ -904,10 +884,14 @@ public class Object3DVoxels extends Object3D {
         correctedSurfaceArea = (class1 * w1 + class2 * w2 + class3 * w3 + class4 * w4 + class5 * w5 + class6 * w6);
 
         //if (areaNbVoxels == 0) {
-            //new ImagePlus("MiniSeg 0", segImage.getImageStack()).show();
-            //IJ.log(" " + x0 + " " + y0 + " " + z0 + " " + xmin + " " + ymin + " " + zmin);
+        //new ImagePlus("MiniSeg 0", segImage.getImageStack()).show();
+        //IJ.log(" " + x0 + " " + y0 + " " + z0 + " " + xmin + " " + ymin + " " + zmin);
         //}
     }
+
+    /**
+     * Compute the contours of the object rad=0.5
+     */
 
     @Override
     public void computeContours() {
@@ -970,7 +954,7 @@ public class Object3DVoxels extends Object3D {
         }
     }
 
-//    /**
+    //    /**
 //     * Compute the pourcentage for contact
 //     *
 //     * @param obj
@@ -1066,7 +1050,7 @@ public class Object3DVoxels extends Object3D {
      }
      }
      }
-     * 
+     *
      */
     private int getColocImage(Object3D obj) {
         if (this.disjointBox(obj)) {
@@ -1181,7 +1165,7 @@ public class Object3DVoxels extends Object3D {
         return cpt;
     }
 
-//    private boolean hasOneVoxelColocImage(Object3D obj) {
+    //    private boolean hasOneVoxelColocImage(Object3D obj) {
 //        if (this.disjointBox(obj)) {
 //            return false;
 //        }
@@ -1256,7 +1240,7 @@ public class Object3DVoxels extends Object3D {
         return false;
     }
 
-//    public double pcColocVoxels(Object3D obj) {
+    //    public double pcColocVoxels(Object3D obj) {
 //        double pourc;
 //        if (!this.intersectionBox(obj)) {
 //            return 0.0;
@@ -1372,13 +1356,13 @@ public class Object3DVoxels extends Object3D {
      * Draw inside a particular Z
      *
      * @param mask The mask image to draw
-     * @param z The Z coordinate
-     * @param col The value to draw
-     * @return 
+     * @param z    The Z coordinate
+     * @param col  The value to draw
+     * @return
      */
     @Override
     public boolean draw(ByteProcessor mask, int z, int col) {
-        boolean ok=false;
+        boolean ok = false;
         Voxel3D vox;
         for (Voxel3D voxel : voxels) {
             vox = voxel;
@@ -1391,7 +1375,6 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     *
      * @param ima
      * @param col
      */
@@ -1400,6 +1383,19 @@ public class Object3DVoxels extends Object3D {
         for (Voxel3D contour : contours) {
             p2 = contour;
             ima.createPixel(p2.getRoundX(), p2.getRoundY(), p2.getRoundZ(), col);
+        }
+    }
+
+    public void drawContoursXY(ObjectCreator3D ima, int z, int col) {
+        Voxel3D p2;
+        ImageHandler seg = getMaxLabelImage(1);
+        for (Voxel3D contour : contours) {
+            p2 = contour;
+            if (Math.abs(p2.getZ() - z) < 0.5) {
+                ArrayUtil arrayUtil = seg.getNeighborhoodXY3x3(p2.getRoundX(), p2.getRoundY(), p2.getRoundZ());
+                if (arrayUtil.hasValue(0))
+                    ima.createPixel(p2.getRoundX(), p2.getRoundY(), p2.getRoundZ(), col);
+            }
         }
     }
 
@@ -1428,6 +1424,11 @@ public class Object3DVoxels extends Object3D {
     @Override
     public ArrayList<Voxel3D> getVoxels() {
         return voxels;
+    }
+
+    public void setVoxels(ArrayList<Voxel3D> al) {
+        voxels = al;
+        init();
     }
 
     public Voxel3D getFirstVoxel() {
@@ -1470,7 +1471,6 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     *
      * @param path
      */
     @Override
@@ -1494,7 +1494,6 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     *
      * @param path
      * @param name
      */

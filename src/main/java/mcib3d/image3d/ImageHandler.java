@@ -11,18 +11,6 @@ import ij.measure.Calibration;
 import ij.plugin.ContrastEnhancer;
 import ij.plugin.ZProjector;
 import ij.process.ImageProcessor;
-import java.awt.image.IndexColorModel;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Point3D;
 import mcib3d.geom.Vector3D;
@@ -32,23 +20,37 @@ import mcib3d.image3d.legacy.Image3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.exceptionPrinter;
 
+import javax.imageio.ImageIO;
+import java.awt.image.IndexColorModel;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 /**
  * Copyright (C) 2012 Jean Ollion
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of tango
- *
+ * <p>
  * tango is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -62,6 +64,7 @@ public abstract class ImageHandler {
     protected ImagePlus img;
     protected String title;
     HashMap<ImageHandler, ImageStats> stats = new HashMap<ImageHandler, ImageStats>(2);
+
     protected ImageHandler(ImagePlus img) {
         this.img = img;
         this.title = img.getShortTitle();
@@ -103,6 +106,204 @@ public abstract class ImageHandler {
         this.offsetZ = offsetZ;
     }
 
+    public static ImageHandler wrap(ImagePlus imp) {
+        switch (imp.getBitDepth()) {
+            case 8:
+                return new ImageByte(imp);
+            case 16:
+                return new ImageShort(imp);
+            case 32:
+                return new ImageFloat(imp);
+        }
+        return null;
+    }
+
+    public static ImageHandler wrap(ImageStack stack) {
+        switch (stack.getBitDepth()) {
+            case 8:
+                return new ImageByte(stack);
+            case 16:
+                return new ImageShort(stack);
+            case 32:
+                return new ImageFloat(stack);
+        }
+        return null;
+    }
+
+    public static ImageHandler openImage(File f) throws Exception {
+        Opener op = new Opener();
+        op.setSilentMode(true);
+        ImagePlus i = op.openImage(f.getAbsolutePath());
+        i.setTitle(f.getName());
+        i.setTitle(i.getShortTitle());
+        switch (i.getBitDepth()) {
+            case 8:
+                return new ImageByte(i);
+            case 16:
+                return new ImageShort(i);
+            case 32:
+                return new ImageFloat(i);
+        }
+        return null;
+    }
+
+    public static ImageHandler newBlankImageHandler(String title, ImageHandler ih) {
+        switch (ih.img.getBitDepth()) {
+            case 8:
+                return new ImageByte(title, ih.sizeX, ih.sizeY, ih.sizeZ);
+            case 16:
+                return new ImageShort(title, ih.sizeX, ih.sizeY, ih.sizeZ);
+            case 32:
+                return new ImageFloat(title, ih.sizeX, ih.sizeY, ih.sizeZ);
+        }
+        return null;
+    }
+
+    public static void zoom(ImagePlus image, double magnitude) {
+        ImageCanvas ic = image.getCanvas();
+        if (ic == null) {
+            return;
+        }
+        ic.zoom100Percent();
+        if (magnitude > 1) {
+            for (int i = 0; i < (int) (magnitude + 0.5); i++) {
+                ic.zoomIn(image.getWidth() / 2, image.getHeight() / 2);
+            }
+        } else if (magnitude > 0 && magnitude < 1) {
+            for (int i = 0; i < (int) (1 / magnitude + 0.5); i++) {
+                ic.zoomOut(image.getWidth() / 2, image.getHeight() / 2);
+            }
+        }
+    }
+
+    public static ImageShort merge3DBinary(ImageInt[] images, int sizeX, int sizeY, int sizeZ) { // 1 label per image
+        ImageShort out = new ImageShort("merge", sizeX, sizeY, sizeZ);
+        if (images == null || images.length == 0 || images[0] == null) {
+            return out;
+        }
+        for (int idx = 0; idx < images.length; idx++) {
+            short label = (short) (idx + 1);
+            for (int z = 0; z < images[idx].sizeZ; z++) {
+                for (int y = 0; y < images[idx].sizeY; y++) {
+                    for (int x = 0; x < images[idx].sizeX; x++) {
+                        if (images[idx].getPixel(x, y, z) != 0) {
+                            int xx = x + images[idx].offsetX;
+                            int yy = y + images[idx].offsetY;
+                            int zz = z + images[idx].offsetZ;
+                            if (zz >= 0 && zz < sizeZ && xx >= 0 && xx < sizeX && yy >= 0 && yy < sizeY) {
+                                out.pixels[zz][xx + yy * sizeX] = label;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    public static ImageShort merge3D(ImageInt[] images, int sizeX, int sizeY, int sizeZ) {
+        // multiple labels per image, but no gap between numbers
+        ImageShort out = new ImageShort("merge", sizeX, sizeY, sizeZ);
+        if (images == null || images.length == 0 || images[0] == null) {
+            return out;
+        }
+        int offset = 1;
+        for (ImageInt image : images) {
+            int min = (short) image.getMinAboveValue(0);
+            int max = (short) image.getMax();
+            for (int z = 0; z < image.sizeZ; z++) {
+                for (int y = 0; y < image.sizeY; y++) {
+                    for (int x = 0; x < image.sizeX; x++) {
+                        if (image.getPixel(x, y, z) != 0) {
+                            int val = image.getPixelInt(x, y, z);
+                            int xx = x + image.offsetX;
+                            int yy = y + image.offsetY;
+                            int zz = z + image.offsetZ;
+                            if (zz >= 0 && zz < sizeZ && xx >= 0 && xx < sizeX && yy >= 0 && yy < sizeY) {
+                                out.pixels[zz][xx + yy * sizeX] = (short) (val - min + offset);
+                            }
+                        }
+                    }
+                }
+            }
+            offset += max - min + 1;
+        }
+        return out;
+    }
+
+    public static ImagePlus getHyperStack(String title, ImageHandler[] images) { //assumes images have same size
+        homogenizeBitDepth(images);
+        ImageStack stack = new ImageStack(images[0].sizeX, images[0].sizeY, images[0].sizeZ * images.length);
+        int count = 1;
+        for (ImageHandler ih : images) {
+            if (ih != null) {
+                ih.setMinAndMax(null);
+            }
+        }
+        for (int slice = 1; slice <= images[0].sizeZ; slice++) {
+            for (ImageHandler image : images) {
+                //System.out.println("slice:"+slice+" channel:"+channel+ " bit depth:"+images[channel].img.getBitDepth());
+
+                stack.setPixels(image.img.getStack().getPixels(slice), count);
+                count++;
+            }
+        }
+
+        ImagePlus res = new ImagePlus();
+        res.setStack(stack, images.length, images[0].sizeZ, 1);
+        res.setTitle(title);
+        res.setOpenAsHyperStack(true);
+        return res;
+    }
+
+    public static void homogenizeBitDepth(ImageHandler[] images) {
+        boolean shortIm = false;
+        boolean floatIm = false;
+        for (ImageHandler im : images) {
+            if (im instanceof ImageShort) {
+                shortIm = true;
+            } else if (im instanceof ImageFloat) {
+                floatIm = true;
+            }
+        }
+        if (floatIm) {
+            for (int i = 0; i < images.length; i++) {
+                if (images[i] instanceof ImageByte) {
+                    images[i] = ((ImageByte) images[i]).convertToFloat(false);
+                }
+                if (images[i] instanceof ImageShort) {
+                    images[i] = ((ImageShort) images[i]).convertToFloat(false);
+                }
+            }
+        } else if (shortIm) {
+            for (int i = 0; i < images.length; i++) {
+                if (images[i] instanceof ImageByte) {
+                    images[i] = ((ImageByte) images[i]).convertToShort(false);
+                }
+            }
+        }
+    }
+
+    public static void convertToByte(ImageHandler[] images) {
+        for (int i = 0; i < images.length; i++) {
+            if ((images[i] instanceof ImageShort)) {
+                images[i] = ((ImageShort) images[i]).convertToByte(true);
+            }
+            if ((images[i] instanceof ImageFloat)) {
+                images[i] = ((ImageFloat) images[i]).convertToByte(true);
+            }
+        }
+    }
+
+    public static void convertToByte(ImageHandler image) {
+        if ((image instanceof ImageShort)) {
+            image = ((ImageShort) image).convertToByte(true);
+        }
+        if ((image instanceof ImageFloat)) {
+            image = ((ImageFloat) image).convertToByte(true);
+        }
+    }
+
     public abstract double getSizeInMb();
 
     public ImagePlus getImagePlus() {
@@ -115,9 +316,16 @@ public abstract class ImageHandler {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+        if (img != null) {
+            img.setTitle(title);
+        }
+    }
+
     @Deprecated
     public boolean sameDimentions(ImageHandler other) {
-       return sameDimensions(other);
+        return sameDimensions(other);
     }
 
     public boolean sameDimensions(ImageHandler other) {
@@ -127,10 +335,9 @@ public abstract class ImageHandler {
         return (sizeX == other.sizeX && sizeY == other.sizeY && sizeZ == other.sizeZ);
     }
 
-
     @Deprecated
     public boolean sameDimentions(ImagePlus other) {
-       return sameDimensions(other);
+        return sameDimensions(other);
     }
 
     public boolean sameDimensions(ImagePlus other) {
@@ -242,6 +449,23 @@ public abstract class ImageHandler {
         return res;
     }
 
+    public ArrayUtil getNeighborhoodXY3x3(int x, int y, int z) {
+        ArrayUtil res = new ArrayUtil(9);
+        int idx = 0;
+        int k = z;
+        for (int j = y - 1; j <= y + 1; j++) {
+            for (int i = x - 1; i <= x + 1; i++) {
+                if ((i >= 0) && (j >= 0) && (k >= 0) && (i < sizeX) && (j < sizeY) && (k < sizeZ)) {
+                    res.putValue(idx, getPixel(i, j, k));
+                    idx++;
+                }
+            }
+        }
+
+        res.setSize(idx);
+        return res;
+    }
+
     public ArrayList<Voxel3D> getNeighborhood3x3x3ListCenter(int x, int y, int z) {
         ArrayList<Voxel3D> res = new ArrayList<Voxel3D>(27);
         for (int k = z - 1; k <= z + 1; k++) {
@@ -317,9 +541,9 @@ public abstract class ImageHandler {
     /**
      * 6-neighborhood in 3D cross of a given voxel
      *
-     * @param x x-coordinate of the voxel
-     * @param y y-coordinate of the voxel
-     * @param z z-coordinate of the voxel
+     * @param x             x-coordinate of the voxel
+     * @param y             y-coordinate of the voxel
+     * @param z             z-coordinate of the voxel
      * @param excludeCenter exclude centre pixel from list
      * @return the ArrayUtil list of neighborhood voxels
      */
@@ -353,9 +577,9 @@ public abstract class ImageHandler {
     /**
      * Gets the neighboring of a pixel (default=sphere)
      *
-     * @param x Coordinate x of the pixel
-     * @param y Coordinate y of the pixel
-     * @param z Coordinate z of the pixel
+     * @param x    Coordinate x of the pixel
+     * @param y    Coordinate y of the pixel
+     * @param z    Coordinate z of the pixel
      * @param radx Radius x of the neighboring
      * @param rady Radius y of the neighboring
      * @param radz Radius z of the neighboring
@@ -368,9 +592,9 @@ public abstract class ImageHandler {
     /**
      * Gets the neighboring of a pixel (sphere)
      *
-     * @param x Coordinate x of the pixel
-     * @param y Coordinate y of the pixel
-     * @param z Coordinate z of the pixel
+     * @param x    Coordinate x of the pixel
+     * @param y    Coordinate y of the pixel
+     * @param z    Coordinate z of the pixel
      * @param radx Radius x of the neighboring
      * @param rady Radius y of the neighboring
      * @param radz Radius z of the neighboring
@@ -426,14 +650,14 @@ public abstract class ImageHandler {
     /**
      * Gets the neighboring attribute of the Image3D with a kernel as a array
      *
-     * @param ker The kernel array (>0 ok)
+     * @param ker   The kernel array (>0 ok)
      * @param nbval The number of non-zero values
-     * @param x Coordinate x of the pixel
-     * @param y Coordinate y of the pixel
-     * @param z Coordinate z of the pixel
-     * @param radx Radius x of the neighboring
-     * @param radz Radius y of the neighboring
-     * @param rady Radius z of the neighboring
+     * @param x     Coordinate x of the pixel
+     * @param y     Coordinate y of the pixel
+     * @param z     Coordinate z of the pixel
+     * @param radx  Radius x of the neighboring
+     * @param radz  Radius y of the neighboring
+     * @param rady  Radius z of the neighboring
      * @return The values of the nieghbor pixels inside an array
      */
     public ArrayUtil getNeighborhoodKernel(int[] ker, int nbval, int x, int y, int z, float radx, float rady, float radz) {
@@ -634,9 +858,9 @@ public abstract class ImageHandler {
     /**
      * Get the neighborhood as a layer of pixels
      *
-     * @param x Coordinate x of the pixel
-     * @param y Coordinate y of the pixel
-     * @param z Coordinate z of the pixel
+     * @param x  Coordinate x of the pixel
+     * @param y  Coordinate y of the pixel
+     * @param z  Coordinate z of the pixel
      * @param r0 Minimu radius value
      * @param r1 Maximum radius value
      * @return
@@ -648,11 +872,11 @@ public abstract class ImageHandler {
     /**
      * Get the neighborhood as a layer of pixels
      *
-     * @param x Coordinate x of the pixel
-     * @param y Coordinate y of the pixel
-     * @param z Coordinate z of the pixel
-     * @param r0 Minimu radius value
-     * @param r1 Maximum radius value
+     * @param x     Coordinate x of the pixel
+     * @param y     Coordinate y of the pixel
+     * @param z     Coordinate z of the pixel
+     * @param r0    Minimu radius value
+     * @param r1    Maximum radius value
      * @param water
      * @return
      */
@@ -702,9 +926,9 @@ public abstract class ImageHandler {
     /**
      * Get the neighborhood as a layer of pixels
      *
-     * @param x Coordinate x of the pixel
-     * @param y Coordinate y of the pixel
-     * @param z Coordinate z of the pixel
+     * @param x  Coordinate x of the pixel
+     * @param y  Coordinate y of the pixel
+     * @param z  Coordinate z of the pixel
      * @param r0 Minimun radius value
      * @param r1 Maximum radius value
      * @return
@@ -777,13 +1001,6 @@ public abstract class ImageHandler {
 
     public abstract Object getArray1D(int z);
 
-    public void setTitle(String title) {
-        this.title = title;
-        if (img != null) {
-            img.setTitle(title);
-        }
-    }
-
     public Calibration getCalibration() {
         if (img == null) {
             return null;
@@ -845,18 +1062,6 @@ public abstract class ImageHandler {
         return 1;
     }
 
-    public static ImageHandler wrap(ImagePlus imp) {
-        switch (imp.getBitDepth()) {
-            case 8:
-                return new ImageByte(imp);
-            case 16:
-                return new ImageShort(imp);
-            case 32:
-                return new ImageFloat(imp);
-        }
-        return null;
-    }
-
     public ImageHandler createSameDimensions() {
         if (this instanceof ImageByte) {
             ImageStack stack = ImageStack.create(sizeX, sizeY, sizeZ, 8);
@@ -872,53 +1077,12 @@ public abstract class ImageHandler {
         return null;
     }
 
-    public static ImageHandler wrap(ImageStack stack) {
-        switch (stack.getBitDepth()) {
-            case 8:
-                return new ImageByte(stack);
-            case 16:
-                return new ImageShort(stack);
-            case 32:
-                return new ImageFloat(stack);
-        }
-        return null;
-    }
-
-    public static ImageHandler openImage(File f) throws Exception {
-        Opener op = new Opener();
-        op.setSilentMode(true);
-        ImagePlus i = op.openImage(f.getAbsolutePath());
-        i.setTitle(f.getName());
-        i.setTitle(i.getShortTitle());
-        switch (i.getBitDepth()) {
-            case 8:
-                return new ImageByte(i);
-            case 16:
-                return new ImageShort(i);
-            case 32:
-                return new ImageFloat(i);
-        }
-        return null;
-    }
-
-    public static ImageHandler newBlankImageHandler(String title, ImageHandler ih) {
-        switch (ih.img.getBitDepth()) {
-            case 8:
-                return new ImageByte(title, ih.sizeX, ih.sizeY, ih.sizeZ);
-            case 16:
-                return new ImageShort(title, ih.sizeX, ih.sizeY, ih.sizeZ);
-            case 32:
-                return new ImageFloat(title, ih.sizeX, ih.sizeY, ih.sizeZ);
-        }
-        return null;
-    }
-
     /**
      * Compute the operation s1*this + s2*other
      *
      * @param image The other image
-     * @param s1 The coefficient applied to this
-     * @param s2 The coefficient applied to other image
+     * @param s1    The coefficient applied to this
+     * @param s2    The coefficient applied to other image
      * @return The resulting float image
      */
     public ImageHandler addImage(ImageHandler image, float s1, float s2) {
@@ -1338,23 +1502,6 @@ public abstract class ImageHandler {
         zoom(ip, defZoomFactor);
     }
 
-    public static void zoom(ImagePlus image, double magnitude) {
-        ImageCanvas ic = image.getCanvas();
-        if (ic == null) {
-            return;
-        }
-        ic.zoom100Percent();
-        if (magnitude > 1) {
-            for (int i = 0; i < (int) (magnitude + 0.5); i++) {
-                ic.zoomIn(image.getWidth() / 2, image.getHeight() / 2);
-            }
-        } else if (magnitude > 0 && magnitude < 1) {
-            for (int i = 0; i < (int) (1 / magnitude + 0.5); i++) {
-                ic.zoomOut(image.getWidth() / 2, image.getHeight() / 2);
-            }
-        }
-    }
-
     public void closeImagePlus() {
         if (this.img != null) {
             try {
@@ -1465,7 +1612,7 @@ public abstract class ImageHandler {
         }
         ContrastEnhancer ch = new ContrastEnhancer();
         //ch.setNormalize(true);
-        //ch.stretchHistogram(im, 0.5);        
+        //ch.stretchHistogram(im, 0.5);
         if (im.getBitDepth() < 32) {
             ch.equalize(im);
         }
@@ -1524,6 +1671,7 @@ public abstract class ImageHandler {
     public boolean touchBorders(int x, int y, int z) {
         return (x == 0 || y == 0 || z == 0 || x == (sizeX - 1) || y == (sizeY - 1) || (z == sizeZ - 1));
     }
+    //public abstract void resize(int X, int Y, int Z, boolean increaseSize);
 
     public abstract ImageByte thresholdRangeInclusive(float min, float max);
 
@@ -1540,17 +1688,16 @@ public abstract class ImageHandler {
     }
 
     public abstract void thresholdCut(float thld, boolean keepUnderThld, boolean strict);
-    //public abstract void resize(int X, int Y, int Z, boolean increaseSize);
 
     /**
      * Extract a 3D image from a specified location as the center of crop
      *
-     * @param x0 the x coordinate of the center of the extraction
-     * @param y0 the y coordinate of the center of the extraction
-     * @param z0 the z coordinate of the center of the extraction
-     * @param rx radius X of new image
-     * @param ry radius Y of new image
-     * @param rz radius Z of new image
+     * @param x0     the x coordinate of the center of the extraction
+     * @param y0     the y coordinate of the center of the extraction
+     * @param z0     the z coordinate of the center of the extraction
+     * @param rx     radius X of new image
+     * @param ry     radius Y of new image
+     * @param rz     radius Z of new image
      * @param sphere extract inside a sphere
      * @return the cropped image
      */
@@ -1562,68 +1709,13 @@ public abstract class ImageHandler {
 
     public abstract ImageHandler crop3DMask(String title, ImageInt mask, int label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_);
 
-    public static ImageShort merge3DBinary(ImageInt[] images, int sizeX, int sizeY, int sizeZ) { // 1 label per image
-        ImageShort out = new ImageShort("merge", sizeX, sizeY, sizeZ);
-        if (images == null || images.length == 0 || images[0] == null) {
-            return out;
-        }
-        for (int idx = 0; idx < images.length; idx++) {
-            short label = (short) (idx + 1);
-            for (int z = 0; z < images[idx].sizeZ; z++) {
-                for (int y = 0; y < images[idx].sizeY; y++) {
-                    for (int x = 0; x < images[idx].sizeX; x++) {
-                        if (images[idx].getPixel(x, y, z) != 0) {
-                            int xx = x + images[idx].offsetX;
-                            int yy = y + images[idx].offsetY;
-                            int zz = z + images[idx].offsetZ;
-                            if (zz >= 0 && zz < sizeZ && xx >= 0 && xx < sizeX && yy >= 0 && yy < sizeY) {
-                                out.pixels[zz][xx + yy * sizeX] = label;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return out;
-    }
-
-    public static ImageShort merge3D(ImageInt[] images, int sizeX, int sizeY, int sizeZ) {
-        // multiple labels per image, but no gap between numbers
-        ImageShort out = new ImageShort("merge", sizeX, sizeY, sizeZ);
-        if (images == null || images.length == 0 || images[0] == null) {
-            return out;
-        }
-        int offset = 1;
-        for (ImageInt image : images) {
-            int min = (short) image.getMinAboveValue(0);
-            int max = (short) image.getMax();
-            for (int z = 0; z < image.sizeZ; z++) {
-                for (int y = 0; y < image.sizeY; y++) {
-                    for (int x = 0; x < image.sizeX; x++) {
-                        if (image.getPixel(x, y, z) != 0) {
-                            int val = image.getPixelInt(x, y, z);
-                            int xx = x + image.offsetX;
-                            int yy = y + image.offsetY;
-                            int zz = z + image.offsetZ;
-                            if (zz >= 0 && zz < sizeZ && xx >= 0 && xx < sizeX && yy >= 0 && yy < sizeY) {
-                                out.pixels[zz][xx + yy * sizeX] = (short) (val - min + offset);
-                            }
-                        }
-                    }
-                }
-            }
-            offset += max - min + 1;
-        }
-        return out;
-    }
-
     /**
      * Insert a 3D image to a specified location
      *
-     * @param vol the 3D image to be inserted
-     * @param x0 the x coordinate of the insertion
-     * @param y0 the y coordinate of the insertion
-     * @param z0 the z coordinate of the insertion
+     * @param vol     the 3D image to be inserted
+     * @param x0      the x coordinate of the insertion
+     * @param y0      the y coordinate of the insertion
+     * @param z0      the z coordinate of the insertion
      * @param average average with original image or not
      */
     public void insert(ImageHandler vol, int x0, int y0, int z0, boolean average) {
@@ -1656,7 +1748,7 @@ public abstract class ImageHandler {
 
     public abstract ImageHandler resample(int newZ, int method);
 
-//    public abstract ImageHandler grayscaleFilter(int sizeX, int sizeY, int filter, ImageHandler res, boolean multithread);
+    //    public abstract ImageHandler grayscaleFilter(int sizeX, int sizeY, int filter, ImageHandler res, boolean multithread);
 //
 //    public abstract ImageHandler grayscaleOpen(int radXY, int radZ, ImageHandler res, ImageHandler temp, boolean multithread);
 //
@@ -1675,7 +1767,7 @@ public abstract class ImageHandler {
         invert(null);
     }
 
-    // value for bckg values, 0 for non-backg values, 
+    // value for bckg values, 0 for non-backg values,
     public void invertBackground(float bckg, float value) {
         for (int i = 0; i < sizeXYZ; i++) {
             if (getPixel(i) == bckg) {
@@ -1700,79 +1792,6 @@ public abstract class ImageHandler {
         }
 
         return res;
-    }
-
-    public static ImagePlus getHyperStack(String title, ImageHandler[] images) { //assumes images have same size
-        homogenizeBitDepth(images);
-        ImageStack stack = new ImageStack(images[0].sizeX, images[0].sizeY, images[0].sizeZ * images.length);
-        int count = 1;
-        for (ImageHandler ih : images) {
-            if (ih != null) {
-                ih.setMinAndMax(null);
-            }
-        }
-        for (int slice = 1; slice <= images[0].sizeZ; slice++) {
-            for (ImageHandler image : images) {
-                //System.out.println("slice:"+slice+" channel:"+channel+ " bit depth:"+images[channel].img.getBitDepth());
-
-                stack.setPixels(image.img.getStack().getPixels(slice), count);
-                count++;
-            }
-        }
-
-        ImagePlus res = new ImagePlus();
-        res.setStack(stack, images.length, images[0].sizeZ, 1);
-        res.setTitle(title);
-        res.setOpenAsHyperStack(true);
-        return res;
-    }
-
-    public static void homogenizeBitDepth(ImageHandler[] images) {
-        boolean shortIm = false;
-        boolean floatIm = false;
-        for (ImageHandler im : images) {
-            if (im instanceof ImageShort) {
-                shortIm = true;
-            } else if (im instanceof ImageFloat) {
-                floatIm = true;
-            }
-        }
-        if (floatIm) {
-            for (int i = 0; i < images.length; i++) {
-                if (images[i] instanceof ImageByte) {
-                    images[i] = ((ImageByte) images[i]).convertToFloat(false);
-                }
-                if (images[i] instanceof ImageShort) {
-                    images[i] = ((ImageShort) images[i]).convertToFloat(false);
-                }
-            }
-        } else if (shortIm) {
-            for (int i = 0; i < images.length; i++) {
-                if (images[i] instanceof ImageByte) {
-                    images[i] = ((ImageByte) images[i]).convertToShort(false);
-                }
-            }
-        }
-    }
-
-    public static void convertToByte(ImageHandler[] images) {
-        for (int i = 0; i < images.length; i++) {
-            if ((images[i] instanceof ImageShort)) {
-                images[i] = ((ImageShort) images[i]).convertToByte(true);
-            }
-            if ((images[i] instanceof ImageFloat)) {
-                images[i] = ((ImageFloat) images[i]).convertToByte(true);
-            }
-        }
-    }
-
-    public static void convertToByte(ImageHandler image) {
-        if ((image instanceof ImageShort)) {
-            image = ((ImageShort) image).convertToByte(true);
-        }
-        if ((image instanceof ImageFloat)) {
-            image = ((ImageFloat) image).convertToByte(true);
-        }
     }
 
     public abstract void intersectMask(ImageInt mask);
@@ -1863,10 +1882,10 @@ public abstract class ImageHandler {
     /**
      * Radial distribution of pixels mean values in layers
      *
-     * @param x0 Coordinate x of the pixel
-     * @param y0 Coordinate y of the pixel
-     * @param z0 Coordinate z of the pixel
-     * @param maxR maximu radius
+     * @param x0    Coordinate x of the pixel
+     * @param y0    Coordinate y of the pixel
+     * @param z0    Coordinate z of the pixel
+     * @param maxR  maximu radius
      * @param water
      * @return arry with mean radial values
      */
@@ -1932,9 +1951,9 @@ public abstract class ImageHandler {
     /**
      * Radial distribution of pixels mean values in layers
      *
-     * @param x0 Coordinate x of the pixel
-     * @param y0 Coordinate y of the pixel
-     * @param z0 Coordinate z of the pixel
+     * @param x0   Coordinate x of the pixel
+     * @param y0   Coordinate y of the pixel
+     * @param z0   Coordinate z of the pixel
      * @param maxR maximu radius
      * @return arry with mean radial values
      */
