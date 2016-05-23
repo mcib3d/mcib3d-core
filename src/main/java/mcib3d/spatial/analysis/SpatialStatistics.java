@@ -25,13 +25,10 @@ public class SpatialStatistics {
     private SpatialModel model;
     private int nbSamples;
     private Objects3DPopulation observed;
-    private int nbObj;
 
     // final sdi value
     private double sdi = Double.NaN;
 
-    // parameters for plot
-    private int nbBins = 1000;
     private double env = 0.05;
     private Color ColorAVG = Color.red;
     private Color ColorENV = Color.green;
@@ -63,7 +60,7 @@ public class SpatialStatistics {
         if (!this.descriptor.init()) {
             IJ.log("Pb with descriptor");
         }
-        nbObj = observed.getNbObjects();
+        int nbObj = observed.getNbObjects();
     }
 
     private void compute() {
@@ -99,6 +96,7 @@ public class SpatialStatistics {
         samplesDesc = getSamples();
         // uniform spaced 
         double max = xEvals.getMaximum();
+        int nbBins = 1000;
         xEvalsEnv = new ArrayUtil(nbBins);
         for (int i = 0; i < nbBins; i++) {
             xEvalsEnv.addValue(i, ((double) i) * max / ((double) nbBins));

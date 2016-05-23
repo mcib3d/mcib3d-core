@@ -2,6 +2,7 @@ package mcib3d.geom;
 
 //import com.mongodb.BasicDBObject;
 //import com.mongodb.DBObject;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -10,21 +11,10 @@ import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij3d.Volume;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import marchingcubes.MCCube;
 import mcib3d.Jama.EigenvalueDecomposition;
 import mcib3d.Jama.Matrix;
-import mcib3d.image3d.ImageByte;
-import mcib3d.image3d.ImageFloat;
-import mcib3d.image3d.ImageHandler;
-import mcib3d.image3d.ImageInt;
-import mcib3d.image3d.ImageShort;
+import mcib3d.image3d.*;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.image3d.processing.BinaryMorpho;
 import mcib3d.image3d.processing.FastFilters3D;
@@ -32,28 +22,36 @@ import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 import mcib3d.utils.KDTreeC.Item;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
 /**
  * Copyright (C) 2008- 2011 Thomas Boudier
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of mcib3d
- *
+ * <p>
  * mcib3d is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
- *
+ * <p>
  * package mcib3d.geom;
- *
+ * <p>
  * /**
  * Abstract class for 3D objects, an abstract volume object is defined by some
  * contours, so distance analysis can be computed.
@@ -62,6 +60,37 @@ import mcib3d.utils.KDTreeC.Item;
  */
 public abstract class Object3D implements Comparable<Object3D> {
 
+    public static final byte MEASURE_NONE = 0;
+    public static final byte MEASURE_VOLUME_PIX = 1;
+    public static final byte MEASURE_VOLUME_UNIT = 2;
+    public static final byte MEASURE_MAIN_ELONGATION = 3;
+    public static final byte MEASURE_COMPACTNESS_VOXELS = 4;
+    public static final byte MEASURE_COMPACTNESS_UNITS = 12;
+    public static final byte MEASURE_SPHERICITY = 5;
+    public static final byte MEASURE_AREA_PIX = 6;
+    public static final byte MEASURE_AREA_UNIT = 7;
+    public static final byte MEASURE_DC_AVG = 8;
+    public static final byte MEASURE_DC_SD = 9;
+    // with currentQuantifImage
+    public static final byte MEASURE_INTENSITY_AVG = 10;
+    public static final byte MEASURE_INTENSITY_SD = 11;
+    public static final byte MEASURE_INTENSITY_MIN = 12;
+    public static final byte MEASURE_INTENSITY_MAX = 13;
+    public static final byte MEASURE_INTENSITY_MEDIAN = 14;
+    /**
+     * Centred Moments order 2
+     */
+    public double s200 = Double.NaN;
+    /**
+     * use verbose mode (not used ?)
+     */
+    public boolean verbose = false;
+    /**
+     * use multithreading mode (not used ?)
+     */
+    public boolean multiThread = false;
+    // TEST comparable
+    public double compare = 0;
     /**
      * name the object (not used yet)
      */
@@ -99,6 +128,10 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     protected double cy = Double.NaN;
     /**
+     * Touch the borders ?
+     */
+    //protected boolean touchBorders;
+    /**
      * Center of mass z
      */
     protected double cz = Double.NaN;
@@ -127,11 +160,6 @@ public abstract class Object3D implements Comparable<Object3D> {
      * Pixel 2 for feret diameter
      */
     protected Voxel3D feret2 = null;
-    // center distances stat
-    double distcentermin = Double.NaN;
-    double distcentermax = Double.NaN;
-    double distcentermean = Double.NaN;
-    double distcentersigma = Double.NaN;
     /**
      * Integrated density (sum of pixels)
      */
@@ -161,14 +189,6 @@ public abstract class Object3D implements Comparable<Object3D> {
      * kd-tree for the contour
      */
     protected KDTreeC kdtreeContours = null;
-    /**
-     * Touch the borders ?
-     */
-    //protected boolean touchBorders;
-    /**
-     * Centred Moments order 2
-     */
-    public double s200 = Double.NaN;
     protected double s110, s101, s020, s011, s002;
     /**
      * Centred Moments order 3
@@ -210,60 +230,27 @@ public abstract class Object3D implements Comparable<Object3D> {
      * the unit for resolution
      */
     protected String units = "pixels";
-    /**
-     * use verbose mode (not used ?)
-     */
-    public boolean verbose = false;
-    /**
-     * use multithreading mode (not used ?)
-     */
-    public boolean multiThread = false;
-    public static final byte MEASURE_NONE = 0;
-    public static final byte MEASURE_VOLUME_PIX = 1;
-    public static final byte MEASURE_VOLUME_UNIT = 2;
-    public static final byte MEASURE_MAIN_ELONGATION = 3;
-    public static final byte MEASURE_COMPACTNESS_VOXELS = 4;
-    public static final byte MEASURE_COMPACTNESS_UNITS = 12;
-    public static final byte MEASURE_SPHERICITY = 5;
-    public static final byte MEASURE_AREA_PIX = 6;
-    public static final byte MEASURE_AREA_UNIT = 7;
-    public static final byte MEASURE_DC_AVG = 8;
-    public static final byte MEASURE_DC_SD = 9;
-    // with currentQuantifImage
-    public static final byte MEASURE_INTENSITY_AVG = 10;
-    public static final byte MEASURE_INTENSITY_SD = 11;
-    public static final byte MEASURE_INTENSITY_MIN = 12;
-    public static final byte MEASURE_INTENSITY_MAX = 13;
-    public static final byte MEASURE_INTENSITY_MEDIAN = 14;
+    // center distances stat
+    double distcentermin = Double.NaN;
+    double distcentermax = Double.NaN;
+    double distcentermean = Double.NaN;
+    double distcentersigma = Double.NaN;
 
-    // TEST comparable
-    public double compare = 0;
-
-    /**
-     * Sets the calibration in XY of the Object3D
-     *
-     * @param rxy The new calibration in XY
-     */
-    public void setResXY(double rxy) {
-        resXY = rxy;
+    public static int getNbMoments3D() {
+        return 5;
     }
 
     /**
-     * Sets the calibration in Z of the Object3D
-     *
-     * @param rz he new calibration in Z
+     * @param A
+     * @param B
+     * @return
      */
-    public void setResZ(double rz) {
-        resZ = rz;
-    }
+    public static double pcColocSum(Object3D A, Object3D B) {
+        double vA = A.getVolumePixels();
+        double vB = B.getVolumePixels();
+        double vC = A.getColoc(B);
 
-    /**
-     * Sets the units attribute for the calibration
-     *
-     * @param u The new units value
-     */
-    public void setUnits(String u) {
-        units = u;
+        return 100.0 * vC / (vA + vB);
     }
 
     /**
@@ -276,6 +263,15 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
+     * Sets the calibration in XY of the Object3D
+     *
+     * @param rxy The new calibration in XY
+     */
+    public void setResXY(double rxy) {
+        resXY = rxy;
+    }
+
+    /**
      * Gets the calibration in Z of the Object3D
      *
      * @return The resZ value
@@ -285,12 +281,30 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
+     * Sets the calibration in Z of the Object3D
+     *
+     * @param rz he new calibration in Z
+     */
+    public void setResZ(double rz) {
+        resZ = rz;
+    }
+
+    /**
      * Gets the unit attribute of the Object3D object
      *
      * @return The units
      */
     public String getUnits() {
         return units;
+    }
+
+    /**
+     * Sets the units attribute for the calibration
+     *
+     * @param u The new units value
+     */
+    public void setUnits(String u) {
+        units = u;
     }
 
     /**
@@ -323,8 +337,8 @@ public abstract class Object3D implements Comparable<Object3D> {
      * Sets the calibration of the Object3D
      *
      * @param rxy The new calibration in XY
-     * @param rz The new calibration in Z
-     * @param u The new calibration units
+     * @param rz  The new calibration in Z
+     * @param u   The new calibration units
      */
     public final void setCalibration(double rxy, double rz, String u) {
         resXY = rxy;
@@ -388,10 +402,6 @@ public abstract class Object3D implements Comparable<Object3D> {
         return labelImage;
     }
 
-    public ImageInt getMaxLabelImage(int val) {
-        return createMaxSegImage(val);
-    }
-
     /**
      * Sets the label image of the object (should start at 0,0,0)
      *
@@ -403,6 +413,10 @@ public abstract class Object3D implements Comparable<Object3D> {
         offX = 0;
         offY = 0;
         offZ = 0;
+    }
+
+    public ImageInt getMaxLabelImage(int val) {
+        return createMaxSegImage(val);
     }
 
     /**
@@ -560,7 +574,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * Compute the contour voxels of the object
      */
-    // FIXME check contours connexity and test borders of image (mereo) 
+    // FIXME check contours connexity and test borders of image (mereo)
     public abstract void computeContours();
 
     /**
@@ -570,9 +584,9 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     protected abstract void computeMoments2(boolean normalize); // order 2
 
-    protected abstract void computeMoments3(); // order 3    
+    protected abstract void computeMoments3(); // order 3
 
-    protected abstract void computeMoments4(); // order 3    
+    protected abstract void computeMoments4(); // order 3
 
     public double[] getMomentsRaw2() {
         if (Double.isNaN(s200)) {
@@ -683,7 +697,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 //        }
         // normalize
         double v = getVolumeUnit();
-        double v53 = Math.pow(v, 5 / 3); // keep in integer ? 
+        double v53 = Math.pow(v, 5 / 3); // keep in integer ?
         s200 /= v53;
         s020 /= v53;
         s002 /= v53;
@@ -698,10 +712,6 @@ public abstract class Object3D implements Comparable<Object3D> {
         double I2 = J3 / (J1 * J1 * J1);
 
         return new double[]{J1, J2, J3, I1, I2};
-    }
-
-    public static int getNbMoments3D() {
-        return 5;
     }
 
     /**
@@ -729,7 +739,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * List voxels in the image with values > threshold
      *
-     * @param ima The image with values
+     * @param ima    The image with values
      * @param thresh the threshold
      * @return the list of voxels with values > threshold
      */
@@ -828,8 +838,8 @@ public abstract class Object3D implements Comparable<Object3D> {
      * drawing inside a 2D byteprocessor
      *
      * @param mask the byte processor
-     * @param z the z slice
-     * @param col the color(grey level)
+     * @param z    the z slice
+     * @param col  the color(grey level)
      * @return
      */
     public abstract boolean draw(ByteProcessor mask, int z, int col);
@@ -838,7 +848,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * drawing inside an imagestack
      *
      * @param mask the image
-     * @param col the color(grey level)
+     * @param col  the color(grey level)
      */
     public abstract void draw(ImageStack mask, int col);
 
@@ -846,7 +856,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * drawing inside an ImageHandler
      *
      * @param mask the image
-     * @param col the color(grey level)
+     * @param col  the color(grey level)
      */
     public abstract void draw(ImageHandler mask, int col);
 
@@ -877,9 +887,9 @@ public abstract class Object3D implements Comparable<Object3D> {
      * drawing inside an imagestack, in rgb color
      *
      * @param mask the imagestack
-     * @param r red value
-     * @param g greeen value
-     * @param b blue value
+     * @param r    red value
+     * @param g    greeen value
+     * @param b    blue value
      */
     public abstract void draw(ImageStack mask, int r, int g, int b);
 
@@ -1056,7 +1066,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @return
      */
     public int[] getBoundingBox() {
@@ -1094,7 +1103,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @return
      */
     public boolean isEmpty() {
@@ -1137,7 +1145,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param x
      * @param y
      * @param z
@@ -1151,7 +1158,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param x
      * @param y
      * @param z
@@ -1159,7 +1165,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     public abstract void translate(double x, double y, double z);
 
     /**
-     *
      * @param V
      */
     public void translate(Vector3D V) {
@@ -1231,7 +1236,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @return
      */
     public double[] getCenterAsArray() {
@@ -1517,7 +1521,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param order
      * @return
      */
@@ -1627,7 +1630,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @return
      */
     public boolean centerInside() {
@@ -1734,6 +1736,16 @@ public abstract class Object3D implements Comparable<Object3D> {
         return feret1;
     }
 
+    /*
+     * public DBObject toDB(int rank) { DBObject output = new
+     * BasicDBObject("rank", rank);
+     *
+     * output.put("centerX", this.getCenterX()); output.put("centerY",
+     * this.getCenterY()); output.put("centerZ", this.getCenterZ()); return
+     * output; }
+     *
+     */
+
     /**
      * Gets the second feret voxel of the object (unit)
      *
@@ -1746,15 +1758,6 @@ public abstract class Object3D implements Comparable<Object3D> {
         return feret2;
     }
 
-    /*
-     * public DBObject toDB(int rank) { DBObject output = new
-     * BasicDBObject("rank", rank);
-     *
-     * output.put("centerX", this.getCenterX()); output.put("centerY",
-     * this.getCenterY()); output.put("centerZ", this.getCenterZ()); return
-     * output; }
-     *
-     */
     /**
      * Display information
      *
@@ -1791,7 +1794,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * The border to border distance along a direction (EXPERIMENTAL)
      *
      * @param point0
-     * @param other the other object
+     * @param other    the other object
      * @param opposite
      * @param point1
      * @return the border to border distance
@@ -1836,15 +1839,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
-     * @param P
-     * @return
-     */
-    public double distPixelBorder(Point3D P) {
-        return vectorPixelBorder(P.getX(), P.getY(), P.getZ()).getLength(resXY, resZ);
-    }
-
-    /**
      * Distance from a point to the border of the object
      *
      * @param x x coordinate of the point
@@ -1852,6 +1846,15 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param z z coordinate of the point
      * @return The shortest distance
      */
+
+    /**
+     * @param P
+     * @return
+     */
+    public double distPixelBorder(Point3D P) {
+        return vectorPixelBorder(P.getX(), P.getY(), P.getZ()).getLength(resXY, resZ);
+    }
+
     /**
      * Distance from a point to the border of the object
      *
@@ -1900,6 +1903,15 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
+     * Gets the touchBorders attribute of the Object3D Object3D
+     *
+     * @return The touchBorders value
+     */
+//    public boolean getTouchBorders() {
+//        return touchBorders;
+//    }
+
+    /**
      * Gets the centerUnit attribute of the Object3D object
      *
      * @return The centerUnit value
@@ -1910,15 +1922,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     * Gets the touchBorders attribute of the Object3D Object3D
-     *
-     * @return The touchBorders value
-     */
-//    public boolean getTouchBorders() {
-//        return touchBorders;
-//    }
-    /**
-     *
      * @param vox
      * @return
      */
@@ -1959,7 +1962,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param x
      * @param y
      * @param z
@@ -1974,6 +1976,22 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     public boolean inside(Point3D P) {
         return inside(P.getX(), P.getY(), P.getZ());
+    }
+
+    public boolean insideOne(ArrayList<Point3D> markers) {
+        for (Point3D marker : markers) {
+            if (inside(marker)) return true;
+        }
+
+        return false;
+    }
+
+    public boolean insideAll(ArrayList<Point3D> markers) {
+        for (Point3D marker : markers) {
+            if (!inside(marker)) return false;
+        }
+
+        return true;
     }
 
     /**
@@ -1995,13 +2013,13 @@ public abstract class Object3D implements Comparable<Object3D> {
             val = 1;
         }
         ImageInt label = this.getLabelImage();
-        int testx = (int) Math.round(x) - offX;
-        int testy = (int) Math.round(y) - offY;
-        int testz = (int) Math.round(z) - offZ;
-        if ((testx < 0) || (testy < 0) || (testz < 0) || (testx >= label.sizeX) || (testy >= label.sizeY) || (testz >= label.sizeZ)) {
+        int testX = (int) Math.round(x) - offX;
+        int testY = (int) Math.round(y) - offY;
+        int testZ = (int) Math.round(z) - offZ;
+        if ((testX < 0) || (testY < 0) || (testZ < 0) || (testX >= label.sizeX) || (testY >= label.sizeY) || (testZ >= label.sizeZ)) {
             return false;
         }
-        return (label.getPixel(testx, testy, testz) == val);
+        return (label.getPixel(testX, testY, testZ) == val);
 
 //        if (miniLabelImage == null) {
 //            miniLabelImage = this.createSegImageMini(val, 1);
@@ -2048,7 +2066,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param other
      * @return
      */
@@ -2079,7 +2096,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param other
      * @return
      */
@@ -2088,7 +2104,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param other
      * @return
      */
@@ -2099,9 +2114,9 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * Create an intersection image around two objects
      *
-     * @param other the Other object
-     * @param val1 the value for this object
-     * @param val2 the value for other object
+     * @param other  the Other object
+     * @param val1   the value for this object
+     * @param val2   the value for other object
      * @param border the border around box
      * @return the image with 3 values (val1 for this, val2 for other, val1+val2
      * for intersection)
@@ -2171,8 +2186,8 @@ public abstract class Object3D implements Comparable<Object3D> {
      * Create an intersection image around two objects (with no extra borders)
      *
      * @param other the Other object
-     * @param val1 the value for this object
-     * @param val2 the value for other object
+     * @param val1  the value for this object
+     * @param val2  the value for other object
      * @return the image with 3 values (val1 for this, val2 for other, val1+val2
      * for intersection)
      */
@@ -2209,9 +2224,9 @@ public abstract class Object3D implements Comparable<Object3D> {
      * Get the contact surfaces between two objects, outside voxels < dist and
      * number of border voxels of this object included in the other
      *
-     * @param other the other object
+     * @param other    the other object
      * @param dist_max distance max (in pixel) between two contour points of the
-     * two objects
+     *                 two objects
      * @return int array with : nb ofcontours points below distance max to
      * contours points in other object AND nb of voxel of this object inside the
      * other one
@@ -2279,9 +2294,9 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     * @param other object
+     * @param other         object
      * @param distSquareMax object maximum square distance between two voxels (0
-     * for coloc, 1 for side contact, >1 for diagonal contact
+     *                      for coloc, 1 for side contact, >1 for diagonal contact
      * @return nb ofcontours voxels of first object at a distance inferior to
      * dist_square_max in pixels
      */
@@ -2326,7 +2341,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * the radius of the object towards another object, in forward or opposite
      * direction
      *
-     * @param obj the other object
+     * @param obj      the other object
      * @param opposite opposite or forward direction
      * @return the radius (in real units)
      */
@@ -2415,10 +2430,9 @@ public abstract class Object3D implements Comparable<Object3D> {
      * point0 along direction V1 is the point on border of other object from
      * point1 along opposite direction
      *
-     *
-     * @param point0 the first point on this object
-     * @param other the other object
-     * @param point1 the second point on other object
+     * @param point0   the first point on this object
+     * @param other    the other object
+     * @param point1   the second point on other object
      * @param opposite
      * @return The difference vector between the two border points
      */
@@ -2619,7 +2633,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * vector between a point and the border along a direction the point is
      * given is real units
      *
-     * @param V the vector (to describe the point)
+     * @param V   the vector (to describe the point)
      * @param dir the direction
      * @return vector between the point and the border
      */
@@ -2643,9 +2657,9 @@ public abstract class Object3D implements Comparable<Object3D> {
      * vector between a pixel and the border, along a direction the vector is
      * given is real units
      *
-     * @param x the x-coordinate of the point
-     * @param y the y-coordinate of the point
-     * @param z the z-coordinate of the point
+     * @param x   the x-coordinate of the point
+     * @param y   the y-coordinate of the point
+     * @param z   the z-coordinate of the point
      * @param dir the direction
      * @return vector between the point and the border
      */
@@ -2716,7 +2730,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param massCenter
      * @param objectMap
      * @param ima
@@ -2798,23 +2811,9 @@ public abstract class Object3D implements Comparable<Object3D> {
         }
         return pixmin;
     }
-    
-    public void resetQuantifImage(){
-        currentQuantifImage=null;        
-    }
 
-    /**
-     * Gets the SD of pixels in object
-     *
-     * @param ima the 3D image
-     * @return The sigma value
-     */
-    public double getPixStdDevValue(ImageHandler ima) {
-        if ((currentQuantifImage == null) || (currentQuantifImage != ima)) {
-            computeMassCenter(ima);
-            currentQuantifImage = ima;
-        }
-        return sigma;
+    public void resetQuantifImage() {
+        currentQuantifImage = null;
     }
 
     /**
@@ -2884,8 +2883,22 @@ public abstract class Object3D implements Comparable<Object3D> {
 //        //miniLabelImage.show("obj:"+this);
 //        return miniLabelImage;
 //    }
+
     /**
+     * Gets the SD of pixels in object
      *
+     * @param ima the 3D image
+     * @return The sigma value
+     */
+    public double getPixStdDevValue(ImageHandler ima) {
+        if ((currentQuantifImage == null) || (currentQuantifImage != ima)) {
+            computeMassCenter(ima);
+            currentQuantifImage = ima;
+        }
+        return sigma;
+    }
+
+    /**
      * @param val
      * @param borderSize
      * @return
@@ -2909,7 +2922,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             vox = o;
             xx = vox.getX() - xm;
             yy = vox.getY() - ym;
-            // TODO suface vertices may have coordinates < 0 if touching edges 
+            // TODO suface vertices may have coordinates < 0 if touching edges
             if (!miniLabelImage.contains(xx, yy, 0)) {
                 System.out.println("outside miniseg " + xx + " " + yy);
             } else {
@@ -2925,11 +2938,10 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @return
      */
     private ImageInt createSegImage() {
-        // case value =0 
+        // case value =0
         if (value != 0) {
             return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, value);
         } else {
@@ -2942,7 +2954,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param xmi
      * @param ymi
      * @param zmi
@@ -2981,7 +2992,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     public abstract ArrayList<Voxel3D> getVoxels();
 
     /**
-     *
      * @param path
      */
     public abstract void saveObject(String path);
@@ -3000,6 +3010,8 @@ public abstract class Object3D implements Comparable<Object3D> {
         // value
         bf.write("value=\t" + value + "\n");
     }
+
+    // code copied from ImageJ 3D Viewer MCTriangulator
 
     protected String loadInfo(BufferedReader bf) throws IOException {
         String data = bf.readLine();
@@ -3031,9 +3043,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         return data;
     }
 
-    // code copied from ImageJ 3D Viewer MCTriangulator
     /**
-     *
      * @param calibrated
      * @return
      */
@@ -3071,7 +3081,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param obj
      * @return
      */
@@ -3087,7 +3096,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
 //        ImageInt inter = this.createIntersectionImage(obj, 1, 2);
 //        int[] hist = inter.getHistogram(new BlankMask(inter), 256, 0, 255);
-//        
+//
 //        return (hist[2] == 0);
 //        ArrayList<Voxel3D> al1 = autre.getVoxels();
 //        Voxel3D v1;
@@ -3117,32 +3126,16 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param obj
      * @return
      */
     public abstract boolean hasOneVoxelColoc(Object3D obj);
 
     /**
-     *
      * @param obj
      * @return
      */
     public abstract int getColoc(Object3D obj);
-
-    /**
-     *
-     * @param A
-     * @param B
-     * @return
-     */
-    public static double pcColocSum(Object3D A, Object3D B) {
-        double vA = A.getVolumePixels();
-        double vB = B.getVolumePixels();
-        double vC = A.getColoc(B);
-
-        return 100.0 * vC / (vA + vB);
-    }
 
     public boolean touchBorders(ImageHandler img, boolean Z) {
         int[] bb = getBoundingBox();
@@ -3239,8 +3232,8 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     // see landini's page for details
     // equals to its closing
+
     /**
-     *
      * @param radX
      * @param radY
      * @param radZ
@@ -3254,8 +3247,8 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     // see landini's page for details
     // equals to its opening
+
     /**
-     *
      * @param radX
      * @param radY
      * @param radZ
@@ -3269,8 +3262,8 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     // see landini's page for details
     // equals to its opening and closing
+
     /**
-     *
      * @param radX
      * @param radY
      * @param radZ
@@ -3285,7 +3278,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param radX
      * @param radY
      * @param radZ
@@ -3296,7 +3288,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param radX
      * @param radY
      * @param radZ
@@ -3307,7 +3298,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param radX
      * @param radY
      * @param radZ
@@ -3318,7 +3308,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param radX
      * @param radY
      * @param radZ
@@ -3379,7 +3368,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @return
      */
     public Object3DSurface getConvexSurface() {
@@ -3402,7 +3390,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param multi multiprocessor
      * @return
      */
@@ -3419,7 +3406,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @return
      */
     public Object3DVoxels getConvexObject() {
