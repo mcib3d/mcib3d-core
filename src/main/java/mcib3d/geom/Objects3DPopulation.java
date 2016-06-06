@@ -33,7 +33,10 @@ import mcib3d.utils.KDTreeC;
 import mcib3d.utils.KDTreeC.Item;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -890,7 +893,7 @@ public class Objects3DPopulation {
      * @return double[][] with 0 vlaues and 1 counts
      */
     public double[][] histogramDistancesBorder(double step) {
-       // int s = objects.size();
+        // int s = objects.size();
         double[][] dists = this.distancesAllPairsBorder();
 
         return histogramDistances(dists, step);
@@ -1240,7 +1243,6 @@ public class Objects3DPopulation {
      * distance greater than given distance
      *
      * @param O
-     * @param dist
      * @return
      */
     public Object3D secondClosestCenter(Object3D O, boolean ExcludeInputObject) {
@@ -1277,10 +1279,11 @@ public class Objects3DPopulation {
         ImageInt maskimg = mask.getMaxLabelImage(1);
         Object3DVoxels maskVox = mask.getObject3DVoxels();
         for (int i = 0; i < getNbObjects(); i++) {
-            Object3DVoxels obj = new Object3DVoxels(getObject(i));
+            Object3DVoxels obj = (Object3DVoxels) getObject(i);
             Point3D center = obj.getCenterAsPoint();
             boolean ok = false;
             int it = 0;
+            int maxIt = 1000000;
             while (!ok) {
                 IJ.showStatus("Shuffling " + getObject(i).getValue());
                 Voxel3D vox = maskVox.getRandomvoxel(ra);
@@ -1295,12 +1298,12 @@ public class Objects3DPopulation {
                 } else {
                     ok = false;
                 }
-                if (it >= 1000) {
+                if (it >= maxIt) {
                     ok = true;
                 }
             }
-            if (it == 1000) {
-                IJ.log("Could not shuffle " + getObject(i).getValue());
+            if (it == maxIt) {
+                IJ.log("Could not shuffle " + obj);
                 obj.setNewCenter(center.x, center.y, center.z);
             }
             shuObj.add(obj);

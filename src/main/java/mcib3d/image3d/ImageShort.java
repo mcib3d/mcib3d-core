@@ -850,13 +850,13 @@ public class ImageShort extends ImageInt {
     public ImageHandler resize(int dX, int dY, int dZ) {
         int newX = Math.max(1, sizeX + 2 * dX);
         int newY = Math.max(1, sizeY + 2 * dY);
-        boolean bck = Prefs.get("resizer.zero", true);
-        Prefs.set("resizer.zero", true);
+        //boolean bck = Prefs.get("resizer.zero", true);
+        //Prefs.set("resizer.zero", true);
         ij.plugin.CanvasResizer cr = new ij.plugin.CanvasResizer();
         ImageStack res = cr.expandStack(img.getStack(), newX, newY, dX, dY);
-        if (!bck) {
-            //Prefs.set("resizer.zero", false);
-        }
+       // if (!bck) {
+       //     //Prefs.set("resizer.zero", false);
+       // }
         if (dZ > 0) {
             for (int i = 0; i < dZ; i++) {
                 res.addSlice("", new ShortProcessor(newX, newY), 0);

@@ -422,6 +422,8 @@ public class TrackThreshold {
         setVerbose(show);
         ArrayList<ImageHandler> drawsReconstruct = process(ImageHandler.wrap(input));
 
+        // no results
+        if (drawsReconstruct.size() == 0) return null;
         // drawing results
         ImageHandler[] drawsTab = new ImageHandler[drawsReconstruct.size()];
         for (int i = 0; i < drawsTab.length; i++) {

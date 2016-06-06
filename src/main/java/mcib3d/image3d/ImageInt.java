@@ -229,6 +229,7 @@ public abstract class ImageInt extends ImageHandler {
         return res;
     }
 
+    @Deprecated
     public Object3DFuzzy[] getObjects3D(ImageFloat probaMap, float contourProba) {
         try {
             Object3DFactory oc = new Object3DFactory(this);
@@ -239,6 +240,7 @@ public abstract class ImageInt extends ImageHandler {
         return null;
     }
 
+    @Deprecated
     public Object3DVoxels[] getObjects3D() {
         try {
             Object3DFactory oc = new Object3DFactory(this);
@@ -270,6 +272,7 @@ public abstract class ImageInt extends ImageHandler {
         return obj;
     }
 
+    @Deprecated
     public Objects3DPopulation getObjects3DPopulation() {
         // build new population
         return new Objects3DPopulation(this.getObjects3D(), this.getCalibration());

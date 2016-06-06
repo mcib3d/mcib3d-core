@@ -1038,6 +1038,13 @@ public abstract class ImageHandler {
         this.offsetZ = other.offsetZ;
     }
 
+    public void setOffset(int ox, int oy, int oz) {
+        this.offsetX = ox;
+        this.offsetY = oy;
+        this.offsetZ = oz;
+    }
+
+
     public double getScaleXY() {
         if (img != null) {
             Calibration cal = img.getCalibration();
@@ -1076,6 +1083,22 @@ public abstract class ImageHandler {
 
         return null;
     }
+
+    public ImageHandler createSameType(int sx, int sy, int sz) {
+        if (this instanceof ImageByte) {
+            ImageStack stack = ImageStack.create(sx, sy, sz, 8);
+            return new ImageByte(stack);
+        } else if (this instanceof ImageShort) {
+            ImageStack stack = ImageStack.create(sx, sy, sz, 16);
+            return new ImageShort(stack);
+        } else if (this instanceof ImageFloat) {
+            ImageStack stack = ImageStack.create(sx, sy, sz, 32);
+            return new ImageFloat(stack);
+        }
+
+        return null;
+    }
+
 
     /**
      * Compute the operation s1*this + s2*other
@@ -1732,7 +1755,7 @@ public abstract class ImageHandler {
                 for (int y = yy0; y < y1; y++) {
                     pix = vol.getPixel(x - x0, y - y0, z - z0);
                     if (average) {
-                        pixo = getPixel(x - x0, y - y0, z - z0);
+                        pixo = getPixel(x, y, z);
                         setPixel(x, y, z, 0.5f * (pixo + pix));
                     } else {
                         setPixel(x, y, z, pix);
@@ -1741,6 +1764,14 @@ public abstract class ImageHandler {
             }
         }
     }
+
+    public ImageHandler enlarge(int dx, int dy, int dz) {
+        ImageHandler enlarged = this.createSameType(sizeX + 2 * dx, sizeY + 2 * dy, sizeZ + 2 * dz);
+        enlarged.insert(this, dx, dy, dz, false);
+
+        return enlarged;
+    }
+
 
     public abstract ImageHandler resize(int dX, int dY, int dZ);
 
