@@ -50,6 +50,7 @@ public class TrackThreshold {
     public static final byte CRITERIA_METHOD_MIN_ELONGATION = 1;
     public static final byte CRITERIA_METHOD_MAX_VOLUME = 2;
     public static final byte CRITERIA_METHOD_MSER = 3; // min variation of volume
+    public static final byte CRITERIA_METHOD_MAX_COMPACITY = 4;
     public boolean verbose = true;
     // volume range in voxels
     private int volMax = 1000;
@@ -247,12 +248,15 @@ public class TrackThreshold {
 
     private ArrayList<ImageHandler> process(ImageHandler img) {
         Criterion criterion;
-        if ((criteria_method == CRITERIA_METHOD_MAX_VOLUME) || (criteria_method == CRITERIA_METHOD_MSER))
-            criterion = new CriterionVolume();
-        else
+        if (criteria_method == CRITERIA_METHOD_MIN_ELONGATION)
             criterion = new CriterionElongation();
+        else if (criteria_method == CRITERIA_METHOD_MAX_COMPACITY)
+            criterion = new CriterionCompactness();
+        else
+            criterion = new CriterionVolume();
+
         BestCriterion bestCriterion;
-        if (criteria_method == CRITERIA_METHOD_MAX_VOLUME) {
+        if ((criteria_method == CRITERIA_METHOD_MAX_VOLUME) || (criteria_method == CRITERIA_METHOD_MAX_COMPACITY)) {
             bestCriterion = new BestCriteriaMax();
         } else if (criteria_method == CRITERIA_METHOD_MIN_ELONGATION) {
             bestCriterion = new BestCriteriaMin();
