@@ -213,7 +213,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * label image, starts at 0,0
      */
     protected ImageInt labelImage = null;
-    protected int offX = 0, offY = 0, offZ = 0; // offset of objet into label image
+    //protected int offX = 0, offY = 0, offZ = 0; // offset of objectt into label image
     /**
      * current image used for quantification (to compute results once)
      */
@@ -409,10 +409,17 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public void setLabelImage(ImageInt labelImage) {
         this.labelImage = labelImage;
-        // reset offset if any
-        offX = 0;
-        offY = 0;
-        offZ = 0;
+        // offset is associated to label image
+        /*
+        if (labelImage != null) {
+            offX = labelImage.offsetX;
+            offY = labelImage.offsetY;
+            offZ = labelImage.offsetZ;
+        } else {
+            offX = 0;
+            offY = 0;
+            offZ = 0;
+        }*/
     }
 
     public ImageInt getMaxLabelImage(int val) {
@@ -622,7 +629,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         }
         double[] inv = new double[6];
         double v = getVolumeUnit();
-        // FIXME power in interger ??
+        // FIXME power in integer ??
         inv[0] = (s400 + s040 + s004 + 2 * s220 + 2 * s202 + 2 * s022) / (Math.pow(v, 7.0 / 3.0));
         inv[1] = (s400 * s040 + s400 * s004 + s004 * s040 + 3 * s220 * s220 + 3 * s202 * s202 + 3 * s022 * s022
                 - 4 * s103 * s301 - 4 * s130 * s310 - 4 * s013 * s031
@@ -2013,9 +2020,9 @@ public abstract class Object3D implements Comparable<Object3D> {
             val = 1;
         }
         ImageInt label = this.getLabelImage();
-        int testX = (int) Math.round(x) - offX;
-        int testY = (int) Math.round(y) - offY;
-        int testZ = (int) Math.round(z) - offZ;
+        int testX = (int) Math.round(x) - label.offsetX;
+        int testY = (int) Math.round(y) - label.offsetY;
+        int testZ = (int) Math.round(z) - label.offsetZ;
         if ((testX < 0) || (testY < 0) || (testZ < 0) || (testX >= label.sizeX) || (testY >= label.sizeY) || (testZ >= label.sizeZ)) {
             return false;
         }
@@ -2124,13 +2131,13 @@ public abstract class Object3D implements Comparable<Object3D> {
     public ImageInt createIntersectionImage(Object3D other, int val1, int val2, int border) {
         // keep labelimage
         ImageInt label = this.getLabelImage();
-        int ofX = offX;
-        int ofY = offY;
-        int ofZ = offZ;
+        int ofX = label.offsetX;
+        int ofY = label.offsetY;
+        int ofZ = label.offsetZ;
         ImageInt label2 = other.getLabelImage();
-        int ofX2 = other.offX;
-        int ofY2 = other.offY;
-        int ofZ2 = other.offZ;
+        int ofX2 = label2.offsetX;
+        int ofY2 = label2.offsetY;
+        int ofZ2 = label2.offsetZ;
 
         // bounding box
         int xmi = Math.min(this.xmin, other.xmin) - border;
@@ -2171,13 +2178,13 @@ public abstract class Object3D implements Comparable<Object3D> {
 
         // put old label back
         labelImage = label;
-        offX = ofX;
-        offY = ofY;
-        offZ = ofZ;
+        // offX = ofX;
+        //  offY = ofY;
+        //  offZ = ofZ;
         other.labelImage = label2;
-        other.offX = ofX2;
-        other.offY = ofY2;
-        other.offZ = ofZ2;
+        //  other.offX = ofX2;
+        //   other.offY = ofY2;
+        //   other.offZ = ofZ2;
 
         return addImage;
     }
@@ -2211,7 +2218,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         //inter.show(""+this.offX+" "+offY+" "+offZ);
         Object3DVoxels obj = new Object3DVoxels(inter, 3);
         obj.setValue(this.getValue());
-        obj.translate(this.offX, this.offY, this.offZ);
+        obj.translate(getLabelImage().offsetX, getLabelImage().offsetX, getLabelImage().offsetX);
         // clean
         inter = null;
         //obj.setLabelImage(null);
@@ -2964,20 +2971,21 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return
      */
     public ImageInt createSegImage(int xmi, int ymi, int zmi, int xma, int yma, int zma, int val) {
-        ImageInt SegImage = new ImageShort("Object", xma - xmi + 1, yma - ymi + 1, zma - zmi + 1);
+        ImageInt segImage = new ImageShort("Object", xma - xmi + 1, yma - ymi + 1, zma - zmi + 1);
         // FIXME offset useful --> yes, see intersection image for mereo, and also for dilated object
-        this.offX = xmi;
-        this.offY = ymi;
-        this.offZ = zmi;
+        int offX = xmi;
+        int offY = ymi;
+        int offZ = zmi;
         Voxel3D vox;
         for (Voxel3D o : getVoxels()) {
             vox = o;
-            if (SegImage.contains(vox.getRoundX() - offX, vox.getRoundY() - offY, vox.getRoundZ() - offZ)) {
-                SegImage.setPixel(vox.getRoundX() - offX, vox.getRoundY() - offY, vox.getRoundZ() - offZ, val);
+            if (segImage.contains(vox.getRoundX() - offX, vox.getRoundY() - offY, vox.getRoundZ() - offZ)) {
+                segImage.setPixel(vox.getRoundX() - offX, vox.getRoundY() - offY, vox.getRoundZ() - offZ, val);
             }
         }
-        //IJ.log("seg image " + offX + " " + offY + " " + offZ);
-        return SegImage;
+        // IJ.log("seg image " + offX + " " + offY + " " + offZ);
+        segImage.setOffset(xmi, ymi, zmi);
+        return segImage;
     }
 
     public ImageInt createSegImage(int bx, int by, int bz) {
@@ -3067,13 +3075,13 @@ public abstract class Object3D implements Comparable<Object3D> {
         // translate object with units coordinates
         float tx, ty, tz;
         if (calibrated) {
-            tx = (float) (this.offX * resXY);
-            ty = (float) (this.offY * resXY);
-            tz = (float) (this.offZ * resZ);
+            tx = (float) (getLabelImage().offsetX * resXY);
+            ty = (float) (getLabelImage().offsetY * resXY);
+            tz = (float) (getLabelImage().offsetZ * resZ);
         } else {
-            tx = (float) (this.offX);
-            ty = (float) (this.offY);
-            tz = (float) (this.offZ);
+            tx = (float) (getLabelImage().offsetX);
+            ty = (float) (getLabelImage().offsetY);
+            tz = (float) (getLabelImage().offsetZ);
         }
         l = Object3DSurface.translateTool(l, tx, ty, tz);
 
@@ -3169,17 +3177,17 @@ public abstract class Object3D implements Comparable<Object3D> {
         return Z && (bb[5] >= img.getNSlices() - 1);
     }
 
-    private Object3DVoxels getMorphoObject(int op, float radX, float radY, float radZ) {
+    private Object3DVoxels getMorphologicalObject(int op, float radX, float radY, float radZ) {
         // special case radii = 0
         if ((radX == 0) && (radY == 0) && (radZ == 0)) {
             return new Object3DVoxels(this);
         }
-        // draw object on new image
-        //int bo = (int) Math.max(radX, radY), radZ);
-        //IJ.log("dilated object ");
 
-        //segImage = this.createSegImageMini(value, (int) Math.ceil(radX), (int) Math.ceil(radY), (int) Math.ceil(radZ));
-        //segImage.show("segimage 1");
+        // resize if DILATE or CLOSE
+        if ((op == BinaryMorpho.MORPHO_DILATE) || (op == BinaryMorpho.MORPHO_CLOSE)) {
+            labelImage = createSegImage((int) (radX + 1), (int) (radY + 1), (int) (radZ + 1));
+        }
+
         ImageInt segImage2;
         /// use fastFilter if rx != ry
         if ((radY != radX) || (radZ == 0)) {
@@ -3193,46 +3201,27 @@ public abstract class Object3D implements Comparable<Object3D> {
             } else if (op == BinaryMorpho.MORPHO_OPEN) {
                 filter = FastFilters3D.OPENGRAY;
             }
-            // resize if DILATE or CLOSE
-            if ((op == BinaryMorpho.MORPHO_DILATE) || (op == BinaryMorpho.MORPHO_CLOSE)) {
-                labelImage = createSegImage((int) (radX + 1), (int) (radY + 1), (int) (radZ + 1));
-            }
             segImage2 = FastFilters3D.filterIntImage(getLabelImage(), filter, radX, radY, radZ, 0, true);
-            //IJ.log("FF "+segImage2.offsetX+" "+segImage2.offsetY+" "+segImage2.offsetZ);
-            //segImage2.setOffset(segImage);
+            segImage2.setOffset(labelImage);
         } // else use binaryMorpho class (based on edm)
         else {
-            // automatic resize --> offset for image
-            segImage2 = BinaryMorpho.binaryMorpho(getLabelImage(), op, radX, radZ);
-            //IJ.log("BM "+segImage2.offsetX+" "+segImage2.offsetY+" "+segImage2.offsetZ);
-//            if (segImage2 != null) {
-//                segImage2.replacePixelsValue(255, value);
-//            }
+            if (op == BinaryMorpho.MORPHO_DILATE) // use enlarge image
+                segImage2 = BinaryMorpho.binaryDilate(getLabelImage(), radX, radZ, 0, true);
+            else
+                segImage2 = BinaryMorpho.binaryMorpho(getLabelImage(), op, radX, radZ, 0);
         }
         if (segImage2 == null) {
             return null;
         }
-        //segImage2.show("segimage_"+this);
-        //IJ.log("morpho object " + offX + " " + offY + " " + offZ + " " + segImage2.offsetX + " " + segImage2.offsetY + " " + segImage2.offsetZ);
         Object3DVoxels objMorpho = new Object3DVoxels(segImage2);
-        objMorpho.translate(offX + segImage2.offsetX, offY + segImage2.offsetX, offZ + segImage2.offsetX);
+        objMorpho.translate(segImage2.offsetX, segImage2.offsetY, segImage2.offsetZ);
         objMorpho.setCalibration(resXY, resZ, units);
-        // test
-        objMorpho.setLabelImage(segImage2);
-        objMorpho.offX = offX + segImage2.offsetX;
-        objMorpho.offY = offY + segImage2.offsetY;
-        objMorpho.offZ = offZ + segImage2.offsetZ;
-        //objMorpho.setLabelImage(null);
-        // test
-        //this.setLabelImage(null);        
 
-        //IJ.log("dilated object " + offX + " " + offY + " " + offZ);
         return objMorpho;
     }
 
     // see landini's page for details
     // equals to its closing
-
     /**
      * @param radX
      * @param radY
@@ -3284,7 +3273,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return
      */
     public Object3DVoxels getDilatedObject(float radX, float radY, float radZ) {
-        return getMorphoObject(BinaryMorpho.MORPHO_DILATE, radX, radY, radZ);
+        return getMorphologicalObject(BinaryMorpho.MORPHO_DILATE, radX, radY, radZ);
     }
 
     /**
@@ -3294,7 +3283,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return
      */
     public Object3DVoxels getErodedObject(float radX, float radY, float radZ) {
-        return getMorphoObject(BinaryMorpho.MORPHO_ERODE, radX, radY, radZ);
+        return getMorphologicalObject(BinaryMorpho.MORPHO_ERODE, radX, radY, radZ);
     }
 
     /**
@@ -3304,7 +3293,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return
      */
     public Object3DVoxels getClosedObject(float radX, float radY, float radZ) {
-        return getMorphoObject(BinaryMorpho.MORPHO_CLOSE, radX, radY, radZ);
+        return getMorphologicalObject(BinaryMorpho.MORPHO_CLOSE, radX, radY, radZ);
     }
 
     /**
@@ -3314,7 +3303,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return
      */
     public Object3DVoxels getOpenedObject(float radX, float radY, float radZ) {
-        return getMorphoObject(BinaryMorpho.MORPHO_OPEN, radX, radY, radZ);
+        return getMorphologicalObject(BinaryMorpho.MORPHO_OPEN, radX, radY, radZ);
     }
 
     public Object3DVoxels getLayerObject(float r1, float r2) {
@@ -3331,6 +3320,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             obMin = getErodedObject(-r1, -r1, -r1);
         }
 
+        // if large object use image
         obMax.substractObject(obMin);
 
         return obMax;
@@ -3356,13 +3346,13 @@ public abstract class Object3D implements Comparable<Object3D> {
         //ImageInt img = mask.createSegImageMini(255, 1);
         ImageInt img = mask.getLabelImage();
         ImageHandler dup = img.createSameDimensions();
-        this.draw(dup, 255, -mask.offX, -mask.offY, -mask.offZ);
+        this.draw(dup, 255, -img.offsetX, -img.offsetY, -img.offsetZ);
         ImageFloat edt = EDT.run(dup, 128, (float) resXY, (float) resZ, true, 0);
         EDT.normalizeDistanceMap(edt, img, true);
         ImageByte th = edt.thresholdRangeInclusive(0, ratio);
         Object3DVoxels res = new Object3DVoxels(th);
         res.setCalibration(resXY, resZ, units);
-        res.translate(mask.offX, mask.offY, mask.offZ);
+        res.translate(img.offsetX, img.offsetY, img.offsetZ);
 
         return res;
     }

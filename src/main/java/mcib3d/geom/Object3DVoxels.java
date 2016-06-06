@@ -204,10 +204,10 @@ public class Object3DVoxels extends Object3D {
         this.addVoxels(other.getVoxels());
         init();
         value = other.getValue();
-        this.labelImage = other.getLabelImage();
-        this.offX = other.offX;
-        this.offY = other.offY;
-        this.offZ = other.offZ;
+        //this.labelImage = other.getLabelImage();
+        //this.offX = other.offX;
+        //this.offY = other.offY;
+        //this.offZ = other.offZ;
         this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
@@ -217,9 +217,9 @@ public class Object3DVoxels extends Object3D {
         init();
         value = other.getValue();
         //this.labelImage = other.getLabelImage();
-        this.offX = other.offX;
-        this.offY = other.offY;
-        this.offZ = other.offZ;
+        //this.offX = other.offX;
+        //this.offY = other.offY;
+        //this.offZ = other.offZ;
         this.setCalibration(other.getResXY(), other.getResZ(), other.getUnits());
     }
 
@@ -402,35 +402,16 @@ public class Object3DVoxels extends Object3D {
     }
 
     private void substractObjectImage(Object3D obj) {
-        int xmin0 = getXmin();
-        int ymin0 = getYmin();
-        int zmin0 = getZmin();
-        int xmax0 = getXmax();
-        int ymax0 = getYmax();
-        int zmax0 = getZmax();
-
-        int otherval = obj.getValue();
-        ImageInt otherseg = obj.getLabelImage();
-
-        for (int k = zmin0; k <= zmax0; k++) {
-            for (int j = ymin0; j <= ymax0; j++) {
-                for (int i = xmin0; i <= xmax0; i++) {
-                    if ((labelImage.contains(i, j, k)) && (otherseg.contains(i, j, k))) {
-                        if ((labelImage.getPixel(i, j, k) == value) && (otherseg.getPixel(i, j, k) == otherval)) {
-                            labelImage.setPixel(i, j, k, 0);
-                        }
-                    }
-                }
-            }
-        }
+        ImageInt seg = this.createSegImage(0, 0, 0, getXmax(), getYmax(), getZmax(), getValue());
+        obj.draw(seg, 0);
         // reset voxels
-        voxels = createArrayList(labelImage, null);
+        voxels = createArrayList(seg, null);
         init();
     }
 
     public void substractObject(Object3D other) {
-        final int seui_vol = 20;
-        if ((labelImage != null) && (other.getLabelImage() != null) && (getVolumePixels() > seui_vol) && (other.getVolumePixels() > seui_vol)) {
+        final int seuil_vol = 100;
+        if ((getVolumePixels() > seuil_vol) || (other.getVolumePixels() > seuil_vol)) {
             substractObjectImage(other);
         } else {
             substractObjectVoxels(other);
@@ -470,11 +451,6 @@ public class Object3DVoxels extends Object3D {
         // label the seg image
         ImageLabeller labeler = new ImageLabeller();
         return (labeler.getNbObjectsTotal(seg) == 1);
-        // flood version is slow
-//        Voxel3D se = this.getFirstVoxel();
-//        se.translate(-seg.offsetX, -seg.offsetY, -seg.offsetZ);
-//        Flood3D.flood3d26(seg, se.getRoundX(), se.getRoundY(), se.getRoundZ(), 2);
-//        return !seg.hasOneValueInt(1);
     }
 
     public ArrayList<Object3DVoxels> getConnexComponents() {
@@ -482,7 +458,7 @@ public class Object3DVoxels extends Object3D {
         ImageLabeller labeler = new ImageLabeller();
         ArrayList<Object3DVoxels> objs = labeler.getObjects(seg);
         for (Object3DVoxels O : objs) {
-            O.translate(offX, offY, offZ);
+            O.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
         }
 
         return objs;
@@ -495,7 +471,7 @@ public class Object3DVoxels extends Object3D {
         FillHoles3D.process(fill, value, 0, false);
         ImageFloat res = fill.substractImage(seg);
         Object3DVoxels inte = new Object3DVoxels(res);
-        inte.translate(this.offX, this.offY, this.offZ);
+        inte.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
         return inte;
     }
 
@@ -895,7 +871,8 @@ public class Object3DVoxels extends Object3D {
 
     @Override
     public void computeContours() {
-        this.computeContours(this.getLabelImage(), this.offX, this.offY, this.offZ);
+        ImageInt label = this.getLabelImage();
+        this.computeContours(label, label.offsetX, label.offsetY, label.offsetZ);
     }
 
     /**
@@ -1084,12 +1061,12 @@ public class Object3DVoxels extends Object3D {
 //        int offX1 = otherseg.offsetX;
 //        int offY1 = otherseg.offsetY;
 //        int offZ1 = otherseg.offsetZ;
-        int offX0 = this.offX;
-        int offY0 = this.offY;
-        int offZ0 = this.offZ;
-        int offX1 = obj.offX;
-        int offY1 = obj.offY;
-        int offZ1 = obj.offZ;
+        int offX0 = label.offsetX;
+        int offY0 = label.offsetY;
+        int offZ0 = label.offsetZ;
+        int offX1 = otherseg.offsetX;
+        int offY1 = otherseg.offsetY;
+        int offZ1 = otherseg.offsetZ;
 
         //IJ.log("" + offX0 + " " + offY0 + " " + offZ0 + " " + offX1 + " " + offY1 + " " + offZ1);
         xmin0 = getXmin();
@@ -1841,15 +1818,16 @@ public class Object3DVoxels extends Object3D {
 //        float dilateSizeZ = (float) (dilateSize * this.resXY / this.resZ);
 //        ImageInt dil = BinaryMorpho.binaryDilate(seg, dilateSize, dilateSizeZ, true, type);
 //        //dil.show("Dilate");
+        ImageInt label = this.getLabelImage();
         ArrayList<Voxel3D> vox = new ArrayList<Voxel3D>();
         int xx, yy, zz;
         for (int z = 0; z < seg.sizeZ; z++) {
             for (int y = 0; y < seg.sizeY; y++) {
                 for (int x = 0; x < seg.sizeX; x++) {
                     if (seg.getPixelInt(x, y, z) != 0) {
-                        xx = x + this.offX;
-                        yy = y + this.offY;
-                        zz = z + this.offZ;
+                        xx = x + label.offsetX;
+                        yy = y + label.offsetY;
+                        zz = z + label.offsetZ;
                         if (mask == null || (mask.contains(xx, yy, zz) && (mask.getPixel(xx, yy, zz) == 0 || mask.getPixel(xx, yy, zz) == this.value))) {
                             vox.add(new Voxel3D(xx, yy, zz, value));
                         }

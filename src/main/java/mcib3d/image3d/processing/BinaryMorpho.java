@@ -10,25 +10,24 @@ import mcib3d.utils.ThreadUtil;
 import mcib3d.utils.exceptionPrinter;
 
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2012 Jean Ollion
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of tango
- *
+ * <p>
  * tango is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -124,7 +123,44 @@ public class BinaryMorpho {
         return binaryDilate(in, radius, radiusZ, 0);
     }
 
+    // if no resize of the image, object at the border may be truncated
+    public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ, int nbCPUs, boolean enlarge) {
+        try {
+            if (nbCPUs == 0) {
+                nbCPUs = ThreadUtil.getNbCpus();
+            }
+
+            ImageInt resize = in;
+
+            // resize
+            int reX = (int) (radius + 1);
+            int reY = (int) (radius + 1);
+            int reZ = (int) (radiusZ + 1);
+            if (enlarge) resize = (ImageInt) in.enlarge(reX, reY, reZ);
+
+            ImageFloat edm = EDT.run(resize, 0, 1, radius / radiusZ, true, nbCPUs);
+            ImageByte temp = edm.threshold(radius, true, false);
+            edm.flush();
+            edm = null;
+            if (enlarge)
+                temp.setOffset(in.offsetX - reX, in.offsetY - reY, in.offsetZ - reZ);
+            else
+                temp.setOffset(in);
+            temp.setScale(in);
+
+            return temp;
+        } catch (Exception e) {
+            exceptionPrinter.print(e, null, true);
+        }
+        return null;
+    }
+
+
     public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ, int nbCPUs) {
+        // use generic version of binaryDilate
+        return binaryDilate(in, radius, radiusZ, nbCPUs, false);
+
+        /*
         try {
             if (nbCPUs == 0) {
                 nbCPUs = ThreadUtil.getNbCpus();
@@ -145,14 +181,18 @@ public class BinaryMorpho {
             //temp.show("edm dilate");
             edm.flush();
             edm = null;
-            temp.setOffset(in);
+            temp.offsetX = in.offsetX - reX;
+            temp.offsetY = in.offsetY - reY;
+            temp.offsetZ = in.offsetZ - reZ;
             temp.setScale(in);
             // no more resize, should use crop
+
             return temp;
         } catch (Exception e) {
             exceptionPrinter.print(e, null, true);
         }
         return null;
+        */
     }
 
     public static ImageByte binaryClose(ImageInt in, float radius, float radiusZ) {
@@ -160,6 +200,16 @@ public class BinaryMorpho {
     }
 
     public static ImageByte binaryClose(ImageInt in, float radius, float radiusZ, int nbCPUs) {
+        // use binary dilate
+        ImageByte dilated = binaryDilate(in, radius, radiusZ, nbCPUs, true);
+        ImageByte close = binaryErode(dilated, radius, radiusZ, nbCPUs);
+        // crop image
+        int ox = in.offsetX - dilated.offsetX;
+        int oy = in.offsetY - dilated.offsetY;
+        int oz = in.offsetZ - dilated.offsetZ;
+        return close.crop3D("binaryClose", ox, ox + in.sizeX - 1, oy, oy + in.sizeY - 1, oz, oz + in.sizeZ - 1);
+
+        /*
         try {
             if (nbCPUs == 0) {
                 nbCPUs = ThreadUtil.getNbCpus();
@@ -168,6 +218,7 @@ public class BinaryMorpho {
             /*if ((radius <= 1) && (radiusZ <= 1)) {
              return binaryCloseRad1(in, 1, nbCPUs);
              }*/
+        /*
             // FIXME thresholdings > strict
             int rad = (int) (radius + 1);
             int radZ = (int) (radiusZ + 1);
@@ -176,7 +227,7 @@ public class BinaryMorpho {
             //inResized.show("resize");
             ImageFloat edm = EDT.run(inResized, 0, 1, radius / radiusZ, true, nbCPUs);
             inResized.closeImagePlus();
-            ImageByte inThresholded = edm.threshold(radius, true, false);           
+            ImageByte inThresholded = edm.threshold(radius, true, false);
             edm.closeImagePlus();
             edm = EDT.run(inThresholded, 0, 1, radius / radiusZ, false, nbCPUs);
             //edm.show("edm");
@@ -199,6 +250,7 @@ public class BinaryMorpho {
             exceptionPrinter.print(e, null, true);
         }
         return null;
+        */
     }
 
     private static ImageByte binaryOpenRad1(final ImageInt in, final float thld, int nbCPUs) {
