@@ -7,7 +7,7 @@ package mcib3d.geom.deformation3d;
 import ij.IJ;
 import java.util.ArrayList;
 import java.util.List;
-import javax.vecmath.Point3f;
+import org.scijava.vecmath.Point3f;
 import mcib3d.geom.GeomTransform3D;
 import mcib3d.geom.Object3DSurface;
 import mcib3d.geom.Point3D;

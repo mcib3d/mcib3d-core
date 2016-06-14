@@ -1,6 +1,6 @@
 package mcib3d.geom;
 
-import javax.vecmath.Point3f;
+import org.scijava.vecmath.Point3f;
 
 /**
  * Copyright (C) Thomas Boudier

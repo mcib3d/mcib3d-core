@@ -5,7 +5,7 @@
 package mcib3d.geom.deformation3d;
 
 import java.util.ArrayList;
-import javax.vecmath.Point3f;
+import org.scijava.vecmath.Point3f;
 
 /**
  *
