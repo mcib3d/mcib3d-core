@@ -21,9 +21,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.vecmath.Color3f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
+import org.scijava.vecmath.Color3f;
+import org.scijava.vecmath.Point3f;
+import org.scijava.vecmath.Vector3f;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.utils.ArrayUtil;
@@ -1956,6 +1956,7 @@ public class Object3DSurface extends Object3D {
 
     public Content drawContent(Image3DUniverse univ, Color3f co, String name) {
         //List<org.scijava.vecmath.Point3f> test=faces;
+        univ.addTriangleMesh(faces, co, name);
         univ.addTriangleMesh(faces, co, name);
         return univ.addTriangleMesh(faces, co, name);
     }

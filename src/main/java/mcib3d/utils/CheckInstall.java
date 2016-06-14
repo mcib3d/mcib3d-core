@@ -54,7 +54,7 @@ public class CheckInstall {
 //            ij.IJ.log("Image5D not installed: overlay view not available");
 //        }
         try {
-            loader.loadClass("javax.vecmath.Point3f");
+            loader.loadClass("org.scijava.vecmath.Point3f");
         } catch (Exception e) {
             ij.IJ.log("Java3D not installed. ");
         }
