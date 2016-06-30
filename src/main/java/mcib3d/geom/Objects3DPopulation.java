@@ -1276,10 +1276,16 @@ public class Objects3DPopulation {
     public ArrayList<Object3D> shuffle() {
         ArrayList<Object3D> shuObj = new ArrayList<Object3D>();
         Random ra = new Random();
-        ImageInt maskimg = mask.getMaxLabelImage(1);
+        ImageInt maskImage = mask.getMaxLabelImage(1);
         Object3DVoxels maskVox = mask.getObject3DVoxels();
+
+        // shuffle indices
+        ArrayUtil shuffleIndex = new ArrayUtil(getNbObjects());
+        shuffleIndex.fillRange(0, getNbObjects(), 1);
+        shuffleIndex.shuffle();
+
         for (int i = 0; i < getNbObjects(); i++) {
-            Object3DVoxels obj = (Object3DVoxels) getObject(i);
+            Object3DVoxels obj = (Object3DVoxels) getObject(shuffleIndex.getValueInt(i));
             Point3D center = obj.getCenterAsPoint();
             boolean ok = false;
             int it = 0;
@@ -1292,7 +1298,7 @@ public class Objects3DPopulation {
                 it++;
                 obj.resetQuantifImage();
                 if (maskVox.includesBox(obj)) {
-                    if (obj.getPixMinValue(maskimg) < 1) {
+                    if (obj.getPixMinValue(maskImage) < 1) {
                         ok = false;
                     }
                 } else {
@@ -1308,7 +1314,7 @@ public class Objects3DPopulation {
             }
             shuObj.add(obj);
             // update mask
-            obj.draw(maskimg, 0);
+            obj.draw(maskImage, 0);
         }
         return shuObj;
     }
