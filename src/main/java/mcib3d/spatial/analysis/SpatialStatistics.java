@@ -60,7 +60,6 @@ public class SpatialStatistics {
         if (!this.descriptor.init()) {
             IJ.log("Pb with descriptor");
         }
-        int nbObj = observed.getNbObjects();
     }
 
     private void compute() {
@@ -87,9 +86,9 @@ public class SpatialStatistics {
         // compute average
         averageCD = CDFTools.cdfAverage(samplesDesc, xEvals);
 
-        // New samples for envellope and ranking
+        // New samples for envelope and ranking
         if (verbose) {
-            IJ.log("Envellope : Computing " + descriptor.getName() + " for " + nbSamples + " " + model.getName() + " data");
+            IJ.log("Envelope : Computing " + descriptor.getName() + " for " + nbSamples + " " + model.getName() + " data");
         }
         samplesDesc = null;
         System.gc();
@@ -203,7 +202,7 @@ public class SpatialStatistics {
         plot = new Plot(descriptor.getName() + "_" + model.getName(), "distance", "cumulated frequency");
         plot.setLimits(0, plotmaxX, 0, plotmaxY);
 
-        // enveloppe
+        // envelope
         plot.setColor(ColorENV);
         plot.addPoints(xEvalsEnv.getArray(), samplesEnvLow.getArray(), Plot.LINE);
         plot.setColor(ColorENV);
@@ -247,7 +246,7 @@ public class SpatialStatistics {
 //    public void setNbCpus(int nbCpus) {
 //        this.nbCpus = nbCpus;
 //    }
-    public void setEnvellope(double env) {
+    public void setEnvelope(double env) {
         this.env = env;
     }
 
