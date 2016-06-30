@@ -21,16 +21,18 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.vecmath.Color3f;
-import javax.vecmath.Point3f;
-import javax.vecmath.Vector3f;
+//import javax.vecmath.Color3f;
+import org.scijava.vecmath.Color3f;
+import org.scijava.vecmath.Point3f;
+import org.scijava.vecmath.Vector3f;
+//import javax.vecmath.Point3f;
+//import javax.vecmath.Vector3f;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 import mcib3d.utils.ThreadUtil;
 
-//import org.scijava.vecmath.Point3f;
 /**
  *
  **
@@ -317,6 +319,7 @@ public class Object3DSurface extends Object3D {
     }
 
     // CONVEX HULL 3D USING QUICKHULL3D
+
     public ArrayList<Point3f> computeConvexHull3D() {
         QuickHull3D hull = new QuickHull3D();
         ArrayList<Voxel3D> pointsList = this.getContours();
@@ -347,6 +350,7 @@ public class Object3DSurface extends Object3D {
 
         return convex;
     }
+
 
     private void computeSurfaceAreas() {
         // FIXME aresas ad surfaces meshes !!
@@ -1475,6 +1479,7 @@ public class Object3DSurface extends Object3D {
      */
     public static List<Point3f> createSphere(GeomTransform3D transform, final int meridians, final int parallels) {
         final double[][][] globe = generateGlobe(meridians, parallels);
+        IJ.log("Computing sphere");
         Vector3D zero_vector = new Vector3D(0, 0, 0);
         for (int j = 0; j < globe.length; j++) {
             for (int k = 0; k < globe[0].length; k++) {
@@ -1512,6 +1517,7 @@ public class Object3DSurface extends Object3D {
      * and parallels is 3.
      */
     private static double[][][] generateGlobe(int meridians, int parallels) {
+        IJ.log("Computing globe");
         if (meridians < 3) {
             meridians = 3;
         }

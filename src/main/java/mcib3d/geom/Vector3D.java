@@ -1,7 +1,9 @@
 package mcib3d.geom;
 
 import java.text.NumberFormat;
-import javax.vecmath.Point3f;
+import org.scijava.vecmath.Point3f;
+//import org.scijava.vecmath.Vector3f;
+//import javax.vecmath.Point3f;
 
 /**
  * Copyright (C) Thomas Boudier
