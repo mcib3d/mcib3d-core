@@ -41,6 +41,7 @@ import mcib3d.utils.ThreadUtil;
  * @author Thomas BOUDIER & Cedric MESSAOUDI @created 28 avril 2003 last update
  * 6 mai 2003
  */
+@Deprecated
 public class IntImage3D extends Image3D {
 
     // size of a 2D slice

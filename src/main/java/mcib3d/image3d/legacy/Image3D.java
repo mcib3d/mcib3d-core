@@ -35,6 +35,7 @@ import mcib3d.utils.HistogramUtil;
  *
  * @author cedric + thomas @created 6 mai 2004
  */
+@Deprecated
 public abstract class Image3D {
 
     /**

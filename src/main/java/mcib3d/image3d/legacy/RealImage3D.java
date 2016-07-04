@@ -30,6 +30,7 @@ import mcib3d.utils.*;
  *
  * @author cedric @created 6 mai 2004
  */
+@Deprecated
 public class RealImage3D extends Image3D {
 
     /**

@@ -47,6 +47,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * @author     cedric
  * @created    21 novembre 2005
  */
+@Deprecated
 public class FHTImage3D extends RealImage3D {
     //float[] data;
     //int sizex;

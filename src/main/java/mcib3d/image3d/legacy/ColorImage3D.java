@@ -29,6 +29,7 @@ import java.awt.*;
  * @author     Thomas BOUDIER & Cedric MESSAOUDI
  * @created    28 avril 2003
  */
+@Deprecated
 public class ColorImage3D {
 	/**
 	 *  Description of the Field
