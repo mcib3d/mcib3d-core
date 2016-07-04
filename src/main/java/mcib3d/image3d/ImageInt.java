@@ -240,15 +240,19 @@ public abstract class ImageInt extends ImageHandler {
         return null;
     }
 
-    @Deprecated
     public Object3DVoxels[] getObjects3D() {
-        try {
+        ImageLabeller imageLabeller=new ImageLabeller();
+        Object3DVoxels[] object3DVoxelses=new Object3DVoxels[imageLabeller.getNbObjectsTotal(this)];
+        return ((imageLabeller.getObjects(this)).toArray(object3DVoxelses));
+
+
+        /*try {
             Object3DFactory oc = new Object3DFactory(this);
             return oc.getObjects(false);
         } catch (Exception e) {
             exceptionPrinter.print(e, "", false);
         }
-        return null;
+        return null;*/
     }
 
     public Object3DVoxels getObjectMask() {
@@ -272,7 +276,6 @@ public abstract class ImageInt extends ImageHandler {
         return obj;
     }
 
-    @Deprecated
     public Objects3DPopulation getObjects3DPopulation() {
         // build new population
         return new Objects3DPopulation(this.getObjects3D(), this.getCalibration());
