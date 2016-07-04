@@ -8,6 +8,8 @@ import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageInt;
 import mcib3d.utils.exceptionPrinter;
 
+@Deprecated
+// should use imagelabeller
 public class Object3DFactory {
 
     ImageFloat SP;
