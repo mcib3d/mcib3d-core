@@ -7,25 +7,24 @@ package mcib3d.geom;
 import java.util.ArrayList;
 
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2008- 2011 Thomas Boudier
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of mcib3d
- *
+ * <p>
  * mcib3d is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -34,22 +33,6 @@ import java.util.ArrayList;
 public class MereoObject3D {
     // reference object
 
-    private Object3D A;
-    private Object3D Adilated = null;
-    // relationship object
-    private Object3D B;
-    private Object3D Bdilated = null;
-    // intersection object
-    private Object3DVoxels inter = null;
-    // radius for neighboring, based on dilatations
-    private float RadX, RadY, RadZ;
-    // border to border distance between objects (inside border)
-    public double distBB = Double.NaN;
-    private boolean disjoint = true;
-    // CONSTANTS
-    private final static double SQRT3 = Math.sqrt(3);
-    private final static double SMALL = 0.001;
-    private boolean canonicRadii = false;
     static public final String DC = "DC";
     static public final String EC = "EC";
     static public final String PO = "PO";
@@ -60,9 +43,24 @@ public class MereoObject3D {
     static public final String NTPPi = "NTPPi";
     static public final String EMPTY = "EMPTY";
     static public final String UNKNOWN = "UNKNOWN";
+    // CONSTANTS
+    private final static double SQRT3 = Math.sqrt(3);
+    private final static double SMALL = 0.001;
+    // border to border distance between objects (inside border)
+    public double distBB = Double.NaN;
+    private Object3D A;
+    private Object3D Adilated = null;
+    // relationship object
+    private Object3D B;
+    private Object3D Bdilated = null;
+    // intersection object
+    private Object3DVoxels inter = null;
+    // radius for neighboring, based on dilatations
+    private float RadX, RadY, RadZ;
+    private boolean disjoint = true;
+    private boolean canonicRadii = false;
 
     /**
-     *
      * @param A
      * @param B
      */
@@ -169,7 +167,7 @@ public class MereoObject3D {
         //IJ.log("Building intersection object");
 
         inter = A.getIntersectionObject(B);
-        
+
 
         if ((contourtest) && (inter != null)) {
             for (Voxel3D vox : inter.getVoxels()) {
@@ -194,7 +192,7 @@ public class MereoObject3D {
         } else {
             distBB = Double.NaN;
         }
-        
+
     }
 
     /////////////////////////////////////////////////
@@ -460,6 +458,7 @@ public class MereoObject3D {
     //////////////////// RCC8 ////////////////////////
 
     // DR(A,B) et PPi(Aconvex,B)
+
     public boolean surrounds() {
         if (!Discrete()) {
             return false;
@@ -471,8 +470,8 @@ public class MereoObject3D {
         }
     }
 
+
     /**
-     *
      * @return
      */
     public Object3DVoxels getInterObject() {
@@ -480,7 +479,6 @@ public class MereoObject3D {
     }
 
     /**
-     *
      * @return
      */
     public double pcColocA() {
@@ -491,7 +489,6 @@ public class MereoObject3D {
     }
 
     /**
-     *
      * @return
      */
     public double pcColocB() {
@@ -502,7 +499,6 @@ public class MereoObject3D {
     }
 
     /**
-     *
      * @param ba
      * @param bb
      * @return

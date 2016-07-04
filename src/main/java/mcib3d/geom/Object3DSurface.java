@@ -1479,7 +1479,7 @@ public class Object3DSurface extends Object3D {
      */
     public static List<Point3f> createSphere(GeomTransform3D transform, final int meridians, final int parallels) {
         final double[][][] globe = generateGlobe(meridians, parallels);
-        IJ.log("Computing sphere");
+        //IJ.log("Computing sphere");
         Vector3D zero_vector = new Vector3D(0, 0, 0);
         for (int j = 0; j < globe.length; j++) {
             for (int k = 0; k < globe[0].length; k++) {
@@ -1517,7 +1517,7 @@ public class Object3DSurface extends Object3D {
      * and parallels is 3.
      */
     private static double[][][] generateGlobe(int meridians, int parallels) {
-        IJ.log("Computing globe");
+        //IJ.log("Computing globe");
         if (meridians < 3) {
             meridians = 3;
         }

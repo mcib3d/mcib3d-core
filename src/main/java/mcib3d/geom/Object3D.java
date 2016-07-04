@@ -3222,6 +3222,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     // see landini's page for details
     // equals to its closing
+
     /**
      * @param radX
      * @param radY
@@ -3360,6 +3361,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * @return
      */
+
     public Object3DSurface getConvexSurface() {
         IJ.showStatus("Computing convex surface");
         // compute surface if necessary
@@ -3379,10 +3381,12 @@ public abstract class Object3D implements Comparable<Object3D> {
         return conv;
     }
 
+
     /**
      * @param multi multiprocessor
      * @return
      */
+
     public Object3DVoxels getConvexObject(boolean multi) {
         IJ.showStatus("Computing convex object");
         Object3DSurface conv = this.getConvexSurface();
@@ -3395,12 +3399,15 @@ public abstract class Object3D implements Comparable<Object3D> {
         return obj;
     }
 
+
     /**
      * @return
      */
+
     public Object3DVoxels getConvexObject() {
         return getConvexObject(true);
     }
+
 
     @Override
     public int compareTo(Object3D o) {
