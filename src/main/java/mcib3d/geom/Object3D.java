@@ -3059,9 +3059,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         IJ.showStatus("computing mesh");
         // use miniseg
         ImageInt miniseg = this.getLabelImage();
-        //IJ.log("Miniseg " + miniseg.getImagePlus().getBitDepth());
         ImageByte miniseg8 = ((ImageShort) (miniseg)).convertToByte(false);
-        //IJ.log("Miniseg " + miniseg8.getImagePlus().getBitDepth());
         ImagePlus objectImage = miniseg8.getImagePlus();
         if (calibrated) {
             objectImage.setCalibration(getCalibration());
@@ -3075,13 +3073,13 @@ public abstract class Object3D implements Comparable<Object3D> {
         // translate object with units coordinates
         float tx, ty, tz;
         if (calibrated) {
-            tx = (float) (getLabelImage().offsetX * resXY);
-            ty = (float) (getLabelImage().offsetY * resXY);
-            tz = (float) (getLabelImage().offsetZ * resZ);
+            tx = (float) (miniseg.offsetX * resXY);
+            ty = (float) (miniseg.offsetY * resXY);
+            tz = (float) (miniseg.offsetZ * resZ);
         } else {
-            tx = (float) (getLabelImage().offsetX);
-            ty = (float) (getLabelImage().offsetY);
-            tz = (float) (getLabelImage().offsetZ);
+            tx = (float) (miniseg.offsetX);
+            ty = (float) (miniseg.offsetY);
+            tz = (float) (miniseg.offsetZ);
         }
         l = Object3DSurface.translateTool(l, tx, ty, tz);
 
@@ -3370,7 +3368,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             surf = (Object3DSurface) this;
         } else {
             Object3DVoxels obj = this.getObject3DVoxels();
-            // claibration not important for computing hull
+            // calibration not important for computing hull
             surf = new Object3DSurface(obj.computeMeshSurface(true));
         }
         // compute convex hull
