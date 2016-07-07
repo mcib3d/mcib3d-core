@@ -43,17 +43,17 @@ public class ObjectTrack {
     public static int STATE_MOVE = 3;
     // measurements
     public double valueCriteria;
-    public double sphericity;
-    public double elongation;
-    public double DCavg;
-    public double DCsd;
+    //public double sphericity;
+    //public double elongation;
+    //public double DCavg;
+    //public double DCsd;
     public double volume;
     // first point for segment + threshold
     public Voxel3D seed;
     public int threshold;
     public ImageHandler rawImage;
     private Object3D object = null;
-    private double time = 0;
+    //private double time = 0;
     private int frame = 0;
     private ArrayList<ObjectTrack> children = null;
     private ObjectTrack parent = null;

@@ -2,6 +2,7 @@ package mcib3d.image3d.IterativeThresholding;
 
 import ij.IJ;
 import ij.ImagePlus;
+import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Point3D;
 import mcib3d.geom.Voxel3D;
@@ -52,6 +53,7 @@ public class TrackThreshold {
     public static final byte CRITERIA_METHOD_MSER = 3; // min variation of volume
     public static final byte CRITERIA_METHOD_MAX_COMPACITY = 4;
     public boolean verbose = true;
+    public boolean status = true;
     // volume range in voxels
     private int volMax = 1000;
     private int volMin = 1;
@@ -277,13 +279,8 @@ public class TrackThreshold {
         if (verbose) IJ.log("Computing frame for first threshold " + T1);
         ArrayList<ObjectTrack> frame1 = computeFrame(img, labeler.getObjects(img.thresholdAboveInclusive(T1)), point3Ds, T1, criterion);
 
-        if (verbose) {
-            IJ.log("");
-            IJ.log("");
-        }
+        if (verbose) IJ.log("Starting iterative thresholding ... ");
 
-        String update = "\\Update:";
-        //update = "";
         ArrayList<ObjectTrack> allFrames = new ArrayList<ObjectTrack>();
         allFrames.addAll(frame1);
         // use histogram and unique values to loop over pixel values
@@ -291,7 +288,7 @@ public class TrackThreshold {
         while (T1 <= TMaximum) {
             int T2 = computeNextThreshold(T1, TMaximum, img, histogramThreshold);
             if (T2 < 0) break;
-            if (verbose) IJ.log(update + "Computing frame for threshold " + T2 + "                   ");
+            if (status) IJ.showStatus("Computing frame for threshold " + T2 + "                   ");
 
             // Threshold T2
             ImageHandler bin2 = img.thresholdAboveInclusive(T2);
@@ -320,14 +317,17 @@ public class TrackThreshold {
             if (verbose) {
                 IJ.log("Nb total objects level " + level + " : " + allFrames.size());
             }
-            ImageHandler draw;
+            ImageHandler drawIdx, drawContrast;
             // 32-bits case
             if (allFrames.size() < 65535) {
-                draw = new ImageShort("DrawNew", img.sizeX, img.sizeY, img.sizeZ);
+                drawIdx = new ImageShort("Objects", img.sizeX, img.sizeY, img.sizeZ);
+                //drawContrast = new ImageShort("Contrast", img.sizeX, img.sizeY, img.sizeZ);
             } else {
-                draw = new ImageFloat("DrawNew", img.sizeX, img.sizeY, img.sizeZ);
+                drawIdx = new ImageFloat("Objects", img.sizeX, img.sizeY, img.sizeZ);
+                //drawContrast = new ImageFloat("Contrast", img.sizeX, img.sizeY, img.sizeZ);
             }
-            drawsReconstruct.add(draw);
+            drawsReconstruct.add(drawIdx);
+            //drawsReconstruct.add(drawContrast);
             int idx = 1;
             ArrayList<ObjectTrack> toBeRemoved = new ArrayList<ObjectTrack>();
             for (ObjectTrack obt : allFrames) {
@@ -337,6 +337,10 @@ public class TrackThreshold {
                         anc = obt;
                     }
                     ArrayList<ObjectTrack> list = obt.getLineageTo(anc);
+                    // compute contrast, max threshold - min threshold
+                    int contrast = 0;
+                    if (anc != null)
+                        contrast = obt.getFrame() - anc.getFrame();
 
                     ObjectTrack bestObject = computeBestObject(list, bestCriterion);
 
@@ -350,7 +354,9 @@ public class TrackThreshold {
                         threshold = objectSegment.threshold;
                     }
                     Segment3DSpots SegmentSpot = new Segment3DSpots(objectSegment.rawImage, null);
-                    new Object3DVoxels(SegmentSpot.segmentSpotClassical(seed.getRoundX(), seed.getRoundY(), seed.getRoundZ(), threshold, idx)).draw(draw, idx);
+                    Object3D object3D = new Object3DVoxels(SegmentSpot.segmentSpotClassical(seed.getRoundX(), seed.getRoundY(), seed.getRoundZ(), threshold, idx));
+                    object3D.draw(drawIdx, idx);
+                    //object3D.draw(drawContrast, contrast);
                     // set to remove all objects in list
                     toBeRemoved.addAll(list);
                     idx++;
