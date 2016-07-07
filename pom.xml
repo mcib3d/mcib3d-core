@@ -9,7 +9,7 @@
     </properties>
 
     <groupId>mcib</groupId>
-    <artifactId>mcib-core</artifactId>
+    <artifactId>mcib3d-core</artifactId>
     <version>master-SNAPSHOT</version>
     <packaging>jar</packaging>
 
