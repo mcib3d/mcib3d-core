@@ -1000,6 +1000,7 @@ public class Objects3DPopulation {
         return res;
     }
 
+
     public Object3D closestBorder(Object3D ob, ArrayList<Object3D> exclude) {
         Object3D res = null;
         double dmin = Double.MAX_VALUE;
@@ -1171,13 +1172,35 @@ public class Objects3DPopulation {
         if (kdtree == null) {
             this.createKDTreeCenters();
         }
-        // closest should be itself
+        // closest should be itself if in same population
         if (excludeInputObject) {
             k++;
         }
         Item clo = (kdtree.getNearestNeighbor(ob.getCenterAsArray(), k))[k - 1];
         return (Object3D) clo.obj;
     }
+
+    // kth closest (k=1 to N), with exclude list, if object in same population,
+    // the object should be in the exclude list
+    public Object3D kClosestCenter(Object3D ob, int k, ArrayList<Object3D> exclude) {
+        if (kdtree == null) {
+            this.createKDTreeCenters();
+        }
+
+        int nbClosest = 0;
+        Item kClosest = null;
+        Item[] items = kdtree.getNearestNeighbor(ob.getCenterAsArray(), getNbObjects());
+        for (Item item : items) {
+            if (!exclude.contains(item)) {
+                nbClosest++;
+                kClosest = item;
+            }
+            if (nbClosest == k) break;
+        }
+
+        return (Object3D) kClosest.obj;
+    }
+
 
     public ArrayList<Object3D> getObjectsWithinDistanceCenter(Object3D ob, double dist) {
         ArrayList<Object3D> list = new ArrayList<Object3D>();
@@ -1248,6 +1271,13 @@ public class Objects3DPopulation {
     public Object3D secondClosestCenter(Object3D O, boolean ExcludeInputObject) {
         return kClosestCenter(O, 2, ExcludeInputObject);
     }
+
+    // 2th closest, with exclude list, if object in same population,
+    // the object should be in the exclude list
+    public Object3D secondClosestCenter(Object3D ob, ArrayList<Object3D> exclude) {
+        return kClosestCenter(ob, 2, exclude);
+    }
+
 
     /**
      * @param x
