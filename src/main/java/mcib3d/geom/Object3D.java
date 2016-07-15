@@ -2708,6 +2708,20 @@ public abstract class Object3D implements Comparable<Object3D> {
         }
     }
 
+    public double getPixMeanValueContour(ImageHandler ima) {
+        if (volume > 0) {
+            ArrayList<Voxel3D> contours = getContours();
+            double sum = 0;
+            for (Voxel3D voxel3D : contours) {
+                sum += ima.getPixel(voxel3D);
+            }
+            return sum / contours.size();
+        }
+        return 0;
+
+    }
+
+
     public double getPixMedianValue(ImageHandler ima) {
         if (volume > 0) {
             if ((currentQuantifImage == null) || (currentQuantifImage != ima)) {

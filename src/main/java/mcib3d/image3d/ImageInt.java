@@ -3,44 +3,37 @@ package mcib3d.image3d;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Object3DFactory;
-import mcib3d.geom.Object3DFuzzy;
-import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.Objects3DPopulation;
-import mcib3d.geom.Point3D;
-import mcib3d.geom.Voxel3D;
-import mcib3d.geom.Voxel3DComparable;
+import mcib3d.geom.*;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.ThreadUtil;
 import mcib3d.utils.exceptionPrinter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2012 Jean Ollion
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of tango
- *
+ * <p>
  * tango is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -67,6 +60,30 @@ public abstract class ImageInt extends ImageHandler {
 
     protected ImageInt(String title, int sizeX, int sizeY, int sizeZ, int offsetX, int offsetY, int offsetZ) {
         super(title, sizeX, sizeY, sizeZ, offsetX, offsetY, offsetZ);
+    }
+
+    public static ImageInt wrap(ImagePlus imp) {
+        switch (imp.getBitDepth()) {
+            case 8:
+                return new ImageByte(imp);
+            case 16:
+                return new ImageShort(imp);
+            case 32:
+                return new ImageShort(ImageHandler.wrap(imp), true);
+        }
+        return null;
+    }
+
+    public static ImageInt wrap(ImageStack stack) {
+        switch (stack.getBitDepth()) {
+            case 8:
+                return new ImageByte(stack);
+            case 16:
+                return new ImageShort(stack);
+            case 32:
+                return new ImageShort(ImageHandler.wrap(stack), true);
+        }
+        return null;
     }
 
     public abstract void setPixel(int x, int y, int z, int value);
@@ -241,8 +258,8 @@ public abstract class ImageInt extends ImageHandler {
     }
 
     public Object3DVoxels[] getObjects3D() {
-        ImageLabeller imageLabeller=new ImageLabeller();
-        Object3DVoxels[] object3DVoxelses=new Object3DVoxels[imageLabeller.getNbObjectsTotal(this)];
+        ImageLabeller imageLabeller = new ImageLabeller();
+        Object3DVoxels[] object3DVoxelses = new Object3DVoxels[imageLabeller.getNbObjectsTotal(this)];
         return ((imageLabeller.getObjects(this)).toArray(object3DVoxelses));
 
 
@@ -297,7 +314,7 @@ public abstract class ImageInt extends ImageHandler {
         }
     }
 
-//    @Override
+    //    @Override
 //    public ImageInt grayscaleOpen(final int radXY, final int radZ, ImageHandler res, ImageHandler temp, boolean multithread) {
 //        ImageInt min = this.grayscaleFilter(radXY, radZ, FastFilters3D.MIN, temp, multithread);
 //        ImageInt open = min.grayscaleFilter(radXY, radZ, FastFilters3D.MAX, res, multithread);
@@ -341,30 +358,6 @@ public abstract class ImageInt extends ImageHandler {
     public ImageByte erode(float erodeRadius, int nbCPUs) {
         ImageFloat dm = getDistanceMapInsideMask(nbCPUs);
         return dm.threshold(erodeRadius, false, true);
-    }
-
-    public static ImageInt wrap(ImagePlus imp) {
-        switch (imp.getBitDepth()) {
-            case 8:
-                return new ImageByte(imp);
-            case 16:
-                return new ImageShort(imp);
-            case 32:
-                return new ImageShort(ImageHandler.wrap(imp), true);
-        }
-        return null;
-    }
-
-    public static ImageInt wrap(ImageStack stack) {
-        switch (stack.getBitDepth()) {
-            case 8:
-                return new ImageByte(stack);
-            case 16:
-                return new ImageShort(stack);
-            case 32:
-                return new ImageShort(ImageHandler.wrap(stack), true);
-        }
-        return null;
     }
 
     /**
@@ -415,10 +408,11 @@ public abstract class ImageInt extends ImageHandler {
 //            }
 //        }
 //    }
+
     /**
      * Replace pixel values by others
      *
-     * @param values the values to be replaced
+     * @param values  the values to be replaced
      * @param replace the new values
      */
     public void replacePixelsValue(int[] values, int[] replace) {
@@ -436,7 +430,7 @@ public abstract class ImageInt extends ImageHandler {
     /**
      * Replace a pixel values by another
      *
-     * @param values the values to be replaced
+     * @param values  the values to be replaced
      * @param replace the new value
      */
     public void replacePixelsValue(int[] values, int replace) {
@@ -452,7 +446,6 @@ public abstract class ImageInt extends ImageHandler {
     }
 
     /**
-     *
      * @param background
      * @return
      */
@@ -548,7 +541,6 @@ public abstract class ImageInt extends ImageHandler {
     }
 
     /**
-     *
      * @param mask reference mask
      * @return negative of this image: 255 if inside reference mask and outside
      * this image, 0 otherwise.
@@ -592,9 +584,9 @@ public abstract class ImageInt extends ImageHandler {
      * 3D filter using threads
      *
      * @param out
-     * @param radx Radius of mean filter in x
-     * @param rady Radius of mean filter in y
-     * @param radz Radius of mean filter in z
+     * @param radx   Radius of mean filter in x
+     * @param rady   Radius of mean filter in y
+     * @param radz   Radius of mean filter in z
      * @param zmin
      * @param zmax
      * @param filter
@@ -669,8 +661,7 @@ public abstract class ImageInt extends ImageHandler {
 
         return res;
     }
-    
-    
+
 
     public void filterGeneric(ImageInt out, Object3DVoxels obj, int zmin, int zmax, int filter) {
         if (zmin < 0) {

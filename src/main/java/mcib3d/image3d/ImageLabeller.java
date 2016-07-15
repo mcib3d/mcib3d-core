@@ -1,31 +1,31 @@
 package mcib3d.image3d;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Voxel3D;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2012 Jean Ollion
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of tango
- *
+ * <p>
  * tango is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -211,7 +211,7 @@ public class ImageLabeller {
 
                         for (int k = -1; k <= 1; k++) {
                             for (int j = -1; j <= 1; j++) {
-                                for (int i = - 1; i <= 1; i++) {
+                                for (int i = -1; i <= 1; i++) {
                                     if ((mask.contains(x + i, y + j, z + k)) && (i * i + j * j + k * k != 0) && ((i < 0) || (j < 0) || (k < 0))) {
                                         nextLabel = labels[z + k][xy + i + j * sizeX];
                                         if (nextLabel != 0) {
@@ -488,7 +488,10 @@ public class ImageLabeller {
                     voxels3D.add(new Voxel3D(vox.xy % sizeX, vox.xy / sizeX, vox.z, label));
                 }
                 ArrayList noDuplicate = new ArrayList(new HashSet(voxels3D));
-                objects.add(new Object3DVoxels(noDuplicate));
+                // set calibration
+                Object3DVoxels object3DVoxels = new Object3DVoxels(noDuplicate);
+                object3DVoxels.setCalibration(mask.getCalibration());
+                objects.add(object3DVoxels);
                 label++;
             }
         }
