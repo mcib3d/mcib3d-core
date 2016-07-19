@@ -52,11 +52,13 @@ public class TrackThreshold {
     public static final byte CRITERIA_METHOD_MAX_VOLUME = 2;
     public static final byte CRITERIA_METHOD_MSER = 3; // min variation of volume
     public static final byte CRITERIA_METHOD_MAX_COMPACITY = 4;
+    public static final byte CRITERIA_METHOD_MAX_EDGES = 5;
     public boolean verbose = true;
     public boolean status = true;
     // volume range in voxels
     private int volMax = 1000;
     private int volMin = 1;
+    private int contrastMin = 100;
     private int threshold_method = THRESHOLD_METHOD_STEP;
     private int step = 1;
     private int nbClasses = 100;
@@ -78,6 +80,21 @@ public class TrackThreshold {
         nbClasses = nbCla;
         startThreshold = sta;
     }
+
+    public TrackThreshold(int vmin, int vmax, int contrast, int st, int nbCla, int sta) {
+        if (vmax >= vmin) {
+            volMax = vmax;
+            volMin = vmin;
+        } else {
+            volMax = vmin;
+            volMin = vmax;
+        }
+        step = st;
+        nbClasses = nbCla;
+        startThreshold = sta;
+        contrastMin = contrast;
+    }
+
 
     private static int[] constantVoxelsHistogram(ImageHandler img, int nbClasses, int startThreshold) {
         int[] res;
@@ -250,21 +267,35 @@ public class TrackThreshold {
 
     private ArrayList<ImageHandler> process(ImageHandler img) {
         Criterion criterion;
-        if (criteria_method == CRITERIA_METHOD_MIN_ELONGATION)
-            criterion = new CriterionElongation();
-        else if (criteria_method == CRITERIA_METHOD_MAX_COMPACITY)
-            criterion = new CriterionCompactness();
-        else
-            criterion = new CriterionVolume();
-
         BestCriterion bestCriterion;
-        if ((criteria_method == CRITERIA_METHOD_MAX_VOLUME) || (criteria_method == CRITERIA_METHOD_MAX_COMPACITY)) {
-            bestCriterion = new BestCriteriaMax();
-        } else if (criteria_method == CRITERIA_METHOD_MIN_ELONGATION) {
-            bestCriterion = new BestCriteriaMin();
-        } else {
-            bestCriterion = new BestCriteriaStable();
+
+        switch (criteria_method) {
+            case CRITERIA_METHOD_MIN_ELONGATION:
+                criterion = new CriterionElongation();
+                bestCriterion = new BestCriteriaMin();
+                break;
+            case CRITERIA_METHOD_MAX_COMPACITY:
+                criterion = new CriterionCompactness();
+                bestCriterion = new BestCriteriaMax();
+                break;
+            case CRITERIA_METHOD_MAX_VOLUME:
+                criterion = new CriterionVolume();
+                bestCriterion = new BestCriteriaMax();
+                break;
+            case CRITERIA_METHOD_MSER:
+                criterion = new CriterionVolume();
+                bestCriterion = new BestCriteriaStable();
+                break;
+            case CRITERIA_METHOD_MAX_EDGES:
+                criterion = new CriterionEdge(img, 0.5);
+                bestCriterion = new BestCriteriaMax();
+                break;
+            default: // MSER
+                criterion = new CriterionVolume();
+                bestCriterion = new BestCriteriaStable();
+                break;
         }
+
         int T0, TMaximum, T1;
         int[] histogramThreshold;
         ImageLabeller labeler = new ImageLabeller(volMin, volMax);
@@ -313,6 +344,11 @@ public class TrackThreshold {
         int level = 1;
         int maxLevel = 10;
         ArrayList<ImageHandler> drawsReconstruct = new ArrayList<ImageHandler>();
+
+        // delete low contrast
+
+        while (deleteLowContrastTracks(allFrames, contrastMin)) ;
+
         while ((!allFrames.isEmpty()) && (level < maxLevel)) {
             if (verbose) {
                 IJ.log("Nb total objects level " + level + " : " + allFrames.size());
@@ -411,6 +447,30 @@ public class TrackThreshold {
         }
 
         return T2;
+    }
+
+    private boolean deleteLowContrastTracks(ArrayList<ObjectTrack> allFrames, int contrastMin) {
+        boolean change = false;
+        ArrayList<ObjectTrack> toBeRemoved = new ArrayList<ObjectTrack>();
+        for (ObjectTrack objectTrack : allFrames) {
+            if (objectTrack.getState() == ObjectTrack.STATE_DIE) {
+                ObjectTrack anc = objectTrack.getAncestor();
+                if (anc == null) {
+                    anc = objectTrack;
+                }
+                // compute contrast, max threshold - min threshold
+                int contrast = 0;
+                if (anc != null)
+                    contrast = objectTrack.getFrame() - anc.getFrame();
+                if (contrast < contrastMin) {
+                    toBeRemoved.addAll(objectTrack.getLineageTo(anc));
+                    change = true;
+                }
+            }
+        }
+        allFrames.removeAll(toBeRemoved);
+
+        return change;
     }
 
     public ImageHandler segment(ImageHandler input, boolean show) {
