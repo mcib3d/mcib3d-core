@@ -8,7 +8,7 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
 import mcib3d.geom.*;
-import mcib3d.image3d.legacy.IntImage3D;
+//import mcib3d.image3d.legacy.IntImage3D;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -487,10 +487,10 @@ public class ImageByte extends ImageInt {
         return hist;
     }
 
-    @Override
-    public IntImage3D getImage3D() {
-        return new IntImage3D(img.getImageStack());
-    }
+    //@Override
+    //public IntImage3D getImage3D() {
+    //    return new IntImage3D(img.getImageStack());
+    //}
 
     @Override
     public ImageByte thresholdRangeInclusive(float min, float max) {

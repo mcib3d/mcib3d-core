@@ -9,7 +9,7 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
 import mcib3d.geom.*;
-import mcib3d.image3d.legacy.IntImage3D;
+//import mcib3d.image3d.legacy.IntImage3D;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.ThreadUtil;
@@ -467,10 +467,10 @@ public class ImageFloat extends ImageHandler {
         }
     }
 
-    @Override
-    public IntImage3D getImage3D() {
-        return new IntImage3D(img.getImageStack());
-    }
+    //@Override
+    //public IntImage3D getImage3D() {
+    //    return new IntImage3D(img.getImageStack());
+    //}
 
     @Override
     public ImageByte thresholdRangeInclusive(float min, float max) {

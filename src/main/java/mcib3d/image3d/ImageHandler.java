@@ -16,7 +16,7 @@ import mcib3d.geom.Point3D;
 import mcib3d.geom.Vector3D;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.distanceMap3d.EDT;
-import mcib3d.image3d.legacy.Image3D;
+//import mcib3d.image3d.legacy.Image3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.exceptionPrinter;
 
@@ -324,6 +324,7 @@ public abstract class ImageHandler {
     }
 
     @Deprecated
+    // see sameDimensions
     public boolean sameDimentions(ImageHandler other) {
         return sameDimensions(other);
     }
@@ -1109,7 +1110,7 @@ public abstract class ImageHandler {
      * @return The resulting float image
      */
     public ImageHandler addImage(ImageHandler image, float s1, float s2) {
-        if (!this.sameDimentions(image)) {
+        if (!this.sameDimensions(image)) {
             return null;
         }
         // ImageFloat is returned
@@ -1122,7 +1123,7 @@ public abstract class ImageHandler {
     }
 
     public ImageHandler addImage(ImageHandler image, int s1, int s2) {
-        if (!this.sameDimentions(image)) {
+        if (!this.sameDimensions(image)) {
             return null;
         }
         // Same type is returned is returned
@@ -1497,7 +1498,7 @@ public abstract class ImageHandler {
         return (float) (idx + idxInc) * s.getHisto256BinSize() + s.getMin();
     }
 
-    public abstract Image3D getImage3D();
+    //public abstract Image3D getImage3D();
 
     public void show() {
         this.setMinAndMax(null);
@@ -1811,7 +1812,7 @@ public abstract class ImageHandler {
 
     public ImageFloat substractImage(ImageHandler other) {
         ImageFloat res;
-        if (!this.sameDimentions(other)) {
+        if (!this.sameDimensions(other)) {
             return null;
         }
         // both images are byte then return byte

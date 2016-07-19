@@ -11,7 +11,7 @@ import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Point3D;
 import mcib3d.geom.Voxel3D;
-import mcib3d.image3d.legacy.IntImage3D;
+//import mcib3d.image3d.legacy.IntImage3D;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -472,10 +472,10 @@ public class ImageShort extends ImageInt {
         return hist;
     }
 
-    @Override
-    public IntImage3D getImage3D() {
-        return new IntImage3D(img.getImageStack());
-    }
+    //@Override
+   // public IntImage3D getImage3D() {
+   //     return new IntImage3D(img.getImageStack());
+  //  }
 
     @Override
     public ImageByte thresholdRangeInclusive(float min, float max) {
