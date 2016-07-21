@@ -1,8 +1,5 @@
 package mcib3d.geom;
 
-import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.ObjectCreator3D;
-
 import java.util.ArrayList;
 
 /**
@@ -10,6 +7,7 @@ import java.util.ArrayList;
  */
 public class RDAR {
     private Object3DVoxels volume;
+    private Object3DVoxels ellipsoid;
     private int radX, radY, radZ;
     private ArrayList<Object3DVoxels> partsIn = null;
     private ArrayList<Object3DVoxels> partsOut = null;
@@ -25,7 +23,7 @@ public class RDAR {
         // compute ellipsoid
         ObjectCreator3D objectCreator3D = new ObjectCreator3D(2 * radX + 2, 2 * radY + 2, 2 * radZ + 2);
         objectCreator3D.createEllipsoid(radX, radY, radZ, radX, radY, radZ, 1, false);
-        Object3DVoxels ellipsoid = new Object3DVoxels(objectCreator3D.getImageHandler(), 1);
+        ellipsoid = new Object3DVoxels(objectCreator3D.getImageHandler(), 1);
         ellipsoid.translate(volume.getCenterX() - radX, volume.getCenterY() - radY, volume.getCenterZ() - radZ);
 
         // difference volume - ellipsoid
@@ -88,6 +86,9 @@ public class RDAR {
         else return getPartsOut(minVolume).size();
     }
 
+    public Object3DVoxels getEllipsoid() {
+        return ellipsoid;
+    }
 
     public void setVolume(Object3DVoxels volume) {
         this.volume = volume;
