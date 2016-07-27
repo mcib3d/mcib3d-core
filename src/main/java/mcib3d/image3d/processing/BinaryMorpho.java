@@ -119,6 +119,32 @@ public class BinaryMorpho {
         return null;
     }
 
+    public static ImageByte binaryDilate2D(ImageByte in, float radius, boolean enlarge) {
+        ImageInt resize = in;
+        // resize
+        int reX = (int) (radius + 1);
+        int reY = (int) (radius + 1);
+        int reZ = 0;
+        if (enlarge) resize = (ImageInt) in.enlarge(reX, reY, reZ);
+        ImageByte temp = (ImageByte) FastFilters3D.filterIntImage(resize, FastFilters3D.MAX, radius, radius, 0, 1, false);
+        temp.setScale(in);
+        if (enlarge)
+            temp.setOffset(in.offsetX - reX, in.offsetY - reY, in.offsetZ - reZ);
+        else
+            temp.setOffset(in);
+
+        return temp;
+    }
+
+    public static ImageByte binaryErode2D(ImageByte in, float radius) {
+        ImageByte temp = (ImageByte) FastFilters3D.filterIntImage(in, FastFilters3D.MIN, radius, radius, 0, 1, false);
+        temp.setOffset(in);
+        temp.setScale(in);
+
+        return temp;
+    }
+
+
     public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ) {
         return binaryDilate(in, radius, radiusZ, 0);
     }
@@ -139,7 +165,9 @@ public class BinaryMorpho {
             if (enlarge) resize = (ImageInt) in.enlarge(reX, reY, reZ);
 
             ImageFloat edm = EDT.run(resize, 0, 1, radius / radiusZ, true, nbCPUs);
+            edm.duplicate().show("edm");
             ImageByte temp = edm.threshold(radius, true, false);
+            temp.show("thres");
             edm.flush();
             edm = null;
             if (enlarge)
@@ -197,6 +225,16 @@ public class BinaryMorpho {
 
     public static ImageByte binaryClose(ImageInt in, float radius, float radiusZ) {
         return binaryClose(in, radius, radiusZ, 0);
+    }
+
+    private static ImageByte binaryClose2D(ImageByte in, float radius) {
+        ImageByte dilated = binaryDilate2D(in, radius, true);
+        ImageByte close = binaryErode2D(dilated, radius);
+        // crop image
+        int ox = in.offsetX - dilated.offsetX;
+        int oy = in.offsetY - dilated.offsetY;
+        int oz = in.offsetZ - dilated.offsetZ;
+        return close.crop3D("binaryClose", ox, ox + in.sizeX - 1, oy, oy + in.sizeY - 1, oz, oz + in.sizeZ - 1);
     }
 
     public static ImageByte binaryClose(ImageInt in, float radius, float radiusZ, int nbCPUs) {
@@ -627,6 +665,8 @@ public class BinaryMorpho {
                     ihs[idx] = binaryCloseRad1(ihs[idx], 1, nbCPUs);
                 } else if (radiusXY < 2 && radiusZ < 2) {
                     ihs[idx] = binaryCloseRad1diag(ihs[idx], 1, nbCPUs);
+                } else if (radiusZ == 0) {
+                    ihs[idx] = binaryClose2D(ihs[idx], radiusXY);
                 } else {
                     ihs[idx] = binaryClose(ihs[idx], radiusXY, radiusZ, nbCPUs);
                 }
@@ -659,7 +699,6 @@ public class BinaryMorpho {
                     ihs[idx] = binaryDilate(ihs[idx], radiusXY, radiusZ, nbCPUs);
                 }
             }
-            //ihs[0].show("crop binary 0 dilated");
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
             temp.setOffset(in);
