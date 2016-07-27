@@ -1810,6 +1810,8 @@ public abstract class ImageHandler {
         }
     }
 
+    @Deprecated
+    // typo, see @subtractImage
     public ImageFloat substractImage(ImageHandler other) {
         ImageFloat res;
         if (!this.sameDimensions(other)) {
@@ -1825,6 +1827,24 @@ public abstract class ImageHandler {
 
         return res;
     }
+
+    public ImageFloat subtractImage(ImageHandler other) {
+        ImageFloat res;
+        if (!this.sameDimensions(other)) {
+            return null;
+        }
+        // both images are byte then return byte
+        res = ImageFloat.newBlankImageFloat(title + "-" + other.title, this);
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                res.pixels[z][xy] = this.getPixel(xy, z) - other.getPixel(xy, z);
+            }
+        }
+
+        return res;
+    }
+
+
 
     public abstract void intersectMask(ImageInt mask);
 
