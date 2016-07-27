@@ -830,7 +830,7 @@ public class ArrayUtil {
      * @param value
      */
     public void divideAll(double value) {
-        for (int i = 0; i < size; ++i) {
+        for (int i = 0; i < size; i++) {
             values[i] /= value;
         }
         if (value < 0) {
@@ -1359,11 +1359,15 @@ public class ArrayUtil {
     }
 
     public Plot getPlot() {
+        return getPlot("Plot", "x", "y");
+    }
+
+    public Plot getPlot(String title, String xLabel, String yLabel) {
         double[] xVal = new double[size];
         for (int i = 0; i < xVal.length; i++) {
             xVal[i] = i;
         }
-        Plot plot = new Plot("Plot", "indices", "y values", xVal, values);
+        Plot plot = new Plot(title, xLabel, yLabel, xVal, values);
         plot.draw();
 
         return plot;
@@ -1432,13 +1436,13 @@ public class ArrayUtil {
         if (max < 0) {
             return null;
         }
-        double[] ynumber = new double[max + 1];
-        int nbins = ynumber.length;
+        double[] yNumber = new double[max + 1];
+        int nBins = yNumber.length;
         double val;
         int bi;
         int si = this.getSize();
-        for (int i = 0; i < nbins; i++) {
-            ynumber[i] = 0;
+        for (int i = 0; i < nBins; i++) {
+            yNumber[i] = 0;
         }
         for (int i = 0; i < si; i++) {
             val = this.getValue(i);
@@ -1446,16 +1450,16 @@ public class ArrayUtil {
                 continue;
             }
             bi = (int) (val);
-            if (bi >= nbins) {
-                bi = nbins - 1;
+            if (bi >= nBins) {
+                bi = nBins - 1;
             }
             if (bi < 0) {
                 bi = 0;
             }
-            ynumber[bi]++;
+            yNumber[bi]++;
         }
 
-        return new ArrayUtil(ynumber);
+        return new ArrayUtil(yNumber);
     }
 
     public int getMode() {
