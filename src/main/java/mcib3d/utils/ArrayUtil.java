@@ -553,6 +553,21 @@ public class ArrayUtil {
         return imin;
     }
 
+    public double[] getMinMax() {
+        double min = values[0];
+        double max = values[0];
+        for (int i = 1; i < size; i++) {
+            if (values[i] < min) {
+                min = values[i];
+            }
+            if (values[i] > max) {
+                max = values[i];
+            }
+        }
+
+        return new double[]{min, max};
+    }
+
     /**
      * Gets the minimum value above a threshold
      *
@@ -1426,6 +1441,31 @@ public class ArrayUtil {
             diff.putValue(i, Math.abs(getValue(i + 1) - getValue(i)));
         }
         return diff;
+    }
+
+    public ArrayUtil[] getHistogram(int nBins) {
+        double[] res = new double[nBins];
+        double[] xx = new double[nBins];
+        double minimum = getMinimum();
+        double maximum = getMaximum();
+
+        double step = (maximum - minimum + 1) / (double) nBins;
+        double iStep = 1.0 / step;
+
+        for (int i = 0; i < nBins; i++) {
+            xx[i] = minimum + i * step;
+        }
+
+        for (int i = 0; i < getSize(); i++) {
+            int pos = (int) Math.floor((getValue(i) - minimum) * iStep);
+            if (pos >= nBins) pos = nBins - 1;
+            else if (pos < 0) pos = 0;
+            res[pos]++;
+        }
+        ArrayUtil tab[] = new ArrayUtil[2];
+        tab[0] = new ArrayUtil(xx);
+        tab[1] = new ArrayUtil(res);
+        return tab;
     }
 
     /**
