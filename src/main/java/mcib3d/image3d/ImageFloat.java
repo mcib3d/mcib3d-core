@@ -9,7 +9,6 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
 import mcib3d.geom.*;
-//import mcib3d.image3d.legacy.IntImage3D;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.ThreadUtil;
@@ -18,6 +17,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+//import mcib3d.image3d.legacy.IntImage3D;
 
 /**
  * *
@@ -299,12 +300,14 @@ public class ImageFloat extends ImageHandler {
     }
 
     @Override
-    public void fill(double value) {
+    public void fill(double value, int min, int max) {
+        if (min < 0) min = 0;
+        if (max >= sizeZ) max = sizeZ - 1;
         for (int xy = 0; xy < sizeXY; xy++) {
-            pixels[0][xy] = (float) value;
+            pixels[min][xy] = (float) value;
         }
-        for (int z = 1; z < sizeZ; z++) {
-            System.arraycopy(pixels[0], 0, pixels[z], 0, sizeXY);
+        for (int z = min + 1; z <= max; z++) {
+            System.arraycopy(pixels[min], 0, pixels[z], 0, sizeXY);
         }
     }
 

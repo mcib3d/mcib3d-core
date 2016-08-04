@@ -2,7 +2,6 @@ package mcib3d.image3d;
 
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.Prefs;
 import ij.gui.NewImage;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
@@ -11,12 +10,13 @@ import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Point3D;
 import mcib3d.geom.Voxel3D;
-//import mcib3d.image3d.legacy.IntImage3D;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
+
+//import mcib3d.image3d.legacy.IntImage3D;
 
 /**
  * *
@@ -260,12 +260,14 @@ public class ImageShort extends ImageInt {
     }
 
     @Override
-    public void fill(double value) {
+    public void fill(double value, int min, int max) {
+        if (min < 0) min = 0;
+        if (max >= sizeZ) max = sizeZ - 1;
         for (int xy = 0; xy < sizeXY; xy++) {
-            pixels[0][xy] = (short) value;
+            pixels[min][xy] = (short) value;
         }
-        for (int z = 1; z < sizeZ; z++) {
-            System.arraycopy(pixels[0], 0, pixels[z], 0, sizeXY);
+        for (int z = min + 1; z <= max; z++) {
+            System.arraycopy(pixels[min], 0, pixels[z], 0, sizeXY);
         }
     }
 
@@ -473,9 +475,9 @@ public class ImageShort extends ImageInt {
     }
 
     //@Override
-   // public IntImage3D getImage3D() {
-   //     return new IntImage3D(img.getImageStack());
-  //  }
+    // public IntImage3D getImage3D() {
+    //     return new IntImage3D(img.getImageStack());
+    //  }
 
     @Override
     public ImageByte thresholdRangeInclusive(float min, float max) {
@@ -854,9 +856,9 @@ public class ImageShort extends ImageInt {
         //Prefs.set("resizer.zero", true);
         ij.plugin.CanvasResizer cr = new ij.plugin.CanvasResizer();
         ImageStack res = cr.expandStack(img.getStack(), newX, newY, dX, dY);
-       // if (!bck) {
-       //     //Prefs.set("resizer.zero", false);
-       // }
+        // if (!bck) {
+        //     //Prefs.set("resizer.zero", false);
+        // }
         if (dZ > 0) {
             for (int i = 0; i < dZ; i++) {
                 res.addSlice("", new ShortProcessor(newX, newY), 0);

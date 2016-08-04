@@ -1,5 +1,6 @@
 package mcib3d.image3d;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.Prefs;
@@ -8,11 +9,12 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
 import mcib3d.geom.*;
-//import mcib3d.image3d.legacy.IntImage3D;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
+
+//import mcib3d.image3d.legacy.IntImage3D;
 
 /**
  * Copyright (C) 2012 Jean Ollion
@@ -287,12 +289,14 @@ public class ImageByte extends ImageInt {
     }
 
     @Override
-    public void fill(double value) {
+    public void fill(double value, int min, int max) {
+        if (min < 0) min = 0;
+        if (max >= sizeZ) max = sizeZ - 1;
         for (int xy = 0; xy < sizeXY; xy++) {
-            pixels[0][xy] = (byte) value;
+            pixels[min][xy] = (byte) value;
         }
-        for (int z = 1; z < sizeZ; z++) {
-            System.arraycopy(pixels[0], 0, pixels[z], 0, sizeXY);
+        for (int z = min + 1; z <= max; z++) {
+            System.arraycopy(pixels[min], 0, pixels[z], 0, sizeXY);
         }
     }
 

@@ -16,7 +16,6 @@ import mcib3d.geom.Point3D;
 import mcib3d.geom.Vector3D;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.distanceMap3d.EDT;
-//import mcib3d.image3d.legacy.Image3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.exceptionPrinter;
 
@@ -33,6 +32,8 @@ import java.util.logging.Logger;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+
+//import mcib3d.image3d.legacy.Image3D;
 
 /**
  * Copyright (C) 2012 Jean Ollion
@@ -1204,7 +1205,11 @@ public abstract class ImageHandler {
 
     public abstract void erase();
 
-    public abstract void fill(double value);
+    public void fill(double value) {
+        fill(value, 0, sizeZ - 1);
+    }
+
+    public abstract void fill(double value, int min, int max);
 
     public abstract boolean isOpened();
 
@@ -1843,7 +1848,6 @@ public abstract class ImageHandler {
 
         return res;
     }
-
 
 
     public abstract void intersectMask(ImageInt mask);
