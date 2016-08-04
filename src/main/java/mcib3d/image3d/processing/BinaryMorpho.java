@@ -165,9 +165,9 @@ public class BinaryMorpho {
             if (enlarge) resize = (ImageInt) in.enlarge(reX, reY, reZ);
 
             ImageFloat edm = EDT.run(resize, 0, 1, radius / radiusZ, true, nbCPUs);
-            edm.duplicate().show("edm");
+            //edm.duplicate().show("edm");
             ImageByte temp = edm.threshold(radius, true, false);
-            temp.show("thres");
+            //temp.show("thres");
             edm.flush();
             edm = null;
             if (enlarge)

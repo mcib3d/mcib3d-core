@@ -59,6 +59,64 @@ public class RDAR {
         else return getPartsOut().size();
     }
 
+    public int getPartsOutVolumePixels() {
+        return getPartsOutVolumePixels(0);
+    }
+
+    public int getPartsOutVolumePixels(int minVolume) {
+        if (getPartsOut(minVolume) == null) return 0;
+        int volume = 0;
+        for (Object3DVoxels object3DVoxels : getPartsOut(minVolume)) {
+            volume += object3DVoxels.getVolumePixels();
+        }
+
+        return volume;
+    }
+
+
+    public double getPartsInVolumeUnit() {
+        return getPartsInVolumeUnit(0);
+    }
+
+    public double getPartsInVolumeUnit(int minVolume) {
+        if (getPartsIn(minVolume) == null) return 0;
+        double volume = 0;
+        for (Object3DVoxels object3DVoxels : getPartsIn(minVolume)) {
+            volume += object3DVoxels.getVolumeUnit();
+        }
+
+        return volume;
+    }
+
+    public double getPartsOutVolumeUnit() {
+        return getPartsOutVolumeUnit(0);
+    }
+
+    public double getPartsOutVolumeUnit(int minVolume) {
+        if (getPartsOut(minVolume) == null) return 0;
+        double volume = 0;
+        for (Object3DVoxels object3DVoxels : getPartsOut(minVolume)) {
+            volume += object3DVoxels.getVolumeUnit();
+        }
+
+        return volume;
+    }
+
+
+    public int getPartsInVolumePixels() {
+        return getPartsInVolumePixels(0);
+    }
+
+    public int getPartsInVolumePixels(int minVolume) {
+        if (getPartsIn(minVolume) == null) return 0;
+        int volume = 0;
+        for (Object3DVoxels object3DVoxels : getPartsIn(minVolume)) {
+            volume += object3DVoxels.getVolumePixels();
+        }
+
+        return volume;
+    }
+
 
     public ArrayList<Object3DVoxels> getPartsIn(int minVolume) {
         if (partsIn == null) compute();

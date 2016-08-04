@@ -66,7 +66,7 @@ public class TrackThreshold {
     private int stopThreshold = Integer.MAX_VALUE;
     private int criteria_method = CRITERIA_METHOD_MIN_ELONGATION;
     private int GlobalThreshold;
-    private ArrayList<Point3D> point3Ds = null;
+    private ArrayList<Point3D> markers = null;
 
     public TrackThreshold(int vmin, int vmax, int st, int nbCla, int sta) {
         if (vmax >= vmin) {
@@ -160,7 +160,7 @@ public class TrackThreshold {
     }
 
     public void setMarkers(ArrayList<Point3D> point3Ds) {
-        this.point3Ds = point3Ds;
+        this.markers = point3Ds;
     }
 
     private int[] initHistogram(ImageHandler img) {
@@ -308,7 +308,7 @@ public class TrackThreshold {
         // first frame
         T1 = T0;
         if (verbose) IJ.log("Computing frame for first threshold " + T1);
-        ArrayList<ObjectTrack> frame1 = computeFrame(img, labeler.getObjects(img.thresholdAboveInclusive(T1)), point3Ds, T1, criterion);
+        ArrayList<ObjectTrack> frame1 = computeFrame(img, labeler.getObjects(img.thresholdAboveInclusive(T1)), markers, T1, criterion);
 
         if (verbose) IJ.log("Starting iterative thresholding ... ");
 
@@ -324,7 +324,7 @@ public class TrackThreshold {
             // Threshold T2
             ImageHandler bin2 = img.thresholdAboveInclusive(T2);
             ImageHandler labels2 = labeler.getLabels(bin2);
-            ArrayList<ObjectTrack> frame2 = computeFrame(img, labeler.getObjects(bin2), point3Ds, T2, criterion);
+            ArrayList<ObjectTrack> frame2 = computeFrame(img, labeler.getObjects(bin2), markers, T2, criterion);
 
 
             System.gc();
@@ -473,8 +473,8 @@ public class TrackThreshold {
         return change;
     }
 
-    public ImageHandler segment(ImageHandler input, boolean show) {
-        setVerbose(show);
+    public ImageHandler segment(ImageHandler input, boolean verbose) {
+        setVerbose(verbose);
         ArrayList<ImageHandler> res = process(input);
         if (!res.isEmpty()) {
             return res.get(0);
@@ -483,8 +483,8 @@ public class TrackThreshold {
         }
     }
 
-    public ArrayList<ImageHandler> segmentAll(ImageHandler input, boolean show) {
-        setVerbose(show);
+    public ArrayList<ImageHandler> segmentAll(ImageHandler input, boolean verbose) {
+        setVerbose(verbose);
         return process(input);
     }
 
