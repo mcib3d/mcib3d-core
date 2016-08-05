@@ -2999,6 +2999,8 @@ public abstract class Object3D implements Comparable<Object3D> {
         }
         // IJ.log("seg image " + offX + " " + offY + " " + offZ);
         segImage.setOffset(xmi, ymi, zmi);
+        segImage.setScale(resXY, resZ, units);
+
         return segImage;
     }
 
