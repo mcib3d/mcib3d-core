@@ -289,8 +289,7 @@ public abstract class ImageHandler {
         for (int i = 0; i < images.length; i++) {
             if ((images[i] instanceof ImageShort)) {
                 images[i] = ((ImageShort) images[i]).convertToByte(true);
-            }
-            if ((images[i] instanceof ImageFloat)) {
+            } else if ((images[i] instanceof ImageFloat)) {
                 images[i] = ((ImageFloat) images[i]).convertToByte(true);
             }
         }
@@ -299,11 +298,24 @@ public abstract class ImageHandler {
     public static void convertToByte(ImageHandler image) {
         if ((image instanceof ImageShort)) {
             image = ((ImageShort) image).convertToByte(true);
-        }
-        if ((image instanceof ImageFloat)) {
+        } else if ((image instanceof ImageFloat)) {
             image = ((ImageFloat) image).convertToByte(true);
         }
     }
+
+    public static ImageByte ToByte(ImageHandler image) {
+        ImageByte imageByte = null;
+        if ((image instanceof ImageShort)) {
+            imageByte = ((ImageShort) image).convertToByte(true);
+        } else if ((image instanceof ImageFloat)) {
+            imageByte = ((ImageFloat) image).convertToByte(true);
+        } else if ((image instanceof ImageByte)) {
+            imageByte = (ImageByte) image.duplicate();
+        }
+
+        return imageByte;
+    }
+
 
     public abstract double getSizeInMb();
 
