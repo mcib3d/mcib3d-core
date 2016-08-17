@@ -9,6 +9,7 @@ import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.image3d.processing.FastFilters3D;
 
 /**
@@ -17,7 +18,7 @@ import mcib3d.image3d.processing.FastFilters3D;
 public class Watershed3DVoronoi {
     ImageInt seeds = null;
     float radiusMax = Float.MAX_VALUE;
-    ImageFloat EDT = null;
+    ImageFloat EDTImage = null;
     ImageInt watershed = null;
     ImageInt voronoi = null;
 
@@ -32,7 +33,7 @@ public class Watershed3DVoronoi {
 
     public void setSeeds(ImageInt seeds) {
         this.seeds = seeds;
-        EDT = null;
+        EDTImage = null;
         watershed = null;
     }
 
@@ -41,7 +42,8 @@ public class Watershed3DVoronoi {
         voronoi = null;
     }
 
-    private void computeEDT() {
+    private void computeEDT(boolean show) {
+        IJ.log("Computing EDT");
         Calibration cal = seeds.getCalibration();
         float resXY = 1;
         float resZ = 1;
@@ -49,27 +51,24 @@ public class Watershed3DVoronoi {
             resXY = (float) cal.pixelWidth;
             resZ = (float) cal.pixelDepth;
         }
-        EDT = mcib3d.image3d.distanceMap3d.EDT.run(seeds, 0, resXY, resZ, true, 0);
+        EDTImage = EDT.run(seeds, 0, resXY, resZ, true, 0);
+        if (show) EDTImage.show("EDT");
     }
 
     private void computeWatershed(boolean show) {
-        if (EDT == null) computeEDT();
-        ImageFloat EDTcopy = EDT.duplicate();
-        EDTcopy.invert();
-        if (show) {
-            EDTcopy.show("EDT");
-        }
-        ImageHandler edt16 = EDT.convertToShort(true);
+        if (EDTImage == null) computeEDT(show);
+        IJ.log("Computing Watershed");
+        ImageFloat EDTcopy = EDTImage.duplicate();
+        ImageHandler edt16 = EDTcopy.convertToShort(true);
         edt16.invert();
-        IJ.log("Computing watershed");
         Watershed3D water = new Watershed3D(edt16, seeds, 0, 0);
-        water.setAnim(false);
         watershed = water.getWatershedImage3D();
     }
 
     private void computeVoronoi(boolean show) {
         if (watershed == null) computeWatershed(show);
-        ImageByte mask = EDT.threshold(radiusMax, true, true);
+        IJ.log("Computing Voronoi");
+        ImageByte mask = EDTImage.threshold(radiusMax, true, true);
         voronoi = watershed.duplicate();
         voronoi.intersectMask(mask);
     }
