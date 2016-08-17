@@ -122,7 +122,7 @@ public class Watershed3D {
     }
 
     /**
-     * set the seeds iamge used
+     * set the seeds image used
      *
      * @param seeds image
      */

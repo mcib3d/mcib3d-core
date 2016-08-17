@@ -317,7 +317,7 @@ public class TrackThreshold {
         // use histogram and unique values to loop over pixel values
         GlobalThreshold = 1;
         while (T1 <= TMaximum) {
-            int T2 = computeNextThreshold(T1, TMaximum, img, histogramThreshold);
+            int T2 = computeNextThreshold(T1, TMaximum, histogramThreshold);
             if (T2 < 0) break;
             if (status) IJ.showStatus("Computing frame for threshold " + T2 + "                   ");
 
@@ -429,7 +429,7 @@ public class TrackThreshold {
         return list.get(bestCriterion.computeBestCriterion(valueCriterion));
     }
 
-    private int computeNextThreshold(int T1, int Tmax, ImageHandler img, int[] histogram) {
+    private int computeNextThreshold(int T1, int Tmax, int[] histogram) {
         int T2 = T1;
         if (T2 < Tmax) {
             T2 = histogram[GlobalThreshold];
@@ -451,6 +451,7 @@ public class TrackThreshold {
 
     private boolean deleteLowContrastTracks(ArrayList<ObjectTrack> allFrames, int contrastMin) {
         boolean change = false;
+        if (contrastMin <= 0) return change;
         ArrayList<ObjectTrack> toBeRemoved = new ArrayList<ObjectTrack>();
         for (ObjectTrack objectTrack : allFrames) {
             if (objectTrack.getState() == ObjectTrack.STATE_DIE) {
