@@ -164,6 +164,7 @@ public class Watershed3D {
         }
         boolean newt = true;
 
+        IJ.log("");
         while (newt) {
             newt = false;
             while (!tree.isEmpty()) {
