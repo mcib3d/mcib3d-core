@@ -15,16 +15,16 @@ public class ComparatorVoxel implements Comparator<Voxel3DComparable> {
 
     @Override
     public int compare(Voxel3DComparable V0, Voxel3DComparable V1) {
-        double v1 = V0.getValue();
-        double v2 = V1.getValue();
+        double v0 = V0.getValue();
+        double v1 = V1.getValue();
 
-        if (v1 == v2) {
+        if (v0 == v1) {
             if (V0.max > V1.max) {
                 return 1;
             } else {
                 return +1;
             }
-        } else if (v1 > v2) {
+        } else if (v0 > v1) {
             return -1;
         } else {
             return 1;

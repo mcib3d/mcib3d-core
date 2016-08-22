@@ -59,9 +59,10 @@ public class Watershed3DVoronoi {
         if (EDTImage == null) computeEDT(show);
         IJ.log("Computing Watershed");
         ImageFloat EDTcopy = EDTImage.duplicate();
-        ImageHandler edt16 = EDTcopy.convertToShort(true);
-        edt16.invert();
-        Watershed3D water = new Watershed3D(edt16, seeds, 0, 0);
+        double max = EDTcopy.getMax();
+        EDTcopy.invert();
+        EDTcopy.addValue((float) max + 1);
+        Watershed3D water = new Watershed3D(EDTcopy, seeds, 0, 0);
         watershed = water.getWatershedImage3D();
     }
 
@@ -82,20 +83,6 @@ public class Watershed3DVoronoi {
     public ImageInt getVoronoiLines(boolean show) {
         if (voronoi == null) computeVoronoi(show);
         // lines
-        Objects3DPopulation pop = new Objects3DPopulation(voronoi);
-        ObjectCreator3D draw = new ObjectCreator3D(seeds.sizeX, seeds.sizeY, seeds.sizeZ);
-        for (int o = 0; o < pop.getNbObjects(); o++) {
-            Object3DVoxels obj = (Object3DVoxels) pop.getObject(o);
-            obj.computeContours();
-            if (seeds.sizeZ > 1)
-                obj.drawContours(draw, 1);
-            else {
-                obj.drawContoursXY(draw, 0, 1);
-            }
-        }
-        ImageHandler lines = draw.getImageHandler();
-        lines = FastFilters3D.filterImage(lines, FastFilters3D.CLOSEGRAY, 1, 1, 1, 0, false);
-
-        return (ImageInt) lines;
+        return voronoi.thresholdRangeInclusive(1,1);
     }
 }
