@@ -2,15 +2,11 @@ package mcib3d.image3d.regionGrowing;
 
 import ij.IJ;
 import ij.measure.Calibration;
-import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.ObjectCreator3D;
-import mcib3d.geom.Objects3DPopulation;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
-import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.distanceMap3d.EDT;
-import mcib3d.image3d.processing.FastFilters3D;
+import mcib3d.utils.ArrayUtil;
 
 /**
  * Created by thomasb on 17/8/16.
@@ -64,6 +60,8 @@ public class Watershed3DVoronoi {
         EDTcopy.addValue((float) max + 1);
         Watershed3D water = new Watershed3D(EDTcopy, seeds, 0, 0);
         watershed = water.getWatershedImage3D();
+        // replace value for Q=2
+        watershed.replacePixelsValue((int) watershed.getMax(), 2);
     }
 
     private void computeVoronoi(boolean show) {
@@ -82,7 +80,24 @@ public class Watershed3DVoronoi {
 
     public ImageInt getVoronoiLines(boolean show) {
         if (voronoi == null) computeVoronoi(show);
+        IJ.log("Computing voronoi lines");
+        ImageByte lines = new ImageByte("VoronoiLines", voronoi.sizeX, voronoi.sizeY, voronoi.sizeZ);
         // lines
-        return voronoi.thresholdRangeInclusive(1,1);
+        // compute borders
+        for (int z = 0; z < voronoi.sizeZ; z++) {
+            for (int x = 0; x < voronoi.sizeX; x++) {
+                for (int y = 0; y < voronoi.sizeY; y++) {
+                    if (voronoi.getPixel(x, y, z) > 1) {
+                        ArrayUtil tab = voronoi.getNeighborhood3x3x3(x, y, z);
+                        int max1 = (int) tab.getMaximumAbove(1)[0];
+                        int max2 = (int) tab.getMaximumBelow(max1);
+                        if (max2 > 1) {
+                            lines.setPixel(x, y, z, 255);
+                        }
+                    } else if (voronoi.getPixel(x, y, z) == 1) lines.setPixel(x, y, z, 255);
+                }
+            }
+        }
+        return lines;
     }
 }
