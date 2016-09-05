@@ -54,6 +54,7 @@ public class Watershed3D {
     boolean okseeds = false;
     boolean anim = false;
     private int rawThreshold;
+    private boolean labelSeeds = true;
 
     /**
      * @param image raw image
@@ -117,6 +118,10 @@ public class Watershed3D {
      */
     public void setSeeds(ImageInt seeds) {
         this.seedsImage = seeds;
+    }
+
+    public void setLabelSeeds(boolean labelSeeds) {
+        this.labelSeeds = labelSeeds;
     }
 
     public void setAnim(boolean anim) {
@@ -218,10 +223,16 @@ public class Watershed3D {
         float pix;
         float se;
 
-        // compute the labelled image (in case seeds are clustered)
-        ImageLabeller labeller = new ImageLabeller();
-        ImageInt seedsLabel = labeller.getLabels(seedsImage.thresholdAboveExclusive(seedsThreshold));
-        // since seedsLabel starts at 1 and watershed at 2, replace values
+        // compute the seeds image
+        // threshold, // TODO 32-bits seeds ?
+        ImageInt seedsLabel = (ImageInt) seedsImage.duplicate();
+        seedsLabel.thresholdCut(seedsThreshold, false, true);
+
+        if ((labelSeeds)) {
+            ImageLabeller labeller = new ImageLabeller();
+            seedsLabel = labeller.getLabels(seedsLabel);
+        }
+        // since seeds Label starts at 1 and watershed at 2, replace values
         int max = (int) seedsLabel.getMax();
         seedsLabel.replacePixelsValue(QUEUE, max + 1);
         seedsLabel.replacePixelsValue(DAM, max + 2);

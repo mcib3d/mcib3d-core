@@ -17,6 +17,7 @@ public class Watershed3DVoronoi {
     ImageFloat EDTImage = null;
     ImageInt watershed = null;
     ImageInt voronoi = null;
+    boolean labelSeeds = true;
 
     public Watershed3DVoronoi(ImageInt seeds) {
         this.seeds = seeds;
@@ -36,6 +37,10 @@ public class Watershed3DVoronoi {
     public void setRadiusMax(float radiusMax) {
         this.radiusMax = radiusMax;
         voronoi = null;
+    }
+
+    public void setLabelSeeds(boolean labelSeeds) {
+        this.labelSeeds = labelSeeds;
     }
 
     private void computeEDT(boolean show) {
@@ -59,6 +64,7 @@ public class Watershed3DVoronoi {
         EDTcopy.invert();
         EDTcopy.addValue((float) max + 1);
         Watershed3D water = new Watershed3D(EDTcopy, seeds, 0, 0);
+        water.setLabelSeeds(labelSeeds);
         watershed = water.getWatershedImage3D();
         // replace value for Q=2
         watershed.replacePixelsValue((int) watershed.getMax(), 2);
