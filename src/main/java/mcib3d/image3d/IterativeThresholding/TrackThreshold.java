@@ -66,7 +66,10 @@ public class TrackThreshold {
     private int stopThreshold = Integer.MAX_VALUE;
     private int criteria_method = CRITERIA_METHOD_MIN_ELONGATION;
     private int GlobalThreshold;
-    private ArrayList<Point3D> markers = null;
+    // markers
+    private ArrayList<Point3D> markers = null;// TO REMOVE
+    private ImageInt imageMarkers = null;
+    private ImageInt imageZones = null;
 
     public TrackThreshold(int vmin, int vmax, int st, int nbCla, int sta) {
         if (vmax >= vmin) {
@@ -94,7 +97,6 @@ public class TrackThreshold {
         startThreshold = sta;
         contrastMin = contrast;
     }
-
 
     private static int[] constantVoxelsHistogram(ImageHandler img, int nbClasses, int startThreshold) {
         int[] res;
@@ -145,6 +147,14 @@ public class TrackThreshold {
         System.arraycopy(res, 0, res2, 0, count + 1);
 
         return res2;
+    }
+
+    public void setImageMarkers(ImageInt imageMarkers) {
+        this.imageMarkers = imageMarkers;
+    }
+
+    public void setImageZones(ImageInt imageZones) {
+        this.imageZones = imageZones;
     }
 
     public void setStopThreshold(int stopThreshold) {
@@ -249,7 +259,8 @@ public class TrackThreshold {
     private ArrayList<ObjectTrack> computeFrame(ImageHandler img, ArrayList<Object3DVoxels> objects, ArrayList<Point3D> markers, int threshold, Criterion criterion) {
         ArrayList<ObjectTrack> frame1 = new ArrayList<ObjectTrack>();
         for (Object3DVoxels ob : objects) {
-            if ((markers == null) || (ob.insideOne(markers))) {
+            // if (checkMarkers(ob)) {
+            if (checkMarkersTest(ob)) {
                 ObjectTrack obt = new ObjectTrack();
                 obt.setObject(ob);
                 obt.setFrame(threshold);
@@ -264,6 +275,7 @@ public class TrackThreshold {
         }
         return frame1;
     }
+
 
     private ArrayList<ImageHandler> process(ImageHandler img) {
         Criterion criterion;
@@ -507,4 +519,21 @@ public class TrackThreshold {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    private boolean checkMarkers(Object3D object3D) {
+        // TO MODIFY
+        if ((markers == null) || (object3D.insideOne(markers))) return true;
+
+        return false;
+    }
+
+    // EXPERIMENTAL
+    private boolean checkMarkersTest(Object3D object3D) {
+        boolean mark = ((imageMarkers == null) || (object3D.includesMarkersOneOnly(imageMarkers)));
+        boolean zone = ((imageZones == null) || (object3D.includedInZonesOneOnly(imageZones)));
+
+        return mark && zone;
+    }
+
+
 }

@@ -867,6 +867,16 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public abstract void draw(ImageHandler mask, int col);
 
+    public void drawAt(ImageHandler mask, int col, Point3D center) {
+        double cx = getCenterX();
+        double cy = getCenterY();
+        double cz = getCenterZ();
+
+        translate(center.getX() - cx, center.getY() - cy, center.getZ() - cz);
+        draw(mask, col);
+        translate(-center.getX() + cx, -center.getY() + cy, -center.getZ() + cz);
+    }
+
     public abstract void draw(ImageHandler mask, int col, int tx, int ty, int tz);
 
     /**
@@ -3101,6 +3111,75 @@ public abstract class Object3D implements Comparable<Object3D> {
 
         return l;
     }
+
+    public boolean includesMarkersNone(ImageInt imageMarkers) {
+        for (Voxel3D voxel3D : getVoxels()) {
+            if (imageMarkers.contains(voxel3D)) {
+                if (imageMarkers.getPixel(voxel3D) > 0) return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean includesMarkersOneOnly(ImageInt imageMarkers) {
+        int label = -1;
+        for (Voxel3D voxel3D : getVoxels()) {
+            if (imageMarkers.contains(voxel3D)) {
+                int pixel = imageMarkers.getPixelInt(voxel3D);
+                if (pixel > 0) {
+                    if (label == -1) label = pixel;
+                    if ((label > 0) && (pixel != label)) return false;
+                }
+            }
+        }
+        return (label > 0);
+    }
+
+    public boolean includesMarkersOneMore(ImageInt imageMarkers) {
+        for (Voxel3D voxel3D : getVoxels()) {
+            if (imageMarkers.contains(voxel3D)) {
+                int pixel = imageMarkers.getPixelInt(voxel3D);
+                if (pixel > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean includedInZonesNone(ImageInt imageZones) {
+        for (Voxel3D voxel3D : getVoxels()) {
+            if (imageZones.contains(voxel3D)) {
+                if (imageZones.getPixel(voxel3D) > 0) return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean includedInZonesOneOnly(ImageInt imageZones) {
+        int label = -1;
+        for (Voxel3D voxel3D : getVoxels()) {
+            if (imageZones.contains(voxel3D)) {
+                int pixel = imageZones.getPixelInt(voxel3D);
+                if (pixel == 0) return false;
+                if (label == -1) label = pixel;
+                else if (pixel != label) return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean includedInZonesOneMore(ImageInt imageZones) {
+        int label = -1;
+        for (Voxel3D voxel3D : getVoxels()) {
+            if (imageZones.contains(voxel3D)) {
+                int pixel = imageZones.getPixelInt(voxel3D);
+                if (pixel == 0) return false;
+            }
+        }
+        return true;
+    }
+
 
     /**
      * @param obj
