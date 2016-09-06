@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 //import javax.vecmath.Color3f;
+import mcib3d.image3d.ImageInt;
 import org.scijava.vecmath.Color3f;
 import org.scijava.vecmath.Point3f;
 import org.scijava.vecmath.Vector3f;
@@ -2238,5 +2239,4 @@ public class Object3DSurface extends Object3D {
         vector.setSize(idx);
         return vector;
     }
-
 }

@@ -167,7 +167,7 @@ public class Object3DVoxels extends Object3D {
     /**
      * Constructor for the Object3D object
      *
-     * @param plus Segmented image
+     * @param stack Segmented image
      * @param val  Pixel value of the object
      */
     public Object3DVoxels(ImageStack stack, int val) {
@@ -469,7 +469,7 @@ public class Object3DVoxels extends Object3D {
         ImageInt seg = this.getLabelImage();
         ImageHandler fill = seg.duplicate();
         FillHoles3D.process(fill, value, 0, false);
-        ImageFloat res = fill.substractImage(seg);
+        ImageFloat res = fill.subtractImage(seg);
         Object3DVoxels inte = new Object3DVoxels(res);
         inte.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
         return inte;
@@ -1470,6 +1470,7 @@ public class Object3DVoxels extends Object3D {
         }
     }
 
+
     /**
      * @param path
      * @param name
@@ -1640,30 +1641,12 @@ public class Object3DVoxels extends Object3D {
     }
 
     @Override
-    public ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh) {
-//        ArrayList<Voxel3D> list = new ArrayList();
-//        Voxel3D voxel, newVoxel;
-//
-//        Iterator<Voxel3D> it = voxels.iterator();
-//        float pixvalue;
-//
-//        while (it.hasNext()) {
-//            voxel = it.next();
-//            if (ima.contains(voxel.getX(), voxel.getY(), voxel.getZ())) {
-//                pixvalue = ima.getPixel(voxel);
-//                if (pixvalue > thresh) {
-//                    newVoxel = new Voxel3D(voxel);
-//                    newVoxel.setValue(pixvalue);
-//                    list.add(newVoxel);
-//                }
-//            }
-//        }
-
-        return listVoxels(ima, thresh, Double.POSITIVE_INFINITY);
+    public ArrayList<Voxel3D> listVoxels(ImageHandler ima, double threshold) {
+        return listVoxels(ima, threshold, Double.POSITIVE_INFINITY);
     }
 
     @Override
-    public ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thresh1) {
+    public ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresholdLow, double thresholdHigh) {
         ArrayList<Voxel3D> list = new ArrayList<Voxel3D>();
         Voxel3D voxel, newVoxel;
 
@@ -1674,7 +1657,7 @@ public class Object3DVoxels extends Object3D {
             voxel = it.next();
             if (ima.contains(voxel.getX(), voxel.getY(), voxel.getZ())) {
                 pixvalue = ima.getPixel(voxel);
-                if ((pixvalue > thresh0) && (pixvalue < thresh1)) {
+                if ((pixvalue > thresholdLow) && (pixvalue < thresholdHigh)) {
                     newVoxel = new Voxel3D(voxel);
                     newVoxel.setValue(pixvalue);
                     list.add(newVoxel);
@@ -1686,15 +1669,15 @@ public class Object3DVoxels extends Object3D {
     }
 
     // list voxels when object translated to new position for center
-    public ArrayUtil listVoxels(ImageHandler ima, int nx, int ny, int nz) {
+    public ArrayUtil listVoxels(ImageHandler ima, int newCenterX, int newCenterY, int newCenterZ) {
         ArrayUtil list = new ArrayUtil(this.getVolumePixels());
         Voxel3D voxel;
 
         Iterator<Voxel3D> it = voxels.iterator();
         float pixvalue;
-        double tx = nx - bx;
-        double ty = ny - by;
-        double tz = nz - bz;
+        double tx = newCenterX - bx;
+        double ty = newCenterY - by;
+        double tz = newCenterZ - bz;
         int idx = 0;
         while (it.hasNext()) {
             voxel = it.next();
@@ -1848,4 +1831,6 @@ public class Object3DVoxels extends Object3D {
         ArrayUtil tab = this.listValues(img);
         return tab.median();
     }
+
+
 }
