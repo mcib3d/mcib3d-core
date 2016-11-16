@@ -1072,7 +1072,7 @@ public abstract class ImageHandler {
             Calibration cal = img.getCalibration();
             return cal.getUnit();
         }
-        return "";
+        return "pix";
     }
 
     public double getScaleZ() {

@@ -1,13 +1,19 @@
 package mcib3d.geom;
 
 import ij.ImagePlus;
+import ij.ImageStack;
+import ij.gui.Roi;
 import ij.measure.Calibration;
+import ij.plugin.filter.ThresholdToSelection;
+import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
 import ij3d.Volume;
 import marchingcubes.MCCube;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 
+import java.awt.*;
 import java.util.List;
 
 /**
@@ -47,6 +53,76 @@ public class Object3D_IJUtils {
         }
         return Z && (bb[5] >= img.getNSlices() - 1);
     }
+
+    public static Object3DVoxels createObject3DVoxels(ImagePlus plus, int val) {
+        ImageInt imageInt = ImageInt.wrap(plus);
+        return new Object3DVoxels(imageInt, val);
+    }
+
+    public static Object3DVoxels createObject3DVoxels(ImageStack plus, int val) {
+        ImageInt imageInt = ImageInt.wrap(plus);
+        return new Object3DVoxels(imageInt, val);
+    }
+
+    public static Roi createRoi(Object3DVoxels object3DVoxels, int z) {
+        // IJ.write("create roi " + z);
+        int sx = object3DVoxels.getXmax() - object3DVoxels.getXmin() + 1;
+        int sy = object3DVoxels.getYmax() - object3DVoxels.getYmin() + 1;
+        ByteProcessor mask = new ByteProcessor(sx, sy);
+        // object black on white
+        //mask.invert();
+        draw(object3DVoxels, mask, z, 255);
+        ImagePlus maskPlus = new ImagePlus("mask " + z, mask);
+        //maskPlus.show();
+        //IJ.run("Create Selection");
+        ThresholdToSelection tts = new ThresholdToSelection();
+        tts.setup("", maskPlus);
+        tts.run(mask);
+        maskPlus.updateAndDraw();
+        // IJ.write("sel=" + maskPlus.getRoi());
+        //maskPlus.hide();
+        Roi roi = maskPlus.getRoi();
+        Rectangle rect = roi.getBounds();
+        rect.x += object3DVoxels.getXmin();
+        rect.y += object3DVoxels.getYmin();
+
+        return roi;
+    }
+
+    public static boolean draw(Object3DVoxels object3DVoxels, ByteProcessor mask, int z, int col) {
+        boolean ok = false;
+        for (Voxel3D vox : object3DVoxels.getVoxels()) {
+            if (Math.abs(z - vox.getZ()) < 0.5) {
+                mask.putPixel(vox.getRoundX(), vox.getRoundY(), col);
+                ok = true;
+            }
+        }
+        return ok;
+    }
+
+    /**
+     *
+     */
+    public void draw(Object3DVoxels object3DVoxels, ImageStack mask, int col) {
+        for (Voxel3D vox : object3DVoxels.getVoxels()) {
+            mask.setVoxel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), col);
+        }
+    }
+
+
+    /**
+     *
+     */
+    public void draw(Object3DVoxels object3DVoxels, ImageStack mask, int r, int g, int b) {
+        ImageProcessor tmp;
+        Color col = new Color(r, g, b);
+        for (Voxel3D vox : object3DVoxels.getVoxels()) {
+            tmp = mask.getProcessor((int) (vox.getZ() + 1));
+            tmp.setColor(col);
+            tmp.drawPixel(vox.getRoundX(), vox.getRoundY());
+        }
+    }
+
 
     public List computeMeshSurface(Object3D object3D, boolean calibrated) {
         //IJ.showStatus("computing mesh");
