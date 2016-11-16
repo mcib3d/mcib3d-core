@@ -4,7 +4,7 @@
  */
 package mcib3d.geom;
 
-import ij.IJ;
+//import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
@@ -47,12 +47,12 @@ import mcib3d.utils.KDTreeC;
 public class Object3DLabel extends Object3D {
 
     //ImageInt labelImage;
-    ArrayList<Voxel3D> voxels = null;
+    private ArrayList<Voxel3D> voxels = null;
 
     /**
      * constructor
      *
-     * @param ima Segmented iamge
+     * @param ima Segmented image
      * @param val Pixel value of the object
      */
     public Object3DLabel(ImageInt ima, int val) {
@@ -77,7 +77,7 @@ public class Object3DLabel extends Object3D {
         //IntImage3D ima = new IntImage3D(plus.getStack());
         ImageInt ima = null;
         if (plus.getBitDepth() > 16) {
-            IJ.log("Image type not supported");
+            //IJ.log("Image type not supported");
         } else {
             ima = (ImageInt) ImageHandler.wrap(plus);
         }

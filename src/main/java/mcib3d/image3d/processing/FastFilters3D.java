@@ -323,7 +323,7 @@ public class FastFilters3D {
 
                 // TOPHAT DIFFERENCE
                 if (filter == TOPHAT) {
-                    res = ima.substractImage(res2);
+                    res = ima.subtractImage(res2);
                 } else {
                     res = res2;
                 }
@@ -605,7 +605,7 @@ public class FastFilters3D {
 
                 // TOPHAT DIFFERENCE
                 if (filter == TOPHAT) {
-                    res = ima.substractImage(res2);
+                    res = ima.subtractImage(res2);
                 } else {
                     res = res2;
                 }

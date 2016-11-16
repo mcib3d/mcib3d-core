@@ -3,7 +3,8 @@ package mcib3d.geom;
 //import com.mongodb.BasicDBObject;
 //import com.mongodb.DBObject;
 
-import ij.IJ;
+//import ij.IJ;
+import mcib3d.utils.AbstractLog;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -59,6 +60,9 @@ import java.util.List;
  * @author thomas
  */
 public abstract class Object3D implements Comparable<Object3D> {
+    // log
+    AbstractLog logger;
+    boolean logging=true;
 
     public static final byte MEASURE_NONE = 0;
     public static final byte MEASURE_VOLUME_PIX = 1;
@@ -308,6 +312,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
+     * @deprecated use Object3D-IJUtils
      * Gets the calibration of the Object3D (ImageJ)
      *
      * @return The calibration
@@ -323,6 +328,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
+     * @deprecated use Object3D-IJUtils
      * Sets the calibration of the Object3D (ImageJ)
      *
      * @param cal The new calibration
@@ -842,6 +848,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     public abstract void draw(ObjectCreator3D obj, int col);
 
     /**
+     * @deprecated use Object3D-IJUtils
      * drawing inside a 2D byteprocessor
      *
      * @param mask the byte processor
@@ -852,6 +859,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     public abstract boolean draw(ByteProcessor mask, int z, int col);
 
     /**
+     * @deprecated use Object3D-IJUtils
      * drawing inside an imagestack
      *
      * @param mask the image
@@ -901,6 +909,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
+     * @deprecated use Object3D-IJUtils
      * drawing inside an imagestack, in rgb color
      *
      * @param mask the imagestack
@@ -911,6 +920,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     public abstract void draw(ImageStack mask, int r, int g, int b);
 
     /**
+     * @deprecated use Object3D-IJUtils
      * create a roi for a slice
      *
      * @param z the z slice
@@ -3078,11 +3088,12 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
+     * @deprecated use Object3D-IJUtils
      * @param calibrated
      * @return
      */
     public List computeMeshSurface(boolean calibrated) {
-        IJ.showStatus("computing mesh");
+        //IJ.showStatus("computing mesh");
         // use miniseg
         ImageInt miniseg = this.getLabelImage();
         ImageByte miniseg8 = ((ImageShort) (miniseg)).convertToByte(false);
@@ -3254,6 +3265,12 @@ public abstract class Object3D implements Comparable<Object3D> {
         return Z && (bb[5] >= img.sizeZ - 1);
     }
 
+    /**
+     * @deprecated use Object3D-IJUtils
+     * @param img
+     * @param Z
+     * @return
+     */
     public boolean touchBorders(ImagePlus img, boolean Z) {
         int[] bb = getBoundingBox();
         // 0
@@ -3456,7 +3473,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
 
     public Object3DSurface getConvexSurface() {
-        IJ.showStatus("Computing convex surface");
+        //IJ.showStatus("Computing convex surface");
         // compute surface if necessary
         Object3DSurface surf;
         if (this instanceof Object3DSurface) {
@@ -3481,7 +3498,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
 
     public Object3DVoxels getConvexObject(boolean multi) {
-        IJ.showStatus("Computing convex object");
+        //IJ.showStatus("Computing convex object");
         Object3DSurface conv = this.getConvexSurface();
         conv.multiThread = multi;
         ArrayList<Voxel3D> vox = conv.getVoxels();

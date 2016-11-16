@@ -1,6 +1,7 @@
 package mcib3d.geom;
 
-import ij.IJ;
+//import ij.IJ;
+
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
@@ -86,17 +87,9 @@ public class Object3DVoxels extends Object3D {
     public Object3DVoxels(ImageHandler ima, int val) {
         value = val;
         // Calibration
-        resXY = 1.0;
-        resZ = 1.0;
-        units = "pix";
-        Calibration cal = ima.getCalibration();
-        if (cal != null) {
-            if (cal.scaled()) {
-                resXY = cal.getX(1.0);
-                resZ = cal.getZ(1.0);
-                units = cal.getUnits();
-            }
-        }
+        resXY = ima.getScaleXY();
+        resZ = ima.getScaleZ();
+        units = ima.getUnit();
 
         voxels = createArrayList(ima, null);
         init();
@@ -105,17 +98,10 @@ public class Object3DVoxels extends Object3D {
     public Object3DVoxels(ImageHandler ima) {
         value = (int) ima.getMax();
         // Calibration
-        resXY = 1.0;
-        resZ = 1.0;
-        units = "pix";
-        Calibration cal = ima.getCalibration();
-        if (cal != null) {
-            if (cal.scaled()) {
-                resXY = cal.getX(1.0);
-                resZ = cal.getZ(1.0);
-                units = cal.getUnits();
-            }
-        }
+        resXY = ima.getScaleXY();
+        resZ = ima.getScaleZ();
+        units = ima.getUnit();
+
         voxels = createArrayList(ima, null);
         init();
     }
@@ -124,27 +110,19 @@ public class Object3DVoxels extends Object3D {
         // normally binarized image 255 or 1
         value = (int) imaSeg.getMax();
         // Calibration
-        resXY = 1.0;
-        resZ = 1.0;
-        units = "pix";
-        Calibration cal = imaSeg.getCalibration();
-        if (cal != null) {
-            if (cal.scaled()) {
-                resXY = cal.getX(1.0);
-                resZ = cal.getZ(1.0);
-                units = cal.getUnits();
-            }
-        }
+        resXY = imaSeg.getScaleXY();
+        resZ = imaSeg.getScaleZ();
+        units = imaSeg.getUnit();
 
         voxels = createArrayList(imaSeg, imaRaw);
         init();
     }
 
     /**
-     * Constructor for the Object3D object
-     *
      * @param plus Segmented image
      * @param val  Pixel value of the object
+     * @deprecated use Object3D-IJUtils
+     * Constructor for the Object3D object
      */
     public Object3DVoxels(ImagePlus plus, int val) {
         value = val;
@@ -165,10 +143,10 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     * Constructor for the Object3D object
-     *
      * @param stack Segmented image
-     * @param val  Pixel value of the object
+     * @param val   Pixel value of the object
+     * @deprecated use Object3D-IJUtils
+     * Constructor for the Object3D object
      */
     public Object3DVoxels(ImageStack stack, int val) {
         value = val;
@@ -267,8 +245,8 @@ public class Object3DVoxels extends Object3D {
     }
 
     public void createSphereUnit(float cx, float cy, float cz, float rad) {
-        float rxy = (float) this.getCalibration().pixelWidth;
-        float rz = (float) this.getCalibration().pixelDepth;
+        float rxy = (float) this.getResXY();
+        float rz = (float) this.getResZ();
         int ix = Math.round(cx);
         int iy = Math.round(cy);
         int iz = Math.round(cz);
@@ -381,7 +359,7 @@ public class Object3DVoxels extends Object3D {
         ArrayList<Voxel3D> al11 = new ArrayList<Voxel3D>();
         //IJ.log("sub vox " + al11.size());
         double dist = 0.25;// normally int values (0.25=0.5²)
-        IJ.showStatus("Substracting " + other.getVolumePixels() + " voxels");
+        //IJ.showStatus("Substracting " + other.getVolumePixels() + " voxels");
         //IJ.log("Substracting " + other.getVolumePixels() + " voxels");
         for (Voxel3D vox : voxels) {
             boolean inter = false;
@@ -735,7 +713,7 @@ public class Object3DVoxels extends Object3D {
 //            int k = vox.getRoundZ() - z0;
         for (int k = zmin - z0; k <= zmax - z0; k++) {
             if (showStatus) {
-                IJ.showStatus("Contours " + (100 * (k - zmin) / (zmax - zmin + 1)) + " % ");
+                // IJ.showStatus("Contours " + (100 * (k - zmin) / (zmax - zmin + 1)) + " % ");
             }
             for (int j = ymin - y0; j <= ymax - y0; j++) {
                 for (int i = xmin - x0; i <= xmax - x0; i++) {
@@ -1298,10 +1276,11 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     * Constructor for the createRoi object
-     *
+     * @deprecated use Object3D-IJUtils
      * @param z Description of the Parameter
      * @return Description of the Return Value
+     * @deprecated use Object3D-IJUtils
+     * Constructor for the createRoi object
      */
     @Override
     public Roi createRoi(int z) {
@@ -1330,6 +1309,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
+     * @deprecated use Object3D-IJUtils
      * Draw inside a particular Z
      *
      * @param mask The mask image to draw
@@ -1376,6 +1356,9 @@ public class Object3DVoxels extends Object3D {
         }
     }
 
+    /**
+     * @deprecated use Object3D-IJUtils
+     */
     public void draw(ImageStack mask, int col) {
         Voxel3D vox;
         for (Voxel3D voxel : voxels) {
@@ -1385,6 +1368,10 @@ public class Object3DVoxels extends Object3D {
         }
     }
 
+
+    /**
+     * @deprecated use Object3D-IJUtils
+     */
     @Override
     public void draw(ImageStack mask, int r, int g, int b) {
         Voxel3D vox;
