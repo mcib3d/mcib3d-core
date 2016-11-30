@@ -10,7 +10,9 @@ import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
 import mcib3d.geom.*;
 import mcib3d.image3d.processing.FastFilters3D;
+import mcib3d.utils.AbstractLog;
 import mcib3d.utils.ArrayUtil;
+import mcib3d.utils.Chrono;
 import mcib3d.utils.ThreadUtil;
 
 import java.util.ArrayList;
@@ -1010,6 +1012,21 @@ public class ImageFloat extends ImageHandler {
      * @param filter
      */
     public void filterGeneric(ImageFloat out, float radx, float rady, float radz, int zmin, int zmax, int filter) {
+        filterGeneric(out, radx, rady, radz, zmin, zmax, filter, null, null);
+    }
+
+    /**
+     * 3D filter using threads
+     *
+     * @param out
+     * @param radx   Radius of mean filter in x
+     * @param rady   Radius of mean filter in y
+     * @param radz   Radius of mean filter in z
+     * @param zmin
+     * @param zmax
+     * @param filter
+     */
+    public void filterGeneric(ImageFloat out, float radx, float rady, float radz, int zmin, int zmax, int filter, Chrono timer, AbstractLog log) {
         int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
         int nb = 0;
         for (int aKer : ker) {
@@ -1023,7 +1040,6 @@ public class ImageFloat extends ImageHandler {
         }
         float value;
         for (int k = zmin; k < zmax; k++) {
-            IJ.showStatus("3D filter : " + k + "/" + zmax);
             for (int j = 0; j < sizeY; j++) {
                 for (int i = 0; i < sizeX; i++) {
                     ArrayUtil tab = this.getNeighborhoodKernel(ker, nb, i, j, k, radx, rady, radz);
@@ -1051,10 +1067,18 @@ public class ImageFloat extends ImageHandler {
                     }
                 }
             }
+            if (timer != null) {
+                String ti = timer.getFullInfo(1);
+                if (ti != null) log.log("3D filtering : " + ti);
+            }
         }
     }
 
     public void filterGeneric(ImageFloat out, Object3DVoxels obj, int zmin, int zmax, int filter) {
+        filterGeneric(out, obj, zmin, zmax, filter, null, null);
+    }
+
+    public void filterGeneric(ImageFloat out, Object3DVoxels obj, int zmin, int zmax, int filter, Chrono timer, AbstractLog log) {
         if (zmin < 0) {
             zmin = 0;
         }
@@ -1068,7 +1092,6 @@ public class ImageFloat extends ImageHandler {
 
         ArrayUtil tab;
         for (int k = zmin; k < zmax; k++) {
-            IJ.showStatus("3D filter : " + (k + 1) + "/" + zmax);
             for (int j = 0; j < sizeY; j++) {
                 for (int i = 0; i < sizeX; i++) {
                     //tab = obj.listVoxels(this, i, j, k);
@@ -1096,6 +1119,10 @@ public class ImageFloat extends ImageHandler {
                         }
                     }
                 }
+            }
+            if (timer != null) {
+                String ti = timer.getFullInfo(1);
+                if (ti != null) log.log("3D filtering : " + ti);
             }
         }
     }

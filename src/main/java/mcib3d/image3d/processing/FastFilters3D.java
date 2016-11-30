@@ -1,38 +1,42 @@
 package mcib3d.image3d.processing;
 
 import ij.ImageStack;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Voxel3DComparable;
 import mcib3d.image3d.*;
+import mcib3d.utils.AbstractLog;
+import mcib3d.utils.Chrono;
+import mcib3d.utils.IJStatus;
 import mcib3d.utils.ThreadUtil;
+
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  * To change this template, choose Tools | Templates and open the template in
  * the editor.
  */
+
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2008- 2012 Thomas Boudier and others
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of mcib3d
- *
+ * <p>
  * mcib3d is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -137,19 +141,20 @@ public class FastFilters3D {
     }
 
     public static ImageInt filterIntImage(ImageInt stackorig, int filter, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
+        int nbToProcess = stackorig.sizeZ;
+        if ((filter == TOPHAT) || (filter == CLOSEGRAY) || (filter == OPENGRAY)) nbToProcess *= 2;
+        // Timer
+        final Chrono time = new Chrono(nbToProcess);
+        time.start();
+        final AbstractLog show = new IJStatus();
+
         // get stack info
-        //final ImageStack stack = stackorig;
         final float voisx = vx;
         final float voisy = vy;
         final float voisz = vz;
-        //final boolean show = showstatus;
 
-        //IJ.log("Using java filtering " + voisx + " " + voisy + " " + voisz + " " + filter + " " + nbcpus);
         final ImageInt ima = stackorig;
-        //IntImage3D ima = new IntImage3D(stack);
-        //ima.setShowStatus(show);
         ImageInt res = (ImageInt) ima.createSameDimensions();
-        //IntImage3D res = new IntImage3D(ima.getSizex(), ima.getSizey(), ima.getSizez(), ima.getType());
         if ((filter == MEAN) || (filter == MEDIAN) || (filter == MIN) || (filter == MAX) || (filter == MAXLOCAL) || (filter == TOPHAT) || (filter == VARIANCE) || (filter == CLOSEGRAY) || (filter == OPENGRAY)) {
             // PARALLEL 
             final ImageInt out = res;
@@ -170,30 +175,26 @@ public class FastFilters3D {
                 threads[ithread] = new Thread() {
                     @Override
                     public void run() {
-                        //image.setShowStatus(show);
                         for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                            //IJ.log("filtering " + k);
-                            ima.filterGeneric(out, voisx, voisy, voisz, dec * k, dec * (k + 1), f);
+                            ima.filterGeneric(out, voisx, voisy, voisz, dec * k, dec * (k + 1), f, time, show);
                         }
                     }
                 };
             }
             ThreadUtil.startAndJoin(threads);
 
+
             // TOPHAT MAX
             if ((filter == TOPHAT) || (filter == OPENGRAY)) {
                 final int f2 = MAX;
-                //final ImageStack stack2 = out.getImageStack();
                 final ImageInt res2 = (ImageInt) ima.createSameDimensions();
-                //Thread[] threads = ThreadUtil.createThreadArray();
                 ai.set(0);
                 for (int ithread = 0; ithread < threads.length; ithread++) {
                     threads[ithread] = new Thread() {
                         @Override
                         public void run() {
-                            //image.setShowStatus(show);
                             for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                                out.filterGeneric(res2, voisx, voisy, voisz, dec * k, dec * (k + 1), f2);
+                                out.filterGeneric(res2, voisx, voisy, voisz, dec * k, dec * (k + 1), f2, time, show);
                             }
                         }
                     };
@@ -210,17 +211,14 @@ public class FastFilters3D {
             // CLOSING 2nd Step
             if (filter == CLOSEGRAY) {
                 final int f2 = MIN;
-                //final ImageStack stack2 = out.getImageStack();
                 final ImageInt res2 = (ImageInt) ima.createSameDimensions();
-                //Thread[] threads = ThreadUtil.createThreadArray();
                 ai.set(0);
                 for (int ithread = 0; ithread < threads.length; ithread++) {
                     threads[ithread] = new Thread() {
                         @Override
                         public void run() {
-                            //image.setShowStatus(show);
                             for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                                out.filterGeneric(res2, voisx, voisy, voisz, dec * k, dec * (k + 1), f2);
+                                out.filterGeneric(res2, voisx, voisy, voisz, dec * k, dec * (k + 1), f2, time, show);
                             }
                         }
                     };
@@ -240,7 +238,7 @@ public class FastFilters3D {
     public static ImageStack filterImageStack(ImageStack stackorig, int filter, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
         int bit = stackorig.getBitDepth();
         if ((bit == 8) || (bit == 16)) {
-            return filterImageStack(stackorig, filter, vx, vy, vz, nbcpus, showstatus);
+            return filterIntImageStack(stackorig, filter, vx, vy, vz, nbcpus, showstatus);
         } else if (bit == 32) {
             return filterFloatImageStack(stackorig, filter, vx, vy, vz, nbcpus, showstatus);
         } else {
@@ -259,17 +257,18 @@ public class FastFilters3D {
     }
 
     public static ImageFloat filterFloatImage(ImageFloat stackorig, int filter, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
+        int nbToProcess = stackorig.sizeZ;
+        if ((filter == TOPHAT) || (filter == CLOSEGRAY) || (filter == OPENGRAY)) nbToProcess *= 2;
+        // Timer
+        final Chrono time = new Chrono(nbToProcess);
+        time.start();
+        final AbstractLog show = new IJStatus();
         // get stack info
-        //final ImageStack stack = stackorig;
         final float voisx = vx;
         final float voisy = vy;
         final float voisz = vz;
-        //final boolean show = showstatus;
 
-        //IJ.log("Using java filtering " + voisx + " " + voisy + " " + voisz + " " + filter + " " + nbcpus);
         final ImageFloat ima = stackorig;
-        //IntImage3D ima = new IntImage3D(stack);
-        //ima.setShowStatus(show);
         ImageFloat res = (ImageFloat) ima.createSameDimensions();
         if ((filter == MEAN) || (filter == MEDIAN) || (filter == MIN) || (filter == MAX) || (filter == MAXLOCAL) || (filter == TOPHAT) || (filter == VARIANCE) || (filter == CLOSEGRAY) || (filter == OPENGRAY)) {
             // PARALLEL 
@@ -291,10 +290,8 @@ public class FastFilters3D {
                 threads[ithread] = new Thread() {
                     @Override
                     public void run() {
-                        //image.setShowStatus(show);
                         for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                            //IJ.log("filtering " + k);
-                            ima.filterGeneric(out, voisx, voisy, voisz, dec * k, dec * (k + 1), f);
+                            ima.filterGeneric(out, voisx, voisy, voisz, dec * k, dec * (k + 1), f, time, show);
                         }
                     }
                 };
@@ -304,17 +301,14 @@ public class FastFilters3D {
             // TOPHAT MAX
             if ((filter == TOPHAT) || (filter == OPENGRAY)) {
                 final int f2 = MAX;
-                //final ImageStack stack2 = out.getImageStack();
                 final ImageFloat res2 = (ImageFloat) ima.createSameDimensions();
-                //Thread[] threads = ThreadUtil.createThreadArray();
                 ai.set(0);
                 for (int ithread = 0; ithread < threads.length; ithread++) {
                     threads[ithread] = new Thread() {
                         @Override
                         public void run() {
-                            //image.setShowStatus(show);
                             for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                                out.filterGeneric(res2, voisx, voisy, voisz, dec * k, dec * (k + 1), f2);
+                                out.filterGeneric(res2, voisx, voisy, voisz, dec * k, dec * (k + 1), f2, time, show);
                             }
                         }
                     };
@@ -331,17 +325,14 @@ public class FastFilters3D {
             // CLOSING 2nd Step
             if (filter == CLOSEGRAY) {
                 final int f2 = MIN;
-                //final ImageStack stack2 = out.getImageStack();
                 final ImageFloat res2 = (ImageFloat) ima.createSameDimensions();
-                //Thread[] threads = ThreadUtil.createThreadArray();
                 ai.set(0);
                 for (int ithread = 0; ithread < threads.length; ithread++) {
                     threads[ithread] = new Thread() {
                         @Override
                         public void run() {
-                            //image.setShowStatus(show);
                             for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                                out.filterGeneric(res2, voisx, voisy, voisz, dec * k, dec * (k + 1), f2);
+                                out.filterGeneric(res2, voisx, voisy, voisz, dec * k, dec * (k + 1), f2, time, show);
                             }
                         }
                     };
@@ -470,6 +461,13 @@ public class FastFilters3D {
     }
 
     public static ImageInt filterIntImage(ImageInt stackorig, int filter, Object3DVoxels obj, int nbcpus, boolean showstatus) {
+        int nbToProcess = stackorig.sizeZ;
+        if ((filter == TOPHAT) || (filter == CLOSEGRAY) || (filter == OPENGRAY)) nbToProcess *= 2;
+        // Timer
+        final Chrono time = new Chrono(nbToProcess);
+        time.start();
+        final AbstractLog show = new IJStatus();
+
         final Object3DVoxels object = obj;
         //IJ.log("Using java filtering " + voisx + " " + voisy + " " + voisz + " " + filter + " " + nbcpus);
         final ImageInt ima = stackorig;
@@ -495,7 +493,7 @@ public class FastFilters3D {
                     @Override
                     public void run() {
                         for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                            ima.filterGeneric(out, object, dec * k, dec * (k + 1), f);
+                            ima.filterGeneric(out, object, dec * k, dec * (k + 1), f, time, show);
                         }
                     }
                 };
@@ -512,7 +510,7 @@ public class FastFilters3D {
                         @Override
                         public void run() {
                             for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                                out.filterGeneric(res2, object, dec * k, dec * (k + 1), f2);
+                                out.filterGeneric(res2, object, dec * k, dec * (k + 1), f2, time, show);
                             }
                         }
                     };
@@ -536,7 +534,7 @@ public class FastFilters3D {
                         @Override
                         public void run() {
                             for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                                out.filterGeneric(res2, object, dec * k, dec * (k + 1), f2);
+                                out.filterGeneric(res2, object, dec * k, dec * (k + 1), f2, time, show);
                             }
                         }
                     };
@@ -554,6 +552,12 @@ public class FastFilters3D {
     }
 
     public static ImageFloat filterFloatImage(ImageFloat stackorig, int filter, Object3DVoxels obj, int nbcpus, boolean showstatus) {
+        int nbToProcess = stackorig.sizeZ;
+        if ((filter == TOPHAT) || (filter == CLOSEGRAY) || (filter == OPENGRAY)) nbToProcess *= 2;
+        // Timer
+        final Chrono time = new Chrono(nbToProcess);
+        time.start();
+        final AbstractLog show = new IJStatus();
         final Object3DVoxels object = obj;
         //IJ.log("Using java filtering " + voisx + " " + voisy + " " + voisz + " " + filter + " " + nbcpus);
         final ImageFloat ima = stackorig;
@@ -579,7 +583,7 @@ public class FastFilters3D {
                     @Override
                     public void run() {
                         for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                            ima.filterGeneric(out, object, dec * k, dec * (k + 1), f);
+                            ima.filterGeneric(out, object, dec * k, dec * (k + 1), f, time, show);
                         }
                     }
                 };
@@ -596,7 +600,7 @@ public class FastFilters3D {
                         @Override
                         public void run() {
                             for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                                out.filterGeneric(res2, object, dec * k, dec * (k + 1), f2);
+                                out.filterGeneric(res2, object, dec * k, dec * (k + 1), f2, time, show);
                             }
                         }
                     };
@@ -620,7 +624,7 @@ public class FastFilters3D {
                         @Override
                         public void run() {
                             for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                                out.filterGeneric(res2, object, dec * k, dec * (k + 1), f2);
+                                out.filterGeneric(res2, object, dec * k, dec * (k + 1), f2, time, show);
                             }
                         }
                     };

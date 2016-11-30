@@ -1,6 +1,7 @@
 package mcib3d.image3d;
 
 import mcib3d.geom.Object3DVoxels;
+import mcib3d.geom.Object3D_IJUtils;
 import mcib3d.geom.Voxel3D;
 
 import java.util.ArrayList;
@@ -490,7 +491,7 @@ public class ImageLabeller {
                 ArrayList noDuplicate = new ArrayList(new HashSet(voxels3D));
                 // set calibration
                 Object3DVoxels object3DVoxels = new Object3DVoxels(noDuplicate);
-                object3DVoxels.setCalibration(mask.getCalibration());
+                Object3D_IJUtils.setCalibration(object3DVoxels, mask.getCalibration());
                 objects.add(object3DVoxels);
                 label++;
             }
