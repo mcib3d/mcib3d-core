@@ -1622,6 +1622,36 @@ public abstract class ImageHandler {
     }
 
     public byte[] getThumbNail(int sizeX, int sizeY, ImageInt mask) {
+        //jpeg encoding
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+//        JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
+//        JPEGEncodeParam param = encoder.getDefaultJPEGEncodeParam(im.getBufferedImage());
+//        param.setQuality(0.5f, false);
+
+        ImagePlus im = getThumbnailImage(sizeX, sizeY, 0, sizeZ - 1, mask);
+
+        // test png
+        try {
+            ImageIO.write(im.getBufferedImage(), "png", out);
+            byte[] res = out.toByteArray();
+            out.close();
+            return res;
+        } catch (IOException ex) {
+            Logger.getLogger(ImageHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+//        try {
+//            encoder.encode(im.getBufferedImage());
+//            byte[] res = out.toByteArray();
+//            out.close();
+//            return res;
+//        } catch (Exception e) {
+//            exceptionPrinter.print(e, "", false);
+//        }
+        return null;
+    }
+
+    public ImagePlus getThumbnailImage(int sizeX, int sizeY, int minZ, int maxZ, ImageInt mask) {
         //projection
         ImagePlus im;
         ImageProcessor imMask = null;
@@ -1629,6 +1659,8 @@ public abstract class ImageHandler {
         if (sizeZ > 1) {
             ZProjector proj = new ZProjector(img);
             proj.setMethod(ZProjector.MAX_METHOD);
+            proj.setStartSlice(minZ + 1);
+            proj.setStopSlice(maxZ + 1);
             proj.doProjection();
             im = proj.getProjection();
 
@@ -1665,31 +1697,7 @@ public abstract class ImageHandler {
         ip.setMinAndMax(ip.getMin(), ip.getMax());
         im = new ImagePlus(img.getShortTitle() + "_tmb", ip);
 
-        //jpeg encoding
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-//        JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
-//        JPEGEncodeParam param = encoder.getDefaultJPEGEncodeParam(im.getBufferedImage());
-//        param.setQuality(0.5f, false);
-
-        // test png
-        try {
-            ImageIO.write(im.getBufferedImage(), "png", out);
-            byte[] res = out.toByteArray();
-            out.close();
-            return res;
-        } catch (IOException ex) {
-            Logger.getLogger(ImageHandler.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-//        try {
-//            encoder.encode(im.getBufferedImage());
-//            byte[] res = out.toByteArray();
-//            out.close();
-//            return res;
-//        } catch (Exception e) {
-//            exceptionPrinter.print(e, "", false);
-//        }
-        return null;
+        return im;
     }
 
     public byte[] getBinaryData() throws Exception, OutOfMemoryError {
