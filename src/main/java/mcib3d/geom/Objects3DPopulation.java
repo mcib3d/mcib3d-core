@@ -137,7 +137,7 @@ public class Objects3DPopulation {
         // recalibrate objects
         if ((objects != null) && (objects.size() > 0)) {
             for (Object3D obj : objects) {
-                obj.setCalibration(calibration);
+                Object3D_IJUtils.setCalibration(obj, calibration);
             }
         }
     }
@@ -163,7 +163,7 @@ public class Objects3DPopulation {
         voxlist = new ArrayList<Voxel3D>(1);
         voxlist.add(v);
         Object3DVoxels ob = new Object3DVoxels(voxlist);
-        ob.setCalibration(calibration);
+        Object3D_IJUtils.setCalibration(ob, calibration);
         addObject(ob);
         for (int i = 1; i < nb; i++) {
             P = maskVox.getRandomvoxel(ra);
@@ -179,7 +179,7 @@ public class Objects3DPopulation {
             voxlist = new ArrayList<Voxel3D>(1);
             voxlist.add(v);
             ob = new Object3DVoxels(voxlist);
-            ob.setCalibration(calibration);
+            Object3D_IJUtils.setCalibration(ob, calibration);
             addObject(ob);
         }
     }
@@ -254,7 +254,7 @@ public class Objects3DPopulation {
      * @param obj the 3D object to add
      */
     public void addObject(Object3D obj) {
-        obj.setCalibration(calibration);
+        Object3D_IJUtils.setCalibration(obj, calibration);
         objects.add(obj);
         //hashValue.put(obj.getValue(), objects.size() - 1);
         // hashName.put(obj.getName(), objects.size() - 1);
@@ -379,7 +379,7 @@ public class Objects3DPopulation {
             ArrayList<Voxel3D> voxlist = new ArrayList<Voxel3D>(1);
             voxlist.add(v);
             Object3DVoxels ob = new Object3DVoxels(voxlist);
-            ob.setCalibration(calibration);
+            Object3D_IJUtils.setCalibration(ob, calibration);
             ob.setValue(i + 1);
             addObject(ob);
         }
@@ -464,7 +464,7 @@ public class Objects3DPopulation {
             if (!objectstmp[i].isEmpty()) {
                 Object3DVoxels ob = new Object3DVoxels(objectstmp[i]);
                 //ob.setLabelImage(null);// the image can be closed anytime
-                ob.setCalibration(cali);
+                Object3D_IJUtils.setCalibration(ob, calibration);
                 ob.setName("Obj" + c);
                 addObject(ob);
                 c++;
@@ -521,7 +521,7 @@ public class Objects3DPopulation {
         //Object3D old = objects.get(i);
         //hashName.remove(old.getName());
         // set new object
-        obj.setCalibration(calibration);
+        Object3D_IJUtils.setCalibration(obj, calibration);
         objects.set(i, obj);
         //hashName.put(obj.getName(), i);
         // update kdtree if available // FIXME UPDATE kdtree
@@ -1472,7 +1472,7 @@ public class Objects3DPopulation {
         ArrayList<double[]> al = new ArrayList<double[]>();
         for (Object3D ob : objects) {
             Object3DSurface surf = new Object3DSurface(ob.computeMeshSurface(true), ob.getValue());
-            surf.setCalibration(calibration);
+            Object3D_IJUtils.setCalibration(surf, calibration);
             surf.setSmoothingFactor(0.1f);
 
             double[] mes = {surf.getValue(), surf.getSurfaceMesh(), surf.getSmoothSurfaceArea()};

@@ -54,8 +54,7 @@ import java.util.List;
  * package mcib3d.geom;
  * <p>
  * /**
- * Abstract class for 3D objects, an abstract volume object is defined by some
- * contours, so distance analysis can be computed.
+ * Abstract class for 3D objects, compute various measurements, and also distance analysis.
  *
  * @author thomas
  */
@@ -428,6 +427,11 @@ public abstract class Object3D implements Comparable<Object3D> {
         }*/
     }
 
+    /**
+     * Get the label image starting at 0,0,0
+     * @param val the value to draw the binary mask
+     * @return The binary mask for the object
+     */
     public ImageInt getMaxLabelImage(int val) {
         return createMaxSegImage(val);
     }
@@ -444,6 +448,11 @@ public abstract class Object3D implements Comparable<Object3D> {
         return volume;
     }
 
+    /**
+     * Utility to perform measurement
+     * @param Measure The index of the measurement
+     * @return the measurement
+     */
     public double getMeasure(int Measure) {
         if (Measure == MEASURE_VOLUME_PIX) {
             return getVolumePixels();
@@ -498,12 +507,15 @@ public abstract class Object3D implements Comparable<Object3D> {
         }
     }
 
+    /**
+     * Compute the volume, will compute voxels in case of surface object
+     */
     private void computeVolume() {
         volume = getVoxels().size();
     }
 
     /**
-     * Gets the volumeof the Object3D in units
+     * Gets the volume of the Object3D in units
      *
      * @return The calibrated volume
      */
@@ -517,12 +529,17 @@ public abstract class Object3D implements Comparable<Object3D> {
     protected abstract void computeCenter();
 
     /**
-     * Compute the mass center of the object within an image
+     * Compute the mass center of the object using signal from an image
      *
-     * @param ima
+     * @param ima the image with the signal intensity
      */
     protected abstract void computeMassCenter(ImageHandler ima);
 
+    /**
+     *  Compute the mass center of the object using signal from an image and within a mask
+     * @param ima the image with the signal intensity
+     * @param mask the mask to restrain the computation
+     */
     protected abstract void computeMassCenter(ImageHandler ima, ImageHandler mask);
 
     /**
@@ -591,16 +608,27 @@ public abstract class Object3D implements Comparable<Object3D> {
     public abstract void computeContours();
 
     /**
-     * Compute the moments of the object (for ellipsoid orientation)
+     * Compute the moments of the object (for ellipsoid orientation), order 2
      *
-     * @param normalize
+     * @param normalize normalize by volume or not
      */
     protected abstract void computeMoments2(boolean normalize); // order 2
 
-    protected abstract void computeMoments3(); // order 3
+    /**
+     * Compute the moments of the object, order 3
+     */
+    protected abstract void computeMoments3();
 
+    /**
+     * Compute the moments of the object, order 4
+     *
+     */
     protected abstract void computeMoments4(); // order 3
 
+    /**
+     *Returns the moments order 2
+     * @return the moments (6)
+     */
     public double[] getMomentsRaw2() {
         if (Double.isNaN(s200)) {
             computeMoments2(false);
@@ -608,6 +636,10 @@ public abstract class Object3D implements Comparable<Object3D> {
         return new double[]{s200, s020, s002, s110, s101, s011};
     }
 
+    /**
+     *Returns the moments order 3
+     * @return the moments (10)
+     */
     public double[] getMomentsRaw3() {
         if (Double.isNaN(s300)) {
             computeMoments3();
@@ -615,6 +647,10 @@ public abstract class Object3D implements Comparable<Object3D> {
         return new double[]{s300, s030, s003, s210, s201, s120, s021, s102, s012, s111};
     }
 
+    /**
+     *Returns the moments order 4
+     * @return the moments (15)
+     */
     public double[] getMomentsRaw4() {
         if (Double.isNaN(s400)) {
             computeMoments4();
@@ -622,7 +658,11 @@ public abstract class Object3D implements Comparable<Object3D> {
         return new double[]{s400, s040, s004, s220, s202, s022, s121, s112, s211, s103, s301, s130, s310, s013, s031};
     }
 
-    // refer to Xu and Li 2008. Geometric moments invariants. Pattern recognition. doi:10.1016/j.patcog.2007.05.001
+    /**
+     * Compute geometric invariants, based on orders 4 moments
+     * refer to Xu and Li 2008. Geometric moments invariants. Pattern recognition. doi:10.1016/j.patcog.2007.05.001
+     * @return the invariants (6)
+     */
     public double[] getGeometricInvariants() {
         if (Double.isNaN(s200)) {
             computeMoments2(false);
@@ -656,6 +696,10 @@ public abstract class Object3D implements Comparable<Object3D> {
         return inv;
     }
 
+    /**
+     * Compute homogeneous invariants, based on orders 4 moments
+     * @return the invariants (5)
+     */
     public double[] getHomogeneousInvariants() {
         if (Double.isNaN(s200)) {
             computeMoments2(false);
@@ -698,7 +742,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * Moment Invariants, IEEE Transactions on Pattern Analysis and Machine
      * Intelligence, vol. PAMI-2, no. 2, pp. 127-136, March 1980.
      *
-     * @return
+     * @return 3D moments (5)
      */
     public double[] getMoments3D() {
         computeMoments2(false);
@@ -745,8 +789,18 @@ public abstract class Object3D implements Comparable<Object3D> {
         return listVoxels(ima, Double.NEGATIVE_INFINITY);
     }
 
+    /**
+     * Outputs the list of voxels values using intensity image
+      * @param ima the intensity image
+     * @return a array of values
+     */
     public abstract ArrayUtil listValues(ImageHandler ima);
 
+    /**
+     * Outputs the list of voxels values using intensity image above a fixed threshold
+     * @param ima the intensity image
+     * @return a array of values
+     */
     public abstract ArrayUtil listValues(ImageHandler ima, float thresh);
 
     /**
@@ -758,8 +812,23 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public abstract ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh);
 
+    /**
+     * List voxels in the image with values > threshold0 and < threshold1
+     * @param ima  The image with values
+     * @param thresh0 the min threshold
+     * @param thres1 the max threshold
+     * @return the list of voxels with values > threshold
+     */
     public abstract ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thres1);
 
+    /**
+     * List voxels in the image with with distances in specific range from a reference point
+     * @param P0 the reference point
+     * @param dist0 the min distance
+     * @param dist1 the max distance
+     * @param contourOnly lsit only voxels from the contour of the object
+     * @return
+     */
     public ArrayList<Voxel3D> listVoxelsByDistance(Point3D P0, double dist0, double dist1, boolean contourOnly) {
         ArrayList<Voxel3D> res = new ArrayList<Voxel3D>();
         ArrayList<Voxel3D> list;
@@ -840,7 +909,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     * drawing inside an objectcreator
+     * drawing inside an objectCreator
      *
      * @param obj the object creator
      * @param col the color(grey level)
@@ -885,6 +954,14 @@ public abstract class Object3D implements Comparable<Object3D> {
         translate(-center.getX() + cx, -center.getY() + cy, -center.getZ() + cz);
     }
 
+    /**
+     *
+     * @param mask
+     * @param col
+     * @param tx
+     * @param ty
+     * @param tz
+     */
     public abstract void draw(ImageHandler mask, int col, int tx, int ty, int tz);
 
     /**

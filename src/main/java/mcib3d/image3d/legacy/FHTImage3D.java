@@ -1,51 +1,55 @@
 package mcib3d.image3d.legacy;
 
-import mcib3d.geom.Voxel3D;
+import ij.IJ;
+import ij.ImageStack;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
 import mcib3d.geom.Vector3D;
-import ij.*;
-import ij.process.*;
+import mcib3d.geom.Voxel3D;
+import mcib3d.utils.Chrono;
+
 //import java.awt.*;
-import mcib3d.utils.*;
 
 /**
-Copyright (C) Thomas Boudier
-
-License:
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
-
-/*
- *  Compute the 3D Fast Harley Transform of a 32-bit image IJstack.
- *  Sizes may not be powers of 2, but a slow transform
- *  technique is used if the number of slices is not a power of 2.
- *  The normalization is such that the forward and inverse transforms are
- *  performed by the same method.
- *  Cedric MESSAOUDI
- *  Version 0 21/11/2005 most of the code is taken from Bob Dougherty's FHT3D
- *  Much is the code is from FFT_Filter by Joachim Walter.  Some items are from
- *  the related FHT by Wayne Rasband.  The following notice is from the FHT source code in ImageJ:
- *  This class contains a Java implementation of the Fast Hartley Transform.
- *  It is based on Pascal code in NIH Image contributed by Arlo Reeves
- *  (http://rsb.info.nih.gov/ij/docs/ImageFFT/). The Fast Hartley Transform was
- *  restricted by U.S. Patent No. 4,646,256, but was placed in the public domain
- *  by Stanford University in 1995 and is now freely available.
+ * Copyright (C) Thomas Boudier
+ * <p>
+ * License:
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * <p>
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * <p>
+ * <p>
+ * /*
+ * Compute the 3D Fast Harley Transform of a 32-bit image IJstack.
+ * Sizes may not be powers of 2, but a slow transform
+ * technique is used if the number of slices is not a power of 2.
+ * The normalization is such that the forward and inverse transforms are
+ * performed by the same method.
+ * Cedric MESSAOUDI
+ * Version 0 21/11/2005 most of the code is taken from Bob Dougherty's FHT3D
+ * Much is the code is from FFT_Filter by Joachim Walter.  Some items are from
+ * the related FHT by Wayne Rasband.  The following notice is from the FHT source code in ImageJ:
+ * This class contains a Java implementation of the Fast Hartley Transform.
+ * It is based on Pascal code in NIH Image contributed by Arlo Reeves
+ * (http://rsb.info.nih.gov/ij/docs/ImageFFT/). The Fast Hartley Transform was
+ * restricted by U.S. Patent No. 4,646,256, but was placed in the public domain
+ * by Stanford University in 1995 and is now freely available.
  */
+
 /**
- *  Description of the Class
+ * Description of the Class
  *
- * @author     cedric
- * @created    21 novembre 2005
+ * @author cedric
+ * @created 21 novembre 2005
  */
 @Deprecated
 public class FHTImage3D extends RealImage3D {
@@ -58,8 +62,8 @@ public class FHTImage3D extends RealImage3D {
     boolean centered = false;
 
     /**
-     *  Constructor for the FHTImage3D object the transform is automatically
-     *  launched
+     * Constructor for the FHTImage3D object the transform is automatically
+     * launched
      *
      * @param stack
      */
@@ -68,10 +72,10 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Constructor for the FHTImage3D object
+     * Constructor for the FHTImage3D object
      *
      * @param stack
-     * @param  doTransform  Description of the Parameter
+     * @param doTransform Description of the Parameter
      */
     public FHTImage3D(ImageStack stack, boolean doTransform) {
         //float[] data = initFromStack(IJstack);
@@ -84,19 +88,19 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Constructor for the FHTImage3D object
+     * Constructor for the FHTImage3D object
      *
-     * @param  ip  Description of the Parameter
+     * @param ip Description of the Parameter
      */
     public FHTImage3D(ImageProcessor ip) {
         this(ip, true);
     }
 
     /**
-     *  Constructor for the FHTImage3D object
+     * Constructor for the FHTImage3D object
      *
-     * @param  ip           Description of the Parameter
-     * @param  doTransform  Description of the Parameter
+     * @param ip          Description of the Parameter
+     * @param doTransform Description of the Parameter
      */
     public FHTImage3D(ImageProcessor ip, boolean doTransform) {
         super(ip.duplicate());
@@ -109,19 +113,19 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Constructor for the FHTImage3D object
+     * Constructor for the FHTImage3D object
      *
-     * @param  img  Description of the Parameter
+     * @param img Description of the Parameter
      */
     public FHTImage3D(Image3D img) {
         this(img, true);
     }
 
     /**
-     *  Constructor for the FHTImage3D object
+     * Constructor for the FHTImage3D object
      *
-     * @param  img          Description of the Parameter
-     * @param  doTransform  Description of the Parameter
+     * @param img         Description of the Parameter
+     * @param doTransform Description of the Parameter
      */
     public FHTImage3D(Image3D img, boolean doTransform) {
         super(img);
@@ -133,12 +137,12 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Constructor for the FHTImage3D object
+     * Constructor for the FHTImage3D object
      *
-     * @param  sizex        Description of the Parameter
-     * @param  sizey        Description of the Parameter
-     * @param  sizez        Description of the Parameter
-     * @param  doTransform  Description of the Parameter
+     * @param sizex       Description of the Parameter
+     * @param sizey       Description of the Parameter
+     * @param sizez       Description of the Parameter
+     * @param doTransform Description of the Parameter
      */
     public FHTImage3D(int sizex, int sizey, int sizez, boolean doTransform) {
         super(sizex, sizey, sizez);
@@ -150,162 +154,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Cross Correlation 3D on ImageStack
      *
-     * @return    Description of the Return Value
-     */
-    public FHTImage3D duplicate() {
-        ImageStack tmp = new ImageStack(sizex, sizey);
-        for (int i = 1; i <= sizez; i++) {
-            tmp.addSlice(IJstack.getSliceLabel(i), IJstack.getPixels(i));
-        }
-        FHTImage3D res = new FHTImage3D(tmp);
-        res.centered = centered;
-        res.frequencyDomain = frequencyDomain;
-        return res;
-    }
-
-    /**
-     *  Gets the IJstack attribute of the FHTImage3D object
-     *
-     * @return    The IJstack value
-     */
-    public ImageStack getStack() {
-        return IJstack;
-    }
-
-    /**
-     *  Gets the powerSpectrum attribute of the FHTImage3D object
-     *
-     * @return    The powerSpectrum value
-     */
-    public ImageStack getPowerSpectrum() {
-        return getPowerSpectrum(false);
-    }
-
-    /**
-     *  Gets the powerStack attribute of the FHTImage3D object
-     *
-     * @param  log  Description of the Parameter
-     * @return      The powerStack value
-     */
-    public ImageStack getPowerSpectrum(boolean log) {
-        FloatProcessor tmp;
-        double n;
-        double value;
-        ImageStack stack = new ImageStack(sizex, sizey);
-        for (int k = 0; k < sizez; k++) {
-            tmp = new FloatProcessor(sizex, sizey);
-            for (int x = 0; x < sizex; x++) {
-                for (int y = 0; y < sizey; y++) {
-                    n = getNorm(x, y, k);
-                    value = n * n;
-                    if (log) {
-                        value = Math.log(value);
-                    }
-                    tmp.putPixelValue(x, y, (float) value);
-                }
-            }
-            stack.addSlice("" + (k + 1), tmp);
-        }
-        return stack;
-    }
-
-    /**
-     *  Gets the value attribute of the FHTImage3D object
-     *
-     * @param  x  x coordinate
-     * @param  y  y coordinate
-     * @param  z  z coordinate
-     * @return    The value
-     */
-    protected float getValue(int x, int y, int z) {
-        return getPixel(x, y, z);
-    }
-
-    /**
-     *  Gets the real attribute of the FHTImage3D object
-     *
-     * @param  x  x coordinate
-     * @param  y  y coordinate
-     * @param  z  z coordinate
-     * @return    The real value
-     */
-    public float getReal(int x, int y, int z) {
-        return (0.5f * (getValue(x, y, z) + getValue((sizex - x) % sizex, (sizey - y) % sizey, (sizez - z) % sizez)));
-    }
-
-    /**
-     *  Gets the norm of the FHTImage3D pixel
-     *
-     * @param  x  x coordinate
-     * @param  y  y coordinate
-     * @param  z  z coordinate
-     * @return    The power value
-     */
-    public double getNorm(int x, int y, int z) {
-        float r = getReal(x, y, z);
-        float i = getImag(x, y, z);
-        return Math.sqrt(r * r + i * i);
-    }
-
-    /**
-     *  Gets the angle of the FHTImage3D pixel
-     *
-     * @param  x  x coordinate
-     * @param  y  y coordinate
-     * @param  z  z coordinate
-     * @return    The angle value (in radians)
-     */
-    public double getAngle(int x, int y, int z) {
-        float r = getReal(x, y, z);
-        float i = getImag(x, y, z);
-
-        return (float) Math.atan(i / r);
-    }
-
-    /**
-     *  Gets the imag attribute of the FHTImage3D object
-     *
-     * @param  x  x coordinate
-     * @param  y  y coordinate
-     * @param  z  z coordinate
-     * @return    The imag value
-     */
-    public float getImag(int x, int y, int z) {
-        return (0.5f * (getValue(x, y, z) - getValue((sizex - x) % sizex, (sizey - y) % sizey, (sizez - z) % sizez)));
-    }
-
-    /**
-     *  Description of the Method
-     *
-     * @return    Description of the Return Value
-     */
-    public FHTImage3D doForwardTransform() {
-        if (!frequencyDomain) {
-            FHT3D();
-        }
-        return this;
-    }
-
-    /**
-     *  Description of the Method
-     *
-     * @return    Description of the Return Value
-     */
-    public FHTImage3D doInverseTransform() {
-        if (frequencyDomain) {
-            FHT3D();
-        }
-        return this;
-    }
-
-    /**
-     *  Cross Correlation 3D on ImageStack
-     *
-     * @param  img1  First IJstack
-     * @param  img2  Second IJstack
-     * @return       Correlation IJstack
+     * @param img1 First IJstack
+     * @param img2 Second IJstack
+     * @return Correlation IJstack
      */
     public static ImageStack crossCorrelation(ImageStack img1, ImageStack img2) {
         FHTImage3D tmp = Xcorr(img1, img2);
@@ -317,11 +170,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Cross Correlation 3D on Image3D
+     * Cross Correlation 3D on Image3D
      *
-     * @param  img1  First Image3D
-     * @param  img2  Second Image3D
-     * @return       Correlation IJstack
+     * @param img1 First Image3D
+     * @param img2 Second Image3D
+     * @return Correlation IJstack
      */
     public static ImageStack crossCorrelation(Image3D img1, Image3D img2) {
         FHTImage3D tmp = Xcorr(img1, img2);
@@ -333,11 +186,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  fht1  Description of the Parameter
-     * @param  fht2  Description of the Parameter
-     * @return       Description of the Return Value
+     * @param fht1 Description of the Parameter
+     * @param fht2 Description of the Parameter
+     * @return Description of the Return Value
      */
     public static FHTImage3D Xcorr(FHTImage3D fht1, FHTImage3D fht2) {
         //new ImagePlus("fht1", fht1).show();
@@ -350,11 +203,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  img1  Description of the Parameter
-     * @param  img2  Description of the Parameter
-     * @return       Description of the Return Value
+     * @param img1 Description of the Parameter
+     * @param img2 Description of the Parameter
+     * @return Description of the Return Value
      */
     public static FHTImage3D Xcorr(ImageStack img1, ImageStack img2) {
         FHTImage3D fht1 = new FHTImage3D(img1);
@@ -363,11 +216,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  img1  Description of the Parameter
-     * @param  img2  Description of the Parameter
-     * @return       Description of the Return Value
+     * @param img1 Description of the Parameter
+     * @param img2 Description of the Parameter
+     * @return Description of the Return Value
      */
     public static FHTImage3D Xcorr(ImageProcessor img1, ImageProcessor img2) {
         FHTImage3D fht1 = new FHTImage3D(img1);
@@ -376,11 +229,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  img1  Description of the Parameter
-     * @param  img2  Description of the Parameter
-     * @return       Description of the Return Value
+     * @param img1 Description of the Parameter
+     * @param img2 Description of the Parameter
+     * @return Description of the Return Value
      */
     public static FHTImage3D Xcorr(Image3D img1, Image3D img2) {
         FHTImage3D fht1 = new FHTImage3D(img1);
@@ -389,112 +242,112 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Gets the maxCorrelation attribute of the FHTImage3D class
+     * Gets the maxCorrelation attribute of the FHTImage3D class
      *
-     * @param  img1  Description of the Parameter
-     * @param  img2  Description of the Parameter
-     * @return       The maxCorrelation value
+     * @param img1 Description of the Parameter
+     * @param img2 Description of the Parameter
+     * @return The maxCorrelation value
      */
     public static Voxel3D getMaxCorrelation(ImageProcessor img1, ImageProcessor img2) {
         return getTranslation(Xcorr(img1, img2));
     }
 
     /**
-     *  Gets the maxCorrelation attribute of the FHTImage3D class
+     * Gets the maxCorrelation attribute of the FHTImage3D class
      *
-     * @param  img1  Description of the Parameter
-     * @param  img2  Description of the Parameter
-     * @return       The maxCorrelation value
+     * @param img1 Description of the Parameter
+     * @param img2 Description of the Parameter
+     * @return The maxCorrelation value
      */
     public static Voxel3D getMaxCorrelation(ImageStack img1, ImageStack img2) {
         return getTranslation(Xcorr(img1, img2));
     }
 
     /**
-     *  Gets the maxCorrelation attribute of the FHTImage3D class
+     * Gets the maxCorrelation attribute of the FHTImage3D class
      *
-     * @param  fht1  Description of the Parameter
-     * @param  fht2  Description of the Parameter
-     * @return       The maxCorrelation value
+     * @param fht1 Description of the Parameter
+     * @param fht2 Description of the Parameter
+     * @return The maxCorrelation value
      */
     public static Voxel3D getMaxCorrelation(FHTImage3D fht1, FHTImage3D fht2) {
         return getTranslation(Xcorr(fht1, fht2));
     }
 
     /**
-     *  Gets the maxCorrelation attribute of the FHTImage3D class
+     * Gets the maxCorrelation attribute of the FHTImage3D class
      *
-     * @param  img1  Description of the Parameter
-     * @param  img2  Description of the Parameter
-     * @return       The maxCorrelation value
+     * @param img1 Description of the Parameter
+     * @param img2 Description of the Parameter
+     * @return The maxCorrelation value
      */
     public static Voxel3D getMaxCorrelation(Image3D img1, Image3D img2) {
         return getTranslation(Xcorr(img1, img2));
     }
 
     /**
-     *  Gets the maxCorrelation attribute of the FHTImage3D class
+     * Gets the maxCorrelation attribute of the FHTImage3D class
      *
-     * @param  img1   Description of the Parameter
-     * @param  img2   Description of the Parameter
-     * @param  RmaxX  Description of the Parameter
-     * @param  RmaxY  Description of the Parameter
-     * @param  RmaxZ  Description of the Parameter
-     * @return        The maxCorrelation value
+     * @param img1  Description of the Parameter
+     * @param img2  Description of the Parameter
+     * @param RmaxX Description of the Parameter
+     * @param RmaxY Description of the Parameter
+     * @param RmaxZ Description of the Parameter
+     * @return The maxCorrelation value
      */
     public static Voxel3D getMaxCorrelation(Image3D img1, Image3D img2, int RmaxX, int RmaxY, int RmaxZ) {
         return getTranslation(Xcorr(img1, img2), RmaxX, RmaxY, RmaxZ);
     }
 
     /**
-     *  Gets the maxCorrelation attribute of the FHTImage3D class
+     * Gets the maxCorrelation attribute of the FHTImage3D class
      *
-     * @param  img1   Description of the Parameter
-     * @param  img2   Description of the Parameter
-     * @param  RmaxX  Description of the Parameter
-     * @param  RmaxY  Description of the Parameter
-     * @param  RmaxZ  Description of the Parameter
-     * @return        The maxCorrelation value
+     * @param img1  Description of the Parameter
+     * @param img2  Description of the Parameter
+     * @param RmaxX Description of the Parameter
+     * @param RmaxY Description of the Parameter
+     * @param RmaxZ Description of the Parameter
+     * @return The maxCorrelation value
      */
     public static Voxel3D getMaxCorrelation(ImageStack img1, ImageStack img2, int RmaxX, int RmaxY, int RmaxZ) {
         return getTranslation(Xcorr(img1, img2), RmaxX, RmaxY, RmaxZ);
     }
 
     /**
-     *  Gets the maxCorrelation attribute of the FHTImage3D class
+     * Gets the maxCorrelation attribute of the FHTImage3D class
      *
-     * @param  img1   Description of the Parameter
-     * @param  img2   Description of the Parameter
-     * @param  RmaxX  Description of the Parameter
-     * @param  RmaxY  Description of the Parameter
-     * @return        The maxCorrelation value
+     * @param img1  Description of the Parameter
+     * @param img2  Description of the Parameter
+     * @param RmaxX Description of the Parameter
+     * @param RmaxY Description of the Parameter
+     * @return The maxCorrelation value
      */
     public static Voxel3D getMaxCorrelation(ImageProcessor img1, ImageProcessor img2, int RmaxX, int RmaxY) {
         return getTranslation(Xcorr(img1, img2), RmaxX, RmaxY, 10);
     }
 
     /**
-     *  Gets the maxCorrelation attribute of the FHTImage3D class
+     * Gets the maxCorrelation attribute of the FHTImage3D class
      *
-     * @param  fht1   Description of the Parameter
-     * @param  fht2   Description of the Parameter
-     * @param  RmaxX  Description of the Parameter
-     * @param  RmaxY  Description of the Parameter
-     * @param  RmaxZ  Description of the Parameter
-     * @return        The maxCorrelation value
+     * @param fht1  Description of the Parameter
+     * @param fht2  Description of the Parameter
+     * @param RmaxX Description of the Parameter
+     * @param RmaxY Description of the Parameter
+     * @param RmaxZ Description of the Parameter
+     * @return The maxCorrelation value
      */
     public static Voxel3D getMaxCorrelation(FHTImage3D fht1, FHTImage3D fht2, int RmaxX, int RmaxY, int RmaxZ) {
         return getTranslation(Xcorr(fht1, fht2), RmaxX, RmaxY, RmaxZ);
     }
 
     /**
-     *  Gets the translation attribute of the FHTImage3D class
+     * Gets the translation attribute of the FHTImage3D class
      *
-     * @param  xcorr  Description of the Parameter
-     * @param  RmaxX  Description of the Parameter
-     * @param  RmaxY  Description of the Parameter
-     * @param  RmaxZ  Description of the Parameter
-     * @return        The translation value
+     * @param xcorr Description of the Parameter
+     * @param RmaxX Description of the Parameter
+     * @param RmaxY Description of the Parameter
+     * @param RmaxZ Description of the Parameter
+     * @return The translation value
      */
     public static Voxel3D getTranslation(FHTImage3D xcorr, int RmaxX, int RmaxY, int RmaxZ) {
         int sizex = xcorr.sizex;
@@ -529,10 +382,10 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Gets the translation attribute of the FHTImage3D class
+     * Gets the translation attribute of the FHTImage3D class
      *
-     * @param  xcorr  Description of the Parameter
-     * @return        The translation value
+     * @param xcorr Description of the Parameter
+     * @return The translation value
      */
     public static Voxel3D getTranslation(FHTImage3D xcorr) {
         Voxel3D max = xcorr.getMaxPixel();
@@ -557,12 +410,12 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  fht1       Description of the Parameter
-     * @param  fht2       Description of the Parameter
-     * @param  conjugate  Description of the Parameter
-     * @return            Description of the Return Value
+     * @param fht1      Description of the Parameter
+     * @param fht2      Description of the Parameter
+     * @param conjugate Description of the Parameter
+     * @return Description of the Return Value
      */
     private static FHTImage3D mult(FHTImage3D fht1, FHTImage3D fht2, boolean conjugate) {
         int sizex = fht1.sizex;
@@ -606,9 +459,160 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @return    Description of the Return Value
+     * @return Description of the Return Value
+     */
+    public FHTImage3D duplicate() {
+        ImageStack tmp = new ImageStack(sizex, sizey);
+        for (int i = 1; i <= sizez; i++) {
+            tmp.addSlice(IJstack.getSliceLabel(i), IJstack.getPixels(i));
+        }
+        FHTImage3D res = new FHTImage3D(tmp);
+        res.centered = centered;
+        res.frequencyDomain = frequencyDomain;
+        return res;
+    }
+
+    /**
+     * Gets the IJstack attribute of the FHTImage3D object
+     *
+     * @return The IJstack value
+     */
+    public ImageStack getStack() {
+        return IJstack;
+    }
+
+    /**
+     * Gets the powerSpectrum attribute of the FHTImage3D object
+     *
+     * @return The powerSpectrum value
+     */
+    public ImageStack getPowerSpectrum() {
+        return getPowerSpectrum(false);
+    }
+
+    /**
+     * Gets the powerStack attribute of the FHTImage3D object
+     *
+     * @param log Description of the Parameter
+     * @return The powerStack value
+     */
+    public ImageStack getPowerSpectrum(boolean log) {
+        FloatProcessor tmp;
+        double n;
+        double value;
+        ImageStack stack = new ImageStack(sizex, sizey);
+        for (int k = 0; k < sizez; k++) {
+            tmp = new FloatProcessor(sizex, sizey);
+            for (int x = 0; x < sizex; x++) {
+                for (int y = 0; y < sizey; y++) {
+                    n = getNorm(x, y, k);
+                    value = n * n;
+                    if (log) {
+                        value = Math.log(value);
+                    }
+                    tmp.putPixelValue(x, y, (float) value);
+                }
+            }
+            stack.addSlice("" + (k + 1), tmp);
+        }
+        return stack;
+    }
+
+    /**
+     * Gets the value attribute of the FHTImage3D object
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     * @return The value
+     */
+    protected float getValue(int x, int y, int z) {
+        return getPixel(x, y, z);
+    }
+
+    /**
+     * Gets the real attribute of the FHTImage3D object
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     * @return The real value
+     */
+    public float getReal(int x, int y, int z) {
+        return (0.5f * (getValue(x, y, z) + getValue((sizex - x) % sizex, (sizey - y) % sizey, (sizez - z) % sizez)));
+    }
+
+    /**
+     * Gets the norm of the FHTImage3D pixel
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     * @return The power value
+     */
+    public double getNorm(int x, int y, int z) {
+        float r = getReal(x, y, z);
+        float i = getImag(x, y, z);
+        return Math.sqrt(r * r + i * i);
+    }
+
+    /**
+     * Gets the angle of the FHTImage3D pixel
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     * @return The angle value (in radians)
+     */
+    public double getAngle(int x, int y, int z) {
+        float r = getReal(x, y, z);
+        float i = getImag(x, y, z);
+
+        return (float) Math.atan(i / r);
+    }
+
+    /**
+     * Gets the imag attribute of the FHTImage3D object
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param z z coordinate
+     * @return The imag value
+     */
+    public float getImag(int x, int y, int z) {
+        return (0.5f * (getValue(x, y, z) - getValue((sizex - x) % sizex, (sizey - y) % sizey, (sizez - z) % sizez)));
+    }
+
+    /**
+     * Description of the Method
+     *
+     * @return Description of the Return Value
+     */
+    public FHTImage3D doForwardTransform() {
+        if (!frequencyDomain) {
+            FHT3D();
+        }
+        return this;
+    }
+
+    /**
+     * Description of the Method
+     *
+     * @return Description of the Return Value
+     */
+    public FHTImage3D doInverseTransform() {
+        if (frequencyDomain) {
+            FHT3D();
+        }
+        return this;
+    }
+
+    /**
+     * Description of the Method
+     *
+     * @return Description of the Return Value
      */
     public FHTImage3D center() {
         if (!centered) {
@@ -618,18 +622,18 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Sets the center attribute of the FHTImage3D object
+     * Sets the center attribute of the FHTImage3D object
      *
-     * @param  ce  The new center value
+     * @param ce The new center value
      */
     public void setCenter(boolean ce) {
         centered = ce;
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @return    Description of the Return Value
+     * @return Description of the Return Value
      */
     public FHTImage3D decenter() {
         if (centered) {
@@ -639,9 +643,9 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @return    Description of the Return Value
+     * @return Description of the Return Value
      */
     public FHTImage3D swapQuadrants() {
         //int sizexy = sizex * sizey;
@@ -674,10 +678,10 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  w  Description of the Parameter
-     * @return    Description of the Return Value
+     * @param w Description of the Parameter
+     * @return Description of the Return Value
      */
     boolean powerOf2Size(int w) {
         int i = 2;
@@ -688,7 +692,7 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      */
     public void FHT3D() {
         if (!frequencyDomain && centered) {
@@ -851,10 +855,10 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  maxPixel  Description of the Parameter
-     * @return      Description of the Return Value
+     * @param maxPixel Description of the Parameter
+     * @return Description of the Return Value
      */
     float[] hartleyCoefs(int max) {
         float[] cas = new float[max * max];
@@ -869,12 +873,12 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  u     Description of the Parameter
-     * @param  cas   Description of the Parameter
-     * @param  maxPixel   Description of the Parameter
-     * @param  work  Description of the Parameter
+     * @param u        Description of the Parameter
+     * @param cas      Description of the Parameter
+     * @param maxPixel Description of the Parameter
+     * @param work     Description of the Parameter
      */
     void slowHT(float[] u, float[] cas, int max, float[] work) {
         int ind = 0;
@@ -891,11 +895,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  maxN  Description of the Parameter
-     * @param  s     Description of the Parameter
-     * @param  c     Description of the Parameter
+     * @param maxN Description of the Parameter
+     * @param s    Description of the Parameter
+     * @param c    Description of the Parameter
      */
     void makeSinCosTables(int maxN, float[] s, float[] c) {
         int n = maxN / 4;
@@ -912,14 +916,15 @@ public class FHTImage3D extends RealImage3D {
     /*
      *  An optimized real FHT
      */
+
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  x     Description of the Parameter
-     * @param  base  Description of the Parameter
-     * @param  maxN  Description of the Parameter
-     * @param  s     Description of the Parameter
-     * @param  c     Description of the Parameter
+     * @param x    Description of the Parameter
+     * @param base Description of the Parameter
+     * @param maxN Description of the Parameter
+     * @param s    Description of the Parameter
+     * @param c    Description of the Parameter
      */
     void dfht3(float[] x, int base, int maxN, float[] s, float[] c) {
         int i;
@@ -1028,10 +1033,10 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  x  Description of the Parameter
-     * @return    Description of the Return Value
+     * @param x Description of the Parameter
+     * @return Description of the Return Value
      */
     int log2(int x) {
         int count = 15;
@@ -1042,11 +1047,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  x    Description of the Parameter
-     * @param  bit  Description of the Parameter
-     * @return      Description of the Return Value
+     * @param x   Description of the Parameter
+     * @param bit Description of the Parameter
+     * @return Description of the Return Value
      */
     private boolean btst(int x, int bit) {
         //int mask = 1;
@@ -1054,12 +1059,12 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  x       Description of the Parameter
-     * @param  base    Description of the Parameter
-     * @param  bitlen  Description of the Parameter
-     * @param  maxN    Description of the Parameter
+     * @param x      Description of the Parameter
+     * @param base   Description of the Parameter
+     * @param bitlen Description of the Parameter
+     * @param maxN   Description of the Parameter
      */
     void BitRevRArr(float[] x, int base, int bitlen, int maxN) {
         int l;
@@ -1075,11 +1080,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  x       Description of the Parameter
-     * @param  bitlen  Description of the Parameter
-     * @return         Description of the Return Value
+     * @param x      Description of the Parameter
+     * @param bitlen Description of the Parameter
+     * @return Description of the Return Value
      */
     private int BitRevX(int x, int bitlen) {
         int temp = 0;
@@ -1092,11 +1097,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  x    Description of the Parameter
-     * @param  bit  Description of the Parameter
-     * @return      Description of the Return Value
+     * @param x   Description of the Parameter
+     * @param bit Description of the Parameter
+     * @return Description of the Return Value
      */
     private int bset(int x, int bit) {
         x |= (1 << bit);
@@ -1104,20 +1109,20 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @return    Description of the Return Value
+     * @return Description of the Return Value
      */
     public FHTImage3D RFilter() {
         return RFilter(1, false);
     }
 
     /**
-     *  Filtre R pour tomographie sur FFT centree
+     * Filtre R pour tomographie sur FFT centree
      *
-     * @param  coeff   Description of the Parameter
-     * @param  centre  Description of the Parameter
-     * @return         Description of the Return Value
+     * @param coeff  Description of the Parameter
+     * @param centre Description of the Parameter
+     * @return Description of the Return Value
      */
     public FHTImage3D RFilter(float coeff, boolean centre) {
         // FFT centree
@@ -1168,14 +1173,14 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Band Pass Filter
+     * Band Pass Filter
      *
-     * @param  rayonmincut   Description of the Parameter
-     * @param  rayonminkeep  Description of the Parameter
-     * @param  rayonmaxkeep  Description of the Parameter
-     * @param  rayonmaxcut   Description of the Parameter
+     * @param rayonmincut  Description of the Parameter
+     * @param rayonminkeep Description of the Parameter
+     * @param rayonmaxkeep Description of the Parameter
+     * @param rayonmaxcut  Description of the Parameter
      */
-    public void bandPassFilter(float rayonmincut , float rayonminkeep, float rayonmaxkeep, float rayonmaxcut) {
+    public void bandPassFilter(float rayonmincut, float rayonminkeep, float rayonmaxkeep, float rayonmaxcut) {
         int cenx = sizex / 2;
         int ceny = sizey / 2;
         int cenz = sizez / 2;
@@ -1184,7 +1189,7 @@ public class FHTImage3D extends RealImage3D {
         float auxmin = (float) (0.5 * Math.PI) / (rayonminkeep - rayonmincut);
         float auxmax = (float) (0.5 * Math.PI) / (rayonmaxcut - rayonmaxkeep);
 
-        IJ.log("BandPass3D radii= "+rayonmincut+" "+rayonminkeep+" "+rayonmaxkeep+" "+rayonmaxcut);
+        IJ.log("BandPass3D radii= " + rayonmincut + " " + rayonminkeep + " " + rayonmaxkeep + " " + rayonmaxcut);
 
         for (int k = 0; k < sizez; k++) {
             int ck = k - cenz;
@@ -1227,11 +1232,11 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Description of the Method
+     * Description of the Method
      *
-     * @param  x  Description of the Parameter
-     * @param  y  Description of the Parameter
-     * @param  z  Description of the Parameter
+     * @param x Description of the Parameter
+     * @param y Description of the Parameter
+     * @param z Description of the Parameter
      */
     public void zeroValue(int x, int y, int z) {
         //data[sizex * sizey * z + sizex * y + x] = 0;
@@ -1244,10 +1249,10 @@ public class FHTImage3D extends RealImage3D {
     }
 
     /**
-     *  Fill 3D Reconstruction using central section theorem
+     * Fill 3D Reconstruction using central section theorem
      *
-     * @param  proj  Array of FFT of the projections
-     * @param  W     Orientations of the images
+     * @param proj Array of FFT of the projections
+     * @param W    Orientations of the images
      */
     public void fill3D(FHTImage3D[] proj, Vector3D[] W) {
         if (!frequencyDomain) {
@@ -1345,45 +1350,27 @@ public class FHTImage3D extends RealImage3D {
         int projmin;
         Chrono time = new Chrono(sizex);
         time.start();
-        for (int x = 0; x
-                < sizex; x++) {
-            for (int y = 0; y
-                    < sizey; y++) {
-                for (int z = 0; z
-                        < sizez; z++) {
+        for (int x = 0; x < sizex; x++) {
+            for (int y = 0; y < sizey; y++) {
+                for (int z = 0; z < sizez; z++) {
                     x0 = x - ox;
-                    y0 =
-                            y - oy;
-                    z0 =
-                            z - oz;
-                    distmin =
-                            1.0;
-                    projmin =
-                            -1;
+                    y0 = y - oy;
+                    z0 = z - oz;
+                    distmin = 1.0;
+                    projmin = -1;
 
-                    for (int p = 0; p
-                            < nbproj; p++) {
+                    for (int p = 0; p < nbproj; p++) {
                         RP0 = at11[p] * x0 + at12[p] * y0 + at13[p] * z0;
-                        RP1 =
-                                at21[p] * x0 + at22[p] * y0 + at23[p] * z0;
-                        xx0 =
-                                (int) Math.round(RP0);
-                        yy0 =
-                                (int) Math.round(RP1);
-                        XX0 =
-                                a11[p] * xx0 + a12[p] * yy0;
-                        XX1 =
-                                a21[p] * xx0 + a22[p] * yy0;
-                        XX2 =
-                                a31[p] * xx0 + a32[p] * yy0;
-                        xc0 =
-                                XX0 + ox;
-                        yc0 =
-                                XX1 + oy;
-                        zc0 =
-                                XX2 + oz;
-                        dist =
-                                (x - xc0) * (x - xc0) + (y - yc0) * (y - yc0) + (z - zc0) * (z - zc0);
+                        RP1 = at21[p] * x0 + at22[p] * y0 + at23[p] * z0;
+                        xx0 = (int) Math.round(RP0);
+                        yy0 = (int) Math.round(RP1);
+                        XX0 = a11[p] * xx0 + a12[p] * yy0;
+                        XX1 = a21[p] * xx0 + a22[p] * yy0;
+                        XX2 = a31[p] * xx0 + a32[p] * yy0;
+                        xc0 = XX0 + ox;
+                        yc0 = XX1 + oy;
+                        zc0 = XX2 + oz;
+                        dist = (x - xc0) * (x - xc0) + (y - yc0) * (y - yc0) + (z - zc0) * (z - zc0);
                         if (dist <= distmin) {
                             distmin = dist;
                             projmin =
@@ -1393,37 +1380,24 @@ public class FHTImage3D extends RealImage3D {
                     }
                     //index = 0;
                     if (projmin != -1) {
-                        for (int k = -1; k
-                                <= 1; k++) {
-                            for (int l = -1; l
-                                    <= 1; l++) {
+                        for (int k = -1; k <= 1; k++) {
+                            for (int l = -1; l <= 1; l++) {
                                 RP0 = at11[projmin] * x0 + at12[projmin] * y0 + at13[projmin] * z0;
-                                RP1 =
-                                        at21[projmin] * x0 + at22[projmin] * y0 + at23[projmin] * z0;
-                                xx0 =
-                                        (int) Math.round(RP0 + k);
-                                yy0 =
-                                        (int) Math.round(RP1 + l);
-                                XX0 =
-                                        a11[projmin] * xx0 + a12[projmin] * yy0;
-                                XX1 =
-                                        a21[projmin] * xx0 + a22[projmin] * yy0;
-                                XX2 =
-                                        a31[projmin] * xx0 + a32[projmin] * yy0;
-                                xc0 =
-                                        XX0 + ox;
-                                yc0 =
-                                        XX1 + oy;
-                                zc0 =
-                                        XX2 + oz;
+                                RP1 = at21[projmin] * x0 + at22[projmin] * y0 + at23[projmin] * z0;
+                                xx0 = (int) Math.round(RP0 + k);
+                                yy0 = (int) Math.round(RP1 + l);
+                                XX0 = a11[projmin] * xx0 + a12[projmin] * yy0;
+                                XX1 = a21[projmin] * xx0 + a22[projmin] * yy0;
+                                XX2 = a31[projmin] * xx0 + a32[projmin] * yy0;
+                                xc0 = XX0 + ox;
+                                yc0 = XX1 + oy;
+                                zc0 = XX2 + oz;
                                 //ll[index] = W[projmin].intersection_unit_cube(x, y, z, xc0, yc0, zc0);
                                 //real = proj[projmin].getPixelReal((int) (xx0 + ox), (int) (yy0 + oy), 0);
                                 //imag = proj[projmin].getPixelImag((int) (xx0 + ox), (int) (yy0 + oy), 0);
                                 //this.putPixel(x, y, z, getPixelReal(x, y, z) + (float) real, getPixelImag(x, y, z) + (float) imag);
-                                xx0 +=
-                                        ox;
-                                yy0 +=
-                                        oy;
+                                xx0 += ox;
+                                yy0 += oy;
                                 // if (xx0 < 0) {
                                 // xx0 = 0;
                                 // }
