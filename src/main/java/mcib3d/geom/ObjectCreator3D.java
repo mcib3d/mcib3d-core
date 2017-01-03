@@ -124,7 +124,7 @@ public class ObjectCreator3D {
         // scale radius to pixel unit
         double rx = radius / resXY;
         double ry = radius / resXY;
-        double rz = radius / resXY;
+        double rz = radius / resZ;
 
         // scale radius to pixel unit
         centerx /= resXY;
@@ -774,9 +774,9 @@ public class ObjectCreator3D {
      * @param centerx Centre sur l'axe X
      * @param centery Centre sur l'axe Y
      * @param centerz Centre sur l'axe Z
-     * @param radius Rayon du cylindre
+     * @param rx Rayon du cylindre
+     * @param ry Rayon du cylindre
      * @param height Epaisseur du cylindre
-     * @param axe 1 : X, 2 : Y et 3 : Z
      * @param value Valeur associé au pixel
      *
      */
@@ -953,7 +953,7 @@ public class ObjectCreator3D {
      *
      * @param rx Rayon en x (unit)
      * @param ry Rayon en y (unit)
-     * @param rz Rayon en z (unit)
+     * @param height Rayon en z (unit)
      * @param centerx Centre en x
      * @param centery Centre en y
      * @param centerz Centre en z
