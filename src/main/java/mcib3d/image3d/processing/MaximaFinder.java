@@ -6,16 +6,17 @@
 package mcib3d.image3d.processing;
 
 import ij.IJ;
-import java.util.ArrayList;
-import java.util.Collections;
 import mcib3d.geom.IntCoord3D;
 import mcib3d.geom.Voxel3D;
 import mcib3d.geom.Voxel3DComparable;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageShort;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+
 /**
- *
  * @author thomasb
  */
 public class MaximaFinder {
@@ -62,7 +63,7 @@ public class MaximaFinder {
     /**
      * Constructor with default values for radii
      *
-     * @param ima The raw image
+     * @param ima            The raw image
      * @param noiseTolerance The noise tolerance
      */
     public MaximaFinder(ImageHandler ima, float noiseTolerance) {
@@ -73,9 +74,9 @@ public class MaximaFinder {
     /**
      * Constructor
      *
-     * @param img The raw image
-     * @param radXY The radius XY to find local maxima
-     * @param radZ The radius Z to find local maxima
+     * @param img            The raw image
+     * @param radXY          The radius XY to find local maxima
+     * @param radZ           The radius Z to find local maxima
      * @param noiseTolerance The noise tolerance
      */
     public MaximaFinder(ImageHandler img, float radXY, float radZ, float noiseTolerance) {
@@ -115,12 +116,18 @@ public class MaximaFinder {
 
         int c = 1;
         int nb = maximaTmp.size();
+        Date start = new Date();
+        Date temp;
         for (Voxel3DComparable V : maximaTmp) {
             if (img.getPixel(V) > 0) {
                 if (V.getValue() > noiseTolerance) {
                     maxima.add(V);
                     if (verbose) {
-                        IJ.showStatus("Processing peak " + c + "/" + nb + " " + V);
+                        temp = new Date();
+                        if ((temp.getTime() - start.getTime()) > 100) {
+                            IJ.showStatus("Processing peak " + c + "/" + nb + " " + V);
+                            start = new Date();
+                        }
                         c++;
                     }
                     Flood3D.flood3DNoise26(img, new IntCoord3D(V.getRoundX(), V.getRoundY(), V.getRoundZ()), (int) (Math.max(1, V.getValue() - noiseTolerance)), 0);
@@ -187,7 +194,7 @@ public class MaximaFinder {
      * The radii to compute local maxima
      *
      * @param rxy The radius XY to find local maxima
-     * @param rz The radius Z to find local maxima
+     * @param rz  The radius Z to find local maxima
      */
     public void setRadii(float rxy, float rz) {
         radXY = rxy;
@@ -212,11 +219,11 @@ public class MaximaFinder {
     public void setVerbose(boolean show) {
         this.verbose = show;
     }
-    
+
     @Deprecated
     public void setShow(boolean show) {
         this.verbose = show;
     }
-    
-    
+
+
 }

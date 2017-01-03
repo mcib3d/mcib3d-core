@@ -7,6 +7,8 @@ import mcib3d.geom.*;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.*;
+import mcib3d.utils.Logger.AbstractLog;
+import mcib3d.utils.Logger.IJStatus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -652,6 +654,10 @@ public abstract class ImageInt extends ImageHandler {
     }
 
     public ArrayList<Voxel3DComparable> getListMaxima(float radx, float rady, float radz, int zmin, int zmax) {
+        return getListMaxima(radx, rady, radz, zmin, zmax, null, null);
+    }
+
+    public ArrayList<Voxel3DComparable> getListMaxima(float radx, float rady, float radz, int zmin, int zmax, Chrono timer, AbstractLog log) {
         ArrayList<Voxel3DComparable> res = new ArrayList<Voxel3DComparable>();
         int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
         int nb = FastFilters3D.getNbFromKernel(ker);
@@ -664,7 +670,6 @@ public abstract class ImageInt extends ImageHandler {
         int value;
         ArrayUtil tab;
         for (int k = zmin; k < zmax; k++) {
-            IJ.showStatus("3D filter : " + (k + 1) + "/" + zmax);
             for (int j = 0; j < sizeY; j++) {
                 for (int i = 0; i < sizeX; i++) {
                     tab = this.getNeighborhoodKernel(ker, nb, i, j, k, radx, rady, radz);
@@ -673,6 +678,10 @@ public abstract class ImageInt extends ImageHandler {
                         res.add(new Voxel3DComparable(i, j, k, value, 1));
                     }
                 }
+            }
+            if (timer != null) {
+                String ti = timer.getFullInfo(1);
+                if (ti != null) log.log("3D maxima : " + ti);
             }
         }
 
@@ -785,6 +794,12 @@ public abstract class ImageInt extends ImageHandler {
     public ImageInt adaptiveFilter(float radx, float rady, float radz, int nbcpus) {
         final ImageInt adaptimg2 = (ImageInt) this.createSameDimensions();
 
+        int nbToProcess = this.sizeZ;
+        // Timer
+        final Chrono time = new Chrono(nbToProcess);
+        time.start();
+        final AbstractLog show = new IJStatus();
+
         // create kernel
         final int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
         int nb = 0;
@@ -814,9 +829,6 @@ public abstract class ImageInt extends ImageHandler {
                     double me;
 
                     for (int k = ai.getAndIncrement(); k < sizeZ; k = ai.getAndIncrement()) {
-                        //if (showStatus) {
-                        //    IJ.showStatus("3D Adaptive : " + (int) (100 * k / sizez) + "%");
-                        // }
                         for (int j = 0; j < sizeY; j++) {
                             for (int i = 0; i < sizeX; i++) {
                                 tab[0] = getNeighborhoodKernel(ker, nb2, i, j, k, radX2, radY2, radZ2);
@@ -839,6 +851,10 @@ public abstract class ImageInt extends ImageHandler {
                                 }
                                 adaptimg2.setPixel(i, j, k, (int) mes);
                             }
+                        }
+                        if (time != null) {
+                            String ti = time.getFullInfo(1);
+                            if (ti != null) show.log("3D adaptive : " + ti);
                         }
                     }
                 }

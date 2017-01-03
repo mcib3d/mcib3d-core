@@ -1,4 +1,4 @@
-package mcib3d.utils;
+package mcib3d.utils.Logger;
 
 /**
  * Created by thomasb on 15/11/16.

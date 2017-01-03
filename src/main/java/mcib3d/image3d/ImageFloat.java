@@ -1,6 +1,5 @@
 package mcib3d.image3d;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.Prefs;
@@ -10,7 +9,7 @@ import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
 import mcib3d.geom.*;
 import mcib3d.image3d.processing.FastFilters3D;
-import mcib3d.utils.AbstractLog;
+import mcib3d.utils.Logger.AbstractLog;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.Chrono;
 import mcib3d.utils.ThreadUtil;
@@ -1291,6 +1290,10 @@ public class ImageFloat extends ImageHandler {
     }
 
     public ArrayList<Voxel3DComparable> getListMaxima(float radx, float rady, float radz, int zmin, int zmax) {
+        return getListMaxima(radx, rady, radz, zmin, zmax, null, null);
+    }
+
+    public ArrayList<Voxel3DComparable> getListMaxima(float radx, float rady, float radz, int zmin, int zmax, Chrono timer, AbstractLog log) {
         ArrayList<Voxel3DComparable> res = new ArrayList<Voxel3DComparable>();
         int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
         int nb = FastFilters3D.getNbFromKernel(ker);
@@ -1303,7 +1306,6 @@ public class ImageFloat extends ImageHandler {
         float value;
         ArrayUtil tab;
         for (int k = zmin; k < zmax; k++) {
-            IJ.showStatus("3D filter : " + (k + 1) + "/" + zmax);
             for (int j = 0; j < sizeY; j++) {
                 for (int i = 0; i < sizeX; i++) {
                     tab = this.getNeighborhoodKernel(ker, nb, i, j, k, radx, rady, radz);
@@ -1312,6 +1314,10 @@ public class ImageFloat extends ImageHandler {
                         res.add(new Voxel3DComparable(i, j, k, value, 1));
                     }
                 }
+            }
+            if (timer != null) {
+                String ti = timer.getFullInfo(1);
+                if (ti != null) log.log("3D maxima : " + ti);
             }
         }
 

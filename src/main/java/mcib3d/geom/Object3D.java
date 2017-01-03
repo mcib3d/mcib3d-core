@@ -4,7 +4,7 @@ package mcib3d.geom;
 //import com.mongodb.DBObject;
 
 //import ij.IJ;
-import mcib3d.utils.AbstractLog;
+import mcib3d.utils.Logger.AbstractLog;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;

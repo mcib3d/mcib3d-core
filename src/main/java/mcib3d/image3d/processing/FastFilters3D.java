@@ -5,9 +5,9 @@ import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Voxel3DComparable;
 import mcib3d.image3d.*;
-import mcib3d.utils.AbstractLog;
+import mcib3d.utils.Logger.AbstractLog;
 import mcib3d.utils.Chrono;
-import mcib3d.utils.IJStatus;
+import mcib3d.utils.Logger.IJStatus;
 import mcib3d.utils.ThreadUtil;
 
 import java.util.ArrayList;
@@ -71,6 +71,11 @@ public class FastFilters3D {
     }
 
     public static ArrayList<Voxel3DComparable> getListMaximaInt(ImageInt stackorig, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
+        int nbToProcess = stackorig.sizeZ;
+        // Timer
+        final Chrono time = new Chrono(nbToProcess);
+        time.start();
+        final AbstractLog show = new IJStatus();
         // get stack info
         final float voisx = vx;
         final float voisy = vy;
@@ -87,10 +92,8 @@ public class FastFilters3D {
             threads[ithread] = new Thread() {
                 @Override
                 public void run() {
-                    //image.setShowStatus(show);
                     for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                        //IJ.log("filtering " + k);
-                        listes[k] = ima.getListMaxima(voisx, voisy, voisz, dec * k, dec * (k + 1));
+                        listes[k] = ima.getListMaxima(voisx, voisy, voisz, dec * k, dec * (k + 1), time, show);
                     }
                 }
             };
@@ -106,6 +109,11 @@ public class FastFilters3D {
     }
 
     public static ArrayList<Voxel3DComparable> getListMaximaFloat(ImageFloat stackorig, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
+        int nbToProcess = stackorig.sizeZ;
+        // Timer
+        final Chrono time = new Chrono(nbToProcess);
+        time.start();
+        final AbstractLog show = new IJStatus();
         // get stack info
         final float voisx = vx;
         final float voisy = vy;
@@ -122,10 +130,8 @@ public class FastFilters3D {
             threads[ithread] = new Thread() {
                 @Override
                 public void run() {
-                    //image.setShowStatus(show);
                     for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                        //IJ.log("filtering " + k);
-                        listes[k] = ima.getListMaxima(voisx, voisy, voisz, dec * k, dec * (k + 1));
+                        listes[k] = ima.getListMaxima(voisx, voisy, voisz, dec * k, dec * (k + 1), time, show);
                     }
                 }
             };
@@ -141,12 +147,16 @@ public class FastFilters3D {
     }
 
     public static ImageInt filterIntImage(ImageInt stackorig, int filter, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
+        return filterIntImage(stackorig, filter, vx, vy, vz, nbcpus, showstatus, new IJStatus());
+    }
+
+    public static ImageInt filterIntImage(ImageInt stackorig, int filter, float vx, float vy, float vz, int nbcpus, boolean showstatus, AbstractLog log) {
         int nbToProcess = stackorig.sizeZ;
         if ((filter == TOPHAT) || (filter == CLOSEGRAY) || (filter == OPENGRAY)) nbToProcess *= 2;
         // Timer
         final Chrono time = new Chrono(nbToProcess);
         time.start();
-        final AbstractLog show = new IJStatus();
+        final AbstractLog show = log;
 
         // get stack info
         final float voisx = vx;
@@ -171,6 +181,7 @@ public class FastFilters3D {
             final int f = fi;
             final int dec = (int) Math.ceil((double) ima.sizeZ / (double) n_cpus);
             Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
+            show.log("Starting");
             for (int ithread = 0; ithread < threads.length; ithread++) {
                 threads[ithread] = new Thread() {
                     @Override
@@ -182,7 +193,7 @@ public class FastFilters3D {
                 };
             }
             ThreadUtil.startAndJoin(threads);
-
+            show.log("Finished");
 
             // TOPHAT MAX
             if ((filter == TOPHAT) || (filter == OPENGRAY)) {
