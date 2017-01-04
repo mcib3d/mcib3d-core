@@ -103,7 +103,7 @@ public class Object3D_IJUtils {
     /**
      *
      */
-    public void draw(Object3DVoxels object3DVoxels, ImageStack mask, int col) {
+    public static void draw(Object3DVoxels object3DVoxels, ImageStack mask, int col) {
         for (Voxel3D vox : object3DVoxels.getVoxels()) {
             mask.setVoxel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), col);
         }
@@ -113,7 +113,7 @@ public class Object3D_IJUtils {
     /**
      *
      */
-    public void draw(Object3DVoxels object3DVoxels, ImageStack mask, int r, int g, int b) {
+    public static void draw(Object3DVoxels object3DVoxels, ImageStack mask, int r, int g, int b) {
         ImageProcessor tmp;
         Color col = new Color(r, g, b);
         for (Voxel3D vox : object3DVoxels.getVoxels()) {
@@ -124,7 +124,7 @@ public class Object3D_IJUtils {
     }
 
 
-    public List computeMeshSurface(Object3D object3D, boolean calibrated) {
+    public static List computeMeshSurface(Object3D object3D, boolean calibrated) {
         //IJ.showStatus("computing mesh");
         // use miniseg
         ImageInt miniseg = object3D.getLabelImage();
