@@ -10,6 +10,7 @@ import ij.process.ImageProcessor;
 import ij3d.Volume;
 import marchingcubes.MCCube;
 import mcib3d.image3d.ImageByte;
+import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 
@@ -21,6 +22,8 @@ import java.util.List;
  * Created by thomasb on 16/11/16.
  */
 public class Object3D_IJUtils {
+
+
 
     public static Calibration getCalibration(Object3D object3D) {
         Calibration cal = new Calibration();
@@ -59,19 +62,29 @@ public class Object3D_IJUtils {
         return new Object3DVoxels(imageInt, val);
     }
 
+    public static Object3DLabel createObject3DLabel(ImagePlus plus, int val) {
+        ImageInt imageInt = ImageInt.wrap(plus);
+        return new Object3DLabel(imageInt, val);
+    }
+
+    public static Object3DLabel createObject3DLabel(ImageStack plus, int val) {
+        ImageInt imageInt = ImageInt.wrap(plus);
+        return new Object3DLabel(imageInt, val);
+    }
+
     public static Object3DVoxels createObject3DVoxels(ImageStack plus, int val) {
         ImageInt imageInt = ImageInt.wrap(plus);
         return new Object3DVoxels(imageInt, val);
     }
 
-    public static Roi createRoi(Object3DVoxels object3DVoxels, int z) {
+    public static Roi createRoi(Object3D object3D, int z) {
         // IJ.write("create roi " + z);
-        int sx = object3DVoxels.getXmax() - object3DVoxels.getXmin() + 1;
-        int sy = object3DVoxels.getYmax() - object3DVoxels.getYmin() + 1;
+        int sx = object3D.getXmax() - object3D.getXmin() + 1;
+        int sy = object3D.getYmax() - object3D.getYmin() + 1;
         ByteProcessor mask = new ByteProcessor(sx, sy);
         // object black on white
         //mask.invert();
-        draw(object3DVoxels, mask, z, 255);
+        draw(object3D, mask, z, 255);
         ImagePlus maskPlus = new ImagePlus("mask " + z, mask);
         //maskPlus.show();
         //IJ.run("Create Selection");
@@ -83,15 +96,15 @@ public class Object3D_IJUtils {
         //maskPlus.hide();
         Roi roi = maskPlus.getRoi();
         Rectangle rect = roi.getBounds();
-        rect.x += object3DVoxels.getXmin();
-        rect.y += object3DVoxels.getYmin();
+        rect.x += object3D.getXmin();
+        rect.y += object3D.getYmin();
 
         return roi;
     }
 
-    public static boolean draw(Object3DVoxels object3DVoxels, ByteProcessor mask, int z, int col) {
+    public static boolean draw(Object3D object3D, ByteProcessor mask, int z, int col) {
         boolean ok = false;
-        for (Voxel3D vox : object3DVoxels.getVoxels()) {
+        for (Voxel3D vox : object3D.getVoxels()) {
             if (Math.abs(z - vox.getZ()) < 0.5) {
                 mask.putPixel(vox.getRoundX(), vox.getRoundY(), col);
                 ok = true;
@@ -103,23 +116,72 @@ public class Object3D_IJUtils {
     /**
      *
      */
-    public static void draw(Object3DVoxels object3DVoxels, ImageStack mask, int col) {
-        for (Voxel3D vox : object3DVoxels.getVoxels()) {
+    public static void draw(Object3D object3D, ImageStack mask, int col) {
+        for (Voxel3D vox : object3D.getVoxels()) {
             mask.setVoxel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), col);
         }
     }
 
-
     /**
      *
      */
-    public static void draw(Object3DVoxels object3DVoxels, ImageStack mask, int r, int g, int b) {
+    public static void draw(Object3D object3D, ImageStack mask, int r, int g, int b) {
         ImageProcessor tmp;
         Color col = new Color(r, g, b);
-        for (Voxel3D vox : object3DVoxels.getVoxels()) {
+        for (Voxel3D vox : object3D.getVoxels()) {
             tmp = mask.getProcessor((int) (vox.getZ() + 1));
             tmp.setColor(col);
             tmp.drawPixel(vox.getRoundX(), vox.getRoundY());
+        }
+    }
+
+    public static void drawIntersectionLabel(Object3DLabel object3DLabel, Object3DLabel other, ImageStack mask, int red, int green, int blue) {
+        ImageProcessor tmp;
+        ImageHandler otherSeg = other.getLabelImage();
+        int otherValue = other.getValue();
+        Color col = new Color(red, green, blue);
+        int zmin = object3DLabel.getZmin();
+        int zmax = object3DLabel.getZmax();
+        int ymin = object3DLabel.getYmin();
+        int ymax = object3DLabel.getYmax();
+        int xmin = object3DLabel.getXmin();
+        int xmax = object3DLabel.getXmax();
+        ImageInt labelImage = object3DLabel.getLabelImage();
+        int value = object3DLabel.getValue();
+        for (int z = zmin; z <= zmax; z++) {
+            tmp = mask.getProcessor(z + 1);
+            tmp.setColor(col);
+            for (int x = xmin; x <= xmax; x++) {
+                for (int y = ymin; y <= ymax; y++) {
+                    if ((labelImage.getPixel(x, y, z) == value) && (otherSeg.getPixel(x, y, z) == otherValue)) {
+                        tmp.drawPixel(x, y);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void drawIntersectionLabel(Object3DLabel object3DLabel, Object3DLabel other, ImageStack mask, int col) {
+        ImageProcessor tmp;
+        ImageHandler otherSeg = other.getLabelImage();
+        int otherValue = other.getValue();
+        int zmin = object3DLabel.getZmin();
+        int zmax = object3DLabel.getZmax();
+        int ymin = object3DLabel.getYmin();
+        int ymax = object3DLabel.getYmax();
+        int xmin = object3DLabel.getXmin();
+        int xmax = object3DLabel.getXmax();
+        ImageInt labelImage = object3DLabel.getLabelImage();
+        int value = object3DLabel.getValue();
+        for (int z = zmin; z <= zmax; z++) {
+            tmp = mask.getProcessor(z + 1);
+            for (int x = xmin; x <= xmax; x++) {
+                for (int y = ymin; y <= ymax; y++) {
+                    if ((labelImage.getPixel(x, y, z) == value) && (otherSeg.getPixel(x, y, z) == otherValue)) {
+                        tmp.putPixel(x, y, col);
+                    }
+                }
+            }
         }
     }
 

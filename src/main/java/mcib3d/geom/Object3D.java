@@ -3176,7 +3176,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         ImageByte miniseg8 = ((ImageShort) (miniseg)).convertToByte(false);
         ImagePlus objectImage = miniseg8.getImagePlus();
         if (calibrated) {
-            objectImage.setCalibration(getCalibration());
+            objectImage.setCalibration(Object3D_IJUtils.getCalibration(this));
         }
         boolean[] bl = {true, true, true};
         Volume vol = new Volume(objectImage, bl);
@@ -3256,6 +3256,8 @@ public abstract class Object3D implements Comparable<Object3D> {
         }
         return true;
     }
+
+
 
     public boolean includedInZonesOneMore(ImageInt imageZones) {
         int label = -1;

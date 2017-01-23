@@ -5,6 +5,7 @@
 package mcib3d.geom;
 
 //import ij.IJ;
+
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
@@ -12,33 +13,33 @@ import ij.measure.Calibration;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import java.awt.Color;
-import java.util.ArrayList;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 
+import java.awt.*;
+import java.util.ArrayList;
+
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2008- 2011 Thomas Boudier
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of mcib3d
- *
+ * <p>
  * mcib3d is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -61,17 +62,18 @@ public class Object3DLabel extends Object3D {
 
         init();
 
-        resXY = 1.0;
-        resZ = 1.0;
-        units = "pix";
+        resXY = ima.getScaleXY();
+        resZ = ima.getScaleZ();
+        units = ima.getUnit();
     }
 
     /**
      * Constructor for the Object3D object
      *
      * @param plus Segmented image
-     * @param val Pixel value of the object
+     * @param val  Pixel value of the object
      */
+    @Deprecated
     public Object3DLabel(ImagePlus plus, int val) {
         value = val;
         //IntImage3D ima = new IntImage3D(plus.getStack());
@@ -109,6 +111,7 @@ public class Object3DLabel extends Object3D {
     //public ImageInt getSegImage() {
     //     return labelImage;
     //}
+
     /**
      * test if the point is inside the segmented image
      *
@@ -166,8 +169,8 @@ public class Object3DLabel extends Object3D {
 //
 //        return 100.0 * (double) count / (double) volume;
 //    }
+
     /**
-     *
      * @return array of listed values (with coordinates)
      */
     @Override
@@ -373,7 +376,6 @@ public class Object3DLabel extends Object3D {
     }
 
     /**
-     *
      * @param ima to find the maximum value
      * @return the voxel with the max value
      */
@@ -458,7 +460,7 @@ public class Object3DLabel extends Object3D {
             double pix;
             double pmin = Double.MAX_VALUE;
             double pmax = -Double.MAX_VALUE;
-            int nb=0;
+            int nb = 0;
             for (int k = zmin; k <= zmax; k++) {
                 for (int j = ymin; j <= ymax; j++) {
                     for (int i = xmin; i <= xmax; i++) {
@@ -487,7 +489,7 @@ public class Object3DLabel extends Object3D {
             cz /= sum;
 
             integratedDensity = sum;
-            meanDensity=integratedDensity/nb;
+            meanDensity = integratedDensity / nb;
 
             pixmin = pmin;
             pixmax = pmax;
@@ -739,17 +741,18 @@ public class Object3DLabel extends Object3D {
      * Draw inside a particular Z
      *
      * @param mask The mask image to draw
-     * @param z The Z coordinate
-     * @param col The value to draw
+     * @param z    The Z coordinate
+     * @param col  The value to draw
      */
     @Override
+    @Deprecated
     public boolean draw(ByteProcessor mask, int z, int col) {
-        boolean ok=false;
+        boolean ok = false;
         for (int x = xmin; x <= xmax; x++) {
             for (int y = ymin; y <= ymax; y++) {
                 if (labelImage.getPixel(x, y, z) == value) {
                     mask.putPixel(x, y, col);
-                    ok=true;
+                    ok = true;
                 }
             }
         }
@@ -757,7 +760,6 @@ public class Object3DLabel extends Object3D {
     }
 
     /**
-     *
      * @param mask
      * @param col
      */
@@ -774,12 +776,12 @@ public class Object3DLabel extends Object3D {
     }
 
     /**
-     *
      * @param mask
      * @param red
      * @param green
      * @param blue
      */
+    @Deprecated
     public void draw(ImageStack mask, int red, int green, int blue) {
         ImageProcessor tmp;
         Color col = new Color(red, green, blue);
@@ -797,10 +799,10 @@ public class Object3DLabel extends Object3D {
     }
 
     /**
-     *
      * @param mask
      * @param col
      */
+    @Deprecated
     public void draw(ImageStack mask, int col) {
         ImageProcessor tmp;
         for (int z = zmin; z <= zmax; z++) {
@@ -816,13 +818,13 @@ public class Object3DLabel extends Object3D {
     }
 
     /**
-     *
      * @param mask
      * @param other
      * @param red
      * @param green
      * @param blue
      */
+    @Deprecated
     public void drawIntersection(ImageStack mask, Object3DLabel other, int red, int green, int blue) {
         ImageProcessor tmp;
         ImageHandler otherSeg = other.getLabelImage();
@@ -842,11 +844,11 @@ public class Object3DLabel extends Object3D {
     }
 
     /**
-     *
      * @param mask
      * @param other
      * @param col
      */
+    @Deprecated
     public void drawIntersection(ImageStack mask, Object3DLabel other, int col) {
         ImageProcessor tmp;
         ImageHandler otherSeg = other.getLabelImage();
@@ -869,6 +871,7 @@ public class Object3DLabel extends Object3D {
      * @param z Description of the Parameter
      * @return Description of the Return Value
      */
+    @Deprecated
     public Roi createRoi(int z) {
         // IJ.write("create roi " + z);
         int sx = labelImage.sizeX;
@@ -901,13 +904,13 @@ public class Object3DLabel extends Object3D {
 
     protected Object3DVoxels buildObject3DVoxels() {
         Object3DVoxels obj = new Object3DVoxels(this.getVoxels());
-        obj.setCalibration(this.getCalibration());
+        obj.setResXY(getResXY());
+        obj.setResZ(getResZ());
 
         return obj;
     }
 
     /**
-     *
      * @param path
      */
     @Override
@@ -934,7 +937,7 @@ public class Object3DLabel extends Object3D {
         int zmax0;
 
         int val = other.getValue();
-        ImageInt otherseg = other.getLabelImage();
+        ImageInt otherseg = other.getMaxLabelImage(val);
 
         xmin0 = getXmin();
         ymin0 = getYmin();
@@ -970,7 +973,7 @@ public class Object3DLabel extends Object3D {
         if (this.disjointBox(obj)) {
             return false;
         }
-        if ((this.getLabelImage() == null) || (obj.getLabelImage() == null)) {
+        if ((labelImage == null) || (obj.getMaxLabelImage(obj.getValue()) == null)) {
             return false;
         }
         // taken from object3DLabel
@@ -1001,9 +1004,6 @@ public class Object3DLabel extends Object3D {
         //IJ.log(""+xmin0+"-"+xmax0+" "+ymin0+"-"+ymax0+" "+zmin0+"-"+zmax0+" "+otherseg);
         //labelImage.show("this");
         //otherseg.show("other");
-        int offX0 = labelImage.offsetX;
-        int offY0 = labelImage.offsetY;
-        int offZ0 = labelImage.offsetZ;
         int offX1 = otherseg.offsetX;
         int offY1 = otherseg.offsetY;
         int offZ1 = otherseg.offsetZ;
@@ -1011,7 +1011,7 @@ public class Object3DLabel extends Object3D {
         for (int k = zmin0; k <= zmax0; k++) {
             for (int j = ymin0; j <= ymax0; j++) {
                 for (int i = xmin0; i <= xmax0; i++) {
-                    if ((labelImage.getPixel(i - offX0, j - offY0, k - offZ0) == value) && (otherseg.getPixel(i - offX1, j - offY1, k - offZ1) == val)) {
+                    if ((labelImage.getPixel(i , j , k ) == value) && (otherseg.getPixel(i - offX1, j - offY1, k - offZ1) == val)) {
                         return true;
                     }
                 }

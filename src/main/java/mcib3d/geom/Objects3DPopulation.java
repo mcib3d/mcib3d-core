@@ -31,6 +31,7 @@ import mcib3d.image3d.ImageInt;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 import mcib3d.utils.KDTreeC.Item;
+import mcib3d.utils.Logger.AbstractLog;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -47,13 +48,17 @@ import java.util.zip.ZipOutputStream;
 public class Objects3DPopulation {
 
     private final ArrayList<Object3D> objects;
+    //private ImageInt labelImage = null;
+    AbstractLog log = null;
     private Object3D mask = null; // usually a object3dlabel
-    private Calibration calibration = null;
+    // all objects should have same calibration !
+    @Deprecated private Calibration calibration = null; // deprecated
+    private double scaleXY = 1, scaleZ = 1;
+    private String unit = "pix";
     private KDTreeC kdtree = null;
     // link between values and index
     private HashMap<Integer, Integer> hashValue = null;
     private HashMap<String, Integer> hashName = null;
-    //private ImageInt labelImage = null;
 
     /**
      * Conctructor
@@ -62,14 +67,14 @@ public class Objects3DPopulation {
         objects = new ArrayList<Object3D>();
         //hashValue = new HashMap<Integer, Integer>();
         //hashName = new HashMap<String, Integer>();
-        calibration = new Calibration();
+        //calibration = new Calibration();
     }
 
     public Objects3DPopulation(Object3D[] objs) {
         objects = new ArrayList<Object3D>();
         //hashValue = new HashMap<Integer, Integer>();
         //hashName = new HashMap<String, Integer>();
-        calibration = new Calibration();
+        //calibration = new Calibration();
         this.addObjects(objs);
     }
 
@@ -77,10 +82,11 @@ public class Objects3DPopulation {
         objects = new ArrayList<Object3D>();
         // hashValue = new HashMap<Integer, Integer>();
         // hashName = new HashMap<String, Integer>();
-        calibration = new Calibration();
+        //calibration = new Calibration();
         this.addObjects(objs);
     }
 
+    @Deprecated
     public Objects3DPopulation(Object3D[] objs, Calibration cal) {
         objects = new ArrayList<Object3D>();
         //hashValue = new HashMap<Integer, Integer>();
@@ -104,11 +110,11 @@ public class Objects3DPopulation {
         objects = new ArrayList<Object3D>();
         // hashValue = new HashMap<Integer, Integer>();
         // hashName = new HashMap<String, Integer>();
-        Calibration cal = plus.getCalibration();
-        if (cal == null) {
-            cal = new Calibration();
-        }
-        addImage(plus, cal);
+        //Calibration cal = plus.getCalibration();
+        //if (cal == null) {
+        //    cal = new Calibration();
+        //}
+        //addImage(plus, cal);
     }
 
     public Objects3DPopulation(ImageInt plus, int threshold) {
@@ -122,9 +128,42 @@ public class Objects3DPopulation {
         addImage(plus, threshold, cal);
     }
 
+    public AbstractLog getLog() {
+        return log;
+    }
+
+    public void setLog(AbstractLog log) {
+        this.log = log;
+    }
+
+    public double getScaleXY() {
+        return scaleXY;
+    }
+
+    public void setScaleXY(double scaleXY) {
+        this.scaleXY = scaleXY;
+    }
+
+    public double getScaleZ() {
+        return scaleZ;
+    }
+
+    public void setScaleZ(double scaleZ) {
+        this.scaleZ = scaleZ;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
     /**
      * @return
      */
+    @Deprecated
     public Calibration getCalibration() {
         return calibration;
     }
@@ -132,6 +171,7 @@ public class Objects3DPopulation {
     /**
      * @param cal
      */
+    @Deprecated
     public void setCalibration(Calibration cal) {
         this.calibration = cal;
         // recalibrate objects
@@ -141,6 +181,13 @@ public class Objects3DPopulation {
             }
         }
     }
+
+    public void setCalibration(double sxy, double sz, String u) {
+        scaleXY = sxy;
+        scaleZ = sz;
+        unit = u;
+    }
+
 
     // hardcore distance in unit
 
@@ -163,7 +210,8 @@ public class Objects3DPopulation {
         voxlist = new ArrayList<Voxel3D>(1);
         voxlist.add(v);
         Object3DVoxels ob = new Object3DVoxels(voxlist);
-        Object3D_IJUtils.setCalibration(ob, calibration);
+        ob.setCalibration(scaleXY, scaleZ, unit);
+        //Object3D_IJUtils.setCalibration(ob, calibration);
         addObject(ob);
         for (int i = 1; i < nb; i++) {
             P = maskVox.getRandomvoxel(ra);
@@ -179,7 +227,8 @@ public class Objects3DPopulation {
             voxlist = new ArrayList<Voxel3D>(1);
             voxlist.add(v);
             ob = new Object3DVoxels(voxlist);
-            Object3D_IJUtils.setCalibration(ob, calibration);
+            //Object3D_IJUtils.setCalibration(ob, calibration);
+            ob.setCalibration(scaleXY, scaleZ, unit);
             addObject(ob);
         }
     }
@@ -205,7 +254,7 @@ public class Objects3DPopulation {
 
     public void createKDTreeCenters() {
         kdtree = new KDTreeC(3, 64);
-        double[] tmp = {calibration.pixelWidth, calibration.pixelHeight, calibration.pixelDepth};
+        double[] tmp = {scaleXY, scaleXY, scaleZ};
         kdtree.setScale(tmp);
         for (int i = 0; i < this.getNbObjects(); i++) {
             kdtree.add(this.getObject(i).getCenterAsArray(), this.getObject(i));
@@ -220,7 +269,8 @@ public class Objects3DPopulation {
         Object3D ob;
         for (Object3D object : objects) {
             ob = object;
-            ob.draw(ima, col);
+            Object3D_IJUtils.draw(ob, ima, col);
+            //ob.draw(ima, col);
         }
     }
 
@@ -254,7 +304,20 @@ public class Objects3DPopulation {
      * @param obj the 3D object to add
      */
     public void addObject(Object3D obj) {
-        Object3D_IJUtils.setCalibration(obj, calibration);
+        //Object3D_IJUtils.setCalibration(obj, calibration);
+        // first object ? will set calibration
+        if (getNbObjects() == 0) {
+            scaleXY = obj.resXY;
+            scaleZ = obj.resZ;
+            unit = obj.getUnits();
+        }
+        // check if calibration consistent
+        else {
+            if ((scaleXY != obj.resXY) || (scaleZ != obj.resZ)) {
+                log.log("Calibration not consistent between population and object : (" + scaleXY + "," + scaleZ + ") (" + obj.resXY + "," + obj.resZ + ")");
+                obj.setCalibration(scaleXY, scaleZ, unit);
+            }
+        }
         objects.add(obj);
         //hashValue.put(obj.getValue(), objects.size() - 1);
         // hashName.put(obj.getName(), objects.size() - 1);
@@ -379,7 +442,8 @@ public class Objects3DPopulation {
             ArrayList<Voxel3D> voxlist = new ArrayList<Voxel3D>(1);
             voxlist.add(v);
             Object3DVoxels ob = new Object3DVoxels(voxlist);
-            Object3D_IJUtils.setCalibration(ob, calibration);
+            //Object3D_IJUtils.setCalibration(ob, calibration);
+            ob.setCalibration(scaleXY, scaleZ, unit);
             ob.setValue(i + 1);
             addObject(ob);
         }
@@ -428,6 +492,7 @@ public class Objects3DPopulation {
      * @param threshold
      * @param cali
      */
+    @Deprecated
     public void addImage(ImageInt seg, int threshold, Calibration cali) {
         seg.resetStats(null);
         int min = (int) seg.getMinAboveValue(threshold);
@@ -472,6 +537,51 @@ public class Objects3DPopulation {
         }
     }
 
+    public void addImage(ImageInt seg, int threshold) {
+        seg.resetStats(null);
+        int min = (int) seg.getMinAboveValue(threshold);
+        int max = (int) seg.getMax();
+        if (max == 0) {
+            IJ.log("No objects found");
+            return;
+        }
+        //IJ.log("mm "+min+" "+max);
+        // iterate in image  and constructs objects
+        ArrayList<Voxel3D>[] objectstmp = new ArrayList[max - min + 1];
+        for (int i = 0; i < max - min + 1; i++) {
+            objectstmp[i] = new ArrayList<Voxel3D>();
+        }
+        int pix;
+        int sz = seg.sizeZ;
+        int sy = seg.sizeY;
+        int sx = seg.sizeX;
+
+        for (int k = 0; k < sz; k++) {
+            for (int j = 0; j < sy; j++) {
+                for (int i = 0; i < sx; i++) {
+                    pix = seg.getPixelInt(i, j, k);
+                    if (pix > threshold) {
+                        objectstmp[pix - min].add(new Voxel3D(i, j, k, pix));
+                    }
+                }
+            }
+        }
+        // ARRAYLIST
+        int c = 1;
+        for (int i = 0; i < max - min + 1; i++) {
+            if (!objectstmp[i].isEmpty()) {
+                Object3DVoxels ob = new Object3DVoxels(objectstmp[i]);
+                //ob.setLabelImage(null);// the image can be closed anytime
+                //Object3D_IJUtils.setCalibration(ob, calibration);
+                ob.setCalibration(seg.getScaleXY(), seg.getScaleZ(), seg.getUnit());
+                ob.setName("Obj-" + c + "-" + ob.getValue());
+                addObject(ob);
+                c++;
+            }
+        }
+    }
+
+    @Deprecated
     public void addImage(ImageInt seg, Calibration cali) {
         addImage(seg, 0, cali);
     }
@@ -479,6 +589,7 @@ public class Objects3DPopulation {
     /**
      * @param plus
      */
+    @Deprecated
     public void addImage(ImagePlus plus) {
         Calibration calplus = plus.getCalibration();
         if (calplus == null) {
@@ -521,7 +632,18 @@ public class Objects3DPopulation {
         //Object3D old = objects.get(i);
         //hashName.remove(old.getName());
         // set new object
-        Object3D_IJUtils.setCalibration(obj, calibration);
+        if (getNbObjects() == 0) {
+            scaleXY = obj.resXY;
+            scaleZ = obj.resZ;
+            unit = obj.getUnits();
+        }
+        // check if calibration consistent
+        else {
+            if ((scaleXY != obj.resXY) || (scaleZ != obj.resZ)) {
+                log.log("Calibration not consistent between population and object : (" + scaleXY + "," + scaleZ + ") (" + obj.resXY + "," + obj.resZ + ")");
+                obj.setCalibration(scaleXY, scaleZ, unit);
+            }
+        }
         objects.set(i, obj);
         //hashName.put(obj.getName(), i);
         // update kdtree if available // FIXME UPDATE kdtree
@@ -1467,8 +1589,9 @@ public class Objects3DPopulation {
         return al;
     }
 
+    @ Deprecated
     public ArrayList<double[]> getMeasuresMesh() {
-        // geometrical mesure volume (pix and unit) and surface (pix and unit)
+        // geometrical measure volume (pix and unit) and surface (pix and unit)
         ArrayList<double[]> al = new ArrayList<double[]>();
         for (Object3D ob : objects) {
             Object3DSurface surf = new Object3DSurface(ob.computeMeshSurface(true), ob.getValue());
@@ -1482,6 +1605,7 @@ public class Objects3DPopulation {
         return al;
     }
 
+    @Deprecated
     private void addImagePlus(ImagePlus plus) {
         addImage(plus);
     }
@@ -1575,16 +1699,14 @@ public class Objects3DPopulation {
                 obj.loadObject(dir + fs, entryName);
                 obj.setName(entryName.substring(0, entryName.length() - 6));
 
-                Calibration cal = new Calibration();
-                cal.pixelWidth = obj.getResXY();
-                cal.pixelHeight = obj.getResXY();
-                cal.pixelDepth = obj.getResZ();
-                cal.setUnit(obj.getUnits());
+                //Calibration cal = new Calibration();
+                //cal.pixelWidth = obj.getResXY();
+                //cal.pixelHeight = obj.getResXY();
+                //cal.pixelDepth = obj.getResZ();
+                //cal.setUnit(obj.getUnits());
 
                 addObject(obj);
 
-                // take first calibration as general calibration
-                // TODO each object should have its own calibration <-> conflict with objects3DPopulation
                 file.delete();
             }
             zipinputstream.close();

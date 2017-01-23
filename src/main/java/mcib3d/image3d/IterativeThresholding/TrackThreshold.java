@@ -2,10 +2,7 @@ package mcib3d.image3d.IterativeThresholding;
 
 import ij.IJ;
 import ij.ImagePlus;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.Point3D;
-import mcib3d.geom.Voxel3D;
+import mcib3d.geom.*;
 import mcib3d.image3d.*;
 import mcib3d.utils.ArrayUtil;
 
@@ -70,6 +67,7 @@ public class TrackThreshold {
     private ArrayList<Point3D> markers = null;// TO REMOVE
     private ImageInt imageMarkers = null;
     private ImageInt imageZones = null;
+    private Objects3DPopulation populationZones = null;
 
     public TrackThreshold(int vmin, int vmax, int st, int nbCla, int sta) {
         if (vmax >= vmin) {
@@ -97,6 +95,7 @@ public class TrackThreshold {
         startThreshold = sta;
         contrastMin = contrast;
     }
+
 
     private static int[] constantVoxelsHistogram(ImageHandler img, int nbClasses, int startThreshold) {
         int[] res;
@@ -275,7 +274,6 @@ public class TrackThreshold {
         }
         return frame1;
     }
-
 
     private ArrayList<ImageHandler> process(ImageHandler img) {
         Criterion criterion;
@@ -531,8 +529,29 @@ public class TrackThreshold {
     private boolean checkMarkersTest(Object3D object3D) {
         boolean mark = ((imageMarkers == null) || (object3D.includesMarkersOneOnly(imageMarkers)));
         boolean zone = ((imageZones == null) || (object3D.includedInZonesOneOnly(imageZones)));
+        //zone=false;
+        //if (zone) return mark;
+        //double coloc = checkZoneColoc(object3D);
+        //zone = (coloc > 60);
+        //if(coloc<100) IJ.log("Zone Coloc " + coloc);
 
         return mark && zone;
+    }
+
+    private double checkZoneColoc(Object3D object3D) {
+        if (populationZones == null) {
+            populationZones = new Objects3DPopulation(imageZones);
+        }
+        ArrayUtil arrayUtil = object3D.listValues(imageZones);
+        arrayUtil = arrayUtil.distinctValues();
+        double maxColoc = 0;
+        for (double z : arrayUtil.getArrayList()) {
+            if (z == 0) continue;
+            Object3D zone = populationZones.getObjectByValue((int) (z));
+            double coloc = object3D.pcColoc(zone);
+            if (coloc > maxColoc) maxColoc = coloc;
+        }
+        return maxColoc;
     }
 
 

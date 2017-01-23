@@ -33,6 +33,8 @@ import java.util.logging.Logger;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
+//import ij.measure.Calibration;
+
 //import mcib3d.image3d.legacy.Image3D;
 
 /**
@@ -64,6 +66,9 @@ public abstract class ImageHandler {
     public int sizeX, sizeY, sizeZ, sizeXY, sizeXYZ, offsetX, offsetY, offsetZ;
     protected ImagePlus img;
     protected String title;
+    double scaleXY = 1.0, scaleZ = 1.0;
+    String unit = "pix";
+
     HashMap<ImageHandler, ImageStats> stats = new HashMap<ImageHandler, ImageStats>(2);
 
     protected ImageHandler(ImagePlus img) {
@@ -1015,6 +1020,7 @@ public abstract class ImageHandler {
 
     public abstract Object getArray1D(int z);
 
+    @Deprecated
     public Calibration getCalibration() {
         if (img == null) {
             return null;
@@ -1023,6 +1029,7 @@ public abstract class ImageHandler {
         }
     }
 
+    @Deprecated
     public void setCalibration(Calibration cal) {
         if (img != null) {
             img.setCalibration(cal);
@@ -1037,6 +1044,9 @@ public abstract class ImageHandler {
             cal.pixelWidth = scaleXY;
             cal.setUnit(unit);
         }
+        this.scaleXY = scaleXY;
+        this.scaleZ = scaleZ;
+        this.unit = unit;
     }
 
     public void setScale(ImageHandler other) {
@@ -1044,6 +1054,9 @@ public abstract class ImageHandler {
             Calibration cal = other.getImagePlus().getCalibration().copy();
             img.setCalibration(cal);
         }
+        this.scaleXY = other.scaleXY;
+        this.scaleZ = other.scaleZ;
+        this.unit = other.unit;
     }
 
     public void setOffset(ImageHandler other) {
@@ -1064,7 +1077,7 @@ public abstract class ImageHandler {
             Calibration cal = img.getCalibration();
             return cal.pixelWidth;
         }
-        return 1;
+        return scaleXY;
     }
 
     public String getUnit() {
@@ -1072,7 +1085,7 @@ public abstract class ImageHandler {
             Calibration cal = img.getCalibration();
             return cal.getUnit();
         }
-        return "pix";
+        return unit;
     }
 
     public double getScaleZ() {
@@ -1080,7 +1093,7 @@ public abstract class ImageHandler {
             Calibration cal = img.getCalibration();
             return cal.pixelDepth;
         }
-        return 1;
+        return scaleZ;
     }
 
     public ImageHandler createSameDimensions() {

@@ -354,7 +354,7 @@ public class Object3DSurface extends Object3D {
 
 
     private void computeSurfaceAreas() {
-        // FIXME aresas ad surfaces meshes !!
+        // FIXME areas ad surfaces meshes !!
         areaNbVoxels = computeSurfaceMeshArea(false, 1, 1);
         areaContactVoxels = areaNbVoxels;
         areaContactUnit = computeSurfaceMeshArea(false, resXY, resZ);
@@ -1844,7 +1844,9 @@ public class Object3DSurface extends Object3D {
 
     protected Object3DVoxels buildObject3DVoxels() {
         Object3DVoxels obj = new Object3DVoxels(this.getVoxels());
-        obj.setCalibration(this.getCalibration());
+        obj.setResXY(getResXY());
+        obj.setResZ(getResZ());
+        //obj.setCalibration(this.getCalibration());
 
         return obj;
     }
@@ -1875,6 +1877,7 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
+    @ Deprecated
     public List computeMeshSurface(boolean calibrated) {
         return getSurfaceTriangles(calibrated);
     }
@@ -1919,6 +1922,7 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
+    @ Deprecated
     public boolean draw(ByteProcessor mask, int z, int col) {
         boolean ok = false;
         for (Voxel3D vox : this.getVoxels()) {
@@ -1931,6 +1935,7 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
+    @ Deprecated
     public void draw(ImageStack mask, int col) {
         for (Voxel3D vox : this.getVoxels()) {
             mask.setVoxel((int) (Math.round(vox.getX())), (int) (Math.round(vox.getY())), (int) (Math.round(vox.getY())), col);
@@ -2063,6 +2068,7 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
+    @ Deprecated
     public void draw(ImageStack mask, int r, int g, int b) {
         Voxel3D vox;
         ImageProcessor tmp;
@@ -2076,6 +2082,7 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
+    @ Deprecated
     public Roi createRoi(int z) {
         // FIXME coordinates may not be ordered
         float xcoor[] = new float[faces.size()];
