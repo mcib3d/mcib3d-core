@@ -9,9 +9,9 @@ import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
 import mcib3d.geom.*;
 import mcib3d.image3d.processing.FastFilters3D;
-import mcib3d.utils.Logger.AbstractLog;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.Chrono;
+import mcib3d.utils.Logger.AbstractLog;
 import mcib3d.utils.ThreadUtil;
 
 import java.util.ArrayList;
@@ -1160,6 +1160,57 @@ public class ImageFloat extends ImageHandler {
         return res;
     }
 
+    public void adaptiveFilter(ImageFloat filtered, float radx, float rady, float radz, int zmin, int zmax, Chrono timer, AbstractLog show) {
+        // create kernel
+        final int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
+        int nb = 0;
+        for (int i = 0; i < ker.length; i++) {
+            nb += ker[i];
+        }
+        final int nb2 = nb;
+        final float radX2 = radx;
+        final float radY2 = rady;
+        final float radZ2 = radz;
+
+        ArrayUtil[] tab = new ArrayUtil[7];
+        // displacement to take neighborhoods
+        int dep = 1;
+        double mes;
+        double mins;
+        double si;
+        double me;
+
+        for (int k = zmin; k < zmax; k++) {
+            for (int j = 0; j < sizeY; j++) {
+                for (int i = 0; i < sizeX; i++) {
+                    tab[0] = getNeighborhoodKernel(ker, nb2, i, j, k, radX2, radY2, radZ2);
+                    tab[1] = getNeighborhoodKernel(ker, nb2, i + dep, j, k, radX2, radY2, radZ2);
+                    tab[2] = getNeighborhoodKernel(ker, nb2, i - dep, j, k, radX2, radY2, radZ2);
+                    tab[3] = getNeighborhoodKernel(ker, nb2, i, j + dep, k, radX2, radY2, radZ2);
+                    tab[4] = getNeighborhoodKernel(ker, nb2, i, j - dep, k, radX2, radY2, radZ2);
+                    tab[5] = getNeighborhoodKernel(ker, nb2, i, j, k + dep, radX2, radY2, radZ2);
+                    tab[6] = getNeighborhoodKernel(ker, nb2, i, j, k - dep, radX2, radY2, radZ2);
+                    mes = 0;
+                    mins = Float.MAX_VALUE;
+                    for (int c = 0; c < 7; c++) {
+                        //me = tab[c].median();
+                        me = tab[c].getMean();
+                        si = tab[c].getStdDev();
+                        if (si < mins) {
+                            mins = si;
+                            mes = me;
+                        }
+                    }
+                    filtered.setPixel(i, j, k, (int) mes);
+                }
+            }
+            if (timer != null) {
+                String ti = timer.getFullInfo(1);
+                if (ti != null) show.log("3D filtering : " + ti);
+            }
+        }
+    }
+
     /**
      * Adaptive Filter in 3D (expermimental) Take 7 neighborhood, compute mean
      * and std dev Assign mean of neighborhood with lowest std dev
@@ -1169,6 +1220,7 @@ public class ImageFloat extends ImageHandler {
      * @param rady
      * @return 3D filtered image
      */
+    @Deprecated
     public ImageFloat adaptiveFilter(float radx, float rady, float radz, int nbcpus) {
         final ImageFloat adaptimg2 = (ImageFloat) this.createSameDimensions();
 

@@ -5,8 +5,8 @@ import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Voxel3DComparable;
 import mcib3d.image3d.*;
-import mcib3d.utils.Logger.AbstractLog;
 import mcib3d.utils.Chrono;
+import mcib3d.utils.Logger.AbstractLog;
 import mcib3d.utils.Logger.IJStatus;
 import mcib3d.utils.ThreadUtil;
 
@@ -240,7 +240,26 @@ public class FastFilters3D {
         } else if (filter == SOBEL) {
             res = ima.sobelFilter();
         } else if (filter == ADAPTIVE) {
-            res = ima.adaptiveFilter(voisx, voisy, voisz, nbcpus);
+            //res = ima.adaptiveFilter(voisx, voisy, voisz, nbcpus);
+            // PARALLEL
+            final ImageInt out = res;
+            final AtomicInteger ai = new AtomicInteger(0);
+            final int n_cpus = nbcpus == 0 ? ThreadUtil.getNbCpus() : nbcpus;
+            final int dec = (int) Math.ceil((double) ima.sizeZ / (double) n_cpus);
+            Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
+            show.log("Starting");
+            for (int ithread = 0; ithread < threads.length; ithread++) {
+                threads[ithread] = new Thread() {
+                    @Override
+                    public void run() {
+                        for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
+                            ima.adaptiveFilter(out, voisx, voisy, voisz, dec * k, dec * (k + 1), time, show);
+                        }
+                    }
+                };
+            }
+            ThreadUtil.startAndJoin(threads);
+            show.log("Finished");
         }
 
         return res;
@@ -354,7 +373,26 @@ public class FastFilters3D {
         } else if (filter == SOBEL) {
             res = ima.sobelFilter();
         } else if (filter == ADAPTIVE) {
-            res = ima.adaptiveFilter(voisx, voisy, voisz, nbcpus);
+            //res = ima.adaptiveFilter(voisx, voisy, voisz, nbcpus);
+            // PARALLEL
+            final ImageFloat out = res;
+            final AtomicInteger ai = new AtomicInteger(0);
+            final int n_cpus = nbcpus == 0 ? ThreadUtil.getNbCpus() : nbcpus;
+            final int dec = (int) Math.ceil((double) ima.sizeZ / (double) n_cpus);
+            Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
+            show.log("Starting");
+            for (int ithread = 0; ithread < threads.length; ithread++) {
+                threads[ithread] = new Thread() {
+                    @Override
+                    public void run() {
+                        for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
+                            ima.adaptiveFilter(out, voisx, voisy, voisz, dec * k, dec * (k + 1), time, show);
+                        }
+                    }
+                };
+            }
+            ThreadUtil.startAndJoin(threads);
+            show.log("Finished");
         }
 
         return res;
