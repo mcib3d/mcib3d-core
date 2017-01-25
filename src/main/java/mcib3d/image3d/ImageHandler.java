@@ -942,6 +942,61 @@ public abstract class ImageHandler {
         }
     }
 
+    public ArrayList<Voxel3D> getNeighborhoodLayerList(int x, int y, int z, float r0, float r1) {
+        return getNeighborhoodLayerList(x, y, z, r0, r1, null);
+    }
+
+    /**
+     * Get the neighborhood as a layer of pixels
+     *
+     * @param x     Coordinate x of the pixel
+     * @param y     Coordinate y of the pixel
+     * @param z     Coordinate z of the pixel
+     * @param r0    Minimu radius value
+     * @param r1    Maximum radius value
+     * @param water Watershed image, can be null
+     * @return arrayList ogf voxels3D
+     */
+    public ArrayList<Voxel3D> getNeighborhoodLayerList(int x, int y, int z, float r0, float r1, ImageInt water) {
+        int index = 0;
+        double r02 = r0 * r0;
+        double r12 = r1 * r1;
+        ArrayList<Voxel3D> voxel3DS = new ArrayList<Voxel3D>();
+
+        double dist;
+        double ratio = getScaleZ() / getScaleXY();
+        double ratio2 = ratio * ratio;
+        int vx = (int) Math.ceil(r1);
+        int vy = (int) Math.ceil(r1);
+        int vz = (int) (Math.ceil(r1 / ratio));
+        //double[] pix = new double[(2 * vx + 1) * (2 * vy + 1) * (2 * vz + 1)];
+        int wat = 0;
+        if (water != null) {
+            wat = water.getPixelInt(x, y, z);
+        }
+
+        for (int k = z - vz; k <= z + vz; k++) {
+            for (int j = y - vy; j <= y + vy; j++) {
+                for (int i = x - vx; i <= x + vx; i++) {
+                    if (i >= 0 && j >= 0 && k >= 0 && i < sizeX && j < sizeY && k < sizeZ) {
+                        if (((water != null) && (water.getPixel(i, j, k) == wat)) || (water == null)) {
+                            dist = ((x - i) * (x - i)) + ((y - j) * (y - j)) + ((z - k) * (z - k) * ratio2);
+                            if ((dist >= r02) && (dist < r12)) {
+                                //t.putValue(index, );
+                                //pix[index] = getPixel(i, j, k);
+                                //index++;
+                                voxel3DS.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // check if some values are set
+        return voxel3DS;
+    }
+
+
     /**
      * Get the neighborhood as a layer of pixels
      *
