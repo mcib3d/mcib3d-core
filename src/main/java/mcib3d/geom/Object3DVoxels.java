@@ -804,6 +804,7 @@ public class Object3DVoxels extends Object3D {
                                 contours.add(voxC);
                                 kdtreeContours.add(voxC.getArray(), voxC);
                                 // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
+                                // Surface area estimation of digitized 3D objects using weighted local configurations
                                 if (face == 1) {
                                     class1++;
                                 }
@@ -834,6 +835,7 @@ public class Object3DVoxels extends Object3D {
         }
         //IJ.log("contours "+contours.size());
         // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
+        // Surface area estimation of digitized 3D objects using weighted local configurations
         double w1 = 0.894, w2 = 1.3409, w3 = 1.5879, w4 = 2.0, w5 = 8.0 / 3.0, w6 = 10.0 / 3.0;
         correctedSurfaceArea = (class1 * w1 + class2 * w2 + class3 * w3 + class4 * w4 + class5 * w5 + class6 * w6);
 
@@ -1407,6 +1409,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     // From Bribiesca 2008 Pattern Recognition
+    // An easy measure of compactness for 2D and 3D shapes
     public double getDiscreteCompactness() {
         double n = getVolumePixels();
         double tmp = Math.pow(n, 2.0 / 3.0);
@@ -1415,6 +1418,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
+    // Surface area estimation of digitized 3D objects using weighted local configurations
     public double getCompactnessCorrected() {
         double V = getVolumePixels();
         double S = correctedSurfaceArea;
@@ -1423,6 +1427,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     // METHOD LAURENT GOLE FROM Lindblad2005 TO COMPUTE SURFACE
+    // Surface area estimation of digitized 3D objects using weighted local configurations
     public double getSphericityCorrected() {
         return Math.pow(getCompactnessCorrected(), 1.0 / 3.0);
     }

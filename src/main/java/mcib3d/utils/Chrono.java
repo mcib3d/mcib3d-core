@@ -44,7 +44,7 @@ public final class Chrono {
     private int nbTasksTotal;
     private int nbTasksCompleted;
 
-    private long minDelayToShow = 100; // ms
+    private long minDelayToShow = 500; // ms
 
 
     /**

@@ -20,9 +20,7 @@ package mcib3d.geom;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-//import ij.IJ;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
@@ -198,7 +196,7 @@ public class Objects3DPopulation {
                 P = getRandomPointInMask();
                 closest = closestCenter(P);
                 dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
-                IJ.showStatus("***");
+                //IJ.showStatus("***");
             }
             v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) (i + 1));
             voxlist = new ArrayList<Voxel3D>(1);
@@ -291,7 +289,7 @@ public class Objects3DPopulation {
         // check if calibration consistent
         else {
             if ((scaleXY != obj.resXY) || (scaleZ != obj.resZ)) {
-                log.log("Calibration not consistent between population and object : (" + scaleXY + "," + scaleZ + ") (" + obj.resXY + "," + obj.resZ + ")");
+                if(log!=null)log.log("Calibration not consistent between population and object : (" + scaleXY + "," + scaleZ + ") (" + obj.resXY + "," + obj.resZ + ")");
                 obj.setCalibration(scaleXY, scaleZ, unit);
             }
         }
@@ -378,7 +376,7 @@ public class Objects3DPopulation {
         hashValue = null;
         hashName = null;
         if (!objects.remove(obj)) {
-            IJ.log("Pb removing " + obj);
+            if(log!=null)log.log("Pb removing " + obj);
         }
     }
 
@@ -475,7 +473,7 @@ public class Objects3DPopulation {
         int min = (int) seg.getMinAboveValue(threshold);
         int max = (int) seg.getMax();
         if (max == 0) {
-            IJ.log("No objects found");
+            if(log!=null)log.log("No objects found");
             return;
         }
         //IJ.log("mm "+min+" "+max);
@@ -524,7 +522,7 @@ public class Objects3DPopulation {
         int min = (int) seg.getMinAboveValue(threshold);
         int max = (int) seg.getMax();
         if (max == 0) {
-            IJ.log("No objects found");
+            if(log!=null) log.log("No objects found");
             return;
         }
         //IJ.log("mm "+min+" "+max);
@@ -623,7 +621,7 @@ public class Objects3DPopulation {
         // check if calibration consistent
         else {
             if ((scaleXY != obj.resXY) || (scaleZ != obj.resZ)) {
-                log.log("Calibration not consistent between population and object : (" + scaleXY + "," + scaleZ + ") (" + obj.resXY + "," + obj.resZ + ")");
+                if(log!=null)log.log("Calibration not consistent between population and object : (" + scaleXY + "," + scaleZ + ") (" + obj.resXY + "," + obj.resZ + ")");
                 obj.setCalibration(scaleXY, scaleZ, unit);
             }
         }
@@ -1422,7 +1420,7 @@ public class Objects3DPopulation {
             int it = 0;
             int maxIt = 1000000;
             while (!ok) {
-                IJ.showStatus("Shuffling " + getObject(i).getValue());
+                //log.log("Shuffling " + getObject(i).getValue());
                 Voxel3D vox = maskVox.getRandomvoxel(ra);
                 obj.setNewCenter(vox.getX(), vox.getY(), vox.getZ());
                 ok = true;
@@ -1440,7 +1438,7 @@ public class Objects3DPopulation {
                 }
             }
             if (it == maxIt) {
-                IJ.log("Could not shuffle " + obj);
+                if(log!=null)log.log("Could not shuffle " + obj);
                 obj.setNewCenter(center.x, center.y, center.z);
             }
             shuObj.add(obj);
@@ -1631,7 +1629,7 @@ public class Objects3DPopulation {
             zip.close();
 
         } catch (IOException ex) {
-            IJ.log("Pb saving population " + ex);
+            if(log!=null) log.log("Pb saving population " + ex);
             return false;
         }
 
@@ -1657,7 +1655,7 @@ public class Objects3DPopulation {
         byte[] buf = new byte[1024];
         File file;
         Object3DVoxels obj;
-        IJ.log("Loading objects from " + path);
+        if(log!=null) log.log("Loading objects from " + path);
         File f = new File(path);
         String dir = f.getParent();
         String fs = File.separator;
@@ -1694,9 +1692,9 @@ public class Objects3DPopulation {
             }
             zipinputstream.close();
         } catch (FileNotFoundException ex) {
-            IJ.log("Pb loading " + ex);
+            if(log!=null)log.log("Pb loading " + ex);
         } catch (IOException e) {
-            IJ.log("Pb loading " + e);
+            if(log!=null)log.log("Pb loading " + e);
         }
     }
 

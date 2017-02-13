@@ -9,6 +9,6 @@ public class IJStatus extends AbstractLog {
 
     @Override
     public void log(String S) {
-        IJ.showStatus(S);
+         IJ.showStatus(S);
     }
 }

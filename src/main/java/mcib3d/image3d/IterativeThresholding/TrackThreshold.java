@@ -5,6 +5,9 @@ import ij.ImagePlus;
 import mcib3d.geom.*;
 import mcib3d.image3d.*;
 import mcib3d.utils.ArrayUtil;
+import mcib3d.utils.Chrono;
+import mcib3d.utils.Logger.AbstractLog;
+import mcib3d.utils.Logger.IJLog;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,10 +51,13 @@ public class TrackThreshold {
     public static final byte CRITERIA_METHOD_MIN_ELONGATION = 1;
     public static final byte CRITERIA_METHOD_MAX_VOLUME = 2;
     public static final byte CRITERIA_METHOD_MSER = 3; // min variation of volume
-    public static final byte CRITERIA_METHOD_MAX_COMPACITY = 4;
+    public static final byte CRITERIA_METHOD_MAX_COMPACTNESS = 4;
     public static final byte CRITERIA_METHOD_MAX_EDGES = 5;
+    @Deprecated
     public boolean verbose = true;
+    @Deprecated
     public boolean status = true;
+    AbstractLog log = new IJLog();
     // volume range in voxels
     private int volMax = 1000;
     private int volMin = 1;
@@ -107,7 +113,7 @@ public class TrackThreshold {
             }
             return res;
         }
-        IJ.log("Analysing histogram ...");
+        //IJ.log("Analysing histogram ...");
         short[] pix = (short[]) img.getArray1D();
         Arrays.sort(pix);
         // starts
@@ -119,7 +125,7 @@ public class TrackThreshold {
             idx++;
         }
         pix = Arrays.copyOfRange(pix, idx, pix.length);
-        IJ.log("Finished");
+        //IJ.log("Finished");
         int nbVox = pix.length / nbClasses;
         res = new int[nbVox];
         Arrays.fill(res, -1);
@@ -194,8 +200,8 @@ public class TrackThreshold {
             // K-means
             BlankMask mas = new BlankMask(img);
             int[] h = img.getHistogram(mas, 65536, 0, 65535);
-            if (verbose) {
-                IJ.log("Computing k-means");
+            if (log != null) {
+                log.log("Computing k-means");
             }
             histogramThreshold = ArrayUtil.kMeans_Histogram1D(h, nbClasses, startThreshold);
             Arrays.sort(histogramThreshold);
@@ -284,7 +290,7 @@ public class TrackThreshold {
                 criterion = new CriterionElongation();
                 bestCriterion = new BestCriteriaMin();
                 break;
-            case CRITERIA_METHOD_MAX_COMPACITY:
+            case CRITERIA_METHOD_MAX_COMPACTNESS:
                 criterion = new CriterionCompactness();
                 bestCriterion = new BestCriteriaMax();
                 break;
@@ -311,25 +317,38 @@ public class TrackThreshold {
         ImageLabeller labeler = new ImageLabeller(volMin, volMax);
         TMaximum = (int) img.getMax();
 
-        if (verbose) IJ.log("Analysing histogram ...");
+        if (log != null) log.log("Analysing histogram ...");
         histogramThreshold = initHistogram(img);
         T0 = histogramThreshold[0];
 
         // first frame
         T1 = T0;
-        if (verbose) IJ.log("Computing frame for first threshold " + T1);
+        if (log != null) log.log("Computing frame for first threshold " + T1);
         ArrayList<ObjectTrack> frame1 = computeFrame(img, labeler.getObjects(img.thresholdAboveInclusive(T1)), markers, T1, criterion);
 
-        if (verbose) IJ.log("Starting iterative thresholding ... ");
+        if (log != null) log.log("Starting iterative thresholding ... ");
 
         ArrayList<ObjectTrack> allFrames = new ArrayList<ObjectTrack>();
         allFrames.addAll(frame1);
         // use histogram and unique values to loop over pixel values
         GlobalThreshold = 1;
+        //
+        Chrono chrono = new Chrono(TMaximum);
+        chrono.start();
+        String S = null;
+        if (log instanceof IJLog) {
+            ((IJLog) (log)).setUpdate(true);
+        }
         while (T1 <= TMaximum) {
             int T2 = computeNextThreshold(T1, TMaximum, histogramThreshold);
             if (T2 < 0) break;
-            if (status) IJ.showStatus("Computing frame for threshold " + T2 + "                   ");
+
+            if (log != null) {
+                S = chrono.getFullInfo(T2 - T1);
+                //IJ.log("\\Update: "+S);
+                if (S != null) log.log(S);
+            }
+            //if (status) IJ.showStatus("Computing frame for threshold " + T2 + "                   ");
 
             // Threshold T2
             ImageHandler bin2 = img.thresholdAboveInclusive(T2);
@@ -341,9 +360,13 @@ public class TrackThreshold {
             // T2--> new T1
             T1 = T2;
             frame1 = computeAssociation(frame1, frame2, allFrames, labels2);
+
         } // thresholding
-        if (verbose) {
-            IJ.log("Iterative Thresholding finished");
+        if (log instanceof IJLog) {
+            ((IJLog) (log)).setUpdate(false);
+        }
+        if (log != null) {
+            log.log("Iterative Thresholding finished");
         }
 
         return computeResults(allFrames, img, bestCriterion);
@@ -360,8 +383,8 @@ public class TrackThreshold {
         while (deleteLowContrastTracks(allFrames, contrastMin)) ;
 
         while ((!allFrames.isEmpty()) && (level < maxLevel)) {
-            if (verbose) {
-                IJ.log("Nb total objects level " + level + " : " + allFrames.size());
+            if (log != null) {
+                log.log("Nb total objects level " + level + " : " + allFrames.size());
             }
             ImageHandler drawIdx, drawContrast;
             // 32-bits case
@@ -514,8 +537,13 @@ public class TrackThreshold {
         return ImageHandler.getHyperStack("draw", drawsTab);
     }
 
+    @Deprecated
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public void setLog(AbstractLog abstractLog) {
+        log = abstractLog;
     }
 
     private boolean checkMarkers(Object3D object3D) {

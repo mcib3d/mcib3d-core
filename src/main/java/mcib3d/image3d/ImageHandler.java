@@ -982,9 +982,6 @@ public abstract class ImageHandler {
                         if (((water != null) && (water.getPixel(i, j, k) == wat)) || (water == null)) {
                             dist = ((x - i) * (x - i)) + ((y - j) * (y - j)) + ((z - k) * (z - k) * ratio2);
                             if ((dist >= r02) && (dist < r12)) {
-                                //t.putValue(index, );
-                                //pix[index] = getPixel(i, j, k);
-                                //index++;
                                 voxel3DS.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
                             }
                         }

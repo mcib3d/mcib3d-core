@@ -60,7 +60,7 @@ import mcib3d.utils.ThreadUtil;
  * @author thomas
  */
 public class Object3DSurface extends Object3D {
-    // vertices coordiantes are in real calibrated values (not pixels)
+    // vertices coordinates are in real calibrated values (not pixels)
     // calibration hence is the original image calibration
     // they are normally as triangle mesh
 

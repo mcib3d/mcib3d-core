@@ -7,22 +7,16 @@ import ij.measure.Calibration;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import ij3d.Volume;
-import marchingcubes.MCCube;
-import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
-import mcib3d.image3d.ImageShort;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * static methods to use with ImageJ for the Object3D class
  * Created by thomasb on 16/11/16.
  */
 public class Object3D_IJUtils {
-
 
 
     public static Calibration getCalibration(Object3D object3D) {
@@ -186,34 +180,4 @@ public class Object3D_IJUtils {
     }
 
 
-    public static List computeMeshSurface(Object3D object3D, boolean calibrated) {
-        //IJ.showStatus("computing mesh");
-        // use miniseg
-        ImageInt miniseg = object3D.getLabelImage();
-        ImageByte miniseg8 = ((ImageShort) (miniseg)).convertToByte(false);
-        ImagePlus objectImage = miniseg8.getImagePlus();
-        if (calibrated) {
-            objectImage.setCalibration(getCalibration(object3D));
-        }
-        boolean[] bl = {true, true, true};
-        Volume vol = new Volume(objectImage, bl);
-        vol.setAverage(true);
-        List l = MCCube.getTriangles(vol, 0);
-        // needs to invert surface
-        l = Object3DSurface.invertNormals(l);
-        // translate object with units coordinates
-        float tx, ty, tz;
-        if (calibrated) {
-            tx = (float) (miniseg.offsetX * object3D.getResXY());
-            ty = (float) (miniseg.offsetY * object3D.getResXY());
-            tz = (float) (miniseg.offsetZ * object3D.getResZ());
-        } else {
-            tx = (float) (miniseg.offsetX);
-            ty = (float) (miniseg.offsetY);
-            tz = (float) (miniseg.offsetZ);
-        }
-        l = Object3DSurface.translateTool(l, tx, ty, tz);
-
-        return l;
-    }
 }
