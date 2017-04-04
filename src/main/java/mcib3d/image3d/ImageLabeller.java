@@ -388,6 +388,31 @@ public class ImageLabeller {
         }
     }
 
+    private void labelIndividualVoxel(ImageHandler mask) {
+        currentMask = mask;
+        labels = new int[mask.sizeZ][mask.sizeXY];
+        int sizeX = mask.sizeX;
+        spots = new HashMap<Integer, Spot>();
+        int currentLabel = (short) 1;
+        Spot currentSpot;
+        Vox3D v;
+        int xy;
+        if (debug) {
+            System.out.println("Labelling...");
+        }
+        for (int z = 0; z < mask.sizeZ; z++) {
+            for (int y = 0; y < mask.sizeY; y++) {
+                for (int x = 0; x < sizeX; x++) {
+                    xy = x + y * sizeX;
+                    if (mask.getPixel(xy, z) != 0) {
+                        v = new Vox3D(xy, z);
+                        spots.put(currentLabel, new Spot(currentLabel++, v));
+                    }
+                }
+            }
+        }
+    }
+
     public ImageInt getLabels(ImageHandler mask, boolean connex6) {
         if ((spots == null) || (mask != currentMask)) {
             if (connex6) {
@@ -452,6 +477,21 @@ public class ImageLabeller {
             }
         }
         return spots.size();
+    }
+
+    public ImageInt getLabelsIndividualVoxels(ImageHandler mask) {
+        if ((spots == null) || (mask != currentMask)) {
+            labelIndividualVoxel(mask);
+        }
+        ImageShort res = new ImageShort(mask.getTitle() + "::segmented", mask.sizeX, mask.sizeY, mask.sizeZ);
+        short label = 1;
+        for (Spot s : spots.values()) {
+            Vox3D vox = s.voxels.get(0);
+            res.pixels[vox.z][vox.xy] = label;
+            label++;
+        }
+        return res;
+
     }
 
     // classical default neighborhood for segmentation is 26
