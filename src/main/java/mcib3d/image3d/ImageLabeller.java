@@ -393,8 +393,7 @@ public class ImageLabeller {
         labels = new int[mask.sizeZ][mask.sizeXY];
         int sizeX = mask.sizeX;
         spots = new HashMap<Integer, Spot>();
-        int currentLabel = (short) 1;
-        Spot currentSpot;
+        int currentLabel = 1;
         Vox3D v;
         int xy;
         if (debug) {

@@ -1,5 +1,6 @@
 package mcib3d.image3d;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.NewImage;
@@ -223,6 +224,32 @@ public class ImageShort extends ImageInt {
         imp2.getProcessor().setMinAndMax(0, 255);
         return (ImageByte) ImageHandler.wrap(imp2);
     }
+
+    public ImageByte convertToByte(double saturation) {
+        setMinAndMax(null);
+        resetStats(null);
+        ImageStats s = getImageStats(null);
+        double smin = s.getMin();
+        double smax = getPercentile(saturation, null);
+        IJ.log("byte :" + smin + " " + smax);
+        int currentSlice = img.getCurrentSlice();
+        ImageProcessor ip;
+        ImageStack stack2 = new ImageStack(sizeX, sizeY);
+        String label;
+        ImageStack stack1 = img.getImageStack();
+        for (int i = 1; i <= sizeZ; i++) {
+            label = stack1.getSliceLabel(i);
+            ip = stack1.getProcessor(i);
+            ip.setMinAndMax(smin, smax);
+            stack2.addSlice(label, ip.convertToByte(true));
+        }
+        ImagePlus imp2 = new ImagePlus(img.getTitle(), stack2);
+        imp2.setCalibration(img.getCalibration()); //update calibration
+        imp2.setSlice(currentSlice);
+        imp2.getProcessor().setMinAndMax(0, 255);
+        return (ImageByte) ImageHandler.wrap(imp2);
+    }
+
 
     public ImageFloat convertToFloat(boolean scaling) {
         if (scaling) {
