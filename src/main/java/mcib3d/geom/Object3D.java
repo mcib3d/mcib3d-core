@@ -4,7 +4,7 @@ package mcib3d.geom;
 //import com.mongodb.DBObject;
 
 //import ij.IJ;
-import mcib3d.utils.Logger.AbstractLog;
+
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -22,6 +22,7 @@ import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 import mcib3d.utils.KDTreeC.Item;
+import mcib3d.utils.Logger.AbstractLog;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -59,10 +60,6 @@ import java.util.List;
  * @author thomas
  */
 public abstract class Object3D implements Comparable<Object3D> {
-    // log
-    AbstractLog logger;
-    boolean logging=true;
-
     public static final byte MEASURE_NONE = 0;
     public static final byte MEASURE_VOLUME_PIX = 1;
     public static final byte MEASURE_VOLUME_UNIT = 2;
@@ -131,10 +128,6 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     protected double cy = Double.NaN;
     /**
-     * Touch the borders ?
-     */
-    //protected boolean touchBorders;
-    /**
      * Center of mass z
      */
     protected double cz = Double.NaN;
@@ -142,6 +135,10 @@ public abstract class Object3D implements Comparable<Object3D> {
      * Area in voxels
      */
     protected double areaNbVoxels = -1;
+    /**
+     * Touch the borders ?
+     */
+    //protected boolean touchBorders;
     /**
      * Area in units
      */
@@ -216,7 +213,6 @@ public abstract class Object3D implements Comparable<Object3D> {
      * label image, starts at 0,0
      */
     protected ImageInt labelImage = null;
-    //protected int offX = 0, offY = 0, offZ = 0; // offset of objectt into label image
     /**
      * current image used for quantification (to compute results once)
      */
@@ -225,6 +221,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * the resolution in XY
      */
     protected double resXY = 1;
+    //protected int offX = 0, offY = 0, offZ = 0; // offset of objectt into label image
     /**
      * the resolution in Z
      */
@@ -233,6 +230,9 @@ public abstract class Object3D implements Comparable<Object3D> {
      * the unit for resolution
      */
     protected String units = "pixels";
+    // log
+    AbstractLog logger;
+    boolean logging = true;
     // center distances stat
     double distcentermin = Double.NaN;
     double distcentermax = Double.NaN;
@@ -311,10 +311,9 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
+     * @return The calibration
      * @deprecated use Object3D-IJUtils
      * Gets the calibration of the Object3D (ImageJ)
-     *
-     * @return The calibration
      */
     public Calibration getCalibration() {
         Calibration cal = new Calibration();
@@ -327,10 +326,9 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
+     * @param cal The new calibration
      * @deprecated use Object3D-IJUtils
      * Sets the calibration of the Object3D (ImageJ)
-     *
-     * @param cal The new calibration
      */
     public void setCalibration(Calibration cal) {
         resXY = cal.pixelWidth;
@@ -429,6 +427,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * Get the label image starting at 0,0,0
+     *
      * @param val the value to draw the binary mask
      * @return The binary mask for the object
      */
@@ -450,6 +449,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * Utility to perform measurement
+     *
      * @param Measure The index of the measurement
      * @return the measurement
      */
@@ -536,8 +536,9 @@ public abstract class Object3D implements Comparable<Object3D> {
     protected abstract void computeMassCenter(ImageHandler ima);
 
     /**
-     *  Compute the mass center of the object using signal from an image and within a mask
-     * @param ima the image with the signal intensity
+     * Compute the mass center of the object using signal from an image and within a mask
+     *
+     * @param ima  the image with the signal intensity
      * @param mask the mask to restrain the computation
      */
     protected abstract void computeMassCenter(ImageHandler ima, ImageHandler mask);
@@ -621,12 +622,12 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * Compute the moments of the object, order 4
-     *
      */
     protected abstract void computeMoments4(); // order 3
 
     /**
-     *Returns the moments order 2
+     * Returns the moments order 2
+     *
      * @return the moments (6)
      */
     public double[] getMomentsRaw2() {
@@ -637,7 +638,8 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *Returns the moments order 3
+     * Returns the moments order 3
+     *
      * @return the moments (10)
      */
     public double[] getMomentsRaw3() {
@@ -648,7 +650,8 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *Returns the moments order 4
+     * Returns the moments order 4
+     *
      * @return the moments (15)
      */
     public double[] getMomentsRaw4() {
@@ -661,6 +664,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * Compute geometric invariants, based on orders 4 moments
      * refer to Xu and Li 2008. Geometric moments invariants. Pattern recognition. doi:10.1016/j.patcog.2007.05.001
+     *
      * @return the invariants (6)
      */
     public double[] getGeometricInvariants() {
@@ -698,6 +702,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * Compute homogeneous invariants, based on orders 4 moments
+     *
      * @return the invariants (5)
      */
     public double[] getHomogeneousInvariants() {
@@ -791,13 +796,15 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * Outputs the list of voxels values using intensity image
-      * @param ima the intensity image
+     *
+     * @param ima the intensity image
      * @return a array of values
      */
     public abstract ArrayUtil listValues(ImageHandler ima);
 
     /**
      * Outputs the list of voxels values using intensity image above a fixed threshold
+     *
      * @param ima the intensity image
      * @return a array of values
      */
@@ -814,18 +821,20 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * List voxels in the image with values > threshold0 and < threshold1
-     * @param ima  The image with values
+     *
+     * @param ima     The image with values
      * @param thresh0 the min threshold
-     * @param thres1 the max threshold
+     * @param thres1  the max threshold
      * @return the list of voxels with values > threshold
      */
     public abstract ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thres1);
 
     /**
      * List voxels in the image with with distances in specific range from a reference point
-     * @param P0 the reference point
-     * @param dist0 the min distance
-     * @param dist1 the max distance
+     *
+     * @param P0          the reference point
+     * @param dist0       the min distance
+     * @param dist1       the max distance
      * @param contourOnly lsit only voxels from the contour of the object
      * @return
      */
@@ -917,22 +926,20 @@ public abstract class Object3D implements Comparable<Object3D> {
     public abstract void draw(ObjectCreator3D obj, int col);
 
     /**
-     * @deprecated use Object3D-IJUtils
-     * drawing inside a 2D byteprocessor
-     *
      * @param mask the byte processor
      * @param z    the z slice
      * @param col  the color(grey level)
      * @return
+     * @deprecated use Object3D-IJUtils
+     * drawing inside a 2D byteprocessor
      */
     public abstract boolean draw(ByteProcessor mask, int z, int col);
 
     /**
-     * @deprecated use Object3D-IJUtils
-     * drawing inside an imagestack
-     *
      * @param mask the image
      * @param col  the color(grey level)
+     * @deprecated use Object3D-IJUtils
+     * drawing inside an imagestack
      */
     public abstract void draw(ImageStack mask, int col);
 
@@ -955,7 +962,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     *
      * @param mask
      * @param col
      * @param tx
@@ -986,22 +992,20 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     * @deprecated use Object3D-IJUtils
-     * drawing inside an imagestack, in rgb color
-     *
      * @param mask the imagestack
      * @param r    red value
      * @param g    greeen value
      * @param b    blue value
+     * @deprecated use Object3D-IJUtils
+     * drawing inside an imagestack, in rgb color
      */
     public abstract void draw(ImageStack mask, int r, int g, int b);
 
     /**
-     * @deprecated use Object3D-IJUtils
-     * create a roi for a slice
-     *
      * @param z the z slice
      * @return the contour roi in slice z
+     * @deprecated use Object3D-IJUtils
+     * create a roi for a slice
      */
     public abstract Roi createRoi(int z);
 
@@ -3165,9 +3169,9 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     * @deprecated use Object3D-IJUtils
      * @param calibrated
      * @return
+     * @deprecated use Object3D-IJUtils
      */
     public List computeMeshSurface(boolean calibrated) {
         //IJ.showStatus("computing mesh");
@@ -3258,7 +3262,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
 
-
     public boolean includedInZonesOneMore(ImageInt imageZones) {
         int label = -1;
         for (Voxel3D voxel3D : getVoxels()) {
@@ -3345,10 +3348,10 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     * @deprecated use Object3D-IJUtils
      * @param img
      * @param Z
      * @return
+     * @deprecated use Object3D-IJUtils
      */
     public boolean touchBorders(ImagePlus img, boolean Z) {
         int[] bb = getBoundingBox();
@@ -3545,6 +3548,28 @@ public abstract class Object3D implements Comparable<Object3D> {
         res.translate(img.offsetX, img.offsetY, img.offsetZ);
 
         return res;
+    }
+
+    public Object3DVoxels getEllipsoid() {
+        Vector3D V = this.getVectorAxis(2);
+        Vector3D W = this.getVectorAxis(1);
+        double r1 = this.getRadiusMoments(2);
+        double rad1 = r1;
+        double rad2 = Double.NaN;
+        if (!Double.isNaN(this.getMainElongation())) {
+            rad2 = rad1 / this.getMainElongation();
+        }
+        double rad3 = Double.NaN;
+        if (!Double.isNaN(this.getMedianElongation())) {
+            rad3 = rad2 / this.getMedianElongation();
+        }
+        int radius = (int) (r1 / resXY);
+        ObjectCreator3D ellipsoid = new ObjectCreator3D(2 * radius, 2 * radius, 2 * radius);
+        ellipsoid.setResolution(this.getResXY(), this.getResZ(), this.getUnits());
+        ellipsoid.createEllipsoidAxesUnit(r1 * resXY, r1 * resXY, r1 * resZ, rad1, rad2, rad3, 1, V, W, false);
+        Object3DVoxels ell = new Object3DVoxels(ellipsoid.getImageHandler(), 1);
+
+        return ell;
     }
 
     /**
