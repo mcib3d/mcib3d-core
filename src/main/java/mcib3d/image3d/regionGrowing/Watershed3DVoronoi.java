@@ -1,23 +1,24 @@
 package mcib3d.image3d.regionGrowing;
 
-import ij.IJ;
-import ij.measure.Calibration;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.utils.ArrayUtil;
+import mcib3d.utils.Logger.AbstractLog;
+import mcib3d.utils.Logger.IJLog;
 
 /**
  * Created by thomasb on 17/8/16.
  */
 public class Watershed3DVoronoi {
-    ImageInt seeds = null;
-    float radiusMax = Float.MAX_VALUE;
-    ImageFloat EDTImage = null;
-    ImageInt watershed = null;
-    ImageInt voronoi = null;
-    boolean labelSeeds = true;
+    private ImageInt seeds = null;
+    private float radiusMax = Float.MAX_VALUE;
+    private ImageFloat EDTImage = null;
+    private ImageInt watershed = null;
+    private ImageInt voronoi = null;
+    private boolean labelSeeds = true;
+    private AbstractLog log = new IJLog();
 
     public Watershed3DVoronoi(ImageInt seeds) {
         this.seeds = seeds;
@@ -25,7 +26,8 @@ public class Watershed3DVoronoi {
 
     public Watershed3DVoronoi(ImageInt seeds, float radiusMax) {
         this.seeds = seeds;
-        this.radiusMax = radiusMax;
+        if (!Float.isNaN(radiusMax))
+            this.radiusMax = radiusMax;
     }
 
     public void setSeeds(ImageInt seeds) {
@@ -35,8 +37,10 @@ public class Watershed3DVoronoi {
     }
 
     public void setRadiusMax(float radiusMax) {
-        this.radiusMax = radiusMax;
-        voronoi = null;
+        if (!Float.isNaN(radiusMax)) {
+            this.radiusMax = radiusMax;
+            voronoi = null;
+        }
     }
 
     public void setLabelSeeds(boolean labelSeeds) {
@@ -44,21 +48,16 @@ public class Watershed3DVoronoi {
     }
 
     private void computeEDT(boolean show) {
-        IJ.log("Computing EDT");
-        Calibration cal = seeds.getCalibration();
-        float resXY = 1;
-        float resZ = 1;
-        if (cal != null) {
-            resXY = (float) cal.pixelWidth;
-            resZ = (float) cal.pixelDepth;
-        }
+        log.log("Computing EDT");
+        float resXY = (float) seeds.getScaleXY();
+        float resZ = (float) seeds.getScaleZ();
         EDTImage = EDT.run(seeds, 0, resXY, resZ, true, 0);
         if (show) EDTImage.show("EDT");
     }
 
     private void computeWatershed(boolean show) {
         if (EDTImage == null) computeEDT(show);
-        IJ.log("Computing Watershed");
+        log.log("Computing Watershed");
         ImageFloat EDTcopy = EDTImage.duplicate();
         double max = EDTcopy.getMax();
         EDTcopy.invert();
@@ -72,7 +71,7 @@ public class Watershed3DVoronoi {
 
     private void computeVoronoi(boolean show) {
         if (watershed == null) computeWatershed(show);
-        IJ.log("Computing Voronoi");
+        log.log("Computing Voronoi");
         ImageByte mask = EDTImage.threshold(radiusMax, true, true);
         voronoi = watershed.duplicate();
         voronoi.intersectMask(mask);
@@ -86,7 +85,7 @@ public class Watershed3DVoronoi {
 
     public ImageInt getVoronoiLines(boolean show) {
         if (voronoi == null) computeVoronoi(show);
-        IJ.log("Computing voronoi lines");
+        log.log("Computing voronoi lines");
         ImageByte lines = new ImageByte("VoronoiLines", voronoi.sizeX, voronoi.sizeY, voronoi.sizeZ);
         // lines
         // compute borders
@@ -105,5 +104,9 @@ public class Watershed3DVoronoi {
             }
         }
         return lines;
+    }
+
+    public void setLog(AbstractLog logger) {
+        this.log = logger;
     }
 }
