@@ -4,28 +4,31 @@
  */
 package mcib3d.geom;
 
-import ij.IJ;
 import ij.measure.ResultsTable;
+import mcib3d.image3d.ImageHandler;
+import mcib3d.image3d.ImageShort;
+import mcib3d.utils.Logger.AbstractLog;
+import mcib3d.utils.Logger.IJLog;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import mcib3d.image3d.ImageHandler;
-import mcib3d.image3d.ImageShort;
 
 /**
- *
  * @author thomas
  */
 public class MereoAnalysis {
 
     Objects3DPopulation popA;
     Objects3DPopulation popB;
+    String[][] relationships;
+    // misc
+    AbstractLog log = new IJLog();
     // for relationships
     private float RadX, RadY, RadZ;
-    String[][] relationships;
 
     public MereoAnalysis(Objects3DPopulation popA, Objects3DPopulation popB) {
         this.popA = popA;
@@ -108,7 +111,7 @@ public class MereoAnalysis {
         boolean[] checkedObject = new boolean[popB.getNbObjects()];
         int nbA = popA.getNbObjects();
         for (int a = 0; a < nbA; a++) {
-            IJ.log("Processing object A" + a);
+            log.log("Processing object A" + a);
             for (int o = 0; o < popB.getNbObjects(); o++) {
                 checkedObject[o] = false;
                 relationships[a][o] = MereoObject3D.DC;
@@ -226,6 +229,10 @@ public class MereoAnalysis {
             }
         }
         return rt;
+    }
+
+    public void setLog(AbstractLog logger) {
+        this.log = logger;
     }
 
     public void writePrologFacts(String filename, String prefixA, String prefixB, boolean excludeDC, boolean useValue) {
