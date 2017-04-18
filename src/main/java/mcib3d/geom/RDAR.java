@@ -17,7 +17,7 @@ public class RDAR {
     }
 
     private void compute() {
-        ellipsoid = this.getEllipsoid();
+        ellipsoid = volume.getEllipsoid();
 
         // difference volume - ellipsoid
         Object3DVoxels object3DVoxels = new Object3DVoxels(volume);

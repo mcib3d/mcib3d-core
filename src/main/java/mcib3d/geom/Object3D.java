@@ -3553,8 +3553,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     public Object3DVoxels getEllipsoid() {
         Vector3D V = this.getVectorAxis(2);
         Vector3D W = this.getVectorAxis(1);
-        double r1 = this.getRadiusMoments(2);
-        double rad1 = r1;
+        double rad1 = this.getRadiusMoments(2);
         double rad2 = Double.NaN;
         if (!Double.isNaN(this.getMainElongation())) {
             rad2 = rad1 / this.getMainElongation();
@@ -3563,11 +3562,12 @@ public abstract class Object3D implements Comparable<Object3D> {
         if (!Double.isNaN(this.getMedianElongation())) {
             rad3 = rad2 / this.getMedianElongation();
         }
-        int radius = (int) (r1 / resXY);
+        int radius = (int) (rad1 / resXY) + 1;
         ObjectCreator3D ellipsoid = new ObjectCreator3D(2 * radius, 2 * radius, 2 * radius);
         ellipsoid.setResolution(this.getResXY(), this.getResZ(), this.getUnits());
-        ellipsoid.createEllipsoidAxesUnit(r1 * resXY, r1 * resXY, r1 * resZ, rad1, rad2, rad3, 1, V, W, false);
+        ellipsoid.createEllipsoidAxesUnit(radius * resXY, radius * resXY, radius * resZ, rad1, rad2, rad3, 1, V, W, false);
         Object3DVoxels ell = new Object3DVoxels(ellipsoid.getImageHandler(), 1);
+        ell.translate(this.getCenterX() - radius, this.getCenterY() - radius, this.getCenterZ() - radius);
 
         return ell;
     }
