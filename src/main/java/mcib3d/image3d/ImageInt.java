@@ -378,6 +378,14 @@ public abstract class ImageInt extends ImageHandler {
         // reset stats
     }
 
+    public void transfertPixelValues(ImageInt other, int val, int rep) {
+        for (int k = 0; k < sizeXYZ; k++) {
+            if (this.getPixel(k) == val) {
+                other.setPixel(k, rep);
+            }
+        }
+    }
+
     /**
      * Replace a pixel value by another
      *
@@ -848,7 +856,7 @@ public abstract class ImageInt extends ImageHandler {
      * @param rady
      * @return 3D filtered image
      */
-    @ Deprecated
+    @Deprecated
     public ImageInt adaptiveFilter(float radx, float rady, float radz, int nbcpus) {
         final ImageInt adaptimg2 = (ImageInt) this.createSameDimensions();
 

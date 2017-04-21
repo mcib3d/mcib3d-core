@@ -14,10 +14,7 @@ import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageLabeller;
 import mcib3d.image3d.ImageShort;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Copyright (C) Thomas Boudier
@@ -46,15 +43,17 @@ public class Watershed3D {
     private final int DAM = 1; // watershed label
     private final int QUEUE = 2;
     private final int seedsThreshold;
-    ImageHandler rawImage; // raw image
-    ImageHandler seedsImage; // positions of seeds
-    ImageInt watershedImage = null; // watershed from seeds
-    ImageInt labelQueueImage = null; // watershed from seeds
-    LinkedList<Voxel3DComparable> voxels = null; // voxels to compute watershed
-    boolean okseeds = false;
-    boolean anim = false;
+    private ImageHandler rawImage; // raw image
+    private ImageHandler seedsImage; // positions of seeds
+    private ImageInt watershedImage = null; // watershed from seeds
+    private ImageInt labelQueueImage = null; // watershed from seeds
+    private ImageInt damImage = null; // image for separation between objects
+    private LinkedList<Voxel3DComparable> voxels = null; // voxels to compute watershed
+    //private boolean okseeds = false;
+    private boolean anim = false;
     private int rawThreshold;
     private boolean labelSeeds = true;
+    private HashMap<Integer, Integer> seedsValue;
 
     /**
      * @param image raw image
@@ -67,6 +66,7 @@ public class Watershed3D {
         this.seedsImage = seeds;
         this.rawThreshold = noi;
         this.seedsThreshold = seth;
+        seedsValue = new HashMap<Integer, Integer>();
     }
 
     /**
@@ -82,6 +82,7 @@ public class Watershed3D {
         this.seedsImage = ImageInt.wrap(seeds);
         this.rawThreshold = noi;
         this.seedsThreshold = seth;
+        seedsValue = new HashMap<Integer, Integer>();
     }
 
     /**
@@ -118,10 +119,13 @@ public class Watershed3D {
      */
     public void setSeeds(ImageInt seeds) {
         this.seedsImage = seeds;
+        seedsValue = new HashMap<Integer, Integer>();
+        watershedImage = null;
     }
 
     public void setLabelSeeds(boolean labelSeeds) {
         this.labelSeeds = labelSeeds;
+        watershedImage = null;
     }
 
     public void setAnim(boolean anim) {
@@ -133,10 +137,20 @@ public class Watershed3D {
     }
 
     public ImageInt getWatershedImage3D() {
-        return getClassicWatershed();
+        if (watershedImage == null) {
+            processWatershed();
+        }
+        return watershedImage;
     }
 
-    private ImageInt getClassicWatershed() {
+    public ImageInt getDamImage() {
+        if (watershedImage == null) {
+            processWatershed();
+        }
+        return damImage;
+    }
+
+    private void processWatershed() {
         long step = 100;
         createNeigList();
         long t0 = System.currentTimeMillis();
@@ -202,11 +216,19 @@ public class Watershed3D {
             }
         }
         IJ.log("\\Update:Voxels to process : " + Math.abs(tree.size()));
-
         IJ.log("Watershed completed.");
 
-        return watershedImage;
+        damImage = (ImageInt) watershedImage.createSameDimensions();
+        watershedImage.transfertPixelValues(damImage, 1, 255);
+
+        // replace dam values with 0
+        watershedImage.replacePixelsValue(1, 0);
+        // back to original seeds value
+        for (int val : seedsValue.keySet()) {
+            watershedImage.replacePixelsValue(val, seedsValue.get(val));
+        }
     }
+
 
     private void createNeigList() {
         voxels = new LinkedList<Voxel3DComparable>();
@@ -218,7 +240,7 @@ public class Watershed3D {
         watershedImage = new ImageShort("watershed", sx, sy, sz);
         labelQueueImage = new ImageShort("labelQ", sx, sy, sz);
 
-        okseeds = false;
+        //okseeds = false;
 
         float pix;
         float se;
@@ -229,14 +251,22 @@ public class Watershed3D {
         seedsLabel.thresholdCut(seedsThreshold, false, true);
 
         if ((labelSeeds)) {
+            IJ.log("Labelling ");
             ImageLabeller labeller = new ImageLabeller();
             seedsLabel = labeller.getLabels(seedsLabel);
         }
         // since seeds Label starts at 1 and watershed at 2, replace values
         int max = (int) seedsLabel.getMax();
-        seedsLabel.replacePixelsValue(QUEUE, max + 1);
-        seedsLabel.replacePixelsValue(DAM, max + 2);
-        seedsLabel.resetStats(null);
+        if (seedsLabel.hasOneValueInt(QUEUE)) {
+            seedsLabel.replacePixelsValue(QUEUE, max + 1);
+            seedsValue.put(max + 1, QUEUE);
+        }
+        if (seedsLabel.hasOneValueInt(DAM)) {
+            seedsLabel.replacePixelsValue(DAM, max + 2);
+            seedsValue.put(max + 2, DAM);
+        }
+        if (!seedsValue.isEmpty())
+            seedsLabel.resetStats(null);
 
         for (int z = sz - 1; z >= 0; z--) {
             IJ.showStatus("Processing watershed " + (z + 1));
@@ -247,7 +277,7 @@ public class Watershed3D {
                     if (pix > rawThreshold) {
                         if (se > 0) {
                             watershedImage.setPixel(x, y, z, se);
-                            okseeds = true;
+                            //okseeds = true;
                             ArrayList<Voxel3D> list = watershedImage.getNeighborhood3x3x3ListNoCenter(x, y, z);
                             Collections.shuffle(list);
                             for (Voxel3D N : list) {

@@ -4,7 +4,6 @@ import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.distanceMap3d.EDT;
-import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.Logger.AbstractLog;
 import mcib3d.utils.Logger.IJLog;
 
@@ -17,7 +16,8 @@ public class Watershed3DVoronoi {
     private ImageFloat EDTImage = null;
     private ImageInt watershed = null;
     private ImageInt voronoi = null;
-    private boolean labelSeeds = true;
+    private ImageInt lines = null;
+    private boolean labelSeeds = false;
     private AbstractLog log = new IJLog();
 
     public Watershed3DVoronoi(ImageInt seeds) {
@@ -65,8 +65,7 @@ public class Watershed3DVoronoi {
         Watershed3D water = new Watershed3D(EDTcopy, seeds, 0, 0);
         water.setLabelSeeds(labelSeeds);
         watershed = water.getWatershedImage3D();
-        // replace value for Q=2
-        watershed.replacePixelsValue((int) watershed.getMax(), 2);
+        lines = water.getDamImage();
     }
 
     private void computeVoronoi(boolean show) {
@@ -86,24 +85,11 @@ public class Watershed3DVoronoi {
     public ImageInt getVoronoiLines(boolean show) {
         if (voronoi == null) computeVoronoi(show);
         log.log("Computing voronoi lines");
-        ImageByte lines = new ImageByte("VoronoiLines", voronoi.sizeX, voronoi.sizeY, voronoi.sizeZ);
-        // lines
-        // compute borders
-        for (int z = 0; z < voronoi.sizeZ; z++) {
-            for (int x = 0; x < voronoi.sizeX; x++) {
-                for (int y = 0; y < voronoi.sizeY; y++) {
-                    if (voronoi.getPixel(x, y, z) > 1) {
-                        ArrayUtil tab = voronoi.getNeighborhood3x3x3(x, y, z);
-                        int max1 = (int) tab.getMaximumAbove(1)[0];
-                        int max2 = (int) tab.getMaximumBelow(max1);
-                        if (max2 > 1) {
-                            lines.setPixel(x, y, z, 255);
-                        }
-                    } else if (voronoi.getPixel(x, y, z) == 1) lines.setPixel(x, y, z, 255);
-                }
-            }
-        }
-        return lines;
+        ImageByte mask = EDTImage.threshold(radiusMax, true, true);
+        voronoi = lines.duplicate();
+        voronoi.intersectMask(mask);
+
+        return voronoi;
     }
 
     public void setLog(AbstractLog logger) {
