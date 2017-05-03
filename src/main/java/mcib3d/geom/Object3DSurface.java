@@ -14,46 +14,47 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij3d.Content;
 import ij3d.Image3DUniverse;
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-//import javax.vecmath.Color3f;
-import mcib3d.image3d.ImageInt;
-import org.scijava.vecmath.Color3f;
-import org.scijava.vecmath.Point3f;
-import org.scijava.vecmath.Vector3f;
-//import javax.vecmath.Point3f;
-//import javax.vecmath.Vector3f;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.utils.ArrayUtil;
+import mcib3d.utils.Chrono;
 import mcib3d.utils.KDTreeC;
+import mcib3d.utils.Logger.AbstractLog;
+import mcib3d.utils.Logger.IJLog;
+import mcib3d.utils.Logger.IJStatus;
 import mcib3d.utils.ThreadUtil;
+import org.scijava.vecmath.Color3f;
+import org.scijava.vecmath.Point3f;
+import org.scijava.vecmath.Vector3f;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+//import javax.vecmath.Color3f;
+//import javax.vecmath.Point3f;
+//import javax.vecmath.Vector3f;
 
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2008- 2011 Thomas Boudier
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of mcib3d
- *
+ * <p>
  * mcib3d is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -64,6 +65,9 @@ public class Object3DSurface extends Object3D {
     // calibration hence is the original image calibration
     // they are normally as triangle mesh
 
+    public static final int SMOOTH_LAPLACE = 1;
+    public static final int SMOOTH_IJ3D = 2;
+    public static final int SMOOTH_BLENDER = 3;
     protected List<Point3f> faces = null;
     //protected List<Integer> vertices_unique_index = null;
     protected List<Point3f> smooth_faces = null;
@@ -78,13 +82,9 @@ public class Object3DSurface extends Object3D {
     double smooth_surface_area = Double.NaN;
     double smooth_surface_area_unit = Double.NaN;
     private float smoothing_factor = 0.1f;
-    public static final int SMOOTH_LAPLACE = 1;
-    public static final int SMOOTH_IJ3D = 2;
-    public static final int SMOOTH_BLENDER = 3;
     private int smooth_method = SMOOTH_IJ3D;
 
     /**
-     *
      * @param l
      */
     public Object3DSurface(List<Point3f> l) {
@@ -104,7 +104,6 @@ public class Object3DSurface extends Object3D {
     }
 
     /**
-     *
      * @param l
      * @param val
      */
@@ -122,6 +121,132 @@ public class Object3DSurface extends Object3D {
         computeUniqueVertices();
 
         init();
+    }
+
+    //dans mesh.java
+    public static List<Point3f> invertNormals(List<Point3f> li) {
+        ArrayList<Point3f> li2 = new ArrayList();
+
+        for (int i = 0; i < li.size(); i += 3) {
+            li2.add(li.get(i));
+            li2.add(li.get(i + 2));
+            li2.add(li.get(i + 1));
+        }
+
+        return li2;
+    }
+
+    /**
+     * @param transform
+     * @param meridians
+     * @param parallels
+     * @return
+     */
+    public static List<Point3f> createSphere(GeomTransform3D transform, final int meridians, final int parallels) {
+        final double[][][] globe = generateGlobe(meridians, parallels);
+        //IJ.log("Computing sphere");
+        Vector3D zero_vector = new Vector3D(0, 0, 0);
+        for (int j = 0; j < globe.length; j++) {
+            for (int k = 0; k < globe[0].length; k++) {
+                Vector3D point = new Vector3D(globe[j][k][0], globe[j][k][1], globe[j][k][2]);
+                Vector3D res = transform.getVectorTransformed(point, zero_vector);
+                globe[j][k][0] = res.getX();
+                globe[j][k][1] = res.getY();
+                globe[j][k][2] = res.getZ();
+            }
+        }
+        // create triangular faces and add them to the list
+        final ArrayList<Point3f> list = new ArrayList<Point3f>();
+        for (int j = 0; j < globe.length - 1; j++) { // the parallels
+            for (int k = 0; k < globe[0].length - 1; k++) { // meridian points
+                if (j != globe.length - 2) {
+                    // half quadrant (a triangle)
+                    list.add(new Point3f((float) globe[j + 1][k + 1][0], (float) globe[j + 1][k + 1][1], (float) globe[j + 1][k + 1][2]));
+                    list.add(new Point3f((float) globe[j][k][0], (float) globe[j][k][1], (float) globe[j][k][2]));
+                    list.add(new Point3f((float) globe[j + 1][k][0], (float) globe[j + 1][k][1], (float) globe[j + 1][k][2]));
+                }
+                if (j != 0) {
+                    // the other half quadrant
+                    list.add(new Point3f((float) globe[j][k][0], (float) globe[j][k][1], (float) globe[j][k][2]));
+                    list.add(new Point3f((float) globe[j + 1][k + 1][0], (float) globe[j + 1][k + 1][1], (float) globe[j + 1][k + 1][2]));
+                    list.add(new Point3f((float) globe[j][k + 1][0], (float) globe[j][k + 1][1], (float) globe[j][k + 1][2]));
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Generate a globe of radius 1.0 that can be used for any Ball. First
+     * dimension is Z, then comes a double array x,y. Minimal accepted meridians
+     * and parallels is 3.
+     */
+    private static double[][][] generateGlobe(int meridians, int parallels) {
+        //IJ.log("Computing globe");
+        if (meridians < 3) {
+            meridians = 3;
+        }
+        if (parallels < 3) {
+            parallels = 3;
+        }
+        /*
+         * to do: 2 loops: -first loop makes horizontal circle using meridian
+         * points. -second loop scales it appropriately and makes parallels.
+         * Both loops are common for all balls and so should be done just once.
+         * Then this globe can be properly translocated and resized for each
+         * ball.
+         */
+        // a circle of radius 1
+        double angle_increase = 2 * Math.PI / meridians;
+        double temp_angle = 0;
+        final double[][] xy_points = new double[meridians + 1][2];    //plus 1 to repeat last point
+        xy_points[0][0] = 1;     // first point
+        xy_points[0][1] = 0;
+        for (int m = 1; m < meridians; m++) {
+            temp_angle = angle_increase * m;
+            xy_points[m][0] = Math.cos(temp_angle);
+            xy_points[m][1] = Math.sin(temp_angle);
+        }
+        xy_points[xy_points.length - 1][0] = 1; // last point
+        xy_points[xy_points.length - 1][1] = 0;
+
+        // Build parallels from circle
+        angle_increase = Math.PI / parallels;   // = 180 / parallels in radians
+        final double[][][] xyz = new double[parallels + 1][xy_points.length][3];
+        for (int p = 1; p < xyz.length - 1; p++) {
+            double radius = Math.sin(angle_increase * p);
+            double Z = Math.cos(angle_increase * p);
+            for (int mm = 0; mm < xyz[0].length - 1; mm++) {
+                //scaling circle to appropriate radius, and positioning the Z
+                xyz[p][mm][0] = xy_points[mm][0] * radius;
+                xyz[p][mm][1] = xy_points[mm][1] * radius;
+                xyz[p][mm][2] = Z;
+            }
+            xyz[p][xyz[0].length - 1][0] = xyz[p][0][0];  //last one equals first one
+            xyz[p][xyz[0].length - 1][1] = xyz[p][0][1];
+            xyz[p][xyz[0].length - 1][2] = xyz[p][0][2];
+        }
+
+        // south and north poles
+        for (int ns = 0; ns < xyz[0].length; ns++) {
+            xyz[0][ns][0] = 0;    //south pole
+            xyz[0][ns][1] = 0;
+            xyz[0][ns][2] = 1;
+            xyz[xyz.length - 1][ns][0] = 0;    //north pole
+            xyz[xyz.length - 1][ns][1] = 0;
+            xyz[xyz.length - 1][ns][2] = -1;
+        }
+
+        return xyz;
+    }
+
+    public static List translateTool(List l, float tx, float ty, float tz) {
+        List lt = new ArrayList(l.size());
+        for (Point3f P : (Iterable<Point3f>) l) {
+            Point3f Pt = new Point3f(P.x + tx, P.y + ty, P.z + tz);
+            lt.add(Pt);
+        }
+        return lt;
     }
 
     // go back to pixels coordinates
@@ -184,7 +309,6 @@ public class Object3DSurface extends Object3D {
     }
 
     /**
-     *
      * @return
      */
     public double getSmoothSurfaceArea() {
@@ -195,7 +319,6 @@ public class Object3DSurface extends Object3D {
     }
 
     /**
-     *
      * @return
      */
     public double getSmoothSurfaceAreaUnit() {
@@ -206,7 +329,6 @@ public class Object3DSurface extends Object3D {
     }
 
     /**
-     *
      * @return
      */
     public double getSurfaceMesh() {
@@ -217,7 +339,6 @@ public class Object3DSurface extends Object3D {
     }
 
     /**
-     *
      * @return
      */
     public double getSurfaceMeshUnit() {
@@ -227,8 +348,9 @@ public class Object3DSurface extends Object3D {
         return surfaceMeshUnit;
     }
 
+    // CONVEX HULL 3D USING QUICKHULL3D
+
     /**
-     *
      * @return
      */
     public List<Point3f> getSmoothSurface() {
@@ -239,7 +361,6 @@ public class Object3DSurface extends Object3D {
     }
 
     /**
-     *
      * @param smooth
      * @return
      */
@@ -319,8 +440,6 @@ public class Object3DSurface extends Object3D {
         return surfarea;
     }
 
-    // CONVEX HULL 3D USING QUICKHULL3D
-
     public ArrayList<Point3f> computeConvexHull3D() {
         QuickHull3D hull = new QuickHull3D();
         ArrayList<Voxel3D> pointsList = this.getContours();
@@ -351,7 +470,6 @@ public class Object3DSurface extends Object3D {
 
         return convex;
     }
-
 
     private void computeSurfaceAreas() {
         // FIXME areas ad surfaces meshes !!
@@ -458,21 +576,7 @@ public class Object3DSurface extends Object3D {
         }
     }
 
-    //dans mesh.java
-    public static List<Point3f> invertNormals(List<Point3f> li) {
-        ArrayList<Point3f> li2 = new ArrayList();
-
-        for (int i = 0; i < li.size(); i += 3) {
-            li2.add(li.get(i));
-            li2.add(li.get(i + 2));
-            li2.add(li.get(i + 1));
-        }
-
-        return li2;
-    }
-
     /**
-     *
      * @return
      */
     public float getSmoothingFactor() {
@@ -480,19 +584,6 @@ public class Object3DSurface extends Object3D {
     }
 
     /**
-     *
-     * @param method
-     */
-    public void setSmooth_method(int method) {
-        if (method != smooth_method) {
-            smooth_method = method;
-            smooth_faces = null;
-            smooth_surface_area = Double.NaN;
-        }
-    }
-
-    /**
-     *
      * @param fac
      */
     public void setSmoothingFactor(float fac) {
@@ -503,7 +594,18 @@ public class Object3DSurface extends Object3D {
         }
     }
 
-//    private ArrayList<Vector3D> computeSurfaceNormalsFaces() {
+    /**
+     * @param method
+     */
+    public void setSmooth_method(int method) {
+        if (method != smooth_method) {
+            smooth_method = method;
+            smooth_faces = null;
+            smooth_surface_area = Double.NaN;
+        }
+    }
+
+    //    private ArrayList<Vector3D> computeSurfaceNormalsFaces() {
 //        ArrayList<Vector3D> surf_normals = new ArrayList<Vector3D>();
 //        for (int i = 0; i < faces.size(); i += 3) {
 //            Vector3D V1 = new Vector3D(faces.get(i), faces.get(i + 1));
@@ -610,7 +712,7 @@ public class Object3DSurface extends Object3D {
 
 //        ArrayList<Vector3D> facesNormals = computeSurfaceNormalsFaces();
 //        List<Integer> indices = this.getUniqueVerticesIndexes();
-//        
+//
 //        for (int i = 0; i < unique_vertices.size(); i++) {
 //            float x, y, z;
 //            int triangleIndex;
@@ -1122,7 +1224,7 @@ public class Object3DSurface extends Object3D {
         }
     }
 
-//    private void computeUniqueVerticesIndexes() {
+    //    private void computeUniqueVerticesIndexes() {
 //        unique_vertices = new ArrayList<Point3f>();
 //        vertices_unique_index = new ArrayList<Integer>();
 //        Iterator<Point3f> it = faces.iterator();
@@ -1165,7 +1267,7 @@ public class Object3DSurface extends Object3D {
         this.computeSurfaceAreas();
     }
 
-//    private void computeVoxelsFill() {
+    //    private void computeVoxelsFill() {
 //        voxels = new ArrayList<Voxel3D>();
 //        // start at 1 1 1 to let 0 0 0 as background for fill holes
 //        int w = getXmax() - getXmin() + 2;
@@ -1222,6 +1324,10 @@ public class Object3DSurface extends Object3D {
         final Vector3D dir1 = new Vector3D(-1, 0, 0);
         final int dec = (int) Math.ceil((double) (zmaxv - zminv + 1) / (double) n_cpus);
         //IJ.log("dec " + dec + " " + zminv + " " + zmaxv + " " + n_cpus);
+        // Timer
+        final Chrono time = new Chrono(zmaxv - zminv + 1);
+        time.start();
+        final AbstractLog show = new IJStatus();
         final AtomicInteger ai = new AtomicInteger(0);
         Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
         for (int ithread = 0; ithread < threads.length; ithread++) {
@@ -1234,7 +1340,7 @@ public class Object3DSurface extends Object3D {
                     for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
                         int zmaxx = Math.min(zminv + (k + 1) * dec, zmaxv);
                         for (float zi = zminv + dec * k; zi < zmaxx; zi += 1) {
-                            IJ.showStatus(k + " : Voxellisation " + zi + "/" + (zmaxx - 1));
+                            //IJ.showStatus(k + " : Voxellisation " + zi + "/" + (zmaxx - 1));
                             for (float yi = yminv; yi <= ymaxv; yi += 1) {
                                 in = false;
                                 float xi = xminv;
@@ -1270,6 +1376,8 @@ public class Object3DSurface extends Object3D {
                                     xi += 1;
                                 }
                             }
+                            String ti = time.getFullInfo(1);
+                            if (ti != null) show.log("3D voxellisation : " + ti);
                         }
                     }
                 }
@@ -1392,7 +1500,7 @@ public class Object3DSurface extends Object3D {
             //Point3f w = new Point3f(origin.x - A.x, origin.y - A.y, origin.z - A.z);
             Vector3D w = new Vector3D(new Point3D(A), origin);
 
-            //Point3f w = new Point3f(A.x - origin.x,A.y - origin.y,A.z - origin.z);  
+            //Point3f w = new Point3f(A.x - origin.x,A.y - origin.y,A.z - origin.z);
             //Les coordonées baricentriques du point d'intersection I sont donc, par rapport aux vecteurs u et v qui engendrent le triangle:
             //float Ix = dotProduct(crossProduct(w, v), dir) / prodNormDir;
             double Ix = (w.crossProduct(v)).dotProduct(dir) / prodNormDir;
@@ -1450,7 +1558,7 @@ public class Object3DSurface extends Object3D {
             //Point3f w = new Point3f(origin.x - A.x, origin.y - A.y, origin.z - A.z);
             Vector3D w = new Vector3D(new Point3D(A), origin);
 
-            //Point3f w = new Point3f(A.x - origin.x,A.y - origin.y,A.z - origin.z);  
+            //Point3f w = new Point3f(A.x - origin.x,A.y - origin.y,A.z - origin.z);
             //Les coordonées baricentriques du point d'intersection I sont donc, par rapport aux vecteurs u et v qui engendrent le triangle:
             //float Ix = dotProduct(crossProduct(w, v), dir) / prodNormDir;
             double Ix = (w.crossProduct(v)).dotProduct(dir) / prodNormDir;
@@ -1469,111 +1577,6 @@ public class Object3DSurface extends Object3D {
             }
         }
         return Double.MAX_VALUE;
-    }
-
-    /**
-     *
-     * @param transform
-     * @param meridians
-     * @param parallels
-     * @return
-     */
-    public static List<Point3f> createSphere(GeomTransform3D transform, final int meridians, final int parallels) {
-        final double[][][] globe = generateGlobe(meridians, parallels);
-        //IJ.log("Computing sphere");
-        Vector3D zero_vector = new Vector3D(0, 0, 0);
-        for (int j = 0; j < globe.length; j++) {
-            for (int k = 0; k < globe[0].length; k++) {
-                Vector3D point = new Vector3D(globe[j][k][0], globe[j][k][1], globe[j][k][2]);
-                Vector3D res = transform.getVectorTransformed(point, zero_vector);
-                globe[j][k][0] = res.getX();
-                globe[j][k][1] = res.getY();
-                globe[j][k][2] = res.getZ();
-            }
-        }
-        // create triangular faces and add them to the list
-        final ArrayList<Point3f> list = new ArrayList<Point3f>();
-        for (int j = 0; j < globe.length - 1; j++) { // the parallels
-            for (int k = 0; k < globe[0].length - 1; k++) { // meridian points
-                if (j != globe.length - 2) {
-                    // half quadrant (a triangle)
-                    list.add(new Point3f((float) globe[j + 1][k + 1][0], (float) globe[j + 1][k + 1][1], (float) globe[j + 1][k + 1][2]));
-                    list.add(new Point3f((float) globe[j][k][0], (float) globe[j][k][1], (float) globe[j][k][2]));
-                    list.add(new Point3f((float) globe[j + 1][k][0], (float) globe[j + 1][k][1], (float) globe[j + 1][k][2]));
-                }
-                if (j != 0) {
-                    // the other half quadrant
-                    list.add(new Point3f((float) globe[j][k][0], (float) globe[j][k][1], (float) globe[j][k][2]));
-                    list.add(new Point3f((float) globe[j + 1][k + 1][0], (float) globe[j + 1][k + 1][1], (float) globe[j + 1][k + 1][2]));
-                    list.add(new Point3f((float) globe[j][k + 1][0], (float) globe[j][k + 1][1], (float) globe[j][k + 1][2]));
-                }
-            }
-        }
-        return list;
-    }
-
-    /**
-     * Generate a globe of radius 1.0 that can be used for any Ball. First
-     * dimension is Z, then comes a double array x,y. Minimal accepted meridians
-     * and parallels is 3.
-     */
-    private static double[][][] generateGlobe(int meridians, int parallels) {
-        //IJ.log("Computing globe");
-        if (meridians < 3) {
-            meridians = 3;
-        }
-        if (parallels < 3) {
-            parallels = 3;
-        }
-        /*
-         * to do: 2 loops: -first loop makes horizontal circle using meridian
-         * points. -second loop scales it appropriately and makes parallels.
-         * Both loops are common for all balls and so should be done just once.
-         * Then this globe can be properly translocated and resized for each
-         * ball.
-         */
-        // a circle of radius 1
-        double angle_increase = 2 * Math.PI / meridians;
-        double temp_angle = 0;
-        final double[][] xy_points = new double[meridians + 1][2];    //plus 1 to repeat last point
-        xy_points[0][0] = 1;     // first point
-        xy_points[0][1] = 0;
-        for (int m = 1; m < meridians; m++) {
-            temp_angle = angle_increase * m;
-            xy_points[m][0] = Math.cos(temp_angle);
-            xy_points[m][1] = Math.sin(temp_angle);
-        }
-        xy_points[xy_points.length - 1][0] = 1; // last point
-        xy_points[xy_points.length - 1][1] = 0;
-
-        // Build parallels from circle
-        angle_increase = Math.PI / parallels;   // = 180 / parallels in radians
-        final double[][][] xyz = new double[parallels + 1][xy_points.length][3];
-        for (int p = 1; p < xyz.length - 1; p++) {
-            double radius = Math.sin(angle_increase * p);
-            double Z = Math.cos(angle_increase * p);
-            for (int mm = 0; mm < xyz[0].length - 1; mm++) {
-                //scaling circle to appropriate radius, and positioning the Z
-                xyz[p][mm][0] = xy_points[mm][0] * radius;
-                xyz[p][mm][1] = xy_points[mm][1] * radius;
-                xyz[p][mm][2] = Z;
-            }
-            xyz[p][xyz[0].length - 1][0] = xyz[p][0][0];  //last one equals first one
-            xyz[p][xyz[0].length - 1][1] = xyz[p][0][1];
-            xyz[p][xyz[0].length - 1][2] = xyz[p][0][2];
-        }
-
-        // south and north poles
-        for (int ns = 0; ns < xyz[0].length; ns++) {
-            xyz[0][ns][0] = 0;	//south pole
-            xyz[0][ns][1] = 0;
-            xyz[0][ns][2] = 1;
-            xyz[xyz.length - 1][ns][0] = 0;    //north pole
-            xyz[xyz.length - 1][ns][1] = 0;
-            xyz[xyz.length - 1][ns][2] = -1;
-        }
-
-        return xyz;
     }
 
     @Override
@@ -1820,7 +1823,7 @@ public class Object3DSurface extends Object3D {
         if (voxels != null) {
             return voxels;
         }
-        //compute voxellisation in pixels coordinates (safer ;-)) 
+        //compute voxellisation in pixels coordinates (safer ;-))
         //IJ.log("before decalibrate " + vertices + " " + unique_vertices);
         //IJ.log("before decalibrate " + unique_vertices.size() + " " + unique_vertices.get(0));
         if ((resXY != 1) || (resZ != 1)) {
@@ -1864,7 +1867,6 @@ public class Object3DSurface extends Object3D {
     }
 
     /**
-     *
      * @param calibrated
      * @return
      */
@@ -1877,12 +1879,12 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
-    @ Deprecated
+    @Deprecated
     public List computeMeshSurface(boolean calibrated) {
         return getSurfaceTriangles(calibrated);
     }
 
-//    @Override
+    //    @Override
 //    public double pcColoc(Object3D obj) {
 //        double pourc;
 ////        ArrayList<Voxel3D> al1 = this.getVoxels();
@@ -1902,7 +1904,7 @@ public class Object3DSurface extends Object3D {
 ////        pourc = (cpt / al1.size()) * 100;
 //        Object3DVoxels obj1 = this.getObject3DVoxels();
 //        Object3DVoxels obj2 = obj.getObject3DVoxels();
-//        
+//
 //        return obj1.pcColoc(obj);
 //    }
     public void drawMesh(ObjectCreator3D obj, int col) {
@@ -1922,7 +1924,7 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
-    @ Deprecated
+    @Deprecated
     public boolean draw(ByteProcessor mask, int z, int col) {
         boolean ok = false;
         for (Voxel3D vox : this.getVoxels()) {
@@ -1935,7 +1937,7 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
-    @ Deprecated
+    @Deprecated
     public void draw(ImageStack mask, int col) {
         for (Voxel3D vox : this.getVoxels()) {
             mask.setVoxel((int) (Math.round(vox.getX())), (int) (Math.round(vox.getY())), (int) (Math.round(vox.getY())), col);
@@ -2068,7 +2070,7 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
-    @ Deprecated
+    @Deprecated
     public void draw(ImageStack mask, int r, int g, int b) {
         Voxel3D vox;
         ImageProcessor tmp;
@@ -2082,7 +2084,7 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
-    @ Deprecated
+    @Deprecated
     public Roi createRoi(int z) {
         // FIXME coordinates may not be ordered
         float xcoor[] = new float[faces.size()];
@@ -2101,7 +2103,6 @@ public class Object3DSurface extends Object3D {
     }
 
     /**
-     *
      * @param path
      */
     @Override
@@ -2118,15 +2119,6 @@ public class Object3DSurface extends Object3D {
         }
         init();
         //this.computeUniqueVertices();
-    }
-
-    public static List translateTool(List l, float tx, float ty, float tz) {
-        List lt = new ArrayList(l.size());
-        for (Point3f P : (Iterable<Point3f>) l) {
-            Point3f Pt = new Point3f(P.x + tx, P.y + ty, P.z + tz);
-            lt.add(Pt);
-        }
-        return lt;
     }
 
     public void scale(double scale) {
