@@ -794,6 +794,12 @@ public abstract class ImageInt extends ImageHandler {
     }
 
     public void adaptiveFilter(ImageInt filtered, float radx, float rady, float radz, int zmin, int zmax, Chrono timer, AbstractLog show) {
+        if (zmin < 0) {
+            zmin = 0;
+        }
+        if (zmax > this.sizeZ) {
+            zmax = this.sizeZ;
+        }
         // create kernel
         final int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
         int nb = 0;
