@@ -1,6 +1,5 @@
 package mcib3d.image3d.IterativeThresholding;
 
-import ij.IJ;
 import ij.ImagePlus;
 import mcib3d.geom.*;
 import mcib3d.image3d.*;
@@ -53,6 +52,7 @@ public class TrackThreshold {
     public static final byte CRITERIA_METHOD_MSER = 3; // min variation of volume
     public static final byte CRITERIA_METHOD_MAX_COMPACTNESS = 4;
     public static final byte CRITERIA_METHOD_MAX_EDGES = 5;
+    public static final byte CRITERIA_METHOD_MAX_CLASSIFICATION = 6; // based on GulMohammed 2014 BMC bioinformatics
     @Deprecated
     public boolean verbose = true;
     @Deprecated
@@ -285,6 +285,10 @@ public class TrackThreshold {
         Criterion criterion;
         BestCriterion bestCriterion;
 
+        // test weka for Jaza dataset
+        //criteria_method=CRITERIA_METHOD_MAX_CLASSIFICATION;
+
+
         switch (criteria_method) {
             case CRITERIA_METHOD_MIN_ELONGATION:
                 criterion = new CriterionElongation();
@@ -304,6 +308,10 @@ public class TrackThreshold {
                 break;
             case CRITERIA_METHOD_MAX_EDGES:
                 criterion = new CriterionEdge(img, 0.5);
+                bestCriterion = new BestCriteriaMax();
+                break;
+            case CRITERIA_METHOD_MAX_CLASSIFICATION:
+                criterion = new CriterionClassification("/home/thomasb/App/ImageJ/testWEKA.arff"); // test
                 bestCriterion = new BestCriteriaMax();
                 break;
             default: // MSER
