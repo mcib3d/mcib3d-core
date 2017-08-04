@@ -129,6 +129,15 @@ public class Object3D_IJUtils {
         }
     }
 
+    public static void drawLabel(Object3D object3D, ImageStack mask, int col) {
+        ImageProcessor tmp = mask.getProcessor((int) (object3D.getCenterZ() + 1));
+        tmp.setColor(col);
+        Font font = new Font(Font.DIALOG, Font.PLAIN, 10);
+        String name = object3D.getName();
+        tmp.drawString(object3D.getName(), (int) (object3D.getCenterX() - name.length() * font.getSize() / 4), (int) (object3D.getYmax() + font.getSize() / 2));
+    }
+
+
     public static void drawIntersectionLabel(Object3DLabel object3DLabel, Object3DLabel other, ImageStack mask, int red, int green, int blue) {
         ImageProcessor tmp;
         ImageHandler otherSeg = other.getLabelImage();
