@@ -102,6 +102,15 @@ public class ObjectTrack {
         return parent == null;
     }
 
+    public boolean isRoot() {
+        return parent == null;
+    }
+
+    public boolean isEnd() {
+        return (getNbChildren() == 0);
+    }
+
+
     public int getNbChildren() {
         if (children == null) {
             return 0;
@@ -163,6 +172,16 @@ public class ObjectTrack {
         return par;
     }
 
+    public ObjectTrack getRoot() {
+        ObjectTrack par = this;
+        while (par.getParent() != null) {
+            par = par.getParent();
+        }
+
+        return par;
+    }
+
+
     public ArrayList<ObjectTrack> getLineageTo(ObjectTrack anc) {
         ArrayList<ObjectTrack> list = new ArrayList<ObjectTrack>();
         ObjectTrack par = this;
@@ -178,6 +197,18 @@ public class ObjectTrack {
 
         return list;
     }
+
+    public ArrayList<ObjectTrack> getAllDescendantsToEnd() {
+        ArrayList<ObjectTrack> list = new ArrayList<ObjectTrack>();
+        ObjectTrack par = this;
+        list.add(par);
+        if (par.getNbChildren() == 0) return list;
+        for (ObjectTrack child : children) {
+            list.addAll(child.getAllDescendantsToEnd());
+        }
+        return list;
+    }
+
 
     public Object3D getObject() {
         return object;
