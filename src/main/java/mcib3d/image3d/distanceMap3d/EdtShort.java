@@ -73,7 +73,7 @@ public class EdtShort {
         float scale = scaleZ / scaleXY;
         short[][] data = imp.pixels;
 
-        //Create 32 bit floating point stack for output, s.  Will also use it for g in Transormation 1.
+        //Create 32 bit floating point stack for output, s.  Will also use it for g in Transformation 1.
         ImageStack sStack = new ImageStack(w, h);
         float[][] s = new float[d][];
         for (int k = 0; k < d; k++) {

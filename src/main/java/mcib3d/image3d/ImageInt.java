@@ -298,7 +298,7 @@ public abstract class ImageInt extends ImageHandler {
 
     public Objects3DPopulation getObjects3DPopulation() {
         // build new population
-        return new Objects3DPopulation(this.getObjects3D(), this.getCalibration());
+        return new Objects3DPopulation(this.getObjects3D());
     }
 
     public Object3DVoxels getObject3DBackground(ImageInt mask) {

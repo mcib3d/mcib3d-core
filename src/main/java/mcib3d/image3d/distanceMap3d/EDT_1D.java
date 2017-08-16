@@ -24,7 +24,7 @@ public class EDT_1D {
         float dist;
         int x = 0;
         int wi = input.sizeX;
-        // start wit first non-zero
+        // start with first non-zero
         while ((x < wi) && (input.getPixel(x, y, z) == 0)) {
             x++;
         }
@@ -45,7 +45,7 @@ public class EDT_1D {
         float dist;
         int wi = input.sizeX;
         int x = wi - 1;
-        // start wit first non-zero
+        // start with first non-zero
         while ((x >= 0) && (input.getPixel(x, y, z) == 0)) {
             x--;
         }
