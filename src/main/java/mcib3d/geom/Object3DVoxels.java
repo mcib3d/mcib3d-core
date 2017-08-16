@@ -57,7 +57,7 @@ public class Object3DVoxels extends Object3D {
     ArrayList<Voxel3D> voxels = null;
     // debug
     private boolean showStatus = false;
-    private double correctedSurfaceArea;
+    private double correctedSurfaceArea = -1;
 
     /**
      *
@@ -1278,7 +1278,6 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     * @deprecated use Object3D-IJUtils
      * @param z Description of the Parameter
      * @return Description of the Return Value
      * @deprecated use Object3D-IJUtils
@@ -1311,13 +1310,12 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     * @deprecated use Object3D-IJUtils
-     * Draw inside a particular Z
-     *
      * @param mask The mask image to draw
      * @param z    The Z coordinate
      * @param col  The value to draw
      * @return
+     * @deprecated use Object3D-IJUtils
+     * Draw inside a particular Z
      */
     @Override
     public boolean draw(ByteProcessor mask, int z, int col) {
@@ -1500,14 +1498,16 @@ public class Object3DVoxels extends Object3D {
             v.translate(x, y, z);
         }
         init();
+        // reinit seg image if any
+        miniLabelImage = null;
+        labelImage = null;
+        // reinit kdtreecontours
+        kdtreeContours = null;
     }
 
     @Override
     public void translate(Vector3D trans) {
-        for (Voxel3D v : voxels) {
-            v.translate(trans);
-        }
-        init();
+        translate(trans.getX(),trans.getY(),trans.getZ());
     }
 
     public void rotate(Vector3D Axis, double angle) {
@@ -1518,6 +1518,12 @@ public class Object3DVoxels extends Object3D {
             Vector3D tv = trans.getVectorTransformed(v.getVector3D(), this.getCenterAsVector());
             v.setVoxel(tv.getX(), tv.getY(), tv.getZ(), v.getValue());
         }
+        init();
+        // reinit seg image if any
+        miniLabelImage = null;
+        labelImage = null;
+        // reinit kdtreecontours
+        kdtreeContours = null;
     }
 
     @Override

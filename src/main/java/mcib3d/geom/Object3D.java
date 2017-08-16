@@ -1265,6 +1265,13 @@ public abstract class Object3D implements Comparable<Object3D> {
         translate(obj.getCenterX() - this.getCenterX(), obj.getCenterY() - this.getCenterY(), obj.getCenterZ() - this.getCenterZ());
     }
 
+    public void setNewCenter(Vector3D newCenter){
+        translate(newCenter.getX() - this.getCenterX(), newCenter.getY() - this.getCenterY(), newCenter.getZ() - this.getCenterZ());
+    }
+
+
+
+
     /**
      * @param x
      * @param y

@@ -23,6 +23,7 @@ public class ImagePlus_Utils {
         } else {
             imageByte = (ImageByte) image;
         }
+        int maxValue = (int) imageByte.getMax();
         ImageStack imageStack = imageByte.getImageStack();
         String fileName;
         ImageProcessor imageProcessor;
@@ -31,14 +32,34 @@ public class ImagePlus_Utils {
             fileName = name + IJ.pad(s + start, pad) + ".png";
             imageProcessor = imageStack.getProcessor(s + 1);
             imagePlus = new ImagePlus(fileName, imageProcessor);
-            if (lut) rgb332(imagePlus);
+            if (lut) {
+                rgb332(imagePlus, maxValue);
+            }
+
             FileSaver fileSaver = new FileSaver(imagePlus);
             if (!fileSaver.saveAsPng(dir + fileName)) return false;
         }
         return true;
     }
 
-    private static void rgb332(ImagePlus imagePlus) {
+    public static boolean saveAsPngSequence(ImagePlus image, String dir, String name, int start, int pad, boolean lut) {
+        ImageStack imageStack=image.getImageStack();
+        ImageProcessor imageProcessor;
+        ImagePlus imagePlus;
+        String fileName;
+        for (int s = 0; s < imageStack.getSize(); s++) {
+            fileName = name + IJ.pad(s + start, pad) + ".png";
+            imageProcessor = imageStack.getProcessor(s + 1);
+            imagePlus = new ImagePlus(fileName, imageProcessor);
+            FileSaver fileSaver = new FileSaver(imagePlus);
+            if (!fileSaver.saveAsPng(dir + fileName)) return false;
+        }
+        return true;
+    }
+
+
+
+    private static void rgb332(ImagePlus imagePlus, int max) {
         byte[] reds = new byte[256];
         byte[] greens = new byte[256];
         byte[] blues = new byte[256];
@@ -50,8 +71,6 @@ public class ImagePlus_Utils {
         IndexColorModel cm = new IndexColorModel(8, 256, reds, greens, blues);
         ImageProcessor ip = imagePlus.getChannelProcessor();
         ip.setColorModel(cm);
-        ip.setMinAndMax(0, 255);
+        ip.setMinAndMax(0, max);
     }
-
-
 }
