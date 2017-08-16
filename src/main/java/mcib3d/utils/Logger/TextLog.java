@@ -9,7 +9,8 @@ public class TextLog extends AbstractLog {
 
     @Override
     public void log(String S) {
-        log = log.concat(S);
+
+        if(concat) log = log.concat(S); else log=S;
     }
 
     public String getLog() {
