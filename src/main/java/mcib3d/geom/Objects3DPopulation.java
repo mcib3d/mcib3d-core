@@ -289,7 +289,8 @@ public class Objects3DPopulation {
         // check if calibration consistent
         else {
             if ((scaleXY != obj.resXY) || (scaleZ != obj.resZ)) {
-                if(log!=null)log.log("Calibration not consistent between population and object : (" + scaleXY + "," + scaleZ + ") (" + obj.resXY + "," + obj.resZ + ")");
+                if (log != null)
+                    log.log("Calibration not consistent between population and object : (" + scaleXY + "," + scaleZ + ") (" + obj.resXY + "," + obj.resZ + ")");
                 obj.setCalibration(scaleXY, scaleZ, unit);
             }
         }
@@ -376,7 +377,7 @@ public class Objects3DPopulation {
         hashValue = null;
         hashName = null;
         if (!objects.remove(obj)) {
-            if(log!=null)log.log("Pb removing " + obj);
+            if (log != null) log.log("Pb removing " + obj);
         }
     }
 
@@ -414,7 +415,7 @@ public class Objects3DPopulation {
             Object3DVoxels ob = new Object3DVoxels(voxlist);
             //Object3D_IJUtils.setCalibration(ob, calibration);
             ob.setCalibration(scaleXY, scaleZ, unit);
-            ob.setName("Point-"+i);
+            ob.setName("Point-" + i);
             ob.setValue(i + 1);
             addObject(ob);
         }
@@ -473,7 +474,7 @@ public class Objects3DPopulation {
         int min = (int) seg.getMinAboveValue(threshold);
         int max = (int) seg.getMax();
         if (max == 0) {
-            if(log!=null)log.log("No objects found");
+            if (log != null) log.log("No objects found");
             return;
         }
         //IJ.log("mm "+min+" "+max);
@@ -522,7 +523,7 @@ public class Objects3DPopulation {
         int min = (int) seg.getMinAboveValue(threshold);
         int max = (int) seg.getMax();
         if (max == 0) {
-            if(log!=null) log.log("No objects found");
+            if (log != null) log.log("No objects found");
             return;
         }
         //IJ.log("mm "+min+" "+max);
@@ -621,7 +622,8 @@ public class Objects3DPopulation {
         // check if calibration consistent
         else {
             if ((scaleXY != obj.resXY) || (scaleZ != obj.resZ)) {
-                if(log!=null)log.log("Calibration not consistent between population and object : (" + scaleXY + "," + scaleZ + ") (" + obj.resXY + "," + obj.resZ + ")");
+                if (log != null)
+                    log.log("Calibration not consistent between population and object : (" + scaleXY + "," + scaleZ + ") (" + obj.resXY + "," + obj.resZ + ")");
                 obj.setCalibration(scaleXY, scaleZ, unit);
             }
         }
@@ -1103,10 +1105,8 @@ public class Objects3DPopulation {
     public Object3D closestBorder(Object3D ob, ArrayList<Object3D> exclude) {
         Object3D res = null;
         double dmin = Double.MAX_VALUE;
-        Object3D tmp;
         double d;
-        for (Object3D object : objects) {
-            tmp = object;
+        for (Object3D tmp : objects) {
             if (!exclude.contains(tmp)) {
                 d = ob.distBorderUnit(tmp);
                 if (d < dmin) {
@@ -1303,7 +1303,7 @@ public class Objects3DPopulation {
 
     public ArrayList<Object3D> getObjectsWithinDistanceCenter(Object3D ob, double dist) {
         ArrayList<Object3D> list = new ArrayList<Object3D>();
-        // first method tet all distances
+        // first method test all distances
         // FIXME use kdtree
         for (Object3D object : objects) {
             double tmp = ob.distCenterUnit(object);
@@ -1315,6 +1315,7 @@ public class Objects3DPopulation {
         return list;
     }
 
+
     public ArrayList<Object3D> getObjectsWithinDistanceBorder(Object3D ob, double dist) {
         ArrayList<Object3D> list = new ArrayList<Object3D>();
         for (Object3D object : objects) {
@@ -1322,6 +1323,18 @@ public class Objects3DPopulation {
             if (tmp <= dist) {
                 list.add(object);
             }
+        }
+
+        return list;
+    }
+
+    public ArrayList<Object3D> getObjectsWithinVolume(double volumeMin, double volumeMax, boolean useUnit) {
+        if (volumeMax < volumeMin) volumeMax = Double.POSITIVE_INFINITY;
+        ArrayList<Object3D> list = new ArrayList<Object3D>();
+        for (Object3D object : objects) {
+            double vol = useUnit ? object.getVolumeUnit() : object.getVolumePixels();
+            if ((vol >= volumeMin) && (vol <= volumeMax))
+                list.add(object);
         }
 
         return list;
@@ -1438,7 +1451,7 @@ public class Objects3DPopulation {
                 }
             }
             if (it == maxIt) {
-                if(log!=null)log.log("Could not shuffle " + obj);
+                if (log != null) log.log("Could not shuffle " + obj);
                 obj.setNewCenter(center.x, center.y, center.z);
             }
             shuObj.add(obj);
@@ -1629,7 +1642,7 @@ public class Objects3DPopulation {
             zip.close();
 
         } catch (IOException ex) {
-            if(log!=null) log.log("Pb saving population " + ex);
+            if (log != null) log.log("Pb saving population " + ex);
             return false;
         }
 
@@ -1655,7 +1668,7 @@ public class Objects3DPopulation {
         byte[] buf = new byte[1024];
         File file;
         Object3DVoxels obj;
-        if(log!=null) log.log("Loading objects from " + path);
+        if (log != null) log.log("Loading objects from " + path);
         File f = new File(path);
         String dir = f.getParent();
         String fs = File.separator;
@@ -1692,9 +1705,9 @@ public class Objects3DPopulation {
             }
             zipinputstream.close();
         } catch (FileNotFoundException ex) {
-            if(log!=null)log.log("Pb loading " + ex);
+            if (log != null) log.log("Pb loading " + ex);
         } catch (IOException e) {
-            if(log!=null)log.log("Pb loading " + e);
+            if (log != null) log.log("Pb loading " + e);
         }
     }
 
