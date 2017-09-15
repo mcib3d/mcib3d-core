@@ -6,6 +6,7 @@ import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
@@ -96,6 +97,29 @@ public class Object3D_IJUtils {
         return roi;
     }
 
+    public static ImagePlus drawRandomColors(Objects3DPopulation objects3DPopulation, int sx, int sy, int sz) {
+        ImageStack imageStack = new ImageStack(sx, sy);
+        for (int s = 0; s < sz; s++) {
+            ColorProcessor colorProcessor = new ColorProcessor(sx, sy);
+            imageStack.addSlice(colorProcessor);
+        }
+
+        for (int i = 0; i < objects3DPopulation.getNbObjects(); i++) {
+            Object3D object3D = objects3DPopulation.getObject(i);
+            int r = (int) (255 * Math.random());
+            int g = (int) (255 * Math.random());
+            int b = (int) (255 * Math.random());
+            while ((r < 50) && (g < 50) && (b < 50)) {
+                if (r < 50) r = (int) (255 * Math.random());
+                if (g < 50) g = (int) (255 * Math.random());
+                if (b < 50) b = (int) (255 * Math.random());
+            }
+            Object3D_IJUtils.draw(object3D, imageStack, r, g, b);
+        }
+
+        return new ImagePlus("color", imageStack);
+    }
+
     public static boolean draw(Object3D object3D, ByteProcessor mask, int z, int col) {
         boolean ok = false;
         for (Voxel3D vox : object3D.getVoxels()) {
@@ -130,11 +154,26 @@ public class Object3D_IJUtils {
     }
 
     public static void drawLabel(Object3D object3D, ImageStack mask, int col) {
-        ImageProcessor tmp = mask.getProcessor((int) (object3D.getCenterZ() + 1));
+        int z = (int) object3D.getCenterZ();
+        ImageProcessor tmp = mask.getProcessor((int) (z + 1));
         tmp.setColor(col);
         Font font = new Font(Font.DIALOG, Font.PLAIN, 10);
         String name = object3D.getName();
-        tmp.drawString(object3D.getName(), (int) (object3D.getCenterX() - name.length() * font.getSize() / 4), (int) (object3D.getYmax() + font.getSize() / 2));
+        tmp.drawString(object3D.getName(), (int) (object3D.getCenterX() - name.length() * font.getSize() / 4), (int) (object3D.getYmax() + font.getSize()));
+
+    }
+
+    public static void drawLabel(Object3D object3D, ImageStack mask, int nbz, int r, int g, int b) {
+        int cz = (int) object3D.getCenterZ();
+        int zmin = Math.max(0, cz - nbz);
+        int zmax = Math.min(mask.getSize() - 1, cz + nbz);
+        for (int z = zmin; z <= zmax; z++) {
+            ImageProcessor tmp = mask.getProcessor((int) (z + 1));
+            tmp.setColor(new Color(r, g, b));
+            Font font = new Font(Font.DIALOG, Font.PLAIN, 10);
+            String name = object3D.getName();
+            tmp.drawString(object3D.getName(), (int) (object3D.getCenterX() - name.length() * font.getSize() / 4), (int) (object3D.getYmax() + font.getSize()));
+        }
     }
 
 
