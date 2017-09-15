@@ -1258,18 +1258,21 @@ public abstract class ImageHandler {
         for (int i = 0; i < sizeXYZ; i++) {
             setPixel(i, this.getPixel(i) / coeff);
         }
+        resetStats();
     }
 
     public void multiplyByValue(float coeff) {
         for (int i = 0; i < sizeXYZ; i++) {
             setPixel(i, this.getPixel(i) * coeff);
         }
+        resetStats();
     }
 
     public void addValue(float val) {
         for (int i = 0; i < sizeXYZ; i++) {
             this.setPixel(i, this.getPixel(i) + val);
         }
+        resetStats();
     }
 
     public ImageHandler duplicate() {
@@ -1284,6 +1287,7 @@ public abstract class ImageHandler {
 
     public void fill(double value) {
         fill(value, 0, sizeZ - 1);
+        resetStats();
     }
 
     public abstract void fill(double value, int min, int max);
@@ -1654,6 +1658,11 @@ public abstract class ImageHandler {
         stats.remove(mask);
     }
 
+    public synchronized void resetStats() {
+        resetStats(null);
+    }
+
+
     public void hide() {
         if (img != null) {
             img.hide();
@@ -1854,6 +1863,7 @@ public abstract class ImageHandler {
                 }
             }
         }
+        resetStats();
     }
 
     public ImageHandler enlarge(int dx, int dy, int dz) {
@@ -1898,6 +1908,7 @@ public abstract class ImageHandler {
                 setPixel(i, 0);
             }
         }
+        resetStats();
     }
 
     @Deprecated

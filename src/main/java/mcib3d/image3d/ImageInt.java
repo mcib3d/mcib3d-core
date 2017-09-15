@@ -375,7 +375,7 @@ public abstract class ImageInt extends ImageHandler {
                 this.setPixel(k, rep);
             }
         }
-        // reset stats
+        resetStats();
     }
 
     public void transfertPixelValues(ImageInt other, int val, int rep) {
@@ -384,6 +384,7 @@ public abstract class ImageInt extends ImageHandler {
                 other.setPixel(k, rep);
             }
         }
+        other.resetStats();
     }
 
     /**
@@ -400,6 +401,7 @@ public abstract class ImageInt extends ImageHandler {
                 this.setPixel(k, rep2);
             }
         }
+        resetStats();
     }
 
 //    /**
@@ -436,6 +438,7 @@ public abstract class ImageInt extends ImageHandler {
                 }
             }
         }
+        resetStats();
     }
 
     /**
@@ -454,6 +457,7 @@ public abstract class ImageInt extends ImageHandler {
                 }
             }
         }
+        resetStats();
     }
 
     /**
@@ -662,6 +666,7 @@ public abstract class ImageInt extends ImageHandler {
                 if (ti != null) log.log("3D filtering : " + ti);
             }
         }
+        resetStats();
     }
 
     public ArrayList<Voxel3DComparable> getListMaxima(float radx, float rady, float radz, int zmin, int zmax) {
@@ -751,6 +756,7 @@ public abstract class ImageInt extends ImageHandler {
                 if (ti != null) log.log("3D filtering : " + ti);
             }
         }
+        resetStats();
     }
 
     /**
