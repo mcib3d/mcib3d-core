@@ -13,6 +13,8 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageLabeller;
 import mcib3d.image3d.ImageShort;
+import mcib3d.utils.Logger.AbstractLog;
+import mcib3d.utils.Logger.IJLog;
 
 import java.util.*;
 
@@ -54,6 +56,8 @@ public class Watershed3D {
     private int rawThreshold;
     private boolean labelSeeds = true;
     private HashMap<Integer, Integer> seedsValue;
+    private AbstractLog log = new IJLog();
+
 
     /**
      * @param image raw image
@@ -158,7 +162,7 @@ public class Watershed3D {
             watershedImage.show();
         }
         if (rawImage.getMin() > rawThreshold) {
-            IJ.log("Setting minimum for raw image to " + rawImage.getMin());
+            log.log("Setting minimum for raw image to " + rawImage.getMin());
             rawThreshold = (int) rawImage.getMin();
         }
 
@@ -173,7 +177,8 @@ public class Watershed3D {
         }
         boolean newt = true;
 
-        IJ.log("");
+        log.log("");
+        if (log instanceof IJLog) ((IJLog) (log)).setUpdate(true);
         while (newt) {
             newt = false;
             while (!tree.isEmpty()) {
@@ -207,7 +212,7 @@ public class Watershed3D {
                 }
 
                 if (System.currentTimeMillis() - t0 > step) {
-                    IJ.log("\\Update:Voxels to process : " + Math.abs(tree.size()));
+                    log.log("Voxels to process : " + Math.abs(tree.size()));
                     if (anim) {
                         watershedImage.updateDisplay();
                     }
@@ -215,8 +220,10 @@ public class Watershed3D {
                 }
             }
         }
-        IJ.log("\\Update:Voxels to process : " + Math.abs(tree.size()));
-        IJ.log("Watershed completed.");
+
+        log.log("Voxels to process : " + Math.abs(tree.size()));
+        if (log instanceof IJLog) ((IJLog) (log)).setUpdate(false);
+        log.log("Watershed completed.");
 
         damImage = (ImageInt) watershedImage.createSameDimensions();
         watershedImage.transfertPixelValues(damImage, 1, 255);
@@ -251,7 +258,7 @@ public class Watershed3D {
         seedsLabel.thresholdCut(seedsThreshold, false, true);
 
         if ((labelSeeds)) {
-            IJ.log("Labelling ");
+            log.log("Labelling ");
             ImageLabeller labeller = new ImageLabeller();
             seedsLabel = labeller.getLabels(seedsLabel);
         }
@@ -296,6 +303,10 @@ public class Watershed3D {
                 }
             }
         }
-        IJ.showStatus("Watershed...");
+        log.log("Watershed...");
+    }
+
+    public void setLog(AbstractLog logger) {
+        this.log = logger;
     }
 }

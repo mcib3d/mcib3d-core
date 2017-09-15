@@ -63,6 +63,7 @@ public class Watershed3DVoronoi {
         EDTcopy.invert();
         EDTcopy.addValue((float) max + 1);
         Watershed3D water = new Watershed3D(EDTcopy, seeds, 0, 0);
+        water.setLog(log);
         water.setLabelSeeds(labelSeeds);
         watershed = water.getWatershedImage3D();
         lines = water.getDamImage();
