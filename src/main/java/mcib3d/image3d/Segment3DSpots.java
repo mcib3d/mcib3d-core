@@ -8,8 +8,6 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Plot;
 import ij.measure.CurveFitter;
-import java.util.ArrayList;
-import java.util.Iterator;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Voxel3D;
@@ -20,28 +18,45 @@ import mcib3d.image3d.regionGrowing.Watershed3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.ThreadUtil;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 /**
  * Copyright (C) Thomas Boudier
- *
+ * <p>
  * License: This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 /**
  *
  * @author thomas
  */
 public class Segment3DSpots {
 
+    // methods of segmentation
+    public final static int SEG_CLASSICAL = 1;
+    public final static int SEG_MAX = 3;
+    public final static int SEG_BLOCK = 4;
+    // LOCAL THRESHOLD
+    public final static int LOCAL_CONSTANT = 1;
+    public final static int LOCAL_MEAN = 2;
+    public final static int LOCAL_GAUSS = 3;
+    public final static int LOCAL_DIFF = 4;
+    public boolean show = true;
+    public boolean multithread = true;
+    // special case more than 2^16 labels
+    public boolean bigLabel = false;
     ArrayList<Object3D> segmentedObjects = null;
     ImageHandler rawImage; // raw image
     ImageHandler seedsImage; // positions of seeds
@@ -49,16 +64,7 @@ public class Segment3DSpots {
     ImageHandler labelImage = null; // labelled image with objects
     ImageHandler indexImage = null; // indexed image with objects
     int seedsThreshold = -1; // global threshold (min value from seeds)
-    // methods of segmentation
-    public final static int SEG_CLASSICAL = 1;
-    public final static int SEG_MAX = 3;
-    public final static int SEG_BLOCK = 4;
     int methodSeg = 1;
-    // LOCAL THRESHOLD
-    public final static int LOCAL_CONSTANT = 1;
-    public final static int LOCAL_MEAN = 2;
-    public final static int LOCAL_GAUSS = 3;
-    public final static int LOCAL_DIFF = 4;
     int localValue = -1;
     int localMethod = 1; // local threshold (to find spots)
     float radius0, radius1, radius2; // local mean
@@ -71,10 +77,6 @@ public class Segment3DSpots {
     private int volMin = 2;
     // option watershed
     private boolean WATERSHED = false;
-    public boolean show = true;
-    public boolean multithread = true;
-    // special case more than 2^16 labels
-    public boolean bigLabel = false;
     private float diff;
 
     /**
@@ -85,6 +87,494 @@ public class Segment3DSpots {
     public Segment3DSpots(ImageHandler image, ImageHandler seeds) {
         this.rawImage = image;
         this.seedsImage = seeds;
+    }
+
+    public static Object3DVoxels[] splitSpotWatershed(Object3D obj, float rad, float dist) {
+        ImageInt seg = obj.createSegImage(0, 0, 0, obj.getXmax() + 1, obj.getYmax() + 1, obj.getZmax() + 1, 255);
+        //seg.show();
+        ImagePlus segplus = seg.getImagePlus();
+        segplus.setCalibration(obj.getCalibration());
+        // return
+        Object3DVoxels res[] = null;
+        try {
+            int cpus = ThreadUtil.getNbCpus();
+            // FIXME variable multithread
+            ImageFloat edt3d = EDT.run(seg, 1f, false, cpus);
+            // 3D filtering of the edt to remove small local maxima
+            edt3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
+            edt3d.showDuplicate("edt");
+
+            //ImageStack localMax = FastFilters3D.filterFloatImageStack(edt3d.getImageStack(), FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
+            ImageFloat maxlocal3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
+            maxlocal3d.show("max local");
+            ArrayList<Voxel3D> locals = obj.listVoxels(maxlocal3d, 0);
+
+            int nb = locals.size();
+            // IJ.log("nb=" + nb);
+            if (nb < 2) {
+                return null;
+            }
+            // look for most far apart local maxima
+            int i1 = 0;
+            int i2 = 0;
+            double dmax = 0.0;
+            double d;
+            for (int i = 0; i < nb; i++) {
+                for (int j = i + 1; j < nb; j++) {
+                    d = locals.get(i).distance(locals.get(j));
+                    if (d > dmax) {
+                        dmax = d;
+                        i1 = i;
+                        i2 = j;
+                    }
+                }
+            }
+
+            // perform a 2-means clustering
+            double cx1 = 0;
+            double cy1 = 0;
+            double cz1 = 0;
+            double cx2 = 0;
+            double cy2 = 0;
+            double cz2 = 0;
+            double d1;
+            double d2;
+
+            Voxel3D PP1 = new Voxel3D(locals.get(i1).getX(), locals.get(i1).getY(), locals.get(i1).getZ(), 1);
+            Voxel3D PP2 = new Voxel3D(locals.get(i2).getX(), locals.get(i2).getY(), locals.get(i2).getZ(), 2);
+            Voxel3D P1 = new Voxel3D(cx1, cy1, cz1, 0);
+            Voxel3D P2 = new Voxel3D(cx2, cy2, cz2, 0);
+            int nb1, nb2;
+
+            int nbite = 0;
+            while ((nb > 2) && ((P1.distance(PP1) > 1) || (P2.distance(PP2) > 1)) && (nbite < 100)) {
+                nbite++;
+                cx1 = 0;
+                cy1 = 0;
+                cx2 = 0;
+                cy2 = 0;
+                cz1 = 0;
+                cz2 = 0;
+                nb1 = 0;
+                nb2 = 0;
+                P1.setX(PP1.getX());
+                P1.setY(PP1.getY());
+                P1.setZ(PP1.getZ());
+                P2.setX(PP2.getX());
+                P2.setY(PP2.getY());
+                P2.setZ(PP2.getZ());
+                for (Voxel3D local : locals) {
+                    d1 = P1.distance(local);
+                    d2 = P2.distance(local);
+                    if (d1 < d2) {
+                        cx1 += local.getX();
+                        cy1 += local.getY();
+                        cz1 += local.getZ();
+                        nb1++;
+                    } else {
+                        cx2 += local.getX();
+                        cy2 += local.getY();
+                        cz2 += local.getZ();
+                        nb2++;
+                    }
+                }
+                cx1 /= nb1;
+                cy1 /= nb1;
+                cx2 /= nb2;
+                cy2 /= nb2;
+                cz1 /= nb1;
+                cz2 /= nb2;
+
+                PP1.setX(cx1);
+                PP1.setY(cy1);
+                PP1.setZ(cz1);
+                PP2.setX(cx2);
+                PP2.setY(cy2);
+                PP2.setZ(cz2);
+            }
+            // check minimal distances
+            double distPP = PP1.distance(PP2);
+            IJ.log("Centers found for split PP1=" + PP1 + " PP2=" + PP2 + " distance " + distPP);
+            if (distPP < dist) {
+                return null;
+            }
+            // find closest max local to two barycenters, in case barycenters outside object
+            Voxel3D PP1closest=new Voxel3D(locals.get(0));
+            Voxel3D PP2closest=new Voxel3D(locals.get(0));
+            double dist1=PP1.distanceSquare(PP1closest);
+            double dist2=PP2.distanceSquare(PP2closest);
+            for(Voxel3D local:locals){
+                double dd1=PP1.distanceSquare(local);
+                double dd2=PP2.distanceSquare(local);
+                if(dd1<dist1){
+                    dist1=dd1;
+                    PP1closest=local;
+                }
+                if(dd2<dist2){
+                    dist2=dd2;
+                    PP2closest=local;
+                }
+            }
+
+
+            ImageInt seeds = new ImageShort("seeds", seg.sizeX, seg.sizeY, seg.sizeZ);
+            seeds.setPixel(PP1closest.getRoundX(), PP1closest.getRoundY(), PP1closest.getRoundZ(), 255);
+            seeds.setPixel(PP2closest.getRoundX(), PP2closest.getRoundY(), PP2closest.getRoundZ(), 255);
+            seeds.show();
+//            Watershed3D_old wat = new Watershed3D_old(edt3d, seeds, 0, 0);
+//            ImageInt wat2 = wat.getWatershedImage3D();
+            //ImageHandler edt16 = edt3d.convertToShort(true);
+            Watershed3D wat = new Watershed3D(edt3d, seeds, 0, 0);
+            ImageInt wat2 = wat.getWatershedImage3D();
+            wat2.show();
+            // in watershed label starts at 1
+            Object3DVoxels ob1 = new Object3DVoxels(wat2, 1);
+            Object3DVoxels ob2 = new Object3DVoxels(wat2, 2);
+            //IJ.log("split1="+ob1+" split2="+ob2);
+            // translate objects if needed by miniseg
+            //ob1.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
+            //new ImagePlus("wat", wat2.getStack()).show();
+            res = new Object3DVoxels[2];
+            res[0] = ob1;
+            res[1] = ob2;
+        } catch (Exception e) {
+            IJ.log("Exception EDT " + e);
+        }
+
+        return res;
+    }
+
+    /**
+     * NOT USED, see splitSpotWatershed
+     * @param ori
+     * @param val
+     * @param f
+     * @param new1
+     * @param new2
+     * @param dist
+     * @param rad
+     * @param dim
+     * @return
+     */
+    public static ArrayList<Voxel3D>[] splitSpotProjection(IntImage3D ori, int val, Object3D f, int new1, int new2, double dist, float rad, int dim) {
+        // only for voxels object
+        if (!(f instanceof Object3DVoxels)) {
+            return null;
+        }
+
+        boolean debug = false;
+        int p1 = f.getZmin();
+        int p2 = f.getZmax();
+        IntImage3D proj;
+        if (dim == 2) {
+            proj = ori.projectionZ(-1, p1, p2);
+        } else {
+            proj = ori;
+        }
+        //proj = (IntImage3D) proj.medianFilter(1, 1, 0);
+        float radz = (dim == 2) ? 0 : rad;
+        IntImage3D maxi = proj.createLocalMaximaImage(rad, rad, radz, false);
+        //IntImage3D seg = f.getSegImage();
+        if (debug) {
+            System.out.println("Separe2D " + val);
+        }
+        //IntImage3D seg2D = seg.projectionZ(val, p1, p2);
+        double cx1;
+        double cy1;
+        double cz1;
+        double nb1;
+        double cx2;
+        double cy2;
+        double cz2;
+        double nb2;
+        double dist1;
+        double dist2;
+        int nb;
+
+        if (debug) {
+            System.out.println("separe spots 2D : " + val);
+        }
+
+        // compter nb de max locaux
+        /*
+         * for (int j = 2; j < maxi.getSizey() - 2; j++) { for (int i = 2; i <
+         * maxi.getSizex() - 2; i++) { if ((maxi.getPixel(i, j, 0) > 0) &&
+         * (seg2D.getPixel(i, j, 0) > 0)) { maxi.putPixel(i, j, 0, 255); nb++; }
+         * else { } } }
+         *
+         */
+        // with ArrayList
+        ArrayList<Voxel3D> list = f.getVoxels();
+        ArrayList<Voxel3D> maxlo = new ArrayList<Voxel3D>();
+
+        Iterator it = list.iterator();
+        int xx, yy, zz;
+        Voxel3D vox;
+        Voxel3D vox1;
+        while (it.hasNext()) {
+            vox = (Voxel3D) it.next();
+            xx = vox.getRoundX();
+            yy = vox.getRoundY();
+            zz = vox.getRoundZ();
+            if (dim == 2) {
+                zz = 0;
+            }
+            if (maxi.getPix(xx, yy, zz) > 0) {
+                //maxi.putPixel(xx, yy, 0, 255);
+                vox1 = new Voxel3D(vox);
+                vox1.setZ(0);
+                maxlo.add(vox1);
+                //nb++;
+                //} else {
+                //maxi.putPixel(xx, yy, 0, 0);
+                //}
+            }
+        }
+        nb = maxlo.size();
+        IJ.log("max loco " + nb);
+        if (debug) {
+            new ImagePlus("max loco-" + val, maxi.getStack()).show();
+            //new ImagePlus("seg2D-" + val, seg2D.getStack()).show();
+            //new ImagePlus("seg-" + val, seg.getStack()).show();
+            new ImagePlus("proj-" + val, proj.getStack()).show();
+        } // si 1 seul pixel on retourne false
+        if (maxlo.size() < 2) {
+            return null;
+        }
+        /*
+         * Voxel3D tablo[] = new Voxel3D[nb]; nb = 0; // ranger max locaux dans
+         * le tablo for (int j = 0; j < maxi.getSizey(); j++) { for (int i = 0;
+         * i < maxi.getSizex(); i++) { if ((maxi.getPixel(i, j, 0) > 0)) {
+         * tablo[nb] = new Voxel3D(i, j, 0, 0); nb++; } } } /*
+         */
+
+        // chercher deux max locaux les plus eloignes
+        int i1 = 0;
+        int i2 = 0;
+        double dmax = 0.0;
+        double d;
+        for (int i = 0; i < nb; i++) {
+            for (int j = i + 1; j < nb; j++) {
+                d = maxlo.get(i).distance(maxlo.get(j));
+                if (d > dmax) {
+                    dmax = d;
+                    i1 = i;
+                    i2 = j;
+                }
+            }
+        }
+
+        // Ranger les max locaux en deux classes et calculer barycentre des deux classes
+        cx1 = 0;
+        cy1 = 0;
+        cz1 = 0;
+        cx2 = 0;
+        cy2 = 0;
+        cz2 = 0;
+        double d1;
+        double d2;
+        /*
+         * if (debug) { System.out.println("max locaux eloignes:");
+         * System.out.println("centre1: " + tablo[i1].getX() + " " +
+         * tablo[i1].getY() + " " + tablo[i1].getZ());
+         * System.out.println("centre2: " + tablo[i2].getX() + " " +
+         * tablo[i2].getY() + " " + tablo[i2].getZ());
+         * System.out.println("distance : " + tablo[i1].distance(tablo[i2])); }
+         *
+         */
+        Voxel3D PP1 = new Voxel3D(maxlo.get(i1).getX(), maxlo.get(i1).getY(), maxlo.get(i1).getZ(), 0.0);
+        Voxel3D PP2 = new Voxel3D(maxlo.get(i2).getX(), maxlo.get(i2).getY(), maxlo.get(i2).getZ(), 0.0);
+        Voxel3D P1 = new Voxel3D(cx1, cy1, cz1, 0);
+        Voxel3D P2 = new Voxel3D(cx2, cy2, cz2, 0);
+
+        int nbite = 0;
+        while (((P1.distance(PP1) > 1) || (P2.distance(PP2) > 1)) && (nbite < 100)) {
+            nbite++;
+            cx1 = 0;
+            cy1 = 0;
+            cx2 = 0;
+            cy2 = 0;
+            cz1 = 0;
+            cz2 = 0;
+            nb1 = 0;
+            nb2 = 0;
+            P1.setX(PP1.getX());
+            P1.setY(PP1.getY());
+            P1.setZ(PP1.getZ());
+            P2.setX(PP2.getX());
+            P2.setY(PP2.getY());
+            P2.setZ(PP2.getZ());
+            for (int i = 0; i < nb; i++) {
+                d1 = P1.distance(maxlo.get(i));
+                d2 = P2.distance(maxlo.get(i));
+                if (d1 < d2) {
+                    cx1 += maxlo.get(i).getX();
+                    cy1 += maxlo.get(i).getY();
+                    cz1 += maxlo.get(i).getZ();
+                    nb1++;
+                } else {
+                    cx2 += maxlo.get(i).getX();
+                    cy2 += maxlo.get(i).getY();
+                    cz2 += maxlo.get(i).getZ();
+                    nb2++;
+                }
+            }
+            cx1 /= nb1;
+            cy1 /= nb1;
+            cx2 /= nb2;
+            cy2 /= nb2;
+            cz1 /= nb1;
+            cz2 /= nb2;
+
+            PP1.setX(cx1);
+            PP1.setY(cy1);
+            PP2.setX(cx2);
+            PP2.setY(cy2);
+            PP1.setZ(cz1);
+            PP2.setZ(cz2);
+        }
+
+        if (debug) {
+            System.out.println("max locaux centres:");
+            System.out.println("centre1: " + cx1 + " " + cy1 + " " + cz1);
+            System.out.println("centre2: " + cx2 + " " + cy2 + " " + cz2);
+            System.out.println("distance: " + PP1.distance(PP2));
+        }
+        // remonter centres en 3D
+        // prendre z milieu
+        if (dim == 2) {
+            double zmin1 = f.getZmax();
+            double zmax1 = f.getZmin();
+            double zmin2 = f.getZmax();
+            double zmax2 = f.getZmin();
+            double di, z;
+            // With ArrayList
+            it = list.iterator();
+            while (it.hasNext()) {
+                vox = (Voxel3D) it.next();
+                z = vox.getZ();
+                // PP1
+                PP1.setZ(z);
+                di = PP1.distanceSquare(vox);
+                if (di < 1) {
+                    if (z < zmin1) {
+                        zmin1 = z;
+                    }
+                    if (z > zmax1) {
+                        zmax1 = z;
+                    }
+                }
+                // PP2
+                PP2.setZ(z);
+                di = PP2.distanceSquare(vox);
+                if (di < 1) {
+                    if (z < zmin2) {
+                        zmin2 = z;
+                    }
+                    if (z > zmax2) {
+                        zmax2 = z;
+                    }
+                }
+
+            }
+            cz1 = 0.5 * (zmin1 + zmax1);
+            cz2 = 0.5 * (zmin2 + zmax2);
+
+            PP1.setZ(cz1);
+            PP2.setZ(cz2);
+        }
+
+        /*
+         * int sizez = f.getSegImage().getSizez(); while ((seg.getPixel((int)
+         * cx1, (int) cy1, k) != val) && (k < sizez)) { k++; } if (k >= sizez) {
+         * k1 = f.getZmin(); k2 = f.getZmax(); } else { k1 = k; while
+         * ((seg.getPixel((int) cx1, (int) cy1, k) == val) && (k < sizez)) {
+         * k++; } if (k >= sizez) { k2 = f.getZmax(); } else { k2 = k; } }
+         *
+         */
+        //cz1 = (k1 + k2) / 2.0;
+            /*
+         * // z pour spot 2 k = f.getZmin(); while ((seg.getPixel((int) cx2,
+         * (int) cy2, k) != val) && (k < sizez)) { k++; } if (k >= sizez) { k1 =
+         * f.getZmin(); k2 = f.getZmax(); } else { k1 = k; while
+         * ((seg.getPixel((int) cx2, (int) cy2, k) == val) && (k < sizez)) {
+         * k++; } if (k >= sizez) { k2 = f.getZmax(); } else { k2 = k; } } cz2 =
+         * (k1 + k2) / 2.0;
+         *
+         */
+        if (debug) {
+            System.out.println("max locaux centres en Z:");
+            System.out.println("centre1: " + cx1 + " " + cy1 + " " + cz1);
+            System.out.println("centre2: " + cx2 + " " + cy2 + " " + cz2);
+            System.out.println("distance: " + PP1.distance(PP2));
+        }
+
+        // si distance trop petite, on retourne false
+        if (PP1.distance(PP2) < dist) {
+            return null;
+        }
+        // hybrid watershed test
+        double db1 = f.distPixelBorder(PP1);
+        double db2 = f.distPixelBorder(PP2);
+        //System.out.println("db " + db1 + " " + db2);
+        double db = db1 - db2;
+        boolean oneIsLarger = true;
+        // object 2 larger than object 1
+        if (db2 > db1) {
+            db = db2 - db1;
+            oneIsLarger = false;
+        }
+
+        ////////////////////////////////////////////////////////
+        ///// separate the two objects   ///////////////////////
+        ////////////////////////////////////////////////////////
+        //ArrayUtil tab;
+        //IntImage3D seg1 = new IntImage3D(sizex, sizey, sizez);
+        //IntImage3D seg2 = new IntImage3D(sizex, sizey, sizez);
+        ArrayList<Voxel3D> ob1 = new ArrayList<Voxel3D>();
+        ArrayList<Voxel3D> ob2 = new ArrayList<Voxel3D>();
+        //IntImage3D tmp;
+
+        // with ArrayList
+        it = list.iterator();
+        while (it.hasNext()) {
+            vox = (Voxel3D) it.next();
+            dist1 = PP1.distance(vox);
+            dist2 = PP2.distance(vox);
+            if (oneIsLarger) {
+                dist1 -= db;
+            } else {
+                dist2 -= db;
+            }
+            if (dist1 < dist2) {
+                vox1 = new Voxel3D(vox);
+                vox1.setValue(new1);
+                ob1.add(new Voxel3D(vox1));
+            } else {
+                vox1 = new Voxel3D(vox);
+                vox1.setValue(new2);
+                ob2.add(new Voxel3D(vox1));
+            }
+        }
+        /*
+         * for (k = 0; k < seg.getSizez(); k++) { for (int j = 0; j <
+         * seg.getSizey(); j++) { for (int i = 0; i < seg.getSizex(); i++) { if
+         * (seg.getPixel(i, j, k) == val) { dist1 = (i - cx1) * (i - cx1) + (j -
+         * cy1) * (j - cy1) + (k - cz1) * (k - cz1); dist2 = (i - cx2) * (i -
+         * cx2) + (j - cy2) * (j - cy2) + (k - cz2) * (k - cz2); if
+         * (oneIsLarger) { dist1 -= db; } else { dist2 -= db; }
+         *
+         * }
+         * }
+         * }
+         * }
+         */
+
+        ArrayList[] tab = new ArrayList[2];
+        tab[0] = ob1;
+        tab[1] = ob2;
+
+        return tab;
     }
 
     /**
@@ -135,10 +625,6 @@ public class Segment3DSpots {
         this.rawImage = image;
     }
 
-    public void setLabelImage(ImageHandler image) {
-        this.labelImage = image;
-    }
-
     /**
      *
      * @return seeds image
@@ -185,6 +671,10 @@ public class Segment3DSpots {
             obj.draw(indexImage, obj.getValue());
         }
         return indexImage;
+    }
+
+    public void setLabelImage(ImageHandler image) {
+        this.labelImage = image;
     }
 
     /**
@@ -748,7 +1238,7 @@ public class Segment3DSpots {
                                 } // m
                             } //n
 
-                            // analyse list                           
+                            // analyse list
                             ok = true;
                             // empty
                             if (neigh.isEmpty()) {
@@ -826,10 +1316,11 @@ public class Segment3DSpots {
                 } // j
             }// k
             sens *= -1;
-        }//while      
+        }//while
         //IJ.log("obj size: ");
         return object;
     }
+    // FIXME a revoir, notamment dist ??
 
     /**
      * Segment an object from a seed
@@ -1029,476 +1520,6 @@ public class Segment3DSpots {
         }
 
         return object;
-    }
-    // FIXME a revoir, notamment dist ??
-
-    public static Object3DVoxels[] splitSpotWatershed(Object3D obj, float rad, float dist) {
-        ImageInt seg = obj.createSegImage(0, 0, 0, obj.getXmax() + 1, obj.getYmax() + 1, obj.getZmax() + 1, 255);
-        //seg.show();
-        ImagePlus segplus = seg.getImagePlus();
-        segplus.setCalibration(obj.getCalibration());
-        // return
-        Object3DVoxels res[] = null;
-        try {
-            int cpus = ThreadUtil.getNbCpus();
-            // FIXME variable multithread
-            ImageFloat edt3d = EDT.run(seg, 1f, false, cpus);
-            // 3D filtering of the edt to remove small local maxima
-            edt3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
-            //edt3d.showDuplicate("edt");
-
-            //ImageStack localMax = FastFilters3D.filterFloatImageStack(edt3d.getImageStack(), FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
-            ImageFloat maxlocal3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
-            //maxlocal3d.show("max local");
-            ArrayList<Voxel3D> locals = obj.listVoxels(maxlocal3d, 0);
-
-            int nb = locals.size();
-            // IJ.log("nb=" + nb);
-            if (nb < 2) {
-                return null;
-            }
-            // chercher deux max locaux les plus eloignes
-            int i1 = 0;
-            int i2 = 0;
-            double dmax = 0.0;
-            double d;
-            for (int i = 0; i < nb; i++) {
-                for (int j = i + 1; j < nb; j++) {
-                    d = locals.get(i).distance(locals.get(j));
-                    if (d > dmax) {
-                        dmax = d;
-                        i1 = i;
-                        i2 = j;
-                    }
-                }
-            }
-
-            // Ranger les max locaux en deux classes et calculer barycentre des deux classes
-            double cx1 = 0;
-            double cy1 = 0;
-            double cz1 = 0;
-            double cx2 = 0;
-            double cy2 = 0;
-            double cz2 = 0;
-            double d1;
-            double d2;
-
-            Voxel3D PP1 = new Voxel3D(locals.get(i1).getX(), locals.get(i1).getY(), locals.get(i1).getZ(), 1);
-            Voxel3D PP2 = new Voxel3D(locals.get(i2).getX(), locals.get(i2).getY(), locals.get(i2).getZ(), 2);
-            Voxel3D P1 = new Voxel3D(cx1, cy1, cz1, 0);
-            Voxel3D P2 = new Voxel3D(cx2, cy2, cz2, 0);
-            int nb1, nb2;
-
-            int nbite = 0;
-            while ((nb > 2) && ((P1.distance(PP1) > 1) || (P2.distance(PP2) > 1)) && (nbite < 100)) {
-                nbite++;
-                cx1 = 0;
-                cy1 = 0;
-                cx2 = 0;
-                cy2 = 0;
-                cz1 = 0;
-                cz2 = 0;
-                nb1 = 0;
-                nb2 = 0;
-                P1.setX(PP1.getX());
-                P1.setY(PP1.getY());
-                P1.setZ(PP1.getZ());
-                P2.setX(PP2.getX());
-                P2.setY(PP2.getY());
-                P2.setZ(PP2.getZ());
-                for (Voxel3D local : locals) {
-                    d1 = P1.distance(local);
-                    d2 = P2.distance(local);
-                    if (d1 < d2) {
-                        cx1 += local.getX();
-                        cy1 += local.getY();
-                        cz1 += local.getZ();
-                        nb1++;
-                    } else {
-                        cx2 += local.getX();
-                        cy2 += local.getY();
-                        cz2 += local.getZ();
-                        nb2++;
-                    }
-                }
-                cx1 /= nb1;
-                cy1 /= nb1;
-                cx2 /= nb2;
-                cy2 /= nb2;
-                cz1 /= nb1;
-                cz2 /= nb2;
-
-                PP1.setX(cx1);
-                PP1.setY(cy1);
-                PP1.setZ(cz1);
-                PP2.setX(cx2);
-                PP2.setY(cy2);
-                PP2.setZ(cz2);
-            }
-            // check minimal distances
-            double distPP = PP1.distance(PP2);
-            IJ.log("Centers found for split PP1=" + PP1 + " PP2=" + PP2 + " distance " + distPP);
-            if (distPP < dist) {
-                return null;
-            }
-            ImageInt seeds = new ImageShort("seeds", seg.sizeX, seg.sizeY, seg.sizeZ);
-            seeds.setPixel(PP1.getRoundX(), PP1.getRoundY(), PP1.getRoundZ(), 255);
-            seeds.setPixel(PP2.getRoundX(), PP2.getRoundY(), PP2.getRoundZ(), 255);
-            //seeds.show();
-//            Watershed3D_old wat = new Watershed3D_old(edt3d, seeds, 0, 0);
-//            ImageInt wat2 = wat.getWatershedImage3D();
-            ImageHandler edt16 = edt3d.convertToShort(true);
-            Watershed3D wat = new Watershed3D(edt16, seeds, 0, 0);
-            ImageInt wat2 = wat.getWatershedImage3D();
-            //wat2.show();
-            // in watershed label starts at 2
-            Object3DVoxels ob1 = new Object3DVoxels(wat2, 2);
-            Object3DVoxels ob2 = new Object3DVoxels(wat2, 3);
-            //IJ.log("split1="+ob1+" split2="+ob2);
-            // translate objects if needed by miniseg
-            //ob1.translate(seg.offsetX, seg.offsetY, seg.offsetZ);
-            //new ImagePlus("wat", wat2.getStack()).show();
-            res = new Object3DVoxels[2];
-            res[0] = ob1;
-            res[1] = ob2;
-        } catch (Exception e) {
-            IJ.log("Exception EDT " + e);
-        }
-
-        return res;
-    }
-
-    /**
-     *
-     * @param ori
-     * @param val
-     * @param f
-     * @param new1
-     * @param new2
-     * @param dist
-     * @param rad
-     * @param dim
-     * @return
-     */
-    public static ArrayList<Voxel3D>[] splitSpotProjection(IntImage3D ori, int val, Object3D f, int new1, int new2, double dist, float rad, int dim) {
-        // only for voxels object
-        if (!(f instanceof Object3DVoxels)) {
-            return null;
-        }
-
-        boolean debug = false;
-        int p1 = f.getZmin();
-        int p2 = f.getZmax();
-        IntImage3D proj;
-        if (dim == 2) {
-            proj = ori.projectionZ(-1, p1, p2);
-        } else {
-            proj = ori;
-        }
-        //proj = (IntImage3D) proj.medianFilter(1, 1, 0);
-        float radz = (dim == 2) ? 0 : rad;
-        IntImage3D maxi = proj.createLocalMaximaImage(rad, rad, radz, false);
-        //IntImage3D seg = f.getSegImage();
-        if (debug) {
-            System.out.println("Separe2D " + val);
-        }
-        //IntImage3D seg2D = seg.projectionZ(val, p1, p2);
-        double cx1;
-        double cy1;
-        double cz1;
-        double nb1;
-        double cx2;
-        double cy2;
-        double cz2;
-        double nb2;
-        double dist1;
-        double dist2;
-        int nb;
-
-        if (debug) {
-            System.out.println("separe spots 2D : " + val);
-        }
-
-        // compter nb de max locaux
-        /*
-         * for (int j = 2; j < maxi.getSizey() - 2; j++) { for (int i = 2; i <
-         * maxi.getSizex() - 2; i++) { if ((maxi.getPixel(i, j, 0) > 0) &&
-         * (seg2D.getPixel(i, j, 0) > 0)) { maxi.putPixel(i, j, 0, 255); nb++; }
-         * else { } } }
-         *
-         */
-        // with ArrayList
-        ArrayList<Voxel3D> list = f.getVoxels();
-        ArrayList<Voxel3D> maxlo = new ArrayList<Voxel3D>();
-
-        Iterator it = list.iterator();
-        int xx, yy, zz;
-        Voxel3D vox;
-        Voxel3D vox1;
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
-            xx = vox.getRoundX();
-            yy = vox.getRoundY();
-            zz = vox.getRoundZ();
-            if (dim == 2) {
-                zz = 0;
-            }
-            if (maxi.getPix(xx, yy, zz) > 0) {
-                //maxi.putPixel(xx, yy, 0, 255);
-                vox1 = new Voxel3D(vox);
-                vox1.setZ(0);
-                maxlo.add(vox1);
-                //nb++;
-                //} else {
-                //maxi.putPixel(xx, yy, 0, 0);
-                //}
-            }
-        }
-        nb = maxlo.size();
-        IJ.log("max loco " + nb);
-        if (debug) {
-            new ImagePlus("max loco-" + val, maxi.getStack()).show();
-            //new ImagePlus("seg2D-" + val, seg2D.getStack()).show();
-            //new ImagePlus("seg-" + val, seg.getStack()).show();
-            new ImagePlus("proj-" + val, proj.getStack()).show();
-        } // si 1 seul pixel on retourne false
-        if (maxlo.size() < 2) {
-            return null;
-        }
-        /*
-         * Voxel3D tablo[] = new Voxel3D[nb]; nb = 0; // ranger max locaux dans
-         * le tablo for (int j = 0; j < maxi.getSizey(); j++) { for (int i = 0;
-         * i < maxi.getSizex(); i++) { if ((maxi.getPixel(i, j, 0) > 0)) {
-         * tablo[nb] = new Voxel3D(i, j, 0, 0); nb++; } } } /*
-         */
-
-        // chercher deux max locaux les plus eloignes
-        int i1 = 0;
-        int i2 = 0;
-        double dmax = 0.0;
-        double d;
-        for (int i = 0; i < nb; i++) {
-            for (int j = i + 1; j < nb; j++) {
-                d = maxlo.get(i).distance(maxlo.get(j));
-                if (d > dmax) {
-                    dmax = d;
-                    i1 = i;
-                    i2 = j;
-                }
-            }
-        }
-
-        // Ranger les max locaux en deux classes et calculer barycentre des deux classes
-        cx1 = 0;
-        cy1 = 0;
-        cz1 = 0;
-        cx2 = 0;
-        cy2 = 0;
-        cz2 = 0;
-        double d1;
-        double d2;
-        /*
-         * if (debug) { System.out.println("max locaux eloignes:");
-         * System.out.println("centre1: " + tablo[i1].getX() + " " +
-         * tablo[i1].getY() + " " + tablo[i1].getZ());
-         * System.out.println("centre2: " + tablo[i2].getX() + " " +
-         * tablo[i2].getY() + " " + tablo[i2].getZ());
-         * System.out.println("distance : " + tablo[i1].distance(tablo[i2])); }
-         *
-         */
-        Voxel3D PP1 = new Voxel3D(maxlo.get(i1).getX(), maxlo.get(i1).getY(), maxlo.get(i1).getZ(), 0.0);
-        Voxel3D PP2 = new Voxel3D(maxlo.get(i2).getX(), maxlo.get(i2).getY(), maxlo.get(i2).getZ(), 0.0);
-        Voxel3D P1 = new Voxel3D(cx1, cy1, cz1, 0);
-        Voxel3D P2 = new Voxel3D(cx2, cy2, cz2, 0);
-
-        int nbite = 0;
-        while (((P1.distance(PP1) > 1) || (P2.distance(PP2) > 1)) && (nbite < 100)) {
-            nbite++;
-            cx1 = 0;
-            cy1 = 0;
-            cx2 = 0;
-            cy2 = 0;
-            cz1 = 0;
-            cz2 = 0;
-            nb1 = 0;
-            nb2 = 0;
-            P1.setX(PP1.getX());
-            P1.setY(PP1.getY());
-            P1.setZ(PP1.getZ());
-            P2.setX(PP2.getX());
-            P2.setY(PP2.getY());
-            P2.setZ(PP2.getZ());
-            for (int i = 0; i < nb; i++) {
-                d1 = P1.distance(maxlo.get(i));
-                d2 = P2.distance(maxlo.get(i));
-                if (d1 < d2) {
-                    cx1 += maxlo.get(i).getX();
-                    cy1 += maxlo.get(i).getY();
-                    cz1 += maxlo.get(i).getZ();
-                    nb1++;
-                } else {
-                    cx2 += maxlo.get(i).getX();
-                    cy2 += maxlo.get(i).getY();
-                    cz2 += maxlo.get(i).getZ();
-                    nb2++;
-                }
-            }
-            cx1 /= nb1;
-            cy1 /= nb1;
-            cx2 /= nb2;
-            cy2 /= nb2;
-            cz1 /= nb1;
-            cz2 /= nb2;
-
-            PP1.setX(cx1);
-            PP1.setY(cy1);
-            PP2.setX(cx2);
-            PP2.setY(cy2);
-            PP1.setZ(cz1);
-            PP2.setZ(cz2);
-        }
-
-        if (debug) {
-            System.out.println("max locaux centres:");
-            System.out.println("centre1: " + cx1 + " " + cy1 + " " + cz1);
-            System.out.println("centre2: " + cx2 + " " + cy2 + " " + cz2);
-            System.out.println("distance: " + PP1.distance(PP2));
-        }
-        // remonter centres en 3D
-        // prendre z milieu
-        if (dim == 2) {
-            double zmin1 = f.getZmax();
-            double zmax1 = f.getZmin();
-            double zmin2 = f.getZmax();
-            double zmax2 = f.getZmin();
-            double di, z;
-            // With ArrayList
-            it = list.iterator();
-            while (it.hasNext()) {
-                vox = (Voxel3D) it.next();
-                z = vox.getZ();
-                // PP1
-                PP1.setZ(z);
-                di = PP1.distanceSquare(vox);
-                if (di < 1) {
-                    if (z < zmin1) {
-                        zmin1 = z;
-                    }
-                    if (z > zmax1) {
-                        zmax1 = z;
-                    }
-                }
-                // PP2
-                PP2.setZ(z);
-                di = PP2.distanceSquare(vox);
-                if (di < 1) {
-                    if (z < zmin2) {
-                        zmin2 = z;
-                    }
-                    if (z > zmax2) {
-                        zmax2 = z;
-                    }
-                }
-
-            }
-            cz1 = 0.5 * (zmin1 + zmax1);
-            cz2 = 0.5 * (zmin2 + zmax2);
-
-            PP1.setZ(cz1);
-            PP2.setZ(cz2);
-        }
-
-        /*
-         * int sizez = f.getSegImage().getSizez(); while ((seg.getPixel((int)
-         * cx1, (int) cy1, k) != val) && (k < sizez)) { k++; } if (k >= sizez) {
-         * k1 = f.getZmin(); k2 = f.getZmax(); } else { k1 = k; while
-         * ((seg.getPixel((int) cx1, (int) cy1, k) == val) && (k < sizez)) {
-         * k++; } if (k >= sizez) { k2 = f.getZmax(); } else { k2 = k; } }
-         *
-         */
-        //cz1 = (k1 + k2) / 2.0;
-            /*
-         * // z pour spot 2 k = f.getZmin(); while ((seg.getPixel((int) cx2,
-         * (int) cy2, k) != val) && (k < sizez)) { k++; } if (k >= sizez) { k1 =
-         * f.getZmin(); k2 = f.getZmax(); } else { k1 = k; while
-         * ((seg.getPixel((int) cx2, (int) cy2, k) == val) && (k < sizez)) {
-         * k++; } if (k >= sizez) { k2 = f.getZmax(); } else { k2 = k; } } cz2 =
-         * (k1 + k2) / 2.0;
-         *
-         */
-        if (debug) {
-            System.out.println("max locaux centres en Z:");
-            System.out.println("centre1: " + cx1 + " " + cy1 + " " + cz1);
-            System.out.println("centre2: " + cx2 + " " + cy2 + " " + cz2);
-            System.out.println("distance: " + PP1.distance(PP2));
-        }
-
-        // si distance trop petite, on retourne false
-        if (PP1.distance(PP2) < dist) {
-            return null;
-        }
-        // hybrid watershed test
-        double db1 = f.distPixelBorder(PP1);
-        double db2 = f.distPixelBorder(PP2);
-        //System.out.println("db " + db1 + " " + db2);
-        double db = db1 - db2;
-        boolean oneIsLarger = true;
-        // object 2 larger than object 1
-        if (db2 > db1) {
-            db = db2 - db1;
-            oneIsLarger = false;
-        }
-
-        ////////////////////////////////////////////////////////
-        ///// separate the two objects   ///////////////////////
-        ////////////////////////////////////////////////////////
-        //ArrayUtil tab;
-        //IntImage3D seg1 = new IntImage3D(sizex, sizey, sizez);
-        //IntImage3D seg2 = new IntImage3D(sizex, sizey, sizez);
-        ArrayList<Voxel3D> ob1 = new ArrayList<Voxel3D>();
-        ArrayList<Voxel3D> ob2 = new ArrayList<Voxel3D>();
-        //IntImage3D tmp;
-
-        // with ArrayList
-        it = list.iterator();
-        while (it.hasNext()) {
-            vox = (Voxel3D) it.next();
-            dist1 = PP1.distance(vox);
-            dist2 = PP2.distance(vox);
-            if (oneIsLarger) {
-                dist1 -= db;
-            } else {
-                dist2 -= db;
-            }
-            if (dist1 < dist2) {
-                vox1 = new Voxel3D(vox);
-                vox1.setValue(new1);
-                ob1.add(new Voxel3D(vox1));
-            } else {
-                vox1 = new Voxel3D(vox);
-                vox1.setValue(new2);
-                ob2.add(new Voxel3D(vox1));
-            }
-        }
-        /*
-         * for (k = 0; k < seg.getSizez(); k++) { for (int j = 0; j <
-         * seg.getSizey(); j++) { for (int i = 0; i < seg.getSizex(); i++) { if
-         * (seg.getPixel(i, j, k) == val) { dist1 = (i - cx1) * (i - cx1) + (j -
-         * cy1) * (j - cy1) + (k - cz1) * (k - cz1); dist2 = (i - cx2) * (i -
-         * cx2) + (j - cy2) * (j - cy2) + (k - cz2) * (k - cz2); if
-         * (oneIsLarger) { dist1 -= db; } else { dist2 -= db; }
-         *
-         * }
-         * }
-         * }
-         * }
-         */
-
-        ArrayList[] tab = new ArrayList[2];
-        tab[0] = ob1;
-        tab[1] = ob2;
-
-        return tab;
     }
 
     public Voxel3D getLocalMaximum(int x, int y, int z, float radx, float rady, float radz) {
