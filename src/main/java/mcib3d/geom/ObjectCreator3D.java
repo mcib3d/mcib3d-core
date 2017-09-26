@@ -4,33 +4,33 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
-import java.util.ArrayList;
 import mcib3d.Jama.Matrix;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageShort;
 
+import java.util.ArrayList;
+
 /**
  * Copyright (C) Thomas Boudier
- *
+ * <p>
  * License: This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by the Free
  * Software Foundation; either version 3 of the License, or (at your option) any
  * later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
- *
- *
+ * <p>
+ * <p>
  * /**
  * Create 3D shapes
- *
+ * <p>
  * cedric started 3 mars 2004
- *
  */
 public class ObjectCreator3D {
 
@@ -51,7 +51,6 @@ public class ObjectCreator3D {
     }
 
     /**
-     *
      * @param stack
      */
     public ObjectCreator3D(ImageStack stack) {
@@ -73,8 +72,8 @@ public class ObjectCreator3D {
      * Sets the resolution attribute of the ObjectCreator3D object
      *
      * @param rxy The new resolution in XY
-     * @param rz The new resolution in Z
-     * @param u The new resolution unit
+     * @param rz  The new resolution in Z
+     * @param u   The new resolution unit
      */
     public void setResolution(double rxy, double rz, String u) {
         resXY = rxy;
@@ -116,9 +115,9 @@ public class ObjectCreator3D {
      * @param centerx Centre X of the sphere
      * @param centery Centre Y of the sphere
      * @param centerz Centre Z of the sphere
-     * @param radius Radius of the sphere
-     * @param value Value of the pixel in the image
-     * @param gauss Is gaussian decrease of the intensity
+     * @param radius  Radius of the sphere
+     * @param value   Value of the pixel in the image
+     * @param gauss   Is gaussian decrease of the intensity
      */
     public void createSphereUnit(double centerx, double centery, double centerz, double radius, float value, boolean gauss) {
         // scale radius to pixel unit
@@ -141,9 +140,9 @@ public class ObjectCreator3D {
      * @param centerx Centre X of the sphere
      * @param centery Centre Y of the sphere
      * @param centerz Centre Z of the sphere
-     * @param radius Radius of the sphere
-     * @param value Value of the pixel in the image
-     * @param gauss Is gaussian decrease of the intensity
+     * @param radius  Radius of the sphere
+     * @param value   Value of the pixel in the image
+     * @param gauss   Is gaussian decrease of the intensity
      */
     public void createSphere(double centerx, double centery, double centerz, double radius, float value, boolean gauss) {
 
@@ -156,11 +155,11 @@ public class ObjectCreator3D {
      * @param centerx Centre X of the ellipsoid
      * @param centery Centre Y of the ellipsoid
      * @param centerz Centre Z of the ellipsoid
-     * @param rx Radius X of the ellipsoid
-     * @param ry Radius X of the ellipsoid
-     * @param rz Radius X of the ellipsoid
-     * @param value Value of the pixel in the image
-     * @param gauss Is gaussian decrease of the intensity
+     * @param rx      Radius X of the ellipsoid
+     * @param ry      Radius X of the ellipsoid
+     * @param rz      Radius X of the ellipsoid
+     * @param value   Value of the pixel in the image
+     * @param gauss   Is gaussian decrease of the intensity
      */
     public void createEllipsoidUnit(double centerx, double centery, double centerz, double rx, double ry, double rz, float value, boolean gauss) {
         // scale radius to pixel unit
@@ -180,10 +179,10 @@ public class ObjectCreator3D {
     /**
      * Description of the Method
      *
-     * @param V Description of the Parameter
-     * @param rx Description of the Parameter
-     * @param ry Description of the Parameter
-     * @param rz Description of the Parameter
+     * @param V   Description of the Parameter
+     * @param rx  Description of the Parameter
+     * @param ry  Description of the Parameter
+     * @param rz  Description of the Parameter
      * @param col Description of the Parameter
      */
     public void createEllipsoid(Vector3D V, double rx, double ry, double rz, float col) {
@@ -193,10 +192,10 @@ public class ObjectCreator3D {
     /**
      * Description of the Method
      *
-     * @param V Description of the Parameter
-     * @param rx Description of the Parameter
-     * @param ry Description of the Parameter
-     * @param rz Description of the Parameter
+     * @param V   Description of the Parameter
+     * @param rx  Description of the Parameter
+     * @param ry  Description of the Parameter
+     * @param rz  Description of the Parameter
      * @param col Description of the Parameter
      */
     public void createEllipsoidUnit(Vector3D V, double rx, double ry, double rz, float col) {
@@ -206,14 +205,14 @@ public class ObjectCreator3D {
     /**
      * Creation d'une ellipsoide
      *
-     * @param rx Rayon en x (unit)
-     * @param ry Rayon en y (unit)
-     * @param rz Rayon en z (unit)
+     * @param rx      Rayon en x (unit)
+     * @param ry      Rayon en y (unit)
+     * @param rz      Rayon en z (unit)
      * @param centerx Centre en x
      * @param centery Centre en y
      * @param centerz Centre en z
-     * @param value Valeur à remplir
-     * @param gauss uniform or ramp values
+     * @param value   Valeur à remplir
+     * @param gauss   uniform or ramp values
      */
     public void createEllipsoid(int centerx, int centery, int centerz, double rx, double ry, double rz, float value, boolean gauss) {
         int startx = (int) Math.round(centerx - rx);
@@ -265,15 +264,15 @@ public class ObjectCreator3D {
     /**
      * Creation d'une ellipsoide (data in pix)
      *
-     * @param rx Rayon en x
-     * @param ry Rayon en y
-     * @param rz Rayon en z
+     * @param rx      Rayon en x
+     * @param ry      Rayon en y
+     * @param rz      Rayon en z
      * @param centerx Centre en x
      * @param centery Centre en y
      * @param centerz Centre en z
-     * @param value Valeur à remplir
-     * @param gauss uniform or ramp values
-     * @param M Description of the Parameter
+     * @param value   Valeur à remplir
+     * @param gauss   uniform or ramp values
+     * @param M       Description of the Parameter
      */
     public void createEllipsoidAxes(int centerx, int centery, int centerz, double rx, double ry, double rz, float value, Matrix M, boolean gauss) {
 
@@ -303,25 +302,19 @@ public class ObjectCreator3D {
             endz = img.sizeZ - 1;
         }
 
-        double ddx;
-        double ddy;
-        double ddz;
-        double dx;
-        double dy;
-        double dz;
-
-        double rx2 = rx * rx;
-        double ry2 = ry * ry;
-        double rz2 = rz * rz;
-
         // inverse
         Matrix MM = M.inverse();
 
+        drawEllipsoid(startx, endx, starty, endy, startz, endz, centerx, centery, centerz, rx, ry, rz, MM, value, gauss);
+    }
+
+    private void drawEllipsoid(int startx, int endx, int starty, int endy, int startz, int endz, int centerx, int centery, int centerz, double rx, double ry, double rz, Matrix MM, float value, boolean gauss) {
+        double ddx, ddy, ddz, dx, dy, dz, d;
         Matrix V1 = new Matrix(3, 1);
         Matrix V2;
-
-        double d;
-
+        double rx2 = rx * rx;
+        double ry2 = ry * ry;
+        double rz2 = rz * rz;
         // work in pixel coordinate
         for (int k = startz; k <= endz; k++) {
             IJ.showStatus("Ellipsoid " + k + "/" + endz);
@@ -362,14 +355,14 @@ public class ObjectCreator3D {
     /**
      * Creation d'une ellipsoide
      *
-     * @param rx Rayon en x (unit)
-     * @param ry Rayon en y (unit)
-     * @param rz Rayon en z (unit)
+     * @param rx      Rayon en x (unit)
+     * @param ry      Rayon en y (unit)
+     * @param rz      Rayon en z (unit)
      * @param centerx Centre en x
      * @param centery Centre en y
      * @param centerz Centre en z
-     * @param value Valeur à remplir
-     * @param M Description of the Parameter
+     * @param value   Valeur à remplir
+     * @param M       Description of the Parameter
      */
     public void createBrickAxes(int centerx, int centery, int centerz, double rx, double ry, double rz, float value, Matrix M) {
 
@@ -446,7 +439,6 @@ public class ObjectCreator3D {
     }
 
     /**
-     *
      * @param centerx
      * @param centery
      * @param centerz
@@ -463,7 +455,6 @@ public class ObjectCreator3D {
     }
 
     /**
-     *
      * @param centerx
      * @param centery
      * @param centerz
@@ -491,14 +482,14 @@ public class ObjectCreator3D {
      * Create ellipsoid oriented, due to calibration and change in axes, radius
      * are still in unit
      *
-     * @param centerx center of ellipsoid coordinate x
-     * @param centery center of ellipsoid coordinate y
-     * @param centerz center of ellipsoid coordinate z
-     * @param rx radius of ellipsoid in x direction (main direction)
-     * @param ry radius of ellipsoid in y direction
-     * @param rz radius of ellipsoid in z direction
-     * @param value value of drawing
-     * @param V the vector indicating the main direction
+     * @param centerx  center of ellipsoid coordinate x
+     * @param centery  center of ellipsoid coordinate y
+     * @param centerz  center of ellipsoid coordinate z
+     * @param rx       radius of ellipsoid in x direction (main direction)
+     * @param ry       radius of ellipsoid in y direction
+     * @param rz       radius of ellipsoid in z direction
+     * @param value    value of drawing
+     * @param V        the vector indicating the main direction
      * @param gradient drawing with gradient of values or not
      */
     private void ComputeEllipsoidAxesUnit(double centerx, double centery, double centerz, double rx, double ry, double rz, float value, Vector3D V, Vector3D W, boolean gradient) {
@@ -524,10 +515,10 @@ public class ObjectCreator3D {
 //        M.set(2, 2, X.getZ());
         // geomtransform
         GeomTransform3D transform = new GeomTransform3D(new double[][]{
-            {rx * V.getX(), ry * W.getX(), rz * X.getX(), centerx},
-            {rx * V.getY(), ry * W.getY(), rz * X.getY(), centery},
-            {rx * V.getZ(), ry * W.getZ(), rz * X.getZ(), centerz},
-            {0, 0, 0, 1}});
+                {rx * V.getX(), ry * W.getX(), rz * X.getX(), centerx},
+                {rx * V.getY(), ry * W.getY(), rz * X.getY(), centery},
+                {rx * V.getZ(), ry * W.getZ(), rz * X.getZ(), centerz},
+                {0, 0, 0, 1}});
 
         double d;
         Vector3D zero_vector = new Vector3D(0, 0, 0);
@@ -571,7 +562,6 @@ public class ObjectCreator3D {
     }
 
     /**
-     *
      * @param centerx
      * @param centery
      * @param centerz
@@ -608,10 +598,10 @@ public class ObjectCreator3D {
     /**
      * Description of the Method
      *
-     * @param V Description of the Parameter
-     * @param rx Description of the Parameter
-     * @param ry Description of the Parameter
-     * @param rz Description of the Parameter
+     * @param V   Description of the Parameter
+     * @param rx  Description of the Parameter
+     * @param ry  Description of the Parameter
+     * @param rz  Description of the Parameter
      * @param val Description of the Parameter
      */
     public void createBrick(Vector3D V, double rx, double ry, double rz, float val) {
@@ -621,10 +611,10 @@ public class ObjectCreator3D {
     /**
      * Description of the Method
      *
-     * @param V Description of the Parameter
-     * @param rx Description of the Parameter
-     * @param ry Description of the Parameter
-     * @param rz Description of the Parameter
+     * @param V   Description of the Parameter
+     * @param rx  Description of the Parameter
+     * @param ry  Description of the Parameter
+     * @param rz  Description of the Parameter
      * @param val Description of the Parameter
      */
     public void createBrickUnit(Vector3D V, double rx, double ry, double rz, float val) {
@@ -637,10 +627,10 @@ public class ObjectCreator3D {
      * @param centerx Description of the Parameter
      * @param centery Description of the Parameter
      * @param centerz Description of the Parameter
-     * @param rx Description of the Parameter
-     * @param ry Description of the Parameter
-     * @param rz Description of the Parameter
-     * @param value Description of the Parameter
+     * @param rx      Description of the Parameter
+     * @param ry      Description of the Parameter
+     * @param rz      Description of the Parameter
+     * @param value   Description of the Parameter
      */
     public void createBrickUnit(double centerx, double centery, double centerz, double rx, double ry, double rz, float value) {
         // scale to pixel
@@ -650,13 +640,13 @@ public class ObjectCreator3D {
     /**
      * Creation d'une brique
      *
-     * @param rx Rayon en x (unit)
-     * @param ry Rayon en y (unit)
-     * @param rz Rayon en z (unit)
+     * @param rx      Rayon en x (unit)
+     * @param ry      Rayon en y (unit)
+     * @param rz      Rayon en z (unit)
      * @param centerx Centre en x
      * @param centery Centre en y
      * @param centerz Centre en z
-     * @param value Valeur à remplir
+     * @param value   Valeur à remplir
      */
     public void createBrick(int centerx, int centery, int centerz, double rx, double ry, double rz, float value) {
         int startx = (int) (centerx - rx);
@@ -695,9 +685,9 @@ public class ObjectCreator3D {
     /**
      * Description of the Method
      *
-     * @param x Description of the Parameter
-     * @param y Description of the Parameter
-     * @param z Description of the Parameter
+     * @param x   Description of the Parameter
+     * @param y   Description of the Parameter
+     * @param z   Description of the Parameter
      * @param col Description of the Parameter
      */
     public void createPixel(int x, int y, int z, int col) {
@@ -707,12 +697,12 @@ public class ObjectCreator3D {
     /**
      * Create a 3D line
      *
-     * @param x0 x origin
-     * @param y0 y origin
-     * @param z0 z origin
-     * @param x1 x end
-     * @param y1 y end
-     * @param z1 z end
+     * @param x0  x origin
+     * @param y0  y origin
+     * @param z0  z origin
+     * @param x1  x end
+     * @param y1  y end
+     * @param z1  z end
      * @param val pixel value
      * @param rad radius for the line (as small spheres) (pix)
      */
@@ -735,17 +725,16 @@ public class ObjectCreator3D {
     /**
      * Description of the Method
      *
-     * @param V1 Description of the Parameter
+     * @param V1  Description of the Parameter
      * @param val Description of the Parameter
      * @param rad Description of the Parameter
-     * @param V2 Description of the Parameter
+     * @param V2  Description of the Parameter
      */
     public void createLine(Vector3D V1, Vector3D V2, float val, int rad) {
         createLine(V1.getRoundX(), V1.getRoundY(), V1.getRoundZ(), V2.getRoundX(), V2.getRoundY(), V2.getRoundZ(), val, rad);
     }
 
     /**
-     *
      * @param P1
      * @param P2
      * @param val
@@ -758,8 +747,8 @@ public class ObjectCreator3D {
     /**
      * Description of the Method
      *
-     * @param V1 Description of the Parameter
-     * @param V2 Description of the Parameter
+     * @param V1  Description of the Parameter
+     * @param V2  Description of the Parameter
      * @param val Description of the Parameter
      * @param rad Description of the Parameter
      */
@@ -768,17 +757,17 @@ public class ObjectCreator3D {
     }
 
     // DF
+
     /**
      * Creation d'un cylindre
      *
      * @param centerx Centre sur l'axe X
      * @param centery Centre sur l'axe Y
      * @param centerz Centre sur l'axe Z
-     * @param rx Rayon du cylindre
-     * @param ry Rayon du cylindre
-     * @param height Epaisseur du cylindre
-     * @param value Valeur associé au pixel
-     *
+     * @param rx      Rayon du cylindre
+     * @param ry      Rayon du cylindre
+     * @param height  Epaisseur du cylindre
+     * @param value   Valeur associé au pixel
      */
     public void createCylinder(int centerx, int centery, int centerz, double rx, double ry, double height, float value) {
         int startx = (int) Math.round(centerx - rx);
@@ -951,14 +940,14 @@ public class ObjectCreator3D {
     /**
      * Creation d'un cylindre
      *
-     * @param rx Rayon en x (unit)
-     * @param ry Rayon en y (unit)
-     * @param height Rayon en z (unit)
+     * @param rx      Rayon en x (unit)
+     * @param ry      Rayon en y (unit)
+     * @param height  Rayon en z (unit)
      * @param centerx Centre en x
      * @param centery Centre en y
      * @param centerz Centre en z
-     * @param value Valeur à remplir
-     * @param M Description of the Parameter
+     * @param value   Valeur à remplir
+     * @param M       Description of the Parameter
      */
     public void createCylinderAxes(int centerx, int centery, int centerz, double rx, double ry, double height, float value, Matrix M) {
 
@@ -1084,10 +1073,10 @@ public class ObjectCreator3D {
      * Création d'un dégradé
      *
      * @param center Coordonées du centre du cube
-     * @param rx Demi-largeur du cube
-     * @param ry Demi-hauteur du cube
-     * @param rz Demi-profondeur du cube
-     * @param g Gradient
+     * @param rx     Demi-largeur du cube
+     * @param ry     Demi-hauteur du cube
+     * @param rz     Demi-profondeur du cube
+     * @param g      Gradient
      */
     public void createGradientCube(Vector3D center, double rx, double ry, double rz, Gradient g) {
         this.createGradientCube(center.getRoundX(), center.getRoundY(), center.getRoundZ(), rx, ry, rz, g);
@@ -1099,10 +1088,10 @@ public class ObjectCreator3D {
      * @param centerx Centre X du cube
      * @param centery Centre Y du cube
      * @param centerz Centre Z du cube
-     * @param rx Demi-largeur du cube
-     * @param ry Demi-hauteur du cube
-     * @param rz Demi-profondeur du cube
-     * @param g Gradient
+     * @param rx      Demi-largeur du cube
+     * @param ry      Demi-hauteur du cube
+     * @param rz      Demi-profondeur du cube
+     * @param g       Gradient
      */
     public void createGradientCube(int centerx, int centery, int centerz, double rx, double ry, double rz, Gradient g) {
         this.createGradient(centerx, centery, centerz, rx, ry, rz, false, g);
@@ -1112,8 +1101,8 @@ public class ObjectCreator3D {
      * Création d'un gradient sur sphère
      *
      * @param center Coordonées du centre de la sphère
-     * @param r Rayon de la sphère
-     * @param g Gradient
+     * @param r      Rayon de la sphère
+     * @param g      Gradient
      */
     public void createGradientSphere(Point3D center, double r, Gradient g) {
         this.createGradientSphere(center.getRoundX(), center.getRoundY(), center.getRoundZ(), r, g);
@@ -1125,8 +1114,8 @@ public class ObjectCreator3D {
      * @param centerx Centre X de la sphère
      * @param centery Centre Y de la sphère
      * @param centerz Centre Z de la sphère
-     * @param r Rayon de la sphère
-     * @param g Gradient
+     * @param r       Rayon de la sphère
+     * @param g       Gradient
      */
     public void createGradientSphere(int centerx, int centery, int centerz, double r, Gradient g) {
         this.createGradient(centerx, centery, centerz, r, r, r, true, g);
@@ -1138,12 +1127,12 @@ public class ObjectCreator3D {
      * @param centerx Centre du gradient
      * @param centery Centre du gradient
      * @param centerz Centre du gradient
-     * @param rx Rayon ou demi-largeur
-     * @param ry Demi-hauteur
-     * @param rz Demi-profondeur
-     * @param sphere Si true : il s'agit d'une sphère, sinon il s'agit d'un
-     * rectangle
-     * @param g Gradient
+     * @param rx      Rayon ou demi-largeur
+     * @param ry      Demi-hauteur
+     * @param rz      Demi-profondeur
+     * @param sphere  Si true : il s'agit d'une sphère, sinon il s'agit d'un
+     *                rectangle
+     * @param g       Gradient
      */
     private void createGradient(int centerx, int centery, int centerz, double rx, double ry, double rz, boolean sphere, Gradient g) {
         int left = (int) (centerx - rx);
@@ -1263,7 +1252,6 @@ public class ObjectCreator3D {
     }
 
     /**
-     *
      * @param nb
      */
     public void reset(int nb) {

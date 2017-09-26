@@ -1265,11 +1265,9 @@ public abstract class Object3D implements Comparable<Object3D> {
         translate(obj.getCenterX() - this.getCenterX(), obj.getCenterY() - this.getCenterY(), obj.getCenterZ() - this.getCenterZ());
     }
 
-    public void setNewCenter(Vector3D newCenter){
+    public void setNewCenter(Vector3D newCenter) {
         translate(newCenter.getX() - this.getCenterX(), newCenter.getY() - this.getCenterY(), newCenter.getZ() - this.getCenterZ());
     }
-
-
 
 
     /**
@@ -1808,13 +1806,19 @@ public abstract class Object3D implements Comparable<Object3D> {
         double rz2 = resZ * resZ;
         Voxel3D p1;
         Voxel3D p2;
-        ArrayList cont = this.getContours();
+        ArrayList<Voxel3D> cont = this.getContours();
 
         int s = cont.size();
+        // case object only one voxel
+        if (s == 1) {
+            feret1 = cont.get(0);
+            feret2 = cont.get(0);
+            feret = 0;
+        }
         for (int i = 0; i < s; i++) {
-            p1 = (Voxel3D) cont.get(i);
+            p1 = cont.get(i);
             for (int j = i + 1; j < s; j++) {
-                p2 = (Voxel3D) cont.get(j);
+                p2 = cont.get(j);
                 dist = rx2 * ((p1.getX() - p2.getX()) * (p1.getX() - p2.getX()) + ((p1.getY() - p2.getY()) * (p1.getY() - p2.getY()))) + rz2 * (p1.getZ() - p2.getZ()) * (p1.getZ() - p2.getZ());
                 if (dist > distmax) {
                     distmax = dist;

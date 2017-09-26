@@ -161,6 +161,14 @@ public class Objects3DPopulation {
         scaleXY = sxy;
         scaleZ = sz;
         unit = u;
+        if ((objects != null) && (objects.size() > 0)) {
+            for (Object3D obj : objects) {
+                obj.setResXY(sxy);
+                obj.setResZ(sz);
+                obj.setUnits(u);
+                //Object3D_IJUtils.setCalibration(obj, calibration);
+            }
+        }
     }
 
 
