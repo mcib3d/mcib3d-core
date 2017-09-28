@@ -90,8 +90,8 @@ public class Segment3DSpots {
     }
 
     public static Object3DVoxels[] splitSpotWatershed(Object3D obj, float rad, float dist) {
-        ImageInt seg = obj.createSegImage(0, 0, 0, obj.getXmax() + 1, obj.getYmax() + 1, obj.getZmax() + 1, 255);
-        //seg.show();
+        ImageInt seg = obj.createSegImage(0, 0, 0, obj.getXmax(), obj.getYmax(), obj.getZmax(), 255);
+       //seg.show();
         ImagePlus segplus = seg.getImagePlus();
         segplus.setCalibration(obj.getCalibration());
         // return
@@ -101,12 +101,12 @@ public class Segment3DSpots {
             // FIXME variable multithread
             ImageFloat edt3d = EDT.run(seg, 1f, false, cpus);
             // 3D filtering of the edt to remove small local maxima
-            edt3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 2, 2, 2, cpus, false);
-            edt3d.showDuplicate("edt");
+            ImageFloat edt3dseeds = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MEAN, 1, 1, 1, cpus, false);
+            //edt3d.showDuplicate("edt");
 
             //ImageStack localMax = FastFilters3D.filterFloatImageStack(edt3d.getImageStack(), FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
-            ImageFloat maxlocal3d = FastFilters3D.filterFloatImage(edt3d, FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
-            maxlocal3d.show("max local");
+            ImageFloat maxlocal3d = FastFilters3D.filterFloatImage(edt3dseeds, FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
+            //maxlocal3d.show("max local");
             ArrayList<Voxel3D> locals = obj.listVoxels(maxlocal3d, 0);
 
             int nb = locals.size();
@@ -220,13 +220,13 @@ public class Segment3DSpots {
             ImageInt seeds = new ImageShort("seeds", seg.sizeX, seg.sizeY, seg.sizeZ);
             seeds.setPixel(PP1closest.getRoundX(), PP1closest.getRoundY(), PP1closest.getRoundZ(), 255);
             seeds.setPixel(PP2closest.getRoundX(), PP2closest.getRoundY(), PP2closest.getRoundZ(), 255);
-            seeds.show();
+            //seeds.show();
 //            Watershed3D_old wat = new Watershed3D_old(edt3d, seeds, 0, 0);
 //            ImageInt wat2 = wat.getWatershedImage3D();
             //ImageHandler edt16 = edt3d.convertToShort(true);
             Watershed3D wat = new Watershed3D(edt3d, seeds, 0, 0);
             ImageInt wat2 = wat.getWatershedImage3D();
-            wat2.show();
+            //wat2.show();
             // in watershed label starts at 1
             Object3DVoxels ob1 = new Object3DVoxels(wat2, 1);
             Object3DVoxels ob2 = new Object3DVoxels(wat2, 2);

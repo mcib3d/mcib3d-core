@@ -53,7 +53,7 @@ public class Watershed3D {
     private LinkedList<Voxel3DComparable> voxels = null; // voxels to compute watershed
     //private boolean okseeds = false;
     private boolean anim = false;
-    private int rawThreshold;
+    private double rawThreshold;
     private boolean labelSeeds = true;
     private HashMap<Integer, Integer> seedsValue;
     private AbstractLog log = new IJLog();
@@ -65,7 +65,7 @@ public class Watershed3D {
      * @param noi   noise level for rw image
      * @param seth  noise level for seeds
      */
-    public Watershed3D(ImageHandler image, ImageHandler seeds, int noi, int seth) {
+    public Watershed3D(ImageHandler image, ImageHandler seeds, double noi, int seth) {
         this.rawImage = image;
         this.seedsImage = seeds;
         this.rawThreshold = noi;
@@ -81,7 +81,7 @@ public class Watershed3D {
      * @param noi   noise level for rw image
      * @param seth  noise level for seeds
      */
-    public Watershed3D(ImageStack image, ImageStack seeds, int noi, int seth) {
+    public Watershed3D(ImageStack image, ImageStack seeds, double noi, int seth) {
         this.rawImage = ImageHandler.wrap(image);
         this.seedsImage = ImageInt.wrap(seeds);
         this.rawThreshold = noi;
@@ -163,7 +163,7 @@ public class Watershed3D {
         }
         if (rawImage.getMin() > rawThreshold) {
             log.log("Setting minimum for raw image to " + rawImage.getMin());
-            rawThreshold = (int) rawImage.getMin();
+            rawThreshold = rawImage.getMin();
         }
 
         // tree set
@@ -193,7 +193,7 @@ public class Watershed3D {
 
                 // all free voxels around are put into queue
                 for (Voxel3D N : Nei) {
-                    int rawN = (int) rawImage.getPixel(N);
+                    float rawN = rawImage.getPixel(N);
                     if (rawN > rawThreshold) {
                         // neighbor voxel not in queue yet
                         if ((N.getValue() == 0)) {
@@ -291,7 +291,7 @@ public class Watershed3D {
                                 int vx = (int) N.getX();
                                 int vy = (int) N.getY();
                                 int vz = (int) N.getZ();
-                                int raw = (int) rawImage.getPixel(vx, vy, vz);
+                                float raw = rawImage.getPixel(vx, vy, vz);
                                 if ((raw > rawThreshold) && (seedsLabel.getPixel(vx, vy, vz) == 0) && (watershedImage.getPixel(vx, vy, vz) != QUEUE)) {
                                     voxels.add(new Voxel3DComparable(vx, vy, vz, raw, se));
                                     watershedImage.setPixel(vx, vy, vz, QUEUE);
