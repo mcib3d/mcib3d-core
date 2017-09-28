@@ -1,5 +1,6 @@
 package mcib3d.image3d.IterativeThresholding;
 
+import ij.IJ;
 import ij.ImagePlus;
 import mcib3d.geom.*;
 import mcib3d.image3d.*;
@@ -11,6 +12,7 @@ import mcib3d.utils.Logger.IJLog;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 /*
  * To change this template, choose Tools | Templates
@@ -58,6 +60,9 @@ public class TrackThreshold {
     @Deprecated
     public boolean status = true;
     AbstractLog log = new IJLog();
+    // test
+    TreeSet<ObjectTrack> treeSet;
+    int idobj = 1;
     // volume range in voxels
     private int volMax = 1000;
     private int volMin = 1;
@@ -69,6 +74,8 @@ public class TrackThreshold {
     private int stopThreshold = Integer.MAX_VALUE;
     private int criteria_method = CRITERIA_METHOD_MIN_ELONGATION;
     private int GlobalThreshold;
+    private Criterion criterion;
+    private BestCriterion bestCriterion;
     // markers
     private ArrayList<Point3D> markers = null;// TO REMOVE
     private ImageInt imageMarkers = null;
@@ -86,6 +93,9 @@ public class TrackThreshold {
         step = st;
         nbClasses = nbCla;
         startThreshold = sta;
+
+        ComparatorObjectTrack comp = new ComparatorObjectTrack();
+        treeSet = new TreeSet(comp);
     }
 
     public TrackThreshold(int vmin, int vmax, int contrast, int st, int nbCla, int sta) {
@@ -100,6 +110,9 @@ public class TrackThreshold {
         nbClasses = nbCla;
         startThreshold = sta;
         contrastMin = contrast;
+
+        ComparatorObjectTrack comp = new ComparatorObjectTrack();
+        treeSet = new TreeSet(comp);
     }
 
 
@@ -275,19 +288,18 @@ public class TrackThreshold {
                 obt.seed = ob.getFirstVoxel();
                 obt.threshold = threshold;
                 obt.rawImage = img;
+                obt.id = idobj++;
                 frame1.add(obt);
+                // test
+                treeSet.add(obt);
             }
         }
         return frame1;
     }
 
-    private ArrayList<ImageHandler> process(ImageHandler img) {
-        Criterion criterion;
-        BestCriterion bestCriterion;
-
+    private ArrayList<ObjectTrack> process(ImageHandler img) {
         // test weka for Jaza dataset
         //criteria_method=CRITERIA_METHOD_MAX_CLASSIFICATION;
-
 
         switch (criteria_method) {
             case CRITERIA_METHOD_MIN_ELONGATION:
@@ -377,10 +389,12 @@ public class TrackThreshold {
             log.log("Iterative Thresholding finished");
         }
 
-        return computeResults(allFrames, img, bestCriterion);
+        return allFrames;
+
+        //return computeResults(allFrames, img, bestCriterion);
     }
 
-    private ArrayList<ImageHandler> computeResults(ArrayList<ObjectTrack> allFrames, ImageHandler img, BestCriterion bestCriterion) {
+    private ArrayList<ImageHandler> computeResults(ArrayList<ObjectTrack> allFrames, ImageHandler img) {
         // get results from the tree with different levels of objects
         int level = 1;
         int maxLevel = 10;
@@ -456,6 +470,44 @@ public class TrackThreshold {
         allFrames = null;
         System.gc();
 
+        // test
+        IJ.log(treeSet.first() + " " + treeSet.last());
+
+        return drawsReconstruct;
+    }
+
+    private ImageHandler computeResultsBest(ArrayList<ObjectTrack> allFrames, ImageHandler img) {
+        int idx = 1;
+        ImageHandler drawsReconstruct;
+        if (allFrames.size() < 65535) {
+            drawsReconstruct = new ImageShort("Objects", img.sizeX, img.sizeY, img.sizeZ);
+            //drawContrast = new ImageShort("Contrast", img.sizeX, img.sizeY, img.sizeZ);
+        } else {
+            drawsReconstruct = new ImageFloat("Objects", img.sizeX, img.sizeY, img.sizeZ);
+            //drawContrast = new ImageFloat("Contrast", img.sizeX, img.sizeY, img.sizeZ);
+        }
+        // delete low contrast
+        while (deleteLowContrastTracks(allFrames, contrastMin)) ;
+
+        while (!treeSet.isEmpty()) {
+            ObjectTrack objectTrack = treeSet.pollFirst();
+            while (!objectTrack.isValid()) objectTrack = treeSet.pollFirst();
+            Segment3DSpots SegmentSpot = new Segment3DSpots(objectTrack.rawImage, null);
+            Voxel3D seed = objectTrack.seed;
+            int threshold = objectTrack.threshold;
+            // remove up
+            ObjectTrack root = objectTrack.getRoot();
+            ArrayList<ObjectTrack> list = objectTrack.getLineageTo(root);
+            for (ObjectTrack objectTrack1 : list) objectTrack1.VALID = false;
+            // remove down
+            list = objectTrack.getAllDescendantsToEnd();
+            for (ObjectTrack objectTrack1 : list) objectTrack1.VALID = false;
+
+            Object3D object3D = new Object3DVoxels(SegmentSpot.segmentSpotClassical(seed.getRoundX(), seed.getRoundY(), seed.getRoundZ(), threshold, idx));
+            object3D.draw(drawsReconstruct, idx);
+            idx++;
+        }
+
         return drawsReconstruct;
     }
 
@@ -517,7 +569,19 @@ public class TrackThreshold {
 
     public ImageHandler segment(ImageHandler input, boolean verbose) {
         setVerbose(verbose);
-        ArrayList<ImageHandler> res = process(input);
+        ArrayList<ObjectTrack> frames = process(input);
+        ArrayList<ImageHandler> res = computeResults(frames, input);
+        if (!res.isEmpty()) {
+            return res.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public ImageHandler segmentBest(ImageHandler input, boolean verbose) {
+        setVerbose(verbose);
+        ArrayList<ObjectTrack> frames = process(input);
+        ArrayList<ImageHandler> res = computeResults(frames, input);
         if (!res.isEmpty()) {
             return res.get(0);
         } else {
@@ -527,12 +591,16 @@ public class TrackThreshold {
 
     public ArrayList<ImageHandler> segmentAll(ImageHandler input, boolean verbose) {
         setVerbose(verbose);
-        return process(input);
+        ArrayList<ObjectTrack> frames = process(input);
+        ArrayList<ImageHandler> res = computeResults(frames, input);
+        return res;
     }
 
     public ImagePlus segment(ImagePlus input, boolean show) {
         setVerbose(show);
-        ArrayList<ImageHandler> drawsReconstruct = process(ImageHandler.wrap(input));
+        ImageHandler img = ImageHandler.wrap(input);
+        ArrayList<ObjectTrack> frames = process(img);
+        ArrayList<ImageHandler> drawsReconstruct = computeResults(frames, img);
 
         // no results
         if (drawsReconstruct.size() == 0) return null;
@@ -541,9 +609,17 @@ public class TrackThreshold {
         for (int i = 0; i < drawsTab.length; i++) {
             drawsTab[i] = drawsReconstruct.get(i);
         }
-
         return ImageHandler.getHyperStack("draw", drawsTab);
     }
+
+    public ImagePlus segmentBest(ImagePlus input, boolean show) {
+        setVerbose(show);
+        ImageHandler img = ImageHandler.wrap(input);
+        ArrayList<ObjectTrack> frames = process(img);
+        ImageHandler drawsReconstruct = computeResultsBest(frames, img);
+        return drawsReconstruct.getImagePlus();
+    }
+
 
     @Deprecated
     public void setVerbose(boolean verbose) {

@@ -58,6 +58,8 @@ public class ObjectTrack {
     private ArrayList<ObjectTrack> children = null;
     private ObjectTrack parent = null;
     private int state = STATE_UNKNOWN;
+    public boolean VALID = true;
+    public int id;
 
     public ObjectTrack() {
     }
@@ -209,6 +211,13 @@ public class ObjectTrack {
         return list;
     }
 
+    public boolean isValid() {
+        return VALID;
+    }
+
+    public void setValid(boolean Vali) {
+        this.VALID = Vali;
+    }
 
     public Object3D getObject() {
         return object;
@@ -222,5 +231,8 @@ public class ObjectTrack {
         valueCriteria = criterion.computeCriterion(getObject());
     }
 
-
+    @Override
+    public String toString() {
+        return valueCriteria+" "+id;
+    }
 }
