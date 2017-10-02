@@ -1441,7 +1441,7 @@ public class Objects3DPopulation {
             int it = 0;
             int maxIt = 1000000;
             while (!ok) {
-                //log.log("Shuffling " + getObject(i).getValue());
+                //log.log("Shuffling " + getObject3D(i).getValue());
                 Voxel3D vox = maskVox.getRandomvoxel(ra);
                 obj.setNewCenter(vox.getX(), vox.getY(), vox.getZ());
                 ok = true;

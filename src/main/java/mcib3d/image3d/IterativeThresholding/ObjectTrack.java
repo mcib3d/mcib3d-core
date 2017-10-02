@@ -52,25 +52,17 @@ public class ObjectTrack {
     public Voxel3D seed;
     public int threshold;
     public ImageHandler rawImage;
+    public boolean VALID = true;
+    public int id;
     private Object3D object = null;
     //private double time = 0;
     private int frame = 0;
     private ArrayList<ObjectTrack> children = null;
     private ObjectTrack parent = null;
     private int state = STATE_UNKNOWN;
-    public boolean VALID = true;
-    public int id;
 
     public ObjectTrack() {
     }
-
-    //public Object3D getObject() {
-    //    return object;
-    //}
-
-    // public void setObject(Object3D object) {
-    //   this.object = object;
-    // }
 
     public ObjectTrack getParent() {
         return parent;
@@ -119,6 +111,10 @@ public class ObjectTrack {
         } else {
             return children.size();
         }
+    }
+
+    public ArrayList<ObjectTrack> getChildren() {
+        return children;
     }
 
     public void addChild(ObjectTrack child) {
@@ -200,6 +196,8 @@ public class ObjectTrack {
         return list;
     }
 
+
+
     public ArrayList<ObjectTrack> getAllDescendantsToEnd() {
         ArrayList<ObjectTrack> list = new ArrayList<ObjectTrack>();
         ObjectTrack par = this;
@@ -215,24 +213,20 @@ public class ObjectTrack {
         return VALID;
     }
 
-    public void setValid(boolean Vali) {
-        this.VALID = Vali;
-    }
-
-    public Object3D getObject() {
+    public Object3D getObject3D() {
         return object;
     }
 
-    public void setObject(Object3D object) {
-        this.object = object;
+    public void setObject3D(Object3D object3) {
+        this.object = object3;
     }
 
     public void computeCriterion(Criterion criterion) {
-        valueCriteria = criterion.computeCriterion(getObject());
+        valueCriteria = criterion.computeCriterion(getObject3D());
     }
 
     @Override
     public String toString() {
-        return valueCriteria+" "+id;
+        return id + "(" + seed+") "+threshold;
     }
 }

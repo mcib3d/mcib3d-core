@@ -206,8 +206,8 @@ public class TrackThreshold {
                 i += step;
             }
             histogramThreshold = new int[histogramTmp.size()];
-            for (i = 0; i < histogramTmp.size(); i++) {
-                histogramThreshold[i] = histogramTmp.get(i);
+            for (int j = 0; j < histogramTmp.size(); j++) {
+                histogramThreshold[j] = histogramTmp.get(j);
             }
         } else if (threshold_method == THRESHOLD_METHOD_KMEANS) {
             // K-means
@@ -221,54 +221,75 @@ public class TrackThreshold {
         } else if (threshold_method == THRESHOLD_METHOD_VOLUME)
             histogramThreshold = constantVoxelsHistogram(img, nbClasses, startThreshold);
 
+        // TEST print
+        /*
+        for (int i = 0; i < histogramThreshold.length; i++) {
+            int hi = histogramThreshold[i];
+            if (hi > 0) IJ.log("HISTO : " + i + " " + hi);
+        }*/
+
+
         return histogramThreshold;
     }
 
     private ArrayList<ObjectTrack> computeAssociation(ArrayList<ObjectTrack> frame1, ArrayList<ObjectTrack> frame2, ArrayList<ObjectTrack> allFrames, ImageHandler labels2) {
         HashMap<Integer, ObjectTrack> hashObjectsT2 = new HashMap<Integer, ObjectTrack>();
         for (ObjectTrack objectTrack : frame2) {
-            hashObjectsT2.put(objectTrack.getObject().getValue(), objectTrack);
+            hashObjectsT2.put(objectTrack.getObject3D().getValue(), objectTrack);
         }
 
         // create association
         ArrayList<ObjectTrack> newListTrack = new ArrayList<ObjectTrack>();
 
         for (ObjectTrack obt : frame1) {
-            ArrayUtil list = obt.getObject().listValues(labels2, 0);
-            list = list.distinctValues();
-            // association 1<->1
-            if (list.getSize() == 1) {
-                ObjectTrack child = hashObjectsT2.get((int) list.getValue(0));
-                if ((child != null) && (obt.volume > child.volume)) {
-                    obt.addChild(child);
-                    child.setParent(obt);
-                    allFrames.add(child);
-                    newListTrack.add(child);
-                    frame2.remove(child);
-                    obt.setObject(null);
-                }
-                if ((child != null) && (obt.volume == child.volume)) {
-                    newListTrack.add(obt);
-                    frame2.remove(child);
-                }
-            }
-            // association 1<->n
-            else if (list.getSize() > 1) {
-                for (int i = 0; i < list.getSize(); i++) {
-                    ObjectTrack child = hashObjectsT2.get((int) list.getValue(i));
-                    if ((child != null)) {
+            //IJ.log("testing asso " + obt + " " + obt.getObject3D());
+            ArrayUtil list = obt.getObject3D().listValues(labels2, 0);
+            // no association
+            if (list.isEmpty()) {
+                ;
+            } else {
+                list = list.distinctValues();
+                // association 1<->1
+                if (list.size() == 1) {
+                    ObjectTrack child = hashObjectsT2.get((int) list.getValue(0));
+                    if ((child != null) && (obt.volume > child.volume)) { // was >
+                        //IJ.log("adding one child " + obt + " " + child);
                         obt.addChild(child);
                         child.setParent(obt);
-                        newListTrack.add(child);
                         allFrames.add(child);
+                        // test
+                        newListTrack.add(child);
                         frame2.remove(child);
-                        obt.setObject(null);
+                        obt.setObject3D(null);
+                    }
+
+                    if ((child != null) && (obt.volume == child.volume)) {
+                        //IJ.log("adding same volume " + obt + " " + child);
+                        newListTrack.add(obt);
+                        frame2.remove(child);
+                        treeSet.remove(child);
+
+                    }
+                }
+                // association 1<->n
+                else if (list.size() > 1) {
+                    for (int i = 0; i < list.size(); i++) {
+                        ObjectTrack child = hashObjectsT2.get((int) list.getValue(i));
+                        if ((child != null)) {
+                            //IJ.log("adding two child " + obt + " " + child);
+                            obt.addChild(child);
+                            child.setParent(obt);
+                            newListTrack.add(child);
+                            allFrames.add(child);
+                            frame2.remove(child);
+                            obt.setObject3D(null);
+                        }
                     }
                 }
             }
-
         }
         // add all new objects from T2
+        for (ObjectTrack objectTrack : frame2) allFrames.add(objectTrack);
         newListTrack.addAll(frame2);
 
         return newListTrack;
@@ -280,7 +301,7 @@ public class TrackThreshold {
             // if (checkMarkers(ob)) {
             if (checkMarkersTest(ob)) {
                 ObjectTrack obt = new ObjectTrack();
-                obt.setObject(ob);
+                obt.setObject3D(ob);
                 obt.setFrame(threshold);
                 // add measurements
                 obt.computeCriterion(criterion);
@@ -290,7 +311,6 @@ public class TrackThreshold {
                 obt.rawImage = img;
                 obt.id = idobj++;
                 frame1.add(obt);
-                // test
                 treeSet.add(obt);
             }
         }
@@ -351,22 +371,26 @@ public class TrackThreshold {
         ArrayList<ObjectTrack> allFrames = new ArrayList<ObjectTrack>();
         allFrames.addAll(frame1);
         // use histogram and unique values to loop over pixel values
-        GlobalThreshold = 1;
+        GlobalThreshold = 0;
         //
         Chrono chrono = new Chrono(TMaximum);
         chrono.start();
         String S = null;
         if (log instanceof IJLog) {
-            ((IJLog) (log)).setUpdate(true);
+            ((IJLog) (log)).setUpdate(true);// was true
         }
+
+        /// LOOP
         while (T1 <= TMaximum) {
             int T2 = computeNextThreshold(T1, TMaximum, histogramThreshold);
+            //IJ.log("" + T1 + " " + T2 + " " + TMaximum);
             if (T2 < 0) break;
 
             if (log != null) {
                 S = chrono.getFullInfo(T2 - T1);
                 //IJ.log("\\Update: "+S);
                 if (S != null) log.log(S);
+
             }
             //if (status) IJ.showStatus("Computing frame for threshold " + T2 + "                   ");
 
@@ -395,6 +419,7 @@ public class TrackThreshold {
     }
 
     private ArrayList<ImageHandler> computeResults(ArrayList<ObjectTrack> allFrames, ImageHandler img) {
+        //printTree();
         // get results from the tree with different levels of objects
         int level = 1;
         int maxLevel = 10;
@@ -418,10 +443,12 @@ public class TrackThreshold {
                 //drawContrast = new ImageFloat("Contrast", img.sizeX, img.sizeY, img.sizeZ);
             }
             drawsReconstruct.add(drawIdx);
+            //drawIdx.show("level " + level);
             //drawsReconstruct.add(drawContrast);
             int idx = 1;
             ArrayList<ObjectTrack> toBeRemoved = new ArrayList<ObjectTrack>();
             for (ObjectTrack obt : allFrames) {
+                //IJ.log("testing " + obt + " " + obt.getState());
                 if (obt.getState() == ObjectTrack.STATE_DIE) {
                     ObjectTrack anc = obt.getAncestor();
                     if (anc == null) {
@@ -470,13 +497,35 @@ public class TrackThreshold {
         allFrames = null;
         System.gc();
 
-        // test
-        IJ.log(treeSet.first() + " " + treeSet.last());
-
         return drawsReconstruct;
     }
 
+    private void printTree() {
+        /*
+        ArrayList<ObjectTrack> roots = new ArrayList<ObjectTrack>();
+        for (ObjectTrack objectTrack : treeSet) {
+            ObjectTrack root = objectTrack.getRoot();
+            if (!roots.contains(root)) roots.add(root);
+        }
+        */
+        //
+        IJ.log("TREE");
+        for (ObjectTrack root : treeSet) {
+            IJ.log(root + " " + root.getObject3D() + " " + root.getParent() + " " + root.getNbChildren());
+            if (root.getNbChildren() > 0) {
+                for (ObjectTrack child : root.getChildren()) {
+                    IJ.log("--->" + child + " " + child.getObject3D() + " " + child.getParent() + " " + child.getNbChildren());
+                }
+            }
+        }
+
+    }
+
     private ImageHandler computeResultsBest(ArrayList<ObjectTrack> allFrames, ImageHandler img) {
+        // TEST
+        //printTree();
+        // TEST
+
         int idx = 1;
         ImageHandler drawsReconstruct;
         if (allFrames.size() < 65535) {
@@ -491,21 +540,37 @@ public class TrackThreshold {
 
         while (!treeSet.isEmpty()) {
             ObjectTrack objectTrack = treeSet.pollFirst();
-            while (!objectTrack.isValid()) objectTrack = treeSet.pollFirst();
-            Segment3DSpots SegmentSpot = new Segment3DSpots(objectTrack.rawImage, null);
-            Voxel3D seed = objectTrack.seed;
-            int threshold = objectTrack.threshold;
-            // remove up
-            ObjectTrack root = objectTrack.getRoot();
-            ArrayList<ObjectTrack> list = objectTrack.getLineageTo(root);
-            for (ObjectTrack objectTrack1 : list) objectTrack1.VALID = false;
-            // remove down
-            list = objectTrack.getAllDescendantsToEnd();
-            for (ObjectTrack objectTrack1 : list) objectTrack1.VALID = false;
+            while ((!treeSet.isEmpty()) && (!objectTrack.isValid())) objectTrack = treeSet.pollFirst();
+            if (objectTrack.isValid()) {
+                //IJ.log("testing " + objectTrack + " " + objectTrack.getParent() + " " + objectTrack.getNbChildren());
+                Segment3DSpots SegmentSpot = new Segment3DSpots(objectTrack.rawImage, null);
+                Voxel3D seed = objectTrack.seed;
+                int threshold = objectTrack.threshold;
+                // remove up
+                ObjectTrack root = objectTrack.getRoot();
+                ArrayList<ObjectTrack> list = objectTrack.getLineageTo(root);
+                for (ObjectTrack objectInvalid : list) {
+                    if (objectInvalid.isValid()) {
+                        objectInvalid.VALID = false;
+                        //IJ.log("disabling up " + objectInvalid + " " + objectTrack);
+                    }
+                    treeSet.remove(objectInvalid);
+                }
+                // remove down
+                list = objectTrack.getAllDescendantsToEnd();
+                for (ObjectTrack objectInvalid : list) {
+                    if (objectInvalid.isValid()) {
+                        //IJ.log("disabling down " + objectInvalid + " " + objectTrack);
+                        objectInvalid.VALID = false;
+                    }
+                    treeSet.remove(objectInvalid);
+                }
 
-            Object3D object3D = new Object3DVoxels(SegmentSpot.segmentSpotClassical(seed.getRoundX(), seed.getRoundY(), seed.getRoundZ(), threshold, idx));
-            object3D.draw(drawsReconstruct, idx);
-            idx++;
+                Object3D object3D = new Object3DVoxels(SegmentSpot.segmentSpotClassical(seed.getRoundX(), seed.getRoundY(), seed.getRoundZ(), threshold, idx));
+                object3D.draw(drawsReconstruct, idx);
+                //IJ.log("New object 3D " + object3D);
+                idx++;
+            }
         }
 
         return drawsReconstruct;
@@ -525,15 +590,12 @@ public class TrackThreshold {
     private int computeNextThreshold(int T1, int Tmax, int[] histogram) {
         int T2 = T1;
         if (T2 < Tmax) {
-            T2 = histogram[GlobalThreshold];
             GlobalThreshold++;
-            while ((T2 == 0) && (T2 <= Tmax + 1) && (GlobalThreshold < histogram.length)) {
-                T2 = histogram[GlobalThreshold];
+            while ((GlobalThreshold < histogram.length) && (histogram[GlobalThreshold] == 0))
                 GlobalThreshold++;
-            }
-            if ((T2 > Tmax + 1) || (GlobalThreshold >= histogram.length)) {
-                T2 = -1;
-            }
+            if (GlobalThreshold < histogram.length)
+                T2 = histogram[GlobalThreshold];
+            else T2 = Tmax + 1;
         } else if (T2 == Tmax) {
             // use extra threshold to finalize all objects without any child
             T2 = Tmax + 1;
@@ -555,7 +617,7 @@ public class TrackThreshold {
                 // compute contrast, max threshold - min threshold
                 int contrast = 0;
                 if (anc != null)
-                    contrast = objectTrack.getFrame() - anc.getFrame();
+                    contrast = objectTrack.getFrame() - anc.getFrame() + 1;
                 if (contrast < contrastMin) {
                     toBeRemoved.addAll(objectTrack.getLineageTo(anc));
                     change = true;

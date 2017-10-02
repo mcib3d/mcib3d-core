@@ -277,6 +277,7 @@ public class ArrayUtil {
     }
 
     /**
+     * @deprecated see size()
      * get the number of elements
      *
      * @return number of elements
@@ -298,6 +299,10 @@ public class ArrayUtil {
         }
         this.size = size;
         sorted = false;
+    }
+
+    public int size() {
+        return size;
     }
 
     /**
@@ -1290,6 +1295,10 @@ public class ArrayUtil {
             return false;
         }
         return isEqual(other, 0, this.getSize() - 1);
+    }
+
+    public boolean isEmpty() {
+        return (this.size == 0);
     }
 
     /**
