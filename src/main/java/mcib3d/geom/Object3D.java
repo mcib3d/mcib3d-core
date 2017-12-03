@@ -5,6 +5,7 @@ package mcib3d.geom;
 
 //import ij.IJ;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -206,7 +207,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     protected EigenvalueDecomposition eigen = null;
     /**
-     * The image where the object lies
+     * The image where the object lies with offset
      */
     protected ImageInt miniLabelImage = null;
     /**
@@ -2241,7 +2242,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * for intersection)
      */
     public ImageInt createIntersectionImage(Object3D other, int val1, int val2, int border) {
-        // keep labelimage
+        // keep label image
         ImageInt label = this.getLabelImage();
         int ofX = label.offsetX;
         int ofY = label.offsetY;
