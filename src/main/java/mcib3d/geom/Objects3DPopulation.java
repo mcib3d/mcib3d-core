@@ -26,6 +26,7 @@ import ij.ImageStack;
 import ij.measure.Calibration;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.ImageShort;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 import mcib3d.utils.KDTreeC.Item;
@@ -715,6 +716,16 @@ public class Objects3DPopulation {
         }
         return new int[]{maxX, maxY, maxZ};
     }
+
+    public ImageInt drawPopulation(){
+        int[] sizes=this.getMaxSizeAllObjects();
+        ImageInt drawImage=new ImageShort("population", sizes[0],sizes[1],sizes[2]);
+        for(Object3D object3DVoxels:getObjectsList()){
+            object3DVoxels.draw(drawImage);
+        }
+        return drawImage;
+    }
+
 
     /**
      * @return

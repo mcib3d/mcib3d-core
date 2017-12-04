@@ -207,7 +207,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     protected EigenvalueDecomposition eigen = null;
     /**
-     * The image where the object lies with offset
+     * The image where the object lies with offset usually xmin, ymin abd zmin
      */
     protected ImageInt miniLabelImage = null;
     /**
@@ -2320,7 +2320,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * Get the intersection voxels as a 3D object
      *
      * @param other The other object
-     * @return The objecdt with intersection voxels (or null if objects are
+     * @return The object with intersection voxels (or null if objects are
      * disjoint)
      */
     public Object3DVoxels getIntersectionObject(Object3D other) {
