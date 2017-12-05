@@ -684,6 +684,15 @@ public class Objects3DPopulation {
         return objects.indexOf(ob);
     }
 
+    public ArrayUtil getAllIndices(){
+        ArrayUtil arrayUtil = new ArrayUtil(getNbObjects());
+        for(int i=0;i<getNbObjects();i++){
+            arrayUtil.putValue(i,getObject(i).getValue());
+        }
+
+        return arrayUtil;
+    }
+
     public Object3D[] getObjectsArray() {
         return (Object3D[]) objects.toArray();
     }
