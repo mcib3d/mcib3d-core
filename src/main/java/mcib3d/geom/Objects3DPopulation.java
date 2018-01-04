@@ -213,10 +213,12 @@ public class Objects3DPopulation {
             // TODO should have exit conditions
             int count = 0;
             int maxCount = 1000;
-            while ((dist < hardcore) && (count < maxCount)) {
+            while ((dist <= hardcore) && (count < maxCount)) {
                 P = getRandomPointInMask();
-                closest = closestCenter(P);
-                dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
+                if (P != null) {
+                    closest = closestCenter(P);
+                    dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
+                }
                 count++;
                 //IJ.showStatus("***");
             }
@@ -772,11 +774,16 @@ public class Objects3DPopulation {
         double y = (Math.random() * (ymax - ymin) + ymin);
         double z = (Math.random() * (zmax - zmin) + zmin);
 
-        while (!mask.inside(x, y, z)) {
+        // add counter
+        int count = 0;
+        int maxCount = 1000;
+        while ((!mask.inside(x, y, z)) && (count < maxCount)) {
             x = Math.random() * (xmax - xmin) + xmin;
             y = Math.random() * (ymax - ymin) + ymin;
             z = Math.random() * (zmax - zmin) + zmin;
+            count++;
         }
+        if (count == maxCount) return null;
 
         return new Point3D(x, y, z);
     }
