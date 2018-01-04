@@ -224,7 +224,7 @@ public class Objects3DPopulation {
             }
             if (count == maxCount) {
                 IJ.log("Cannot generate random spots");
-                if (hardcore > 0) IJ.log("Maybe hard core distance " + hardcore + "(pixels) is too large.");
+                if (hardcore > 0) IJ.log("Maybe hard core distance " + hardcore + "(unit) is too large.");
                 return false;
             }
             v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) (i + 1));
