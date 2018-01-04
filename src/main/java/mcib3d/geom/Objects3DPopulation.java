@@ -21,6 +21,7 @@ package mcib3d.geom;
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
@@ -187,7 +188,7 @@ public class Objects3DPopulation {
      * @param nb
      * @param hardcore
      */
-    public void createRandomPopulation(int nb, double hardcore) {
+    public boolean createRandomPopulation(int nb, double hardcore) {
         ArrayList<Voxel3D> voxlist;
         Voxel3D v;
         Object3D closest;
@@ -209,11 +210,20 @@ public class Objects3DPopulation {
             P = maskVox.getRandomvoxel(ra);
             closest = closestCenter(P);
             dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
-            while (dist < hardcore) {
+            // TODO should have exit conditions
+            int count = 0;
+            int maxCount = 1000;
+            while ((dist < hardcore) && (count < maxCount)) {
                 P = getRandomPointInMask();
                 closest = closestCenter(P);
                 dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
+                count++;
                 //IJ.showStatus("***");
+            }
+            if (count == maxCount) {
+                IJ.log("Cannot generate random spots");
+                if (hardcore > 0) IJ.log("Maybe hard core distance " + hardcore + "(pixels) is too large.");
+                return false;
             }
             v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) (i + 1));
             voxlist = new ArrayList<Voxel3D>(1);
@@ -223,6 +233,8 @@ public class Objects3DPopulation {
             ob.setCalibration(scaleXY, scaleZ, unit);
             addObject(ob);
         }
+
+        return true;
     }
 
     /**
