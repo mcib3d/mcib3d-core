@@ -254,7 +254,7 @@ public class Watershed3D {
 
         // compute the seeds image
         // threshold, // TODO 32-bits seeds ?
-        ImageInt seedsLabel = (ImageInt) seedsImage.duplicate();
+        ImageHandler seedsLabel = seedsImage.duplicate();
         seedsLabel.thresholdCut(seedsThreshold, false, true);
 
         if ((labelSeeds)) {
@@ -264,11 +264,11 @@ public class Watershed3D {
         }
         // since seeds Label starts at 1 and watershed at 2, replace values
         int max = (int) seedsLabel.getMax();
-        if (seedsLabel.hasOneValueInt(QUEUE)) {
+        if (seedsLabel.hasOneValue(QUEUE)) {
             seedsLabel.replacePixelsValue(QUEUE, max + 1);
             seedsValue.put(max + 1, QUEUE);
         }
-        if (seedsLabel.hasOneValueInt(DAM)) {
+        if (seedsLabel.hasOneValue(DAM)) {
             seedsLabel.replacePixelsValue(DAM, max + 2);
             seedsValue.put(max + 2, DAM);
         }

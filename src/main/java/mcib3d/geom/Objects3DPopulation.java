@@ -150,6 +150,9 @@ public class Objects3DPopulation {
     @Deprecated
     public void setCalibration(Calibration cal) {
         this.calibration = cal;
+        this.scaleXY = cal.pixelWidth;
+        this.scaleZ = cal.pixelDepth;
+        this.unit = cal.getUnits();
         // recalibrate objects
         if ((objects != null) && (objects.size() > 0)) {
             for (Object3D obj : objects) {
@@ -159,6 +162,10 @@ public class Objects3DPopulation {
     }
 
     public void setCalibration(double sxy, double sz, String u) {
+        setScale(sxy, sz, u);
+    }
+
+    public void setScale(double sxy, double sz, String u) {
         scaleXY = sxy;
         scaleZ = sz;
         unit = u;
@@ -167,10 +174,11 @@ public class Objects3DPopulation {
                 obj.setResXY(sxy);
                 obj.setResZ(sz);
                 obj.setUnits(u);
-                //Object3D_IJUtils.setCalibration(obj, calibration);
             }
         }
     }
+
+
 
 
     // hardcore distance in unit

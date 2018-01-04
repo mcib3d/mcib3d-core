@@ -1,7 +1,6 @@
 package mcib3d.image3d;
 
 import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.Object3D_IJUtils;
 import mcib3d.geom.Voxel3D;
 
 import java.util.ArrayList;
@@ -421,6 +420,7 @@ public class ImageLabeller {
             }
         }
         ImageShort res = new ImageShort(mask.getTitle() + "::segmented", mask.sizeX, mask.sizeY, mask.sizeZ);
+        res.setScale(mask);
         short label = 1;
         for (Spot s : spots.values()) {
             ArrayList<Vox3D> a = s.voxels;
@@ -530,7 +530,8 @@ public class ImageLabeller {
                 ArrayList noDuplicate = new ArrayList(new HashSet(voxels3D));
                 // set calibration
                 Object3DVoxels object3DVoxels = new Object3DVoxels(noDuplicate);
-                Object3D_IJUtils.setCalibration(object3DVoxels, mask.getCalibration());
+                //Object3D_IJUtils.setCalibration(object3DVoxels, mask.getCalibration());
+                object3DVoxels.setCalibration(mask.getScaleXY(), mask.getScaleZ(), mask.getUnit());
                 objects.add(object3DVoxels);
                 label++;
             }

@@ -136,7 +136,7 @@ public abstract class ImageHandler {
         return null;
     }
 
-    public static ImageHandler openImage(File f) throws Exception {
+    public static ImageHandler openImage(File f) {
         Opener op = new Opener();
         op.setSilentMode(true);
         ImagePlus i = op.openImage(f.getAbsolutePath());
@@ -1151,13 +1151,19 @@ public abstract class ImageHandler {
     public ImageHandler createSameDimensions() {
         if (this instanceof ImageByte) {
             ImageStack stack = ImageStack.create(sizeX, sizeY, sizeZ, 8);
-            return new ImageByte(stack);
+            ImageByte imageByte = new ImageByte(stack);
+            imageByte.setScale(this);
+            return imageByte;
         } else if (this instanceof ImageShort) {
             ImageStack stack = ImageStack.create(sizeX, sizeY, sizeZ, 16);
-            return new ImageShort(stack);
+            ImageShort imageShort = new ImageShort(stack);
+            imageShort.setScale(this);
+            return imageShort;
         } else if (this instanceof ImageFloat) {
             ImageStack stack = ImageStack.create(sizeX, sizeY, sizeZ, 32);
-            return new ImageFloat(stack);
+            ImageFloat imageFloat = new ImageFloat(stack);
+            imageFloat.setScale(this);
+            return imageFloat;
         }
 
         return null;
@@ -1774,7 +1780,7 @@ public abstract class ImageHandler {
         return im;
     }
 
-    public byte[] getBinaryData() throws Exception, OutOfMemoryError {
+    public byte[] getBinaryData() throws OutOfMemoryError {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         FileInfo fi = img.getFileInfo();
         TiffEncoder te = new TiffEncoder(fi);
@@ -2120,6 +2126,21 @@ public abstract class ImageHandler {
             }
         }
         return false;
+    }
+
+    /**
+     * Replace a pixel value by another
+     *
+     * @param val the value to be replaced
+     * @param rep the new value
+     */
+    public void replacePixelsValue(int val, int rep) {
+        for (int k = 0; k < sizeXYZ; k++) {
+            if (this.getPixel(k) == val) {
+                this.setPixel(k, rep);
+            }
+        }
+        resetStats();
     }
 
     public ArrayList<Voxel3D> createListVoxels(int thresh) {
