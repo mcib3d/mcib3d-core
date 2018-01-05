@@ -2,22 +2,13 @@ package mcib3d.utils;
 
 import ij.IJ;
 import ij.plugin.BrowserLauncher;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Toolkit;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URL;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 /**
  * Description of the Class
@@ -27,7 +18,7 @@ import javax.swing.JPanel;
 public class AboutMCIB extends JFrame {
 
     private static String name;
-    private static final double VERSION = 3.9;
+    private static final double VERSION = 3.91;
 
     /**
      * Constructor for the AboutWindow object
