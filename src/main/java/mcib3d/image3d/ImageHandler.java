@@ -1899,6 +1899,20 @@ public abstract class ImageHandler {
         return normalize_(mask, saturation);
     }
 
+    public ImageHandler normaliseValue(float meanV, float sdV) {
+        ImageHandler res = this.createSameDimensions();
+        double mean = this.getMean();
+        double sd = this.getImageStats(null).getStandardDeviation();
+        for (int c = 0; c < this.sizeXYZ; c++) {
+            double pix = this.getPixel(c);
+            double pixNorma0 = ((pix - mean) / sd);
+            double pixNorma = pixNorma0 * sdV + meanV;
+            res.setPixel(c, (float) pixNorma);
+        }
+
+        return res;
+    }
+
     public abstract void invert(ImageInt mask); //maximum within mask // FIXME mask is not used
 
     public void invert() {
