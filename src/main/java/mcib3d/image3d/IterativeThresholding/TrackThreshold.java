@@ -74,6 +74,7 @@ public class TrackThreshold {
     private int stopThreshold = Integer.MAX_VALUE;
     private int criteria_method = CRITERIA_METHOD_MIN_ELONGATION;
     private int GlobalThreshold;
+    private boolean use32bits = false;
     private Criterion criterion;
     private BestCriterion bestCriterion;
     // markers
@@ -115,6 +116,9 @@ public class TrackThreshold {
         treeSet = new TreeSet(comp);
     }
 
+    public void setUse32bits(boolean use32bits) {
+        this.use32bits = use32bits;
+    }
 
     private static int[] constantVoxelsHistogram(ImageHandler img, int nbClasses, int startThreshold) {
         int[] res;
@@ -246,7 +250,6 @@ public class TrackThreshold {
             ArrayUtil list = obt.getObject3D().listValues(labels2, 0);
             // no association
             if (list.isEmpty()) {
-                ;
             } else {
                 list = list.distinctValues();
                 // association 1<->1
@@ -389,7 +392,7 @@ public class TrackThreshold {
             if (log != null) {
                 S = chrono.getFullInfo(T2 - T1);
                 //IJ.log("\\Update: "+S);
-                if (S != null) log.log(S);
+                if (S != null) log.log("task " + S);
 
             }
             //if (status) IJ.showStatus("Computing frame for threshold " + T2 + "                   ");
@@ -435,7 +438,8 @@ public class TrackThreshold {
             }
             ImageHandler drawIdx, drawContrast;
             // 32-bits case
-            if (allFrames.size() < 65535) {
+            //if (allFrames.size() < 65535) {
+            if (!use32bits) {
                 drawIdx = new ImageShort("Objects", img.sizeX, img.sizeY, img.sizeZ);
                 //drawContrast = new ImageShort("Contrast", img.sizeX, img.sizeY, img.sizeZ);
             } else {
@@ -528,7 +532,8 @@ public class TrackThreshold {
 
         int idx = 1;
         ImageHandler drawsReconstruct;
-        if (allFrames.size() < 65535) {
+        //if (allFrames.size() < 65535) {
+        if (!use32bits) {
             drawsReconstruct = new ImageShort("Objects", img.sizeX, img.sizeY, img.sizeZ);
             //drawContrast = new ImageShort("Contrast", img.sizeX, img.sizeY, img.sizeZ);
         } else {
@@ -580,7 +585,7 @@ public class TrackThreshold {
         // test maximal volume //or one with minimal elongation
         // get all values
         ArrayUtil valueCriterion = new ArrayUtil(list.size());
-        for (int i = 0; i < valueCriterion.getSize(); i++) {
+        for (int i = 0; i < valueCriterion.size(); i++) {
             valueCriterion.putValue(i, list.get(i).valueCriteria);
         }
 
@@ -694,9 +699,8 @@ public class TrackThreshold {
 
     private boolean checkMarkers(Object3D object3D) {
         // TO MODIFY
-        if ((markers == null) || (object3D.insideOne(markers))) return true;
+        return (markers == null) || (object3D.insideOne(markers));
 
-        return false;
     }
 
     // EXPERIMENTAL
