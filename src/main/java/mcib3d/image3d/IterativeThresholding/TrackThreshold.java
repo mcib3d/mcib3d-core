@@ -362,6 +362,7 @@ public class TrackThreshold {
 
         if (log != null) log.log("Analysing histogram ...");
         histogramThreshold = initHistogram(img);
+        if (histogramThreshold.length == 0) return null;
         T0 = histogramThreshold[0];
 
         // first frame
