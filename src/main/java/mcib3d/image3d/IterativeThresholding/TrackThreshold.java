@@ -638,6 +638,7 @@ public class TrackThreshold {
     public ImageHandler segment(ImageHandler input, boolean verbose) {
         setVerbose(verbose);
         ArrayList<ObjectTrack> frames = process(input);
+        if(frames==null) return null;
         ArrayList<ImageHandler> res = computeResults(frames, input);
         if (!res.isEmpty()) {
             return res.get(0);
@@ -649,6 +650,7 @@ public class TrackThreshold {
     public ImageHandler segmentBest(ImageHandler input, boolean verbose) {
         setVerbose(verbose);
         ArrayList<ObjectTrack> frames = process(input);
+        if(frames==null) return null;
         ArrayList<ImageHandler> res = computeResults(frames, input);
         if (!res.isEmpty()) {
             return res.get(0);
@@ -660,6 +662,7 @@ public class TrackThreshold {
     public ArrayList<ImageHandler> segmentAll(ImageHandler input, boolean verbose) {
         setVerbose(verbose);
         ArrayList<ObjectTrack> frames = process(input);
+        if(frames==null) return null;
         ArrayList<ImageHandler> res = computeResults(frames, input);
         return res;
     }
@@ -668,6 +671,7 @@ public class TrackThreshold {
         setVerbose(show);
         ImageHandler img = ImageHandler.wrap(input);
         ArrayList<ObjectTrack> frames = process(img);
+        if(frames==null) return null;
         ArrayList<ImageHandler> drawsReconstruct = computeResults(frames, img);
 
         // no results
@@ -684,6 +688,7 @@ public class TrackThreshold {
         setVerbose(show);
         ImageHandler img = ImageHandler.wrap(input);
         ArrayList<ObjectTrack> frames = process(img);
+        if(frames==null) return null;
         ImageHandler drawsReconstruct = computeResultsBest(frames, img);
         return drawsReconstruct.getImagePlus();
     }
