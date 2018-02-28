@@ -230,8 +230,8 @@ public class TrackThreshold {
         for (int i = 0; i < histogramThreshold.length; i++) {
             int hi = histogramThreshold[i];
             if (hi > 0) IJ.log("HISTO : " + i + " " + hi);
-        }*/
-
+        }
+        */
 
         return histogramThreshold;
     }
@@ -362,6 +362,7 @@ public class TrackThreshold {
 
         if (log != null) log.log("Analysing histogram ...");
         histogramThreshold = initHistogram(img);
+        if(histogramThreshold.length==0)  return null; // case black image
         T0 = histogramThreshold[0];
 
         // first frame
@@ -634,6 +635,17 @@ public class TrackThreshold {
         return change;
     }
 
+
+
+
+
+    public ArrayList<ImageHandler> segmentAll(ImageHandler input, boolean verbose) {
+        setVerbose(verbose);
+        ArrayList<ObjectTrack> frames = process(input);
+        ArrayList<ImageHandler> res = computeResults(frames, input);
+        return res;
+    }
+
     public ImageHandler segment(ImageHandler input, boolean verbose) {
         setVerbose(verbose);
         ArrayList<ObjectTrack> frames = process(input);
@@ -645,29 +657,10 @@ public class TrackThreshold {
         }
     }
 
-    public ImageHandler segmentBest(ImageHandler input, boolean verbose) {
-        setVerbose(verbose);
-        ArrayList<ObjectTrack> frames = process(input);
-        ArrayList<ImageHandler> res = computeResults(frames, input);
-        if (!res.isEmpty()) {
-            return res.get(0);
-        } else {
-            return null;
-        }
-    }
-
-    public ArrayList<ImageHandler> segmentAll(ImageHandler input, boolean verbose) {
-        setVerbose(verbose);
-        ArrayList<ObjectTrack> frames = process(input);
-        ArrayList<ImageHandler> res = computeResults(frames, input);
-        return res;
-    }
-
     public ImagePlus segment(ImagePlus input, boolean show) {
         setVerbose(show);
         ImageHandler img = ImageHandler.wrap(input);
-        ArrayList<ObjectTrack> frames = process(img);
-        ArrayList<ImageHandler> drawsReconstruct = computeResults(frames, img);
+        ArrayList<ImageHandler> drawsReconstruct = segmentAll(img,show);
 
         // no results
         if (drawsReconstruct.size() == 0) return null;
@@ -679,16 +672,18 @@ public class TrackThreshold {
         return ImageHandler.getHyperStack("draw", drawsTab);
     }
 
-    public ImagePlus segmentBest(ImagePlus input, boolean show) {
-        setVerbose(show);
-        ImageHandler img = ImageHandler.wrap(input);
-        ArrayList<ObjectTrack> frames = process(img);
-        ImageHandler drawsReconstruct = computeResultsBest(frames, img);
-        return drawsReconstruct.getImagePlus();
+    public ImageHandler segmentBest(ImageHandler input, boolean verbose) {
+        setVerbose(verbose);
+        ArrayList<ObjectTrack> frames = process(input);
+        return computeResultsBest(frames, input);
     }
 
+    public ImagePlus segmentBest(ImagePlus input, boolean show) {
+       return segmentBest(ImageHandler.wrap(input),show).getImagePlus();
+    }
 
     @Deprecated
+    // see setLog
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

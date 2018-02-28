@@ -1677,10 +1677,16 @@ public abstract class ImageHandler {
 
     protected abstract void flushPixels();
 
-    public void save(String directory) {
+    public void save(String directory, boolean addsuffix) {
         FileSaver fs = new FileSaver(img);
         setMinAndMax(null);
-        fs.saveAsTiffStack(directory + File.separator + img.getTitle());
+        if(addsuffix)
+        fs.saveAsTiffStack(directory + File.separator + img.getTitle()+".tif");
+        else  fs.saveAsTiffStack(directory + File.separator + img.getTitle());
+    }
+
+    public void save(String directory) {
+        this.save(directory,false);
     }
 
     public void saveThumbNail(int sizeX, int sizeY, String directory) {
