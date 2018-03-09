@@ -66,8 +66,8 @@ public abstract class Object3D implements Comparable<Object3D> {
     public static final byte MEASURE_VOLUME_UNIT = 2;
     public static final byte MEASURE_MAIN_ELONGATION = 3;
     public static final byte MEASURE_COMPACTNESS_VOXELS = 4;
-    public static final byte MEASURE_COMPACTNESS_UNITS = 12;
-    public static final byte MEASURE_SPHERICITY = 5;
+    public static final byte MEASURE_COMPACTNESS_UNITS = 5;
+    //public static final byte MEASURE_SPHERICITY = 5;
     public static final byte MEASURE_AREA_PIX = 6;
     public static final byte MEASURE_AREA_UNIT = 7;
     public static final byte MEASURE_DC_AVG = 8;
