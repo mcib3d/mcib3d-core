@@ -48,16 +48,30 @@ public class ImageShort extends ImageInt {
 
     public short[][] pixels;
 
+    /**
+     * Constructor from ImagePlus
+     * @param img ImagePlus
+     */
     public ImageShort(ImagePlus img) {
         super(img);
         buildPixels();
     }
 
+    /**
+     * Constructor from ImageStack
+     * @param img ImageStack
+     */
     public ImageShort(ImageStack img) {
         super(img);
         buildPixels();
     }
 
+    /**
+     * Generic constructor with array of pixels
+     * @param pixels 2D array of pixels, a slice being a 1D array
+     * @param title the title     *
+     * @param sizeX the size in X of the array, sizeY and sizeZ will be extracted from the array length
+     */
     public ImageShort(short[][] pixels, String title, int sizeX) {
         super(title, sizeX, pixels[0].length / sizeX, pixels.length, 0, 0, 0);
         this.pixels = pixels;
@@ -68,6 +82,13 @@ public class ImageShort extends ImageInt {
         img = new ImagePlus(title, st);
     }
 
+    /**
+     * Generic consructor to generate a black image
+     * @param title title of the image
+     * @param sizeX size in X
+     * @param sizeY size in Y
+     * @param sizeZ size in Z
+     */
     public ImageShort(String title, int sizeX, int sizeY, int sizeZ) {
         super(title, sizeX, sizeY, sizeZ);
         img = NewImage.createShortImage(title, sizeX, sizeY, sizeZ, 1);
@@ -77,6 +98,12 @@ public class ImageShort extends ImageInt {
         }
     }
 
+    /**
+     * Constructor from another generic ImageHandler
+     * will convert to write format if necessary
+     * @param im the generic image
+     * @param scaling do scaling if converting from other format (8 bits or 32 bit)
+     */
     public ImageShort(ImageHandler im, boolean scaling) {
         super(im.title, im.sizeX, im.sizeY, im.sizeZ, im.offsetX, im.offsetY, im.offsetZ);
         ImageStats st = getImageStats(null);
@@ -98,6 +125,12 @@ public class ImageShort extends ImageInt {
         }
     }
 
+    /**
+     * (Should be somewhere else --> ImageJUtils ?)
+     * Get the 1D array of a 3D image stored in ImagePlus
+     * @param img the imagePlus
+     * @return the 1D array
+     */
     public static short[] getArray1DShort(ImagePlus img) {
         short[] res = new short[img.getNSlices() * img.getWidth() * img.getHeight()];
         int offZ = 0;
@@ -109,6 +142,16 @@ public class ImageShort extends ImageInt {
         return res;
     }
 
+    /**
+     * (Should be somewhere else --> ImageJUtils ?)
+     * Get the ImagePlus from a 1D array of pixels
+     * @param pixels the 1D array of short
+     * @param sizeX the size X
+     * @param sizeY the size Y
+     * @param sizeZ the size Z
+     * @param setMinAndMax adjust the min and max values
+     * @return
+     */
     public static ImagePlus getImagePlus(short[] pixels, int sizeX, int sizeY, int sizeZ, boolean setMinAndMax) {
         if (pixels == null) {
             return null;
@@ -136,6 +179,12 @@ public class ImageShort extends ImageInt {
         return res;
     }
 
+    /**
+     * convert from float array to short array
+     * @param input the array of float values
+     * @param scaling scaling the values
+     * @return the 1D array of short
+     */
     public static short[] convert(float[] input, boolean scaling) {
         short[] res = new short[input.length];
         if (!scaling) {
@@ -161,6 +210,11 @@ public class ImageShort extends ImageInt {
         return res;
     }
 
+    /**
+     * convert from byte array to short array
+     * @param input the array of byte values
+     * @return the 1D array of short
+     */
     public static short[] convert(byte[] input) {
         short[] res = new short[input.length];
         for (int i = 0; i < input.length; i++) {
@@ -184,6 +238,10 @@ public class ImageShort extends ImageInt {
         }
     }
 
+    /**
+     * get the 1D array as java Object
+     * @return the array as Object
+     */
     public Object getArray1D() {
         short[] res = new short[sizeXYZ];
         int offZ = 0;
@@ -194,12 +252,22 @@ public class ImageShort extends ImageInt {
         return res;
     }
 
+    /**
+     * get the 1D array as java Object for one slice
+     * @param z slice (starts at 0)
+     * @return the array as Object
+     */
     public Object getArray1D(int z) {
         short[] res = new short[sizeXY];
         System.arraycopy(img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
         return res;
     }
 
+    /**
+     * Convert to byte image
+     * @param scaling do scaling of values
+     * @return the byte image
+     */
     public ImageByte convertToByte(boolean scaling) {
         if (scaling) {
             setMinAndMax(null);
@@ -225,6 +293,11 @@ public class ImageShort extends ImageInt {
         return (ImageByte) ImageHandler.wrap(imp2);
     }
 
+    /**
+     * Convert to byte image using saturation of the values
+     * @param saturation saturation value (0.0 - 1.0)
+     * @return the byte image
+     */
     public ImageByte convertToByte(double saturation) {
         setMinAndMax(null);
         resetStats(null);
@@ -250,7 +323,11 @@ public class ImageShort extends ImageInt {
         return (ImageByte) ImageHandler.wrap(imp2);
     }
 
-
+    /**
+     * Convert to float 32 bit image
+     * @param scaling scalig the values
+     * @return the ImageFloat image
+     */
     public ImageFloat convertToFloat(boolean scaling) {
         if (scaling) {
             setMinAndMax(null);
@@ -276,7 +353,7 @@ public class ImageShort extends ImageInt {
         return (ImageFloat) ImageHandler.wrap(imp2);
     }
 
-    @Override
+ @Override
     public void erase() {
         for (int xy = 0; xy < sizeXY; xy++) {
             pixels[0][xy] = 0;
@@ -310,6 +387,10 @@ public class ImageShort extends ImageInt {
         return res;
     }
 
+    /**
+     * Copy the pixels values into the parameter image
+     * @param destination the image where the values will be copied to
+     */
     public void copy(ImageShort destination) {
         for (int z = 0; z < sizeZ; z++) {
             System.arraycopy(pixels[z], 0, destination.pixels[z], 0, sizeXY);
@@ -411,8 +492,13 @@ public class ImageShort extends ImageInt {
         pixels[z][xy] = (short) value;
     }
 
+    /**
+     * Set the pixel value at a given Voxel3D position (position will be rounded)
+     * @param v the voxel position
+     * @param value the value
+     */
     public void setPixel(mcib3d.geom.Voxel3D v, short value) {
-        pixels[(int) v.getZ()][(int) v.getX() + ((int) v.getY()) * sizeX] = value;
+        pixels[(int)Math.round(v.getZ())][(int)Math.round( v.getX()) + ((int) Math.round(v.getY())) * sizeX] = value;
     }
 
     @Override
@@ -509,6 +595,7 @@ public class ImageShort extends ImageInt {
     @Override
     public ImageByte thresholdRangeInclusive(float min, float max) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
+        res.setScale(this);
         res.offsetX = offsetX;
         res.offsetY = offsetY;
         res.offsetZ = offsetZ;
@@ -526,6 +613,7 @@ public class ImageShort extends ImageInt {
     @Override
     public ImageByte thresholdRangeExclusive(float min, float max) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
+        res.setScale(this);
         res.offsetX = offsetX;
         res.offsetY = offsetY;
         res.offsetZ = offsetZ;
@@ -543,6 +631,7 @@ public class ImageShort extends ImageInt {
     @Override
     public ImageByte threshold(float thld, boolean keepUnderThld, boolean strict) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
+        res.setScale(this);
         res.offsetX = offsetX;
         res.offsetY = offsetY;
         res.offsetZ = offsetZ;
@@ -809,6 +898,11 @@ public class ImageShort extends ImageInt {
         return res;
     }
 
+    /**
+     * ??
+     * @param images
+     * @param startLabel
+     */
     public void appendMasks(Iterable<ImageInt> images, int startLabel) { // 1 or several labels per image
         if (images == null) {
             return;
