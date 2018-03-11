@@ -499,6 +499,7 @@ public class ImageByte extends ImageInt {
     @Override
     public ImageByte thresholdRangeInclusive(float min, float max) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
+        res.setScale(this);
         res.offsetX = offsetX;
         res.offsetY = offsetY;
         res.offsetZ = offsetZ;
@@ -516,6 +517,7 @@ public class ImageByte extends ImageInt {
     @Override
     public ImageByte thresholdRangeExclusive(float min, float max) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
+        res.setScale(this);
         res.offsetX = offsetX;
         res.offsetY = offsetY;
         res.offsetZ = offsetZ;
@@ -533,6 +535,7 @@ public class ImageByte extends ImageInt {
     @Override
     public ImageByte threshold(float thld, boolean keepUnderThld, boolean strict) {
         ImageByte res = new ImageByte(this.title + "thld", sizeX, sizeY, sizeZ);
+        res.setScale(this);
         res.offsetX = offsetX;
         res.offsetY = offsetY;
         res.offsetZ = offsetZ;
