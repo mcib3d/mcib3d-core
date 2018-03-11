@@ -201,6 +201,21 @@ public abstract class ImageInt extends ImageHandler {
         return ihs;
     }
 
+    public ImageInt subtractImageInt(ImageInt other) {
+        ImageInt res;
+        if (!this.sameDimensions(other)) {
+            return null;
+        }
+        res = new ImageShort("subtrack",sizeX,sizeY,sizeZ);
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                res.setPixel(xy,z,this.getPixel(xy,z)-other.getPixel(xy,z));
+            }
+        }
+
+        return res;
+    }
+
     public ImageByte[] crop3DBinary() {
         TreeMap<Integer, int[]> bounds = this.getBounds(false);
         return crop3DBinary(bounds);
