@@ -197,6 +197,10 @@ public class ImageByte extends ImageInt {
             pixels[0] = (byte[]) img.getProcessor().getPixels();
             this.img.setStack(null, st);
         }
+        // set scale
+        scaleXY = getScaleXY();
+        scaleZ = getScaleZ();
+        unit = getUnit();
     }
     /*
      * public static ImagePlus convert(ImagePlus img, boolean scaling) { double
@@ -880,21 +884,32 @@ public class ImageByte extends ImageInt {
             method = ij.process.ImageProcessor.BICUBIC;
         }
         if ((newX == sizeX && newY == sizeY && newZ == sizeZ) || (newX == 0 && newY == 0 && newZ == 0)) {
-            return new ImageByte(img.duplicate());
-        }
-        ImagePlus ip;
+            ImageByte res = this.duplicate();
+            return res;
 
+        }
+        ImagePlus ip = img.duplicate();
         if (newX != 0 && newY != 0 && newX != sizeX && newY != sizeY) {
-            StackProcessor sp = new StackProcessor(img.getImageStack(), img.getProcessor());
+            StackProcessor sp = new StackProcessor(ip.getImageStack(), ip.getProcessor());
             ip = new ImagePlus(title + "::resampled", sp.resize(newX, newY, true));
-        } else {
-            ip = img;
         }
         if (newZ != 0 && newZ != sizeZ) {
             ij.plugin.Resizer r = new ij.plugin.Resizer();
             ip = r.zScale(ip, newZ, method);
         }
-        return new ImageByte(ip);
+
+        ImageByte res = new ImageByte(ip);
+        // offset should be reset?
+        res.setOffset(this);
+        // change calibration only if XY linked
+        if (newX * sizeY == newY * sizeX) {
+            res.setScale(scaleXY * (double) sizeX / (double) newX, scaleZ * (double) sizeZ / (double) newZ, unit);
+        } else {
+            IJ.log("Resizing with X and Y not linked, cannot set scale.");
+            res.setScale(1, 1, "pix");
+        }
+
+        return res;
     }
 
     @Override
@@ -903,7 +918,13 @@ public class ImageByte extends ImageInt {
             method = ij.process.ImageProcessor.BICUBIC;
         }
         ij.plugin.Resizer r = new ij.plugin.Resizer();
-        return new ImageByte(r.zScale(img, newZ, method));
+        ImageByte res = new ImageByte(r.zScale(img.duplicate(), newZ, method));
+        // offset should be reset?
+        res.setOffset(this);
+        // change calibration only if XY linked
+        res.setScale(scaleXY , scaleZ * (double) sizeZ / (double) newZ, unit);
+
+        return res;
     }
 
     @Override

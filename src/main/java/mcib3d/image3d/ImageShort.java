@@ -50,6 +50,7 @@ public class ImageShort extends ImageInt {
 
     /**
      * Constructor from ImagePlus
+     *
      * @param img ImagePlus
      */
     public ImageShort(ImagePlus img) {
@@ -59,6 +60,7 @@ public class ImageShort extends ImageInt {
 
     /**
      * Constructor from ImageStack
+     *
      * @param img ImageStack
      */
     public ImageShort(ImageStack img) {
@@ -68,9 +70,10 @@ public class ImageShort extends ImageInt {
 
     /**
      * Generic constructor with array of pixels
+     *
      * @param pixels 2D array of pixels, a slice being a 1D array
-     * @param title the title     *
-     * @param sizeX the size in X of the array, sizeY and sizeZ will be extracted from the array length
+     * @param title  the title     *
+     * @param sizeX  the size in X of the array, sizeY and sizeZ will be extracted from the array length
      */
     public ImageShort(short[][] pixels, String title, int sizeX) {
         super(title, sizeX, pixels[0].length / sizeX, pixels.length, 0, 0, 0);
@@ -84,6 +87,7 @@ public class ImageShort extends ImageInt {
 
     /**
      * Generic consructor to generate a black image
+     *
      * @param title title of the image
      * @param sizeX size in X
      * @param sizeY size in Y
@@ -101,7 +105,8 @@ public class ImageShort extends ImageInt {
     /**
      * Constructor from another generic ImageHandler
      * will convert to write format if necessary
-     * @param im the generic image
+     *
+     * @param im      the generic image
      * @param scaling do scaling if converting from other format (8 bits or 32 bit)
      */
     public ImageShort(ImageHandler im, boolean scaling) {
@@ -128,6 +133,7 @@ public class ImageShort extends ImageInt {
     /**
      * (Should be somewhere else --> ImageJUtils ?)
      * Get the 1D array of a 3D image stored in ImagePlus
+     *
      * @param img the imagePlus
      * @return the 1D array
      */
@@ -145,10 +151,11 @@ public class ImageShort extends ImageInt {
     /**
      * (Should be somewhere else --> ImageJUtils ?)
      * Get the ImagePlus from a 1D array of pixels
-     * @param pixels the 1D array of short
-     * @param sizeX the size X
-     * @param sizeY the size Y
-     * @param sizeZ the size Z
+     *
+     * @param pixels       the 1D array of short
+     * @param sizeX        the size X
+     * @param sizeY        the size Y
+     * @param sizeZ        the size Z
      * @param setMinAndMax adjust the min and max values
      * @return
      */
@@ -181,7 +188,8 @@ public class ImageShort extends ImageInt {
 
     /**
      * convert from float array to short array
-     * @param input the array of float values
+     *
+     * @param input   the array of float values
      * @param scaling scaling the values
      * @return the 1D array of short
      */
@@ -212,6 +220,7 @@ public class ImageShort extends ImageInt {
 
     /**
      * convert from byte array to short array
+     *
      * @param input the array of byte values
      * @return the 1D array of short
      */
@@ -236,10 +245,15 @@ public class ImageShort extends ImageInt {
             pixels[0] = (short[]) img.getProcessor().getPixels();
             this.img.setStack(null, st);
         }
+        // set scale
+        scaleXY = getScaleXY();
+        scaleZ = getScaleZ();
+        unit = getUnit();
     }
 
     /**
      * get the 1D array as java Object
+     *
      * @return the array as Object
      */
     public Object getArray1D() {
@@ -254,6 +268,7 @@ public class ImageShort extends ImageInt {
 
     /**
      * get the 1D array as java Object for one slice
+     *
      * @param z slice (starts at 0)
      * @return the array as Object
      */
@@ -265,6 +280,7 @@ public class ImageShort extends ImageInt {
 
     /**
      * Convert to byte image
+     *
      * @param scaling do scaling of values
      * @return the byte image
      */
@@ -295,6 +311,7 @@ public class ImageShort extends ImageInt {
 
     /**
      * Convert to byte image using saturation of the values
+     *
      * @param saturation saturation value (0.0 - 1.0)
      * @return the byte image
      */
@@ -325,6 +342,7 @@ public class ImageShort extends ImageInt {
 
     /**
      * Convert to float 32 bit image
+     *
      * @param scaling scalig the values
      * @return the ImageFloat image
      */
@@ -353,7 +371,7 @@ public class ImageShort extends ImageInt {
         return (ImageFloat) ImageHandler.wrap(imp2);
     }
 
- @Override
+    @Override
     public void erase() {
         for (int xy = 0; xy < sizeXY; xy++) {
             pixels[0][xy] = 0;
@@ -381,6 +399,8 @@ public class ImageShort extends ImageInt {
         res.offsetX = offsetX;
         res.offsetY = offsetY;
         res.offsetZ = offsetZ;
+        // scale
+        res.setScale(this);
         if (title != null) {
             res.title = title;
         }
@@ -389,6 +409,7 @@ public class ImageShort extends ImageInt {
 
     /**
      * Copy the pixels values into the parameter image
+     *
      * @param destination the image where the values will be copied to
      */
     public void copy(ImageShort destination) {
@@ -494,11 +515,12 @@ public class ImageShort extends ImageInt {
 
     /**
      * Set the pixel value at a given Voxel3D position (position will be rounded)
-     * @param v the voxel position
+     *
+     * @param v     the voxel position
      * @param value the value
      */
     public void setPixel(mcib3d.geom.Voxel3D v, short value) {
-        pixels[(int)Math.round(v.getZ())][(int)Math.round( v.getX()) + ((int) Math.round(v.getY())) * sizeX] = value;
+        pixels[(int) Math.round(v.getZ())][(int) Math.round(v.getX()) + ((int) Math.round(v.getY())) * sizeX] = value;
     }
 
     @Override
@@ -900,6 +922,7 @@ public class ImageShort extends ImageInt {
 
     /**
      * ??
+     *
      * @param images
      * @param startLabel
      */
@@ -976,7 +999,7 @@ public class ImageShort extends ImageInt {
         //boolean bck = Prefs.get("resizer.zero", true);
         //Prefs.set("resizer.zero", true);
         ij.plugin.CanvasResizer cr = new ij.plugin.CanvasResizer();
-        ImageStack res = cr.expandStack(img.getStack(), newX, newY, dX, dY);
+        ImageStack res = cr.expandStack(img.duplicate().getStack(), newX, newY, dX, dY);
         // if (!bck) {
         //     //Prefs.set("resizer.zero", false);
         // }
@@ -998,6 +1021,7 @@ public class ImageShort extends ImageInt {
         r.offsetX = offsetX - dX;
         r.offsetY = offsetY - dY;
         r.offsetZ = offsetZ - dZ;
+
         return r;
     }
 
@@ -1007,20 +1031,32 @@ public class ImageShort extends ImageInt {
             method = ij.process.ImageProcessor.BICUBIC;
         }
         if ((newX == sizeX && newY == sizeY && newZ == sizeZ) || (newX == 0 && newY == 0 && newZ == 0)) {
-            return new ImageShort(img.duplicate());
+            ImageShort res = this.duplicate();
+            return res;
+
         }
-        ImagePlus ip;
+        ImagePlus ip = img.duplicate();
         if (newX != 0 && newY != 0 && newX != sizeX && newY != sizeY) {
-            StackProcessor sp = new StackProcessor(img.getImageStack(), img.getProcessor());
+            StackProcessor sp = new StackProcessor(ip.getImageStack(), ip.getProcessor());
             ip = new ImagePlus(title + "::resampled", sp.resize(newX, newY, true));
-        } else {
-            ip = img;
         }
         if (newZ != 0 && newZ != sizeZ) {
             ij.plugin.Resizer r = new ij.plugin.Resizer();
             ip = r.zScale(ip, newZ, method);
         }
-        return new ImageShort(ip);
+
+        ImageShort res = new ImageShort(ip);
+        // offset should be reset?
+        res.setOffset(this);
+        // change calibration only if XY linked
+        if (newX * sizeY == newY * sizeX) {
+            res.setScale(scaleXY * (double) sizeX / (double) newX, scaleZ * (double) sizeZ / (double) newZ, unit);
+        } else {
+            IJ.log("Resizing with X and Y not linked, cannot set scale.");
+            res.setScale(1, 1, "pix");
+        }
+
+        return res;
     }
 
     @Override
@@ -1029,7 +1065,13 @@ public class ImageShort extends ImageInt {
             method = ij.process.ImageProcessor.BICUBIC;
         }
         ij.plugin.Resizer r = new ij.plugin.Resizer();
-        return new ImageShort(r.zScale(img, newZ, method));
+        ImageShort res = new ImageShort(r.zScale(img.duplicate(), newZ, method));
+        // offset should be reset?
+        res.setOffset(this);
+        // change calibration only if XY linked
+        res.setScale(scaleXY , scaleZ * (double) sizeZ / (double) newZ, unit);
+
+        return res;
     }
 
     @Override
