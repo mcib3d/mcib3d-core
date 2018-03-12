@@ -551,6 +551,12 @@ public abstract class ImageInt extends ImageHandler {
     @Override
     public abstract ImageInt duplicate();
 
+    /**
+     * See subractImage (typo)
+     * @param other
+     * @return subtracted image
+     */
+    @Deprecated
     public ImageInt substractImage(ImageInt other) {
         ImageInt res;
         if (!this.sameDimensions(other)) {
@@ -562,6 +568,26 @@ public abstract class ImageInt extends ImageHandler {
         } else {
             res = new ImageShort("add", sizeX, sizeY, sizeZ);
         }
+
+        for (int i = 0; i < sizeXYZ; i++) {
+            res.setPixel(i, this.getPixelInt(i) - other.getPixelInt(i));
+        }
+
+        return res;
+    }
+
+    public ImageInt subtractImage(ImageInt other) {
+        ImageInt res;
+        if (!this.sameDimensions(other)) {
+            return null;
+        }
+        // both images are byte then return byte
+        if ((this instanceof ImageByte) && (other instanceof ImageByte)) {
+            res = (ImageInt) this.createSameDimensions();
+        } else {
+            res = new ImageShort("subtract", sizeX, sizeY, sizeZ);
+        }
+
 
         for (int i = 0; i < sizeXYZ; i++) {
             res.setPixel(i, this.getPixelInt(i) - other.getPixelInt(i));
