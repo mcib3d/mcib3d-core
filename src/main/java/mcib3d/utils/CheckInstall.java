@@ -59,6 +59,12 @@ public class CheckInstall {
             ij.IJ.log("Java3D not installed. ");
         }
         try {
+            loader.loadClass("org.scijava.vecmath.Point3f");
+            ij.IJ.log("Replacement of Java3D installed. ");
+        } catch (Exception e) {
+            ij.IJ.log("Replacement of Java3D (org.scijava) not installed. ");
+        }
+        try {
             loader.loadClass("ij3d.Image3DUniverse");
         } catch (Exception e) {
             ij.IJ.log("ImageJ 3D Viewer not installed. Please install from http://3dviewer.neurofly.de/");
