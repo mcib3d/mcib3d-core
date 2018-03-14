@@ -18,7 +18,7 @@ import java.net.URL;
 public class AboutMCIB extends JFrame {
 
     private static String name;
-    private static final double VERSION = 3.91;
+    private static final double VERSION = 3.92;
 
     /**
      * Constructor for the AboutWindow object
@@ -94,7 +94,7 @@ public class AboutMCIB extends JFrame {
      * @return the contact label
      */
     private JLabel contact() {
-        JLabel cont = new JLabel("contact : thomas.boudier at upmc.fr");
+        JLabel cont = new JLabel("contact : thomas boudier at wehi edu au");
         cont.setAlignmentX(Component.CENTER_ALIGNMENT);
         cont.setCursor(new Cursor(Cursor.HAND_CURSOR));
         cont.addMouseListener(
@@ -123,21 +123,28 @@ public class AboutMCIB extends JFrame {
         URL url = getClass().getResource("/icons/institut_curie.gif");
         Image image = Toolkit.getDefaultToolkit().getImage(url);
         ImageIcon icon = new ImageIcon(image);
-        JLabel curie = new JLabel(icon, JLabel.CENTER);
-        curie.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        curie.addMouseListener(
+        // WEHI (Thomas)
+        JLabel wehi;
+        url = getClass().getResource("/icons/WEHI.png");
+        image = Toolkit.getDefaultToolkit().getImage(url);
+        icon = new ImageIcon(image);
+        wehi = new JLabel(icon, JLabel.CENTER);
+        wehi.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        wehi.addMouseListener(
                 new MouseAdapter() {
 
                     @Override
                     public void mouseClicked(MouseEvent me) {
                         try {
-                            BrowserLauncher.openURL("http://www.curie.fr");
+                            BrowserLauncher.openURL("https://www.wehi.edu.au/");
                         } catch (IOException ioe) {
-                            IJ.log("cannot open url http://www.curie.fr\n" + ioe);
+                            IJ.log("cannot open url https://www.wehi.edu.au/\n" + ioe);
                         }
                     }
                 });
+
+        // UPMC (Jean)
         JLabel upmc;
         url = getClass().getResource("/icons/upmc.gif");
         image = Toolkit.getDefaultToolkit().getImage(url);
@@ -150,13 +157,14 @@ public class AboutMCIB extends JFrame {
                     @Override
                     public void mouseClicked(MouseEvent me) {
                         try {
-                            BrowserLauncher.openURL("http://www.upmc.fr");
+                            BrowserLauncher.openURL("http://www.upmc.fr/en/");
                         } catch (IOException ioe) {
-                            IJ.log("cannot open url http://www.upmc.fr\n" + ioe);
+                            IJ.log("cannot open url http://www.upmc.fr/en/\n" + ioe);
                         }
                     }
                 });
 
+        // CNRS (OLD)
         url = getClass().getResource("/icons/cnrs.gif");
         image = Toolkit.getDefaultToolkit().getImage(url);
         icon = new ImageIcon(image);
@@ -176,25 +184,7 @@ public class AboutMCIB extends JFrame {
                     }
                 });
 
-        url = getClass().getResource("/icons/inserm.gif");
-        image = Toolkit.getDefaultToolkit().getImage(url);
-        icon = new ImageIcon(image);
-        JLabel inserm = new JLabel(icon, JLabel.CENTER);
-        inserm.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        //JLabel cnrs = new JLabel(" CNRS ");
-        inserm.addMouseListener(
-                new MouseAdapter() {
-
-                    @Override
-                    public void mouseClicked(MouseEvent me) {
-                        try {
-                            BrowserLauncher.openURL("http://www.inserm.fr/fr/home.html");
-                        } catch (IOException ioe) {
-                            IJ.log("cannot open url http://www.inserm.fr\n" + ioe);
-                        }
-                    }
-                });
-        
+        // 3D SUITE
         JLabel suite;
         url = getClass().getResource("/icons/suite.png");
         image = Toolkit.getDefaultToolkit().getImage(url);
@@ -213,13 +203,10 @@ public class AboutMCIB extends JFrame {
                         }
                     }
                 });
-        
-        
-        //inst.add(curie);
+
         inst.add(upmc);
+        inst.add(wehi);
         inst.add(suite);
-        //inst.add(cnrs);
-        //inst.add(inserm);
 
         return inst;
     }
@@ -228,7 +215,7 @@ public class AboutMCIB extends JFrame {
      * draw the window
      */
     public void drawAbout() {
-        int sizeX = 400;
+        int sizeX = 600;
         Container top = this.getContentPane();
         int nbcomp = top.getComponentCount();
         for (int i = 0; i < nbcomp; i++) {
