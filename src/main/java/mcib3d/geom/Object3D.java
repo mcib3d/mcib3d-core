@@ -1175,7 +1175,9 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     * @return
+     * Get the bounding box of the object
+     * (Xmin, Xmax, Ymin, Ymax, Zmin, Zmax)
+     * @return the coordinates of the bounding box
      */
     public int[] getBoundingBox() {
         return new int[]{xmin, xmax, ymin, ymax, zmin, zmax};
