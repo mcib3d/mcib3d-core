@@ -1339,8 +1339,29 @@ public abstract class ImageHandler {
         return getMin(new BlankMask(this));
     }
 
+    /**
+     * Get the maximum value in the image
+     * @return the maximum value as double
+     */
     public double getMax() {
         return getMax(new BlankMask(this));
+    }
+
+    /**
+     * Return the position of the voxel having maximum value in the image
+     * @return the voxel 3D with the position and the value
+     */
+    public Voxel3D getMaxPosition(){
+        float max=(float)this.getMax();
+        for (int z = 0; z < sizeZ; z++) {
+            for (int y = 0; y < sizeY; y++) {
+                for (int x = 0; x < sizeX; x++) {
+                    if(this.getPixel(x,y,z)==max) return new Voxel3D(x,y,z,max);
+                }
+            }
+        }
+
+        return null;
     }
 
     public double getMean(ImageInt mask) {
@@ -1885,11 +1906,31 @@ public abstract class ImageHandler {
         return enlarged;
     }
 
-
+    /**
+     * Enlarge the canvas size of the image in X, Y and Z . New size is then increased by 2*border
+     * @param dX the border to add in X, both on left and right
+     * @param dY the border to add in Y, both on top and bottom
+     * @param dZ the border to add in Z, both above and below
+     * @return the resized enlarged image
+     */
     public abstract ImageHandler resize(int dX, int dY, int dZ);
 
+    /**
+     * Rescale the image to new dimension, in X Y and Z
+     * @param newX  the new size in X
+     * @param newY   the new size in Y
+     * @param newZ   the new size in Z
+     * @param method the interpolation method, see ImageProcessor
+     * @return the rescaled image
+     */
     public abstract ImageHandler resample(int newX, int newY, int newZ, int method);
 
+    /**
+     * Rescale the image to new dimension, only in Z
+     * @param newZ the new size in Z
+     * @param method the method, see ImageProcessor
+     * @return the rescaled image
+     */
     public abstract ImageHandler resample(int newZ, int method);
 
     //    public abstract ImageHandler grayscaleFilter(int sizeX, int sizeY, int filter, ImageHandler res, boolean multithread);
