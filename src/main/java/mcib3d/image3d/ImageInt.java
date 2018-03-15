@@ -492,6 +492,12 @@ public abstract class ImageInt extends ImageHandler {
     @Override
     public abstract ImageInt resample(int newX, int newY, int newZ, int method);
 
+    /**
+     * Rescale the image to new dimension, only in Z
+     * @param newZ the new size in Z
+     * @param method the method, see ImageProcessor
+     * @return the rescaled image
+     */
     @Override
     public abstract ImageInt resample(int newZ, int method);
 

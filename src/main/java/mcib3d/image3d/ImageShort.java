@@ -1059,6 +1059,12 @@ public class ImageShort extends ImageInt {
         return res;
     }
 
+    /**
+     * Rescale the image to new dimension, only in Z
+     * @param newZ the new size in Z
+     * @param method the method, see ImageProcessor
+     * @return the rescaled image
+     */
     @Override
     public ImageShort resample(int newZ, int method) {
         if (method == -1) {
