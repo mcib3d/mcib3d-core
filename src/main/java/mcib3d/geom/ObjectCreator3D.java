@@ -637,16 +637,44 @@ public class ObjectCreator3D {
         createBrick((int) Math.round(centerx / resXY), (int) Math.round(centery / resXY), (int) Math.round(centerz / resZ), rx / resXY, ry / resXY, rz / resZ, value);
     }
 
+
     /**
-     * Creation d'une brique
+     * Create brick with bounding box coordinates, in Z direction
+     * @param xmin X minimum
+     * @param xmax X maximum
+     * @param ymin Y minimum
+     * @param ymax Y maximum
+     * @param zmin Z minimum
+     * @param zmax Z maximum
+     * @param value value to draw
+     */
+    public void createBrick(int xmin, int xmax, int ymin, int ymax, int zmin, int zmax, float value) {
+        int startx=Math.max(0,xmin);
+        int starty=Math.max(0,ymin);
+        int startz=Math.max(0,zmin);
+        int endx=Math.min(img.sizeX-1,xmax);
+        int endy=Math.min(img.sizeY-1,ymax);
+        int endz=Math.min(img.sizeZ-1,zmax);
+
+        for (int k = startz; k <= endz; k++) {
+            for (int j = starty; j <= endy; j++) {
+                for (int i = startx; i <= endx; i++) {
+                    img.setPixel(i, j, k, value);
+                }
+            }
+        }
+    }
+
+    /**
+     * Create a brick in Z direction with centre and radius
      *
-     * @param rx      Rayon en x (unit)
-     * @param ry      Rayon en y (unit)
-     * @param rz      Rayon en z (unit)
-     * @param centerx Centre en x
-     * @param centery Centre en y
-     * @param centerz Centre en z
-     * @param value   Valeur à remplir
+     * @param centerx centre X
+     * @param centery centre Y
+     * @param centerz centre Z
+     * @param rx      radius X
+     * @param ry      radius Y
+     * @param rz      radius Z
+     * @param value   the value to draw
      */
     public void createBrick(int centerx, int centery, int centerz, double rx, double ry, double rz, float value) {
         int startx = (int) (centerx - rx);
@@ -691,7 +719,8 @@ public class ObjectCreator3D {
      * @param col Description of the Parameter
      */
     public void createPixel(int x, int y, int z, int col) {
-        img.setPixel(x, y, z, col);
+        if (img.contains(x, y, z))
+            img.setPixel(x, y, z, col);
     }
 
     /**
@@ -715,7 +744,11 @@ public class ObjectCreator3D {
         double vz = V.getZ();
         for (int i = 0; i < (int) len; i++) {
             if (rad == 0) {
-                img.setPixel((int) (x0 + i * vx), (int) (y0 + i * vy), (int) (z0 + i * vz), val);
+                int xx = (int) (x0 + i * vx);
+                int yy = (int) (y0 + i * vy);
+                int zz = (int) (z0 + i * vz);
+                if (img.contains(xx, yy, zz))
+                    img.setPixel(xx, yy, zz, val);
             } else {
                 createEllipsoid((int) (x0 + i * vx), (int) (y0 + i * vy), (int) (z0 + i * vz), rad, rad, rad, val, false);
             }
