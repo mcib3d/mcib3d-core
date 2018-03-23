@@ -1,6 +1,10 @@
 package mcib3d.geom;
 
+import ij.IJ;
+import mcib3d.image3d.ImageHandler;
 import mcib3d.utils.*;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  *
@@ -20,8 +24,8 @@ import mcib3d.utils.*;
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 /**
- *
  * @author thomas boudier
  */
 public class GeomTransform3D {
@@ -195,9 +199,9 @@ public class GeomTransform3D {
     }
 
     /**
-     *Sets the rotation around an axis with an angle
-     * 
-     * @param axis the axis as a vector
+     * Sets the rotation around an axis with an angle
+     *
+     * @param axis  the axis as a vector
      * @param angle the angle in radian
      */
     public void setRotation(Vector3D axis, double angle) {
@@ -212,9 +216,9 @@ public class GeomTransform3D {
         double z = axis.getZ();
 
         double rot[][] = {{t * x * x + c, t * x * y - s * z, t * x * z + s * y, 0},
-            {t * x * y + s * z, t * y * y + c, t * y * z - s * x, 0},
-            {t * x * z - s * y, t * y * z + s * x, t * z * z + c, 0},
-            {0, 0, 0, 1}};
+                {t * x * y + s * z, t * y * y + c, t * y * z - s * x, 0},
+                {t * x * z - s * y, t * y * z + s * x, t * z * z + c, 0},
+                {0, 0, 0, 1}};
         multBy(rot);
         testIdentity();
     }
@@ -273,7 +277,7 @@ public class GeomTransform3D {
      * Gets the value of the matrix of the Transform3D object at position
      * [row][column]
      *
-     * @param row row number of the matrix
+     * @param row    row number of the matrix
      * @param column column number of the matrix
      * @return The value in the matrix
      */
@@ -298,7 +302,7 @@ public class GeomTransform3D {
     public void invert() {
         double[][] inv = new double[4][4];
         invert4x4(inv, matrix);
-        matrix=inv;
+        matrix = inv;
     }
 
     /**
@@ -352,12 +356,66 @@ public class GeomTransform3D {
         return res;
     }
 
+    private ImageHandler getImageTransformed(ImageHandler img, GeomTransform3D transform3D) {
+        final ImageHandler out = img.createSameDimensions();
+        final int n_cpus = ThreadUtil.getNbCpus();
+        final int dec = (int) Math.ceil((double) img.sizeZ / (double) n_cpus);
+        Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
+        final AtomicInteger ai = new AtomicInteger(0);
+        final ImageHandler input = img;
+        for (int ithread = 0; ithread < threads.length; ithread++) {
+            threads[ithread] = new Thread() {
+                @Override
+                public void run() {
+                    for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
+                        getImageTransformed(input, out, dec * k, dec * (k + 1));
+                    }
+                }
+            };
+        }
+        ThreadUtil.startAndJoin(threads);
+
+        return out;
+    }
+
+    private void getImageTransformed(ImageHandler img, ImageHandler out, int minZ, int maxZ) {
+        minZ = Math.max(0, minZ);
+        maxZ = Math.min(img.sizeZ, maxZ);
+        ImageHandler res = img.createSameDimensions();
+        for (int k = minZ; k < maxZ; k++) {
+            for (int j = 0; j < img.sizeY; j++) {
+                for (int i = 0; i < img.sizeX; i++) {
+                    out.setPixel(i, j, k, this.getPixelTransformedI(img, i, j, k));
+                }
+            }
+        }
+    }
+
+    private float getPixelTransformedI(ImageHandler imageHandler, double X, double Y, double Z) {
+        double x = X - imageHandler.sizeX / 2;
+        double y = Y - imageHandler.sizeY / 2;
+        double z = Z - imageHandler.sizeZ / 2;
+
+        double xx = this.getValue(0, 0) * x + this.getValue(0, 1) * y + this.getValue(0, 2) * z + this.getValue(0, 3);
+        double yy = this.getValue(1, 0) * x + this.getValue(1, 1) * y + this.getValue(1, 2) * z + this.getValue(1, 3);
+        double zz = this.getValue(2, 0) * x + this.getValue(2, 1) * y + this.getValue(2, 2) * z + this.getValue(2, 3);
+        xx += imageHandler.sizeX / 2;
+        yy += imageHandler.sizeY / 2;
+        zz += imageHandler.sizeZ / 2;
+        float pixel = 0;
+        if (imageHandler.contains(xx, yy, zz)) {
+            pixel = imageHandler.getPixel((int) Math.round(xx), (int) Math.round(yy), (int) Math.round(zz));
+        }
+
+        return pixel;
+    }
+
     /**
      * taken from volumeJ Invert 4x4 matrix m into inverse mi. USes Gauss-Jordan
      * inversion. See numerical recipes in C, second version.
      *
      * @param mi a double[4][4] that will be overwritten with the inverse of
-     * @param m a double[4][4] that contains the matrix.
+     * @param m  a double[4][4] that contains the matrix.
      */
     public static void invert4x4(double[][] mi, double[][] m) {
         // calculate inverse components of first column (m[0][0], m[1][0], m[2][0], m[3][0])
