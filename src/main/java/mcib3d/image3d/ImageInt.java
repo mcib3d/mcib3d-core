@@ -5,6 +5,7 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import mcib3d.geom.*;
 import mcib3d.image3d.distanceMap3d.EDT;
+import mcib3d.image3d.processing.FastArithmetic3D;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.Chrono;
@@ -206,10 +207,10 @@ public abstract class ImageInt extends ImageHandler {
         if (!this.sameDimensions(other)) {
             return null;
         }
-        res = new ImageShort("subtrack",sizeX,sizeY,sizeZ);
+        res = new ImageShort("subtrack", sizeX, sizeY, sizeZ);
         for (int z = 0; z < sizeZ; z++) {
             for (int xy = 0; xy < sizeXY; xy++) {
-                res.setPixel(xy,z,this.getPixel(xy,z)-other.getPixel(xy,z));
+                res.setPixel(xy, z, this.getPixel(xy, z) - other.getPixel(xy, z));
             }
         }
 
@@ -475,6 +476,52 @@ public abstract class ImageInt extends ImageHandler {
         resetStats();
     }
 
+    public ImageHandler projectAVG(String axis) {
+        ImageHandler result = null;
+        if (axis.equalsIgnoreCase("Z")) {
+            result = new ImageShort("Proj_Z", sizeX, sizeY, 1);
+            double total = 0.0;
+            for (int j = 0; j < sizeY; j++) {
+                for (int i = 0; i < sizeX; i++) {
+                    total = 0.0;
+                    for (int k = 0; k < sizeZ; k++) {
+                        total += this.getPixel(i, j, k);
+                    }
+
+                    result.setPixel(i, j, 0, (float) (total / (double) sizeZ));
+                }
+            }
+        }
+        if (axis.equalsIgnoreCase("Y")) {
+            result = new ImageShort("Proj_Y", sizeX, sizeY, 1);
+            double total = 0;
+            for (int j = 0; j < sizeZ; j++) {
+                for (int i = 0; i < sizeX; i++) {
+                    total = 0.0;
+                    for (int k = 0; k < sizeY; k++) {
+                        total += this.getPixel(i, k, j);
+                    }
+                    result.setPixel(i, j, 0, (float) (total / (double) sizeZ));
+                }
+            }
+        }
+        if (axis.equalsIgnoreCase("X")) {
+            result = new ImageShort("Proj_X", sizeX, sizeY, 1);
+            double total = 0;
+            for (int j = 0; j < sizeZ; j++) {
+                for (int i = 0; i < sizeY; i++) {
+                    total = 0.0;
+                    for (int k = 0; k < sizeX; k++) {
+                        total += this.getPixel(k, i, j);
+                    }
+
+                    result.setPixel(i, j, 0, (float) (total / (double) sizeZ));
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * @param background
      * @return
@@ -494,7 +541,8 @@ public abstract class ImageInt extends ImageHandler {
 
     /**
      * Rescale the image to new dimension, only in Z
-     * @param newZ the new size in Z
+     *
+     * @param newZ   the new size in Z
      * @param method the method, see ImageProcessor
      * @return the rescaled image
      */
@@ -559,6 +607,7 @@ public abstract class ImageInt extends ImageHandler {
 
     /**
      * See subractImage (typo)
+     *
      * @param other
      * @return subtracted image
      */
@@ -713,8 +762,55 @@ public abstract class ImageInt extends ImageHandler {
                 if (ti != null) log.log("3D filtering : " + ti);
             }
         }
-        resetStats();
+        resetStats(); // ??
     }
+
+    /**
+     * Generic arithmetic between images
+     * pixel1*parameter1 OPERATION pixel2*parameter2
+     *
+     * @param other     other image
+     * @param out       result image
+     * @param zmin      minimum Z
+     * @param zmax      maximum Z
+     * @param operation filter ADD MULT ...
+     * @param par1      parameter1
+     * @param par2      parameter2
+     * @param timer     timer for time
+     * @param log       logger for print
+     */
+    public void mathGeneric(ImageInt other, ImageInt out, int zmin, int zmax, int operation, float par1, float par2, Chrono timer, AbstractLog log) {
+        if (zmin < 0) {
+            zmin = 0;
+        }
+        if (zmax > this.sizeZ) {
+            zmax = this.sizeZ;
+        }
+        float value = 0;
+        for (int k = zmin; k < zmax; k++) {
+            //IJ.showStatus("3D filter : " + (k + 1) + "/" + zmax);
+            for (int i = 0; i < sizeXY; i++) {
+                if (operation == FastArithmetic3D.ADD) {
+                    value = this.getPixel(i, k) * par1 + other.getPixel(i, k) * par2;
+                } else if (operation == FastArithmetic3D.MULT) {
+                    value = this.getPixel(i, k) * par1 * other.getPixel(i, k) * par2;
+                } else if (operation == FastArithmetic3D.MAX) {
+                    value = Math.max(this.getPixel(i, k) * par1, other.getPixel(i, k) * par2);
+                } else if (operation == FastArithmetic3D.MIN) {
+                    value = Math.min(this.getPixel(i, k) * par1, other.getPixel(i, k) * par2);
+                } else if (operation == FastArithmetic3D.DIFF) {
+                    value = Math.abs(this.getPixel(i, k) * par1 - other.getPixel(i, k) * par2);
+                }
+                out.setPixel(i, k, (int) value);
+            }
+            if (timer != null) {
+                String ti = timer.getFullInfo(1);
+                if (ti != null) log.log("3D filtering : " + ti);
+            }
+        }
+        resetStats(); // ??
+    }
+
 
     public ArrayList<Voxel3DComparable> getListMaxima(float radx, float rady, float radz, int zmin, int zmax) {
         return getListMaxima(radx, rady, radz, zmin, zmax, null, null);
