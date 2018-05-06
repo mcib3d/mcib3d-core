@@ -95,15 +95,28 @@ public class Objects3DPopulation {
         addImagePlus(plus);
     }
 
+    public Objects3DPopulation(ImageHandler plus) {
+        objects = new ArrayList<Object3D>();
+        addImage(plus, 0);
+    }
+
     public Objects3DPopulation(ImageInt plus) {
         objects = new ArrayList<Object3D>();
         addImage(plus, 0);
+    }
+
+
+    public Objects3DPopulation(ImageHandler plus, int threshold) {
+        objects = new ArrayList<Object3D>();
+        addImage(plus, threshold);
     }
 
     public Objects3DPopulation(ImageInt plus, int threshold) {
         objects = new ArrayList<Object3D>();
         addImage(plus, threshold);
     }
+
+
 
     public AbstractLog getLog() {
         return log;
@@ -178,8 +191,6 @@ public class Objects3DPopulation {
             }
         }
     }
-
-
 
 
     // hardcore distance in unit
@@ -549,7 +560,7 @@ public class Objects3DPopulation {
         hashName = null;
     }
 
-    public void addImage(ImageInt seg, int threshold) {
+    public void addImage(ImageHandler seg, int threshold) {
         seg.resetStats(null);
         int min = (int) seg.getMinAboveValue(threshold);
         int max = (int) seg.getMax();
@@ -571,7 +582,7 @@ public class Objects3DPopulation {
         for (int k = 0; k < sz; k++) {
             for (int j = 0; j < sy; j++) {
                 for (int i = 0; i < sx; i++) {
-                    pix = seg.getPixelInt(i, j, k);
+                    pix = (int) seg.getPixel(i, j, k);
                     if (pix > threshold) {
                         objectstmp[pix - min].add(new Voxel3D(i, j, k, pix));
                     }
@@ -706,10 +717,10 @@ public class Objects3DPopulation {
         return objects.indexOf(ob);
     }
 
-    public ArrayUtil getAllIndices(){
+    public ArrayUtil getAllIndices() {
         ArrayUtil arrayUtil = new ArrayUtil(getNbObjects());
-        for(int i=0;i<getNbObjects();i++){
-            arrayUtil.putValue(i,getObject(i).getValue());
+        for (int i = 0; i < getNbObjects(); i++) {
+            arrayUtil.putValue(i, getObject(i).getValue());
         }
 
         return arrayUtil;
@@ -748,10 +759,10 @@ public class Objects3DPopulation {
         return new int[]{maxX, maxY, maxZ};
     }
 
-    public ImageInt drawPopulation(){
-        int[] sizes=this.getMaxSizeAllObjects();
-        ImageInt drawImage=new ImageShort("population", sizes[0],sizes[1],sizes[2]);
-        for(Object3D object3DVoxels:getObjectsList()){
+    public ImageInt drawPopulation() {
+        int[] sizes = this.getMaxSizeAllObjects();
+        ImageInt drawImage = new ImageShort("population", sizes[0], sizes[1], sizes[2]);
+        for (Object3D object3DVoxels : getObjectsList()) {
             object3DVoxels.draw(drawImage);
         }
         return drawImage;
