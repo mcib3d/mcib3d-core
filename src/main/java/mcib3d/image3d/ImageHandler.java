@@ -33,10 +33,6 @@ import java.util.logging.Logger;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-//import ij.measure.Calibration;
-
-//import mcib3d.image3d.legacy.Image3D;
-
 /**
  * Copyright (C) 2012 Jean Ollion
  * <p>
@@ -1341,6 +1337,7 @@ public abstract class ImageHandler {
 
     /**
      * Get the maximum value in the image
+     *
      * @return the maximum value as double
      */
     public double getMax() {
@@ -1349,14 +1346,15 @@ public abstract class ImageHandler {
 
     /**
      * Return the position of the voxel having maximum value in the image
+     *
      * @return the voxel 3D with the position and the value
      */
-    public Voxel3D getMaxPosition(){
-        float max=(float)this.getMax();
+    public Voxel3D getMaxPosition() {
+        float max = (float) this.getMax();
         for (int z = 0; z < sizeZ; z++) {
             for (int y = 0; y < sizeY; y++) {
                 for (int x = 0; x < sizeX; x++) {
-                    if(this.getPixel(x,y,z)==max) return new Voxel3D(x,y,z,max);
+                    if (this.getPixel(x, y, z) == max) return new Voxel3D(x, y, z, max);
                 }
             }
         }
@@ -1371,6 +1369,7 @@ public abstract class ImageHandler {
     public double getMean() {
         return getImageStats(new BlankMask(this)).getMean();
     }
+
 
     public double[] getLineX(int x0, int y0, int z0, int length) {
         int x1 = x0 + length;
@@ -1701,13 +1700,13 @@ public abstract class ImageHandler {
     public void save(String directory, boolean addsuffix) {
         FileSaver fs = new FileSaver(img);
         setMinAndMax(null);
-        if(addsuffix)
-        fs.saveAsTiffStack(directory + File.separator + img.getTitle()+".tif");
-        else  fs.saveAsTiffStack(directory + File.separator + img.getTitle());
+        if (addsuffix)
+            fs.saveAsTiffStack(directory + File.separator + img.getTitle() + ".tif");
+        else fs.saveAsTiffStack(directory + File.separator + img.getTitle());
     }
 
     public void save(String directory) {
-        this.save(directory,false);
+        this.save(directory, false);
     }
 
     public void saveThumbNail(int sizeX, int sizeY, String directory) {
@@ -1908,6 +1907,7 @@ public abstract class ImageHandler {
 
     /**
      * Enlarge the canvas size of the image in X, Y and Z . New size is then increased by 2*border
+     *
      * @param dX the border to add in X, both on left and right
      * @param dY the border to add in Y, both on top and bottom
      * @param dZ the border to add in Z, both above and below
@@ -1917,7 +1917,8 @@ public abstract class ImageHandler {
 
     /**
      * Rescale the image to new dimension, in X Y and Z
-     * @param newX  the new size in X
+     *
+     * @param newX   the new size in X
      * @param newY   the new size in Y
      * @param newZ   the new size in Z
      * @param method the interpolation method, see ImageProcessor
@@ -1927,7 +1928,8 @@ public abstract class ImageHandler {
 
     /**
      * Rescale the image to new dimension, only in Z
-     * @param newZ the new size in Z
+     *
+     * @param newZ   the new size in Z
      * @param method the method, see ImageProcessor
      * @return the rescaled image
      */

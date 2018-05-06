@@ -2009,17 +2009,22 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     * The distance between center and a point
+     * The distance between center and a point with coordinates
      *
-     * @param x x-coordinate ofthe point
-     * @param y y-coordinate ofthe point
-     * @param z z-coordinate ofthe point
-     * @return the distance (in voxels)
+     * @param x x-coordinate of the point
+     * @param y y-coordinate of the point
+     * @param z z-coordinate of the point
+     * @return the distance (in unit)
      */
     public double distPixelCenter(double x, double y, double z) {
         return Math.sqrt((bx - x) * (bx - x) * resXY * resXY + (by - y) * (by - y) * resXY * resXY + (bz - z) * (bz - z) * resZ * resZ);
     }
 
+    /**
+     * The distance between center and a Point3D
+     * @param P the point
+     * @return the distance (in unit)
+     */
     public double distPixelCenter(Point3D P) {
         return Math.sqrt((bx - P.x) * (bx - P.x) * resXY * resXY + (by - P.y) * (by - P.y) * resXY * resXY + (bz - P.z) * (bz - P.z) * resZ * resZ);
     }
