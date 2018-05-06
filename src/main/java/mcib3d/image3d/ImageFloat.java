@@ -8,6 +8,7 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
 import mcib3d.geom.*;
+import mcib3d.image3d.processing.FastArithmetic3D;
 import mcib3d.image3d.processing.FastFilters3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.Chrono;
@@ -1127,6 +1128,53 @@ public class ImageFloat extends ImageHandler {
                 if (ti != null) log.log("3D filtering : " + ti);
             }
         }
+    }
+
+
+    /**
+     * Generic arithmetic between images
+     * pixel1*parameter1 OPERATION pixel2*parameter2
+     *
+     * @param other     other image
+     * @param out       result image
+     * @param zmin      minimum Z
+     * @param zmax      maximum Z
+     * @param operation filter ADD MULT ...
+     * @param par1      parameter1
+     * @param par2      parameter2
+     * @param timer     timer for time
+     * @param log       logger for print
+     */
+    public void mathGeneric(ImageFloat other, ImageFloat out, int zmin, int zmax, int operation, float par1, float par2, Chrono timer, AbstractLog log) {
+        if (zmin < 0) {
+            zmin = 0;
+        }
+        if (zmax > this.sizeZ) {
+            zmax = this.sizeZ;
+        }
+        float value = 0;
+        for (int k = zmin; k < zmax; k++) {
+            //IJ.showStatus("3D filter : " + (k + 1) + "/" + zmax);
+            for (int i = 0; i < sizeXY; i++) {
+                if (operation == FastArithmetic3D.ADD) {
+                    value = this.getPixel(i, k) * par1 + other.getPixel(i, k) * par2;
+                } else if (operation == FastArithmetic3D.MULT) {
+                    value = this.getPixel(i, k) * par1 * other.getPixel(i, k) * par2;
+                } else if (operation == FastArithmetic3D.MAX) {
+                    value = Math.max(this.getPixel(i, k) * par1, other.getPixel(i, k) * par2);
+                } else if (operation == FastArithmetic3D.MIN) {
+                    value = Math.min(this.getPixel(i, k) * par1, other.getPixel(i, k) * par2);
+                } else if (operation == FastArithmetic3D.DIFF) {
+                    value = Math.abs(this.getPixel(i, k) * par1 - other.getPixel(i, k) * par2);
+                }
+                out.setPixel(i, k, value);
+            }
+            if (timer != null) {
+                String ti = timer.getFullInfo(1);
+                if (ti != null) log.log("3D filtering : " + ti);
+            }
+        }
+        resetStats(); // ??
     }
 
     /**
