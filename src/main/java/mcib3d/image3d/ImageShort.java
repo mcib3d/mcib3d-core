@@ -321,7 +321,7 @@ public class ImageShort extends ImageInt {
         ImageStats s = getImageStats(null);
         double smin = s.getMin();
         double smax = getPercentile(saturation, null);
-        IJ.log("byte :" + smin + " " + smax);
+        //IJ.log("byte :" + smin + " " + smax);
         int currentSlice = img.getCurrentSlice();
         ImageProcessor ip;
         ImageStack stack2 = new ImageStack(sizeX, sizeY);

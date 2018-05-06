@@ -801,7 +801,7 @@ public abstract class ImageInt extends ImageHandler {
                 } else if (operation == FastArithmetic3D.DIFF) {
                     value = Math.abs(this.getPixel(i, k) * par1 - other.getPixel(i, k) * par2);
                 }
-                out.setPixel(i, k, (int) value);
+                out.setPixel(i, k, (int)Math.round( value));
             }
             if (timer != null) {
                 String ti = timer.getFullInfo(1);

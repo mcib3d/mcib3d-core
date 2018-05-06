@@ -3,21 +3,21 @@ package mcib3d.image3d.distanceMap3d;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import mcib3d.image3d.*;
 import mcib3d.utils.ThreadUtil;
 import mcib3d.utils.exceptionPrinter;
 
 /**
- *
  * @author thomas !
  */
 public class EDT {
 
     /**
-     *
-     * @param ip 8-bit or 16-bit image
+     * @param ip      8-bit or 16-bit image
      * @param thresh
      * @param inverse
      * @param scaleXY
@@ -44,12 +44,12 @@ public class EDT {
         }
         return null;
     }
-    
+
     public static ImageFloat run(ImageHandler ip, float thresh, boolean inverse, int nbCPUs) {
         //IJ.log("EDT scale " + ip.getScaleXY() + " " + ip.getScaleZ());
         return run(ip, thresh, (float) ip.getScaleXY(), (float) ip.getScaleZ(), inverse, nbCPUs);
     }
-    
+
     public static ImageFloat run_includeInside(ImageHandler ip, int thresh, float scaleXY, float scaleZ, boolean absolute, int nbCPUs) { //negative inside objects, positive outide
         ImageFloat ihdm1 = run(ip, thresh, scaleXY, scaleZ, true, nbCPUs);
         ImageFloat ihdm2 = run(ip, thresh, scaleXY, scaleZ, false, nbCPUs);
@@ -72,11 +72,11 @@ public class EDT {
         }
         return ihdm1;
     }
-    
+
     public static ImageFloat run_includeInside(ImageHandler ip, int thresh, boolean absolute, int nbCPUs) { //negative inside objects, positive outide
         return run_includeInside(ip, thresh, (float) ip.getScaleXY(), (float) ip.getScaleZ(), absolute, nbCPUs);
     }
-    
+
     public static ImageFloat localThickness(ImageHandler in, ImageInt mask, float thld, float radiusXY, float radiusZ, boolean inside, int nbCPUs) {
         ImageFloat edm = EDT.run(in, thld, radiusXY, radiusZ, inside, nbCPUs);
         if (mask != null) {
@@ -96,13 +96,12 @@ public class EDT {
         distRidge.flush();
         return (ImageFloat) ImageFloat.wrap(localThickness);
     }
-    
+
     public static ImageFloat localThickness(ImageHandler in, ImageInt mask, float thld, boolean inside, int nbCPUs) {
         return localThickness(in, mask, thld, (float) in.getScaleXY(), (float) in.getScaleZ(), inside, nbCPUs);
     }
 
     /**
-     *
      * @param objects : 16-bit obeject label image
      * @param scaleXY
      * @param scaleZ
@@ -121,8 +120,17 @@ public class EDT {
         }
         return null;
     }
-    
+
+
+    public static void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask) {
+        normalizeDistanceMap(distanceMap, mask, true);
+    }
+
     public static void normalizeDistanceMap(ImageFloat distanceMap, ImageInt mask, boolean excludeZeros) {
+        normalizeDistanceMap(distanceMap, (ImageHandler) mask, excludeZeros);
+    }
+
+    public static void normalizeDistanceMap(ImageFloat distanceMap, ImageHandler mask, boolean excludeZeros) {
         // int count = 0;
         ArrayList<VoxEVF> idxList = new ArrayList<VoxEVF>();
         //VoxEVF[] idx = new VoxEVF[mask.countMaskVolume()];
@@ -133,7 +141,7 @@ public class EDT {
         }
         for (int z = 0; z < distanceMap.sizeZ; z++) {
             for (int xy = 0; xy < distanceMap.sizeXY; xy++) {
-                if ((mask.getPixelInt(xy, z) > 0) && (distanceMap.getPixel(xy, z) > minDist)) {
+                if ((mask.getPixel(xy, z) > 0) && (distanceMap.getPixel(xy, z) > minDist)) {
                     idxList.add(new VoxEVF(distanceMap.pixels[z][xy], xy, z));
                     //idx[count] = new VoxEVF(distanceMap.pixels[z][xy], xy, z);
                     //count++;

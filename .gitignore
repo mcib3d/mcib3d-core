@@ -2,3 +2,4 @@
 /nb-configuration.xml
 *.xml
 *.iml
+/src/main/resources/icons/.directory
