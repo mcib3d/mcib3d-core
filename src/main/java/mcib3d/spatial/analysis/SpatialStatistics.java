@@ -7,15 +7,15 @@ package mcib3d.spatial.analysis;
 
 import ij.IJ;
 import ij.gui.Plot;
-import java.awt.Color;
 import mcib3d.geom.Objects3DPopulation;
-import mcib3d.utils.ArrayUtil;
-import mcib3d.utils.CDFTools;
 import mcib3d.spatial.descriptors.SpatialDescriptor;
 import mcib3d.spatial.sampler.SpatialModel;
+import mcib3d.utils.ArrayUtil;
+import mcib3d.utils.CDFTools;
+
+import java.awt.*;
 
 /**
- *
  * @author thomasb
  */
 public class SpatialStatistics {
@@ -68,7 +68,7 @@ public class SpatialStatistics {
             IJ.log("Computing " + descriptor.getName() + " for observed data");
         }
         obsDesc = descriptor.compute(observed);
-        int nbDesc = obsDesc.getSize();
+        int nbDesc = obsDesc.size();
         obsDesc.sort();
         obsCD = CDFTools.cdf(obsDesc);
         // Samples for average
@@ -119,7 +119,6 @@ public class SpatialStatistics {
             ArrayUtil tmp = descriptor.compute(model.getSample());
             tmp.sort();
             samplesDesc[i] = tmp;
-
         }
 
         return samplesDesc;
@@ -243,7 +242,7 @@ public class SpatialStatistics {
         this.verbose = verbose;
     }
 
-//    public void setNbCpus(int nbCpus) {
+    //    public void setNbCpus(int nbCpus) {
 //        this.nbCpus = nbCpus;
 //    }
     public void setEnvelope(double env) {

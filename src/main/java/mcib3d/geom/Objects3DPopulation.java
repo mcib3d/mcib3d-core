@@ -117,7 +117,6 @@ public class Objects3DPopulation {
     }
 
 
-
     public AbstractLog getLog() {
         return log;
     }
@@ -762,6 +761,14 @@ public class Objects3DPopulation {
     public ImageInt drawPopulation() {
         int[] sizes = this.getMaxSizeAllObjects();
         ImageInt drawImage = new ImageShort("population", sizes[0], sizes[1], sizes[2]);
+        for (Object3D object3DVoxels : getObjectsList()) {
+            object3DVoxels.draw(drawImage);
+        }
+        return drawImage;
+    }
+
+    public ImageInt drawPopulation(int sizex, int sizey, int sizez) {
+        ImageInt drawImage = new ImageShort("population", sizex, sizey, sizez);
         for (Object3D object3DVoxels : getObjectsList()) {
             object3DVoxels.draw(drawImage);
         }
@@ -1628,7 +1635,7 @@ public class Objects3DPopulation {
         // geometrical mesure volume (pix and unit) and surface (pix and unit)
         ArrayList<double[]> al = new ArrayList<double[]>();
         for (Object3D ob : objects) {
-            double[] mes = {ob.getCenterX(), ob.getCenterY(), ob.getCenterZ()};
+            double[] mes = {ob.getValue(),ob.getCenterX(), ob.getCenterY(), ob.getCenterZ()};
             al.add(mes);
         }
 

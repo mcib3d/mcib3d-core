@@ -1399,6 +1399,24 @@ public class Object3DVoxels extends Object3D {
         return voxels.get(0);
     }
 
+    /**
+     * Get a random voxel in the object
+     * @param ra Random Object
+     * @return next random voxel in the object
+     */
+    public Voxel3D getRandomVoxel(Random ra) {
+        if (isEmpty()) {
+            return null;
+        }
+        return voxels.get(ra.nextInt(getVolumePixels()));
+    }
+
+    /**
+     * @link Object3DVoxels.getRandomVoxel()
+     * @param ra
+     * @return
+     */
+    @ Deprecated
     public Voxel3D getRandomvoxel(Random ra) {
         if (isEmpty()) {
             return null;

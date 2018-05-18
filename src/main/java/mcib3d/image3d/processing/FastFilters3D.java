@@ -276,6 +276,7 @@ public class FastFilters3D {
         }
     }
 
+
     public static ImageHandler filterImage(ImageHandler stackorig, int filter, float vx, float vy, float vz, int nbcpus, boolean showstatus) {
         if ((stackorig instanceof ImageByte) || (stackorig instanceof ImageShort)) {
             return filterIntImage((ImageInt) stackorig, filter, vx, vy, vz, nbcpus, showstatus);
