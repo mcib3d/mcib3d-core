@@ -208,7 +208,7 @@ public class Objects3DPopulation {
         // first point
         Object3DVoxels maskVox = mask.getObject3DVoxels();
         Random ra = new Random();
-        P = maskVox.getRandomvoxel(ra);
+        P = maskVox.getRandomVoxel(ra);
         v = new Voxel3D(P.getX(), P.getY(), P.getZ(), 1);
         voxlist = new ArrayList<Voxel3D>(1);
         voxlist.add(v);
@@ -217,7 +217,7 @@ public class Objects3DPopulation {
         //Object3D_IJUtils.setCalibration(ob, calibration);
         addObject(ob);
         for (int i = 1; i < nb; i++) {
-            P = maskVox.getRandomvoxel(ra);
+            P = maskVox.getRandomVoxel(ra);
             closest = closestCenter(P);
             dist = closest.distPixelCenter(P.getX(), P.getY(), P.getZ());
             // TODO should have exit conditions
@@ -441,6 +441,10 @@ public class Objects3DPopulation {
 
         for (int i = 0; i < getNbObjects(); i++) {
             Object3D O = getObject(i);
+            if (hashName.containsKey(O.getName()))
+                IJ.log("Object with name " + O.getName() + " already exists");
+            if (hashValue.containsKey(O.getName()))
+                IJ.log("Object with name " + O.getName() + " already exists");
             hashName.put(O.getName(), i);
             hashValue.put(O.getValue(), i);
         }
@@ -540,7 +544,7 @@ public class Objects3DPopulation {
                 }
             }
         }
-        // ARRAYLIST 
+        // ARRAYLIST
         int c = 1;
         for (int i = 0; i < max - min + 1; i++) {
             if (!objectstmp[i].isEmpty()) {
@@ -687,6 +691,11 @@ public class Objects3DPopulation {
         return objects.get(idxI);
     }
 
+    public int getObjectIndex(int value) {
+        if (!hashValue.containsKey(value)) IJ.log("No index for value " + value);
+        return hashValue.get(value);
+    }
+
     public Object3D getObjectByName(String name) {
         if (hashName == null) {
             updateNamesAndValues();
@@ -719,7 +728,9 @@ public class Objects3DPopulation {
     public ArrayUtil getAllIndices() {
         ArrayUtil arrayUtil = new ArrayUtil(getNbObjects());
         for (int i = 0; i < getNbObjects(); i++) {
-            arrayUtil.putValue(i, getObject(i).getValue());
+            int val = getObject(i).getValue();
+            if (arrayUtil.hasValue(val)) IJ.log("Two objects with same values " + val);
+            arrayUtil.putValue(i, val);
         }
 
         return arrayUtil;
@@ -1507,7 +1518,7 @@ public class Objects3DPopulation {
             int maxIt = 1000000;
             while (!ok) {
                 //log.log("Shuffling " + getObject3D(i).getValue());
-                Voxel3D vox = maskVox.getRandomvoxel(ra);
+                Voxel3D vox = maskVox.getRandomVoxel(ra);
                 obj.setNewCenter(vox.getX(), vox.getY(), vox.getZ());
                 ok = true;
                 it++;
@@ -1635,7 +1646,7 @@ public class Objects3DPopulation {
         // geometrical mesure volume (pix and unit) and surface (pix and unit)
         ArrayList<double[]> al = new ArrayList<double[]>();
         for (Object3D ob : objects) {
-            double[] mes = {ob.getValue(),ob.getCenterX(), ob.getCenterY(), ob.getCenterZ()};
+            double[] mes = {ob.getValue(), ob.getCenterX(), ob.getCenterY(), ob.getCenterZ()};
             al.add(mes);
         }
 
@@ -1698,7 +1709,7 @@ public class Objects3DPopulation {
         File file;
         int len;
         try {
-            //  ZIP           
+            //  ZIP
             zip = new ZipOutputStream(new FileOutputStream(path));
             for (int i : indexes) {
                 name = this.getObject(i).getName();
