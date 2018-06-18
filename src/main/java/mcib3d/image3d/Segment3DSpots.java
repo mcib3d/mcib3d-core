@@ -663,8 +663,10 @@ public class Segment3DSpots {
         if (indexImage == null) {
             if (!bigLabel) {
                 indexImage = new ImageShort("Index", rawImage.sizeX, rawImage.sizeY, rawImage.sizeZ);
+                indexImage.setScale(rawImage);
             } else {
                 indexImage = new ImageFloat("Index", rawImage.sizeX, rawImage.sizeY, rawImage.sizeZ);
+                indexImage.setScale(rawImage);
             }
         }
         for (Object3D obj : segmentedObjects) {
