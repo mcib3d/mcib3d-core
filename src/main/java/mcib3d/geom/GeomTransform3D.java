@@ -1,8 +1,8 @@
 package mcib3d.geom;
 
-import ij.IJ;
 import mcib3d.image3d.ImageHandler;
-import mcib3d.utils.*;
+import mcib3d.utils.ArrayUtil;
+import mcib3d.utils.ThreadUtil;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -618,4 +618,59 @@ public class GeomTransform3D {
         return (1);
     }
     // GaussElim
+
+    private static void getImageTransformedThread(ImageHandler img, ImageHandler out, GeomTransform3D transform3D, int minZ, int maxZ) {
+        minZ = Math.max(0, minZ);
+        maxZ = Math.min(img.sizeZ, maxZ);
+        ImageHandler res = img.createSameDimensions();
+        for (int k = minZ; k < maxZ; k++) {
+            for (int j = 0; j < img.sizeY; j++) {
+                for (int i = 0; i < img.sizeX; i++) {
+                    out.setPixel(i, j, k, getPixelTransformedIThread(img, i, j, k, transform3D));
+                }
+            }
+        }
+    }
+
+    private static float getPixelTransformedIThread(ImageHandler imageHandler, double X, double Y, double Z, GeomTransform3D inverttrans) {
+        double x = X - imageHandler.sizeX / 2;
+        double y = Y - imageHandler.sizeY / 2;
+        double z = Z - imageHandler.sizeZ / 2;
+
+        double xx = inverttrans.getValue(0, 0) * x + inverttrans.getValue(0, 1) * y + inverttrans.getValue(0, 2) * z + inverttrans.getValue(0, 3);
+        double yy = inverttrans.getValue(1, 0) * x + inverttrans.getValue(1, 1) * y + inverttrans.getValue(1, 2) * z + inverttrans.getValue(1, 3);
+        double zz = inverttrans.getValue(2, 0) * x + inverttrans.getValue(2, 1) * y + inverttrans.getValue(2, 2) * z + inverttrans.getValue(2, 3);
+        xx += imageHandler.sizeX / 2;
+        yy += imageHandler.sizeY / 2;
+        zz += imageHandler.sizeZ / 2;
+        float pixel = 0;
+        if (imageHandler.contains(xx, yy, zz)) {
+            pixel = imageHandler.getPixel((int) Math.round(xx), (int) Math.round(yy), (int) Math.round(zz));
+        }
+
+        return pixel;
+    }
+
+    public static ImageHandler getImageTransformedMultiThread(ImageHandler img, GeomTransform3D transform3D) {
+        final GeomTransform3D geomTransform3D = transform3D;
+        final ImageHandler input = img;
+        final ImageHandler out = input.createSameDimensions();
+        final int n_cpus = ThreadUtil.getNbCpus();
+        final int dec = (int) Math.ceil((double) img.sizeZ / (double) n_cpus);
+        Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
+        final AtomicInteger ai = new AtomicInteger(0);
+        for (int ithread = 0; ithread < threads.length; ithread++) {
+            threads[ithread] = new Thread() {
+                @Override
+                public void run() {
+                    for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
+                        getImageTransformedThread(input, out, geomTransform3D, dec * k, dec * (k + 1));
+                    }
+                }
+            };
+        }
+        ThreadUtil.startAndJoin(threads);
+
+        return out;
+    }
 }
