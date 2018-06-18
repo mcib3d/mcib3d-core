@@ -85,7 +85,7 @@ public class FastArithmetic3D {
         return res;
     }
 
-    public static ImageFloat mathIntImage(ImageFloat stackorig, final ImageFloat stackother, int operation, final float par1, final float par2, int nbcpus, boolean showstatus, final AbstractLog log) {
+    public static ImageFloat mathFloatImage(ImageFloat stackorig, final ImageFloat stackother, int operation, final float par1, final float par2, int nbcpus, boolean showstatus, final AbstractLog log) {
         int nbToProcess = stackorig.sizeZ;
         // Timer
         final Chrono time = new Chrono(nbToProcess);
