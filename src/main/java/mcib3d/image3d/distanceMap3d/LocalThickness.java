@@ -55,7 +55,8 @@ Version 3.1  Multiplies the output by 2 to conform with the definition of local 
 	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-public class LocalThickness {
+@Deprecated
+public class LocalThickness { // FIXME not sure it is working for non-isotopic data
 	public float[][] data;
 	public int w,h,d;
         public float scale, scaleInv, scaleSq, scaleInvSq;

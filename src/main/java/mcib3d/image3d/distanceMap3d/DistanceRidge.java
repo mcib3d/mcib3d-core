@@ -61,8 +61,8 @@ Version 3.1 Oct. 1, 2006.  Faster scanning of search points.
 	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-
-public class DistanceRidge {
+@Deprecated
+public class DistanceRidge {// FIXME not sure it is working for non-isotopic data
 	public float[][] data;
 	public int w,h,d;
         public float scale, scaleInv, scaleSq, scaleInvSq;

@@ -49,7 +49,8 @@ offficial definition of local thickness.
 	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 */
-public class CleanUpLocalThickness {
+@Deprecated
+public class CleanUpLocalThickness {// FIXME not sure it is working for non-isotopic data
 	public float[][] s, sNew;
 	public int w,h,d;
 
