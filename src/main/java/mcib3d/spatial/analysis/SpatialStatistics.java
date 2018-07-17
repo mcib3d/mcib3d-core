@@ -12,8 +12,10 @@ import mcib3d.spatial.descriptors.SpatialDescriptor;
 import mcib3d.spatial.sampler.SpatialModel;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.CDFTools;
+import mcib3d.utils.ThreadUtil;
 
 import java.awt.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author thomasb
@@ -69,7 +71,7 @@ public class SpatialStatistics {
         }
         obsDesc = descriptor.compute(observed);
         int nbDesc = obsDesc.size();
-        obsDesc.sort();
+        obsDesc.sortMultithread();
         obsCD = CDFTools.cdf(obsDesc);
         // Samples for average
         if (verbose) {
@@ -82,7 +84,7 @@ public class SpatialStatistics {
         for (int i = 0; i < nbSamples; i++) {
             xEvals.insertValues(i * nbDesc, samplesDesc[i]);
         }
-        xEvals.sort();
+        xEvals.sortMultithread();
         // compute average
         averageCD = CDFTools.cdfAverage(samplesDesc, xEvals);
 
@@ -92,6 +94,7 @@ public class SpatialStatistics {
         }
         samplesDesc = null;
         System.gc();
+        //samplesDesc = getSamples();
         samplesDesc = getSamples();
         // uniform spaced 
         double max = xEvals.getMaximum();
@@ -109,6 +112,9 @@ public class SpatialStatistics {
         sdi = CDFTools.SDI(obsDesc, samplesDesc, averageCD, xEvals);
     }
 
+    // better to use non multithreaded version
+    // sorting will take most of the processing time
+    // using now parallelSort
     private ArrayUtil[] getSamples() {
         final ArrayUtil[] samplesDesc = new ArrayUtil[nbSamples];
 
@@ -117,57 +123,48 @@ public class SpatialStatistics {
                 IJ.showStatus("Random population " + (i + 1));
             }
             ArrayUtil tmp = descriptor.compute(model.getSample());
-            tmp.sort();
+            tmp.sortMultithread();
             samplesDesc[i] = tmp;
         }
 
         return samplesDesc;
     }
 
-    /* USE WITH CARE ;) */
-//    private ArrayUtil[] getSamplesParallel() {
-//        final ArrayUtil[] samplesDesc = new ArrayUtil[nbSamples];
-//        final AtomicInteger ai = new AtomicInteger(0);
-//        nbCpus = 1;
-//        final int n_cpus = nbCpus == 0 ? ThreadUtil.getNbCpus() : nbCpus;
-//        Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
-//        final int dec = (int) Math.ceil((double) nbSamples / (double) n_cpus);
-//        final SpatialDescriptor[] sps = new SpatialDescriptor[n_cpus];
-//        final SpatialDescriptor sp = descriptor.copy();
-//        for (int i = 0; i < sps.length; i++) {
-//            sps[i] = sp.copy();
-//            sps[i].init();
-//        }
-//        final SpatialModel[] sms = new SpatialModel[n_cpus];
-//        final SpatialModel sm = model.copy();
-//        for (int i = 0; i < sms.length; i++) {
-//            sms[i] = sm.copy();
-//            sms[i].init();
-//        }
-//        for (int ithread = 0; ithread < threads.length; ithread++) {
-//            threads[ithread] = new Thread() {
-//                @Override
-//                public void run() {
-//                    for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-//                        for (int i = dec * k; ((i < (dec * (k + 1))) && (i < nbSamples)); i++) {
-//                            if (verbose) {
-//                                IJ.log("Random population " + (i + 1) + " by processor " + (k + 1));
-//                            }
-//                            ArrayUtil tmp = descriptor.compute(model.getSample());
-//                            tmp.sort();
-//                            samplesDesc[i] = tmp;
-//                            if (verbose) {
-//                                IJ.log("Random population " + (i + 1) + " by processor " + (k + 1) + " finished");
-//                            }
-//                        }
-//                    }
-//                }
-//            };
-//        }
-//        ThreadUtil.startAndJoin(threads);
-//
-//        return samplesDesc;
-//    }
+    // better to use non multithreaded version
+    // sorting will take most of the processing time
+    // using now parallelSort
+    private ArrayUtil[] getSamplesParallel() {
+        final ArrayUtil[] samplesDesc = new ArrayUtil[nbSamples];
+        final AtomicInteger ai = new AtomicInteger(0);
+        nbCpus = 16;
+        final int n_cpus = nbCpus == 0 ? ThreadUtil.getNbCpus() : nbCpus;
+        Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
+        final int dec = (int) Math.ceil((double) nbSamples / (double) n_cpus);
+
+        for (int ithread = 0; ithread < threads.length; ithread++) {
+            threads[ithread] = new Thread() {
+                @Override
+                public void run() {
+                    for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
+                        for (int i = dec * k; ((i < (dec * (k + 1))) && (i < nbSamples)); i++) {
+                            if (verbose) {
+                                IJ.log("Random population " + (i + 1) + " by processor " + (k + 1));
+                            }
+                            ArrayUtil tmp = descriptor.compute(model.getSample());
+                            tmp.sort();
+                            samplesDesc[i] = tmp;
+                            if (verbose) {
+                                IJ.log("Random population " + (i + 1) + " by processor " + (k + 1) + " finished");
+                            }
+                        }
+                    }
+                }
+            };
+        }
+        ThreadUtil.startAndJoin(threads);
+
+        return samplesDesc;
+    }
     private void createPlot() {
         if (Double.isNaN(sdi)) {
             compute();
@@ -242,9 +239,6 @@ public class SpatialStatistics {
         this.verbose = verbose;
     }
 
-    //    public void setNbCpus(int nbCpus) {
-//        this.nbCpus = nbCpus;
-//    }
     public void setEnvelope(double env) {
         this.env = env;
     }

@@ -601,7 +601,7 @@ public class Watershed3D_old {
                     if (watershedImage.getPixel(x, y, z) == BORDER) {
                         ArrayUtil neigh = watershedImage.getNeighborhood3x3x3(x, y, z);
                         // update all associations
-                        for (int i = 0; i < neigh.getSize(); i++) {
+                        for (int i = 0; i < neigh.size(); i++) {
                             int val = (int) neigh.getValue(i);
                             if ((val != BORDER) && (val != NO_LABEL) && (val != label)) {
                                 // always max value first

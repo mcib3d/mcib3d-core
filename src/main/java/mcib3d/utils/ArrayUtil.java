@@ -315,7 +315,7 @@ public class ArrayUtil {
     }
 
     public int[] getArrayInt() {
-        int[] res = new int[this.getSize()];
+        int[] res = new int[this.size()];
         for (int i = 0; i < res.length; i++) {
             res[i] = (int) values[i];
         }
@@ -324,8 +324,8 @@ public class ArrayUtil {
     }
 
     public ArrayList<Double> getArrayList() {
-        ArrayList<Double> list = new ArrayList<Double>(this.getSize());
-        for (int i = 0; i < this.getSize(); i++) {
+        ArrayList<Double> list = new ArrayList<Double>(this.size());
+        for (int i = 0; i < this.size(); i++) {
             list.add(this.getValue(i));
         }
 
@@ -782,14 +782,14 @@ public class ArrayUtil {
      * @return
      */
     public ArrayUtil distinctValues() {
-        this.sort();
-        ArrayUtil V = new ArrayUtil(this.getSize());
+        this.sortMultithread();
+        ArrayUtil V = new ArrayUtil(this.size());
         int s = 0;
         double tmp = this.getValue(0);
         V.addValue(0, tmp);
         s++;
         int p = 1;
-        int si = this.getSize();
+        int si = this.size();
         while (p < si) {
             while ((p < si) && (this.getValue(p) == tmp)) {
                 p++;
@@ -880,12 +880,30 @@ public class ArrayUtil {
         sorted = true;
     }
 
+
     /**
      *
      */
     public void sort() {
         sortJava();
     }
+
+    public void sortMultithread() {
+        sortJavaParallel();
+    }
+
+    private void sortJavaParallel() {
+        if (size < values.length) {
+            double[] tosort = new double[size];
+            System.arraycopy(values, 0, tosort, 0, size);
+            Arrays.parallelSort(tosort);
+            System.arraycopy(tosort, 0, values, 0, size);
+        } else {
+            Arrays.sort(values);
+        }
+        sorted = true;
+    }
+
 
     /**
      * Sort the array (Shell-Meitzner algorithm) increasing
@@ -955,7 +973,7 @@ public class ArrayUtil {
      */
     public double medianSort() {
         if (!sorted) {
-            sort();
+            sortMultithread();
         }
         if (size % 2 == 1) {
             return values[size / 2];
@@ -1261,11 +1279,11 @@ public class ArrayUtil {
      * @param tmp the array of values to put
      */
     public void setValues(ArrayUtil tmp) {
-        if (tmp.getSize() > values.length) {
-            values = new double[tmp.getSize()];
+        if (tmp.size() > values.length) {
+            values = new double[tmp.size()];
         }
 
-        this.setSize(tmp.getSize());
+        this.setSize(tmp.size());
         for (int i = 0; i < size; i++) {
             values[i] = tmp.getValue(i);
         }
@@ -1273,14 +1291,14 @@ public class ArrayUtil {
     }
 
     public void insertValues(int pos, ArrayUtil tmp) {
-        if (tmp.getSize() + pos > values.length) {
-            double[] values2 = new double[tmp.getSize() + pos];
+        if (tmp.size() + pos > values.length) {
+            double[] values2 = new double[tmp.size() + pos];
             System.arraycopy(values, 0, values2, 0, pos);
             values = values2;
             size = values.length;
         }
-        System.arraycopy(tmp.getArray(), 0, values, pos, tmp.getSize());
-        size = Math.max(size, pos + tmp.getSize());
+        System.arraycopy(tmp.getArray(), 0, values, pos, tmp.size());
+        size = Math.max(size, pos + tmp.size());
         sorted = false;
     }
 
@@ -1291,10 +1309,10 @@ public class ArrayUtil {
      * @return true if arrays are equal
      */
     public boolean isEqual(ArrayUtil other) {
-        if (other.getSize() != this.getSize()) {
+        if (other.size() != this.size()) {
             return false;
         }
-        return isEqual(other, 0, this.getSize() - 1);
+        return isEqual(other, 0, this.size() - 1);
     }
 
     public boolean isEmpty() {
@@ -1437,16 +1455,16 @@ public class ArrayUtil {
     }
 
     public ArrayUtil getDifferenceNext() {
-        ArrayUtil diff = new ArrayUtil(getSize() - 1);
-        for (int i = 0; i < diff.getSize(); i++) {
+        ArrayUtil diff = new ArrayUtil(size() - 1);
+        for (int i = 0; i < diff.size(); i++) {
             diff.putValue(i, getValue(i + 1) - getValue(i));
         }
         return diff;
     }
 
     public ArrayUtil getDifferenceNextAbs() {
-        ArrayUtil diff = new ArrayUtil(getSize() - 1);
-        for (int i = 0; i < diff.getSize(); i++) {
+        ArrayUtil diff = new ArrayUtil(size() - 1);
+        for (int i = 0; i < diff.size(); i++) {
             diff.putValue(i, Math.abs(getValue(i + 1) - getValue(i)));
         }
         return diff;
@@ -1465,7 +1483,7 @@ public class ArrayUtil {
             xx[i] = minimum + i * step;
         }
 
-        for (int i = 0; i < getSize(); i++) {
+        for (int i = 0; i < size(); i++) {
             int pos = (int) Math.floor((getValue(i) - minimum) * iStep);
             if (pos >= nBins) pos = nBins - 1;
             else if (pos < 0) pos = 0;
@@ -1489,7 +1507,7 @@ public class ArrayUtil {
         int nBins = yNumber.length;
         double val;
         int bi;
-        int si = this.getSize();
+        int si = this.size();
         for (int i = 0; i < nBins; i++) {
             yNumber[i] = 0;
         }

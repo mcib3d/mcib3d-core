@@ -36,7 +36,7 @@ public class CDFTools {
      */
     static public ArrayUtil cdf(ArrayUtil x) {
         // if x.isIncreasing == false... error
-        final int n = x.getSize();
+        final int n = x.size();
         ArrayUtil y = new ArrayUtil(n);
 
         for (int i = 0; i < n; ++i) {
@@ -54,8 +54,8 @@ public class CDFTools {
      */
     static public ArrayUtil cdf(ArrayUtil x, ArrayUtil xEvals) {
         // if x.isIncreasing == false... error
-        final int n = x.getSize();
-        final int numEvals = xEvals.getSize();
+        final int n = x.size();
+        final int numEvals = xEvals.size();
         ArrayUtil y = new ArrayUtil(numEvals);
         int i, p;
 
@@ -81,13 +81,13 @@ public class CDFTools {
         final int n = x.length;
         int total_size = 0;
         for (ArrayUtil aX : x) {
-            total_size += aX.getSize();
+            total_size += aX.size();
         }
         ArrayUtil xEvals = new ArrayUtil(total_size);
         total_size = 0;
         for (ArrayUtil aX : x) {
             xEvals.insertValues(total_size, aX);
-            total_size += aX.getSize();
+            total_size += aX.size();
         }
 
         return cdfAverage(x, xEvals);
@@ -101,7 +101,7 @@ public class CDFTools {
      */
     static public ArrayUtil cdfAverage(ArrayUtil[] x, ArrayUtil xEvals) {
         final int n = x.length;
-        final int numEvals = xEvals.getSize();
+        final int numEvals = xEvals.size();
         ArrayUtil y = new ArrayUtil(numEvals);
 
         for (ArrayUtil aX : x) {
@@ -121,7 +121,7 @@ public class CDFTools {
      */
     static public ArrayUtil cdfPercentage(ArrayUtil[] x, ArrayUtil xEvals, double pc) {
         final int n = x.length;
-        final int numEvals = xEvals.getSize();
+        final int numEvals = xEvals.size();
         ArrayUtil y = new ArrayUtil(numEvals);
 
         ArrayUtil[] xCDF = new ArrayUtil[n];
@@ -134,7 +134,7 @@ public class CDFTools {
             for (int j = 0; j < n; j++) {
                 tmp.addValue(j, xCDF[j].getValue(i));
             }
-            tmp.sort();
+            tmp.sortMultithread();
             y.addValue(i, tmp.getValue((int) Math.round(pc * (n - 1))));
         }
 
@@ -150,7 +150,7 @@ public class CDFTools {
      */
     static public ArrayUtil[] cdfPercentage2(ArrayUtil[] x, ArrayUtil xEvals, double pc) {
         final int n = x.length;
-        final int numEvals = xEvals.getSize();
+        final int numEvals = xEvals.size();
         ArrayUtil y1 = new ArrayUtil(numEvals);
         ArrayUtil y2 = new ArrayUtil(numEvals);
         ArrayUtil[] xCDF = new ArrayUtil[n];
@@ -163,7 +163,7 @@ public class CDFTools {
             for (int j = 0; j < n; j++) {
                 tmp.addValue(j, xCDF[j].getValue(i));
             }
-            tmp.sort();
+            tmp.sortMultithread();
             y1.addValue(i, tmp.getValue((int) Math.round(pc * (n - 1))));
             y2.addValue(i, tmp.getValue((int) Math.round((1-pc) * (n - 1))));
         }
@@ -181,8 +181,8 @@ public class CDFTools {
      */
     static public double[] cdfDifferences(ArrayUtil x1, ArrayUtil y1, ArrayUtil x2, ArrayUtil y2) {
         // check tri croissant de x1 et x2
-        final int n = x1.getSize();
-        final int m = x2.getSize();
+        final int n = x1.size();
+        final int m = x2.size();
         int i = 0, j = 0, iprev, jprev;
         double diff;
         double[] maxDiff;
@@ -253,7 +253,7 @@ public class CDFTools {
          * return r;
          */
         //System.cdfOut.println("array maxdiff=" + maxDifferences);
-        maxDifferences.sort();
+        maxDifferences.sortMultithread();
         //System.cdfOut.println("array maxdiff=" + maxDifferences);
         return maxDifferences.indexOf(xMaxDiff);
     }

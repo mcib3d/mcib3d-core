@@ -134,7 +134,7 @@ public class DeformableMesh extends Object3DSurface {
         if (pos < border) {
             return null;
         }
-        double ratio = (pos - border) / (der.getSize() - 2.0 * border);
+        double ratio = (pos - border) / (der.size() - 2.0 * border);
         Point3D P = new Point3D(vertices.get(i));
         int dir = forward ? 1 : -1;
         P.translate(verticesNormals.get(i).multiply(dir * ratio * maxDistance));

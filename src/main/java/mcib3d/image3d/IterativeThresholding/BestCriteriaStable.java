@@ -15,10 +15,10 @@ public class BestCriteriaStable implements BestCriterion {
     @Override
     public int computeBestCriterion(ArrayUtil list) {
         // minimum of |(a+s)-(a-s)|/(a)
-        if (list.getSize() < 2 * step + 1) return (list.getSize() / 2);
+        if (list.size() < 2 * step + 1) return (list.size() / 2);
         double minimum = Double.MAX_VALUE;
         int index = -1;
-        for (int i = step; i < list.getSize() - step; i++) {
+        for (int i = step; i < list.size() - step; i++) {
             double value = Math.abs(list.getValue(i + step) - list.getValue(i - step)) / list.getValue(i);
             if (value < minimum) {
                 minimum = value;
