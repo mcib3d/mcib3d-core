@@ -1401,6 +1401,7 @@ public class Object3DVoxels extends Object3D {
 
     /**
      * Get a random voxel in the object
+     *
      * @param ra Random Object
      * @return next random voxel in the object
      */
@@ -1412,11 +1413,11 @@ public class Object3DVoxels extends Object3D {
     }
 
     /**
-     * @link Object3DVoxels.getRandomVoxel()
      * @param ra
      * @return
+     * @link Object3DVoxels.getRandomVoxel()
      */
-    @ Deprecated
+    @Deprecated
     public Voxel3D getRandomvoxel(Random ra) {
         if (isEmpty()) {
             return null;
@@ -1427,6 +1428,7 @@ public class Object3DVoxels extends Object3D {
     // From Bribiesca 2008 Pattern Recognition
     // An easy measure of compactness for 2D and 3D shapes
     public double getDiscreteCompactness() {
+        if (areaContactVoxels == -1) computeContours();
         double n = getVolumePixels();
         double tmp = Math.pow(n, 2.0 / 3.0);
 
@@ -1525,7 +1527,7 @@ public class Object3DVoxels extends Object3D {
 
     @Override
     public void translate(Vector3D trans) {
-        translate(trans.getX(),trans.getY(),trans.getZ());
+        translate(trans.getX(), trans.getY(), trans.getZ());
     }
 
     public void rotate(Vector3D Axis, double angle) {

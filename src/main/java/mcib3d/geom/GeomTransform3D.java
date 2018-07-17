@@ -622,7 +622,6 @@ public class GeomTransform3D {
     private static void getImageTransformedThread(ImageHandler img, ImageHandler out, GeomTransform3D transform3D, int minZ, int maxZ) {
         minZ = Math.max(0, minZ);
         maxZ = Math.min(img.sizeZ, maxZ);
-        ImageHandler res = img.createSameDimensions();
         for (int k = minZ; k < maxZ; k++) {
             for (int j = 0; j < img.sizeY; j++) {
                 for (int i = 0; i < img.sizeX; i++) {
