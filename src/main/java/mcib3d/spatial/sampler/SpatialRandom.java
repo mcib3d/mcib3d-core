@@ -49,14 +49,15 @@ public class SpatialRandom implements SpatialModel {
         Random ra = new Random();
 
         for (int i = 0; i < nbObjects; i++) {
-            Voxel3D vox = maskVox.getRandomvoxel(ra);
+            Voxel3D vox = maskVox.getRandomVoxel(ra);
             while (maskimgTmp.getPixel(vox) == 0) {
-                vox = maskVox.getRandomvoxel(ra);
+                vox = maskVox.getRandomVoxel(ra);
             }
             points[i] = vox;
             maskimgTmp.setPixel(vox, 0);
         }
         pop.addPoints(points);
+        pop.setCalibration(mask.getResXY(), mask.getResZ(), mask.getUnits());
 
         return pop;
     }

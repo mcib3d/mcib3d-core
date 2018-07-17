@@ -77,7 +77,7 @@ public class Objects3DPopulationColocalisation {
         ResultsTable rt = ResultsTable.getResultsTable();
         if (rt == null) rt = new ResultsTable();
         for (int ia = 0; ia < population1.getNbObjects(); ia++) {
-            //rt.incrementCounter();
+            rt.incrementCounter();
             if (!useValueObject) {
                 rt.setLabel("A" + ia, ia);
             } else {

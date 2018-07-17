@@ -5,19 +5,14 @@
  */
 package mcib3d.spatial.sampler;
 
-import java.util.Random;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.ObjectCreator3D;
-import mcib3d.geom.Objects3DPopulation;
-import mcib3d.geom.Point3D;
-import mcib3d.geom.Voxel3D;
+import mcib3d.geom.*;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 
+import java.util.Random;
+
 /**
- *
  * @author thomasb
  */
 public class SpatialRandomHardCore implements SpatialModel {
@@ -47,19 +42,20 @@ public class SpatialRandomHardCore implements SpatialModel {
     public Objects3DPopulation getSample() {
         Point3D[] points = new Point3D[nbObjects];
         Objects3DPopulation pop = new Objects3DPopulation();
-        pop.setMask(mask);
         Random ra = new Random();
         ImageInt maskImgTmp = maskimg.duplicate();
         ObjectCreator3D create = new ObjectCreator3D(maskImgTmp);
         for (int i = 0; i < nbObjects; i++) {
-            Voxel3D vox = maskVox.getRandomvoxel(ra);
+            Voxel3D vox = maskVox.getRandomVoxel(ra);
             while (maskImgTmp.getPixel(vox) == 0) {
-                vox = maskVox.getRandomvoxel(ra);
+                vox = maskVox.getRandomVoxel(ra);
             }
             points[i] = vox;
             create.createSphere(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), distHardCore, 0, false);
         }
         pop.addPoints(points);
+        pop.setCalibration(mask.getResXY(), mask.getResZ(), mask.getUnits());
+        pop.setMask(mask);
 
         return pop;
     }
