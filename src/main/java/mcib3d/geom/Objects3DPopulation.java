@@ -1347,21 +1347,7 @@ public class Objects3DPopulation {
 
         return objects;
     }
-
-    public synchronized Object3D[] kClosestCentresSync(double x, double y, double z, int k) {
-        if (kdtree == null) {
-            this.createKDTreeCenters();
-        }
-
-        Item[] items = kdtree.getNearestNeighbor(new double[]{x, y, z}, k);
-        Object3D[] objects = new Object3D[items.length];
-        for (int i = 0; i < items.length; i++) {
-            objects[i] = (Object3D) items[i].obj;
-        }
-
-        return objects;
-    }
-
+    
 
 
     public double[] kClosestDistancesSquared(double x, double y, double z, int k) {
@@ -1377,22 +1363,6 @@ public class Objects3DPopulation {
 
         return objects;
     }
-
-    public synchronized  double[] kClosestDistancesSquaredSync(double x, double y, double z, int k) {
-        if (kdtree == null) {
-            this.createKDTreeCenters();
-        }
-
-        Item[] items = kdtree.getNearestNeighbor(new double[]{x, y, z}, k);
-        double[] objects = new double[items.length];
-        for (int i = 0; i < items.length; i++) {
-            objects[i] = items[i].distanceSq;
-        }
-
-        return objects;
-    }
-
-
 
 
     public Object3D kClosestCenter(Object3D ob, int k, boolean excludeInputObject) {

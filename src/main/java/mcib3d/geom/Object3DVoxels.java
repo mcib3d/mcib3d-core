@@ -1762,25 +1762,20 @@ public class Object3DVoxels extends Object3D {
 
     @Override
     public ArrayUtil listValues(ImageHandler ima, float thresh) {
-        ArrayUtil list = new ArrayUtil(this.getVolumePixels());
-        Voxel3D voxel;
+        //ArrayUtil list = new ArrayUtil(this.getVolumePixels());
 
-        Iterator<Voxel3D> it = voxels.iterator();
-        int idx = 0;
-        while (it.hasNext()) {
-            voxel = it.next();
-            if (ima.contains(voxel.getX(), voxel.getY(), voxel.getZ())) {
-                float pix = ima.getPixel(voxel);
-                if (pix > thresh) {
-                    list.putValue(idx, pix);
-                    idx++;
+        ArrayList<Double> list=new ArrayList<>();
+
+        for(Voxel3D voxel:voxels){
+            if(ima.contains(voxel.getRoundX(),voxel.getRoundY(),voxel.getRoundZ())){
+                float pixel=ima.getPixel(voxel.getRoundX(),voxel.getRoundY(),voxel.getRoundZ());
+                if(pixel>thresh){
+                    list.add((double)pixel);
                 }
-
             }
         }
-        list.setSize(idx);
 
-        return list;
+        return new ArrayUtil(list);
     }
 
     public float[] getValueArray(ImageHandler im) {

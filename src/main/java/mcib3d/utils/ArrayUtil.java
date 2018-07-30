@@ -78,6 +78,16 @@ public class ArrayUtil {
         }
     }
 
+    public ArrayUtil(ArrayList<Double> list) {
+        this.size = list.size();
+        values = new double[size];
+        int c = 0;
+        for (double d : list) {
+            values[c] = d;
+            c++;
+        }
+    }
+
     /**
      * Fit a gaussian to the values (radial distribution)
      *
@@ -277,10 +287,9 @@ public class ArrayUtil {
     }
 
     /**
+     * @return number of elements
      * @deprecated see size()
      * get the number of elements
-     *
-     * @return number of elements
      */
     public int getSize() {
         return size;
