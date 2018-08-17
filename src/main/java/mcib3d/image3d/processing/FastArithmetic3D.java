@@ -1,16 +1,12 @@
 package mcib3d.image3d.processing;
 
-import ij.ImageStack;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.Voxel3DComparable;
-import mcib3d.image3d.*;
+import mcib3d.image3d.ImageFloat;
+import mcib3d.image3d.ImageHandler;
+import mcib3d.image3d.ImageInt;
 import mcib3d.utils.Chrono;
 import mcib3d.utils.Logger.AbstractLog;
-import mcib3d.utils.Logger.IJStatus;
 import mcib3d.utils.ThreadUtil;
 
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /*
@@ -119,10 +115,14 @@ public class FastArithmetic3D {
         return res;
     }
 
+    public static ImageHandler mathImage(ImageHandler stackorig, final ImageHandler stackother, int operation, final float par1, final float par2, int nbcpus, boolean showstatus, final AbstractLog log) {
+        if ((stackorig instanceof ImageInt) && (stackother instanceof ImageInt))
+            return mathIntImage((ImageInt) stackorig, (ImageInt) stackother, operation, par1, par2, nbcpus, showstatus, log);
+        if ((stackorig instanceof ImageFloat) && (stackother instanceof ImageFloat))
+            return mathFloatImage((ImageFloat) stackorig, (ImageFloat) stackother, operation, par1, par2, nbcpus, showstatus, log);
 
-
-
-
+        return null;
+    }
 
 
 }
