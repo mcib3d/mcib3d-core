@@ -5,6 +5,7 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.io.FileSaver;
 import ij.process.ImageProcessor;
+import ij.process.StackStatistics;
 
 import java.awt.image.IndexColorModel;
 
@@ -43,20 +44,27 @@ public class ImagePlus_Utils {
     }
 
     public static boolean saveAsPngSequence(ImagePlus image, String dir, String name, int start, int pad, boolean lut) {
-        ImageStack imageStack=image.getImageStack();
+        ImageStack imageStack = image.getImageStack();
+        StackStatistics imageStatistics = new StackStatistics(image);
+        int minValue = (int) imageStatistics.min;
+        int maxValue = (int) imageStatistics.max;
         ImageProcessor imageProcessor;
         ImagePlus imagePlus;
         String fileName;
         for (int s = 0; s < imageStack.getSize(); s++) {
             fileName = name + IJ.pad(s + start, pad) + ".png";
             imageProcessor = imageStack.getProcessor(s + 1);
+            imageProcessor.setMinAndMax(minValue, maxValue);
+            imageProcessor = imageProcessor.convertToByte(true);
             imagePlus = new ImagePlus(fileName, imageProcessor);
+            if (lut) {
+                rgb332(imagePlus, maxValue);
+            }
             FileSaver fileSaver = new FileSaver(imagePlus);
             if (!fileSaver.saveAsPng(dir + fileName)) return false;
         }
         return true;
     }
-
 
 
     private static void rgb332(ImagePlus imagePlus, int max) {
