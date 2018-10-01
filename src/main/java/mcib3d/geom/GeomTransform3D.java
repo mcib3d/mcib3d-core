@@ -621,10 +621,10 @@ public class GeomTransform3D {
 
     private static void getImageTransformedThread(ImageHandler img, ImageHandler out, GeomTransform3D transform3D, int minZ, int maxZ) {
         minZ = Math.max(0, minZ);
-        maxZ = Math.min(img.sizeZ, maxZ);
+        maxZ = Math.min(out.sizeZ, maxZ);
         for (int k = minZ; k < maxZ; k++) {
-            for (int j = 0; j < img.sizeY; j++) {
-                for (int i = 0; i < img.sizeX; i++) {
+            for (int j = 0; j < out.sizeY; j++) {
+                for (int i = 0; i < out.sizeX; i++) {
                     out.setPixel(i, j, k, getPixelTransformedIThread(img, i, j, k, transform3D));
                 }
             }
@@ -644,7 +644,7 @@ public class GeomTransform3D {
         zz += imageHandler.sizeZ / 2;
         float pixel = 0;
         if (imageHandler.contains(xx, yy, zz)) {
-            pixel = imageHandler.getPixel((int) Math.round(xx), (int) Math.round(yy), (int) Math.round(zz));
+            pixel = imageHandler.getPixel((float)xx,(float)yy,(float)zz);
         }
 
         return pixel;
