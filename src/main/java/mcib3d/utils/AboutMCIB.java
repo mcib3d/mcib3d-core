@@ -18,7 +18,7 @@ import java.net.URL;
 public class AboutMCIB extends JFrame {
 
     private static String name;
-    private static final double VERSION = 3.92;
+    private static final double VERSION = 3.93;
 
     /**
      * Constructor for the AboutWindow object
