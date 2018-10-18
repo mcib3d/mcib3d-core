@@ -94,7 +94,6 @@ public class SpatialStatistics {
         }
         samplesDesc = null;
         System.gc();
-        //samplesDesc = getSamples();
         samplesDesc = getSamples();
         // uniform spaced 
         double max = xEvals.getMaximum();
@@ -165,6 +164,7 @@ public class SpatialStatistics {
 
         return samplesDesc;
     }
+
     private void createPlot() {
         if (Double.isNaN(sdi)) {
             compute();

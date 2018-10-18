@@ -186,7 +186,7 @@ public class BinaryMorpho {
 
     public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ, int nbCPUs) {
         // use generic version of binaryDilate
-        return binaryDilate(in, radius, radiusZ, nbCPUs, false);
+        return binaryDilate(in, radius, radiusZ, nbCPUs, true);
 
         /*
         try {
