@@ -5,6 +5,7 @@
  */
 package mcib3d.spatial.descriptors;
 
+import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.utils.ArrayUtil;
 
@@ -14,12 +15,12 @@ import mcib3d.utils.ArrayUtil;
 public class K_Function implements SpatialDescriptor {
     private double step = 1.0;
     private double max = 1000;
-    private double bin;
+    private double vol;
 
-    public K_Function(double step, double max) {
+    public K_Function(double step, double max, Object3D mask) {
         this.step = step;
         this.max = max;
-        this.bin = max / step;
+        this.vol = mask.getVolumeUnit();
     }
 
     @Override
@@ -29,24 +30,28 @@ public class K_Function implements SpatialDescriptor {
 
     @Override
     public ArrayUtil compute(Objects3DPopulation pop) {
-        ArrayUtil util = pop.distancesAllCenter();
+        ArrayUtil allCenter = pop.distancesAllCenter();
+        int nb = pop.getNbObjects();
         // normal histogram
-        int[] kutil = new int[((int) Math.ceil(max / bin))];
-        for (int i = 0; i < util.size(); i++) kutil[i] = 0;
-        for (int i = 0; i < util.size(); i++) {
-            double dist = util.getValue(i);
-            int pos = (int) Math.floor(dist / bin);
+        int[] kutil = new int[((int) Math.ceil(max / step))];
+        for (int i = 0; i < kutil.length; i++) kutil[i] = 0;
+        for (int i = 0; i < allCenter.size(); i++) {
+            double dist = allCenter.getValue(i);
+            int pos = (int) Math.floor(dist / step);
             kutil[pos]++;
         }
         // cumulated histogram
-        ArrayUtil kutil2 = new ArrayUtil(kutil.length);
-        kutil2.putValue(0, kutil[0]);
-        for (int i = 1; i < util.size(); i++) {
-            kutil2.putValue(i, kutil2.getValue(i - 1) + kutil[i]);
+        int[] kutil2 = new int[((int) Math.ceil(max / step))];
+        kutil2[0] = kutil[0];
+        for (int i = 1; i < kutil.length; i++) kutil2[i] = kutil[i] + kutil2[i - 1];
+
+        double coeff = vol / (Math.PI * nb * (nb - 1));
+        ArrayUtil kutil3 = new ArrayUtil(kutil.length);
+        for (int i = 0; i < kutil.length; i++) {
+            kutil3.putValue(i, Math.sqrt(kutil2[i] * coeff));
         }
 
-        return kutil2;
-
+        return kutil3;
     }
 
     @Override
