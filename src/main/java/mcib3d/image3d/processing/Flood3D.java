@@ -300,7 +300,6 @@ public class Flood3D {
                     if (img.getPixel(x, y, z) == highVal) {
                         // byte
                         if (img instanceof ImageByte) {
-                            IJ.log("connect " + x + " " + y + " " + z + " " + lowVal + " " + highVal + " " + tmpVal);
                             connect3DByte26((ImageByte) img, new IntCoord3D(x, y, z), (byte) lowVal, (byte) highVal, (byte) tmpVal);
                         }
                         // short
