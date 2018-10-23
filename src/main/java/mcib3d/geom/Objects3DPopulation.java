@@ -771,7 +771,7 @@ public class Objects3DPopulation {
 
     public ImageInt drawPopulation() {
         int[] sizes = this.getMaxSizeAllObjects();
-        ImageInt drawImage = new ImageShort("population", sizes[0], sizes[1], sizes[2]);
+        ImageInt drawImage = new ImageShort("population", sizes[0] + 1, sizes[1] + 1, sizes[2] + 1);
         for (Object3D object3DVoxels : getObjectsList()) {
             object3DVoxels.draw(drawImage);
         }
@@ -1347,7 +1347,6 @@ public class Objects3DPopulation {
 
         return objects;
     }
-    
 
 
     public double[] kClosestDistancesSquared(double x, double y, double z, int k) {

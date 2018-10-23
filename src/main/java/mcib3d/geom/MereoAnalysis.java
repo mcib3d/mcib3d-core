@@ -106,7 +106,7 @@ public class MereoAnalysis {
 
     public void computeFastRelationships() {
         int[] size = popB.getMaxSizeAllObjects();
-        ImageHandler segB = new ImageShort("popB", size[0] + 1, size[1] + 1, size[2] + 1);
+        ImageHandler segB = new ImageShort("popB", size[0]+1, size[1] + 1, size[2] + 1);
         popB.draw(segB); //segB.show();
         boolean[] checkedObject = new boolean[popB.getNbObjects()];
         int nbA = popA.getNbObjects();

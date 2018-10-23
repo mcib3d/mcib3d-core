@@ -104,7 +104,7 @@ public class Flood3D {
         }
     }
 
-    @ Deprecated
+    @Deprecated
     public static void flood3DNoiseShort6(ImageShort img, IntCoord3D seed, short limit, short newVal) {
         short[][] pixels = img.pixels;
         int sizeX = img.sizeX;
@@ -311,6 +311,7 @@ public class Flood3D {
             }
         }
         img.replacePixelsValue((int) tmpVal, highVal);
+        img.replacePixelsValue(lowVal, 0);
         img.updateDisplay();
     }
 
