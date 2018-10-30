@@ -1177,6 +1177,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * Get the bounding box of the object
      * (Xmin, Xmax, Ymin, Ymax, Zmin, Zmax)
+     *
      * @return the coordinates of the bounding box
      */
     public int[] getBoundingBox() {
@@ -2022,6 +2023,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * The distance between center and a Point3D
+     *
      * @param P the point
      * @return the distance (in unit)
      */
@@ -2251,14 +2253,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     public ImageInt createIntersectionImage(Object3D other, int val1, int val2, int border) {
         // keep label image
         ImageInt label = this.getLabelImage();
-        int ofX = label.offsetX;
-        int ofY = label.offsetY;
-        int ofZ = label.offsetZ;
         ImageInt label2 = other.getLabelImage();
-        int ofX2 = label2.offsetX;
-        int ofY2 = label2.offsetY;
-        int ofZ2 = label2.offsetZ;
-
         // bounding box
         int xmi = Math.min(this.xmin, other.xmin) - border;
         if (xmi < 0) {
@@ -2283,28 +2278,16 @@ public abstract class Object3D implements Comparable<Object3D> {
         //imgThis.show();
         //imgOther.show();
         ImageInt addImage = imgThis.addImage(imgOther);
-//        addImage.offsetX = xmi;
-//        addImage.offsetY = ymi;
-//        addImage.offsetZ = zmi;
-//        this.offX = xmi;
-//        this.offY = ymi;
-//        this.offZ = zmi;
-//        other.offX = xmi;
-//        other.offY = ymi;
-//        other.offZ = zmi;
+        addImage.offsetX = xmi;
+        addImage.offsetY = ymi;
+        addImage.offsetZ = zmi;
         imgThis = null;
         imgOther = null;
         System.gc();
 
         // put old label back
         labelImage = label;
-        // offX = ofX;
-        //  offY = ofY;
-        //  offZ = ofZ;
         other.labelImage = label2;
-        //  other.offX = ofX2;
-        //   other.offY = ofY2;
-        //   other.offZ = ofZ2;
 
         return addImage;
     }
@@ -2335,85 +2318,95 @@ public abstract class Object3D implements Comparable<Object3D> {
             return null;
         }
         ImageInt inter = this.createIntersectionImage(other, 1, 2);
-        //inter.show(""+this.offX+" "+offY+" "+offZ);
         Object3DVoxels obj = new Object3DVoxels(inter, 3);
         obj.setValue(this.getValue());
-        obj.translate(getLabelImage().offsetX, getLabelImage().offsetX, getLabelImage().offsetX);
+        obj.translate(inter.offsetX, inter.offsetY, inter.offsetZ);
         // clean
         inter = null;
-        //obj.setLabelImage(null);
-        //other.setLabelImage(null);
 
         return obj;
     }
 
     /**
      * Get the contact surfaces between two objects, outside voxels < dist and
-     * number of border voxels of this object included in the other
+     * number of border voxels of this object included in the objectB
      *
-     * @param other    the other object
+     * @param other    the objectB object
      * @param dist_max distance max (in pixel) between two contour points of the
      *                 two objects
      * @return int array with : nb ofcontours points below distance max to
-     * contours points in other object AND nb of voxel of this object inside the
-     * other one
+     * contours points in objectB object AND nb of voxel of this object inside the
+     * objectB one
      */
     public int[] surfaceContact(Object3D other, double dist_max) {
-        // check distance border-border
-        // if BB > dist_max no contact surface
+        // check distance border-border, if BB > dist_max no contact surface
         double distbb = this.distBorderPixel(other);
         if (distbb > dist_max) {
             return new int[]{0, 0};
         }
+        // find intersection between two dilated objects
+        float radius = (float) dist_max;
+        Object3D dilA = this.getDilatedObject(radius, radius, radius);
+        Object3D dilB = other.getDilatedObject(radius, radius, radius);
+        Object3D inter = dilA.getIntersectionObject(dilB);
+        // new objectA = this intersects inter
+        // new objectB = other intersects inter
+        Object3D objectA = inter.getIntersectionObject(this);
+        Object3D objectB = inter.getIntersectionObject(other);
+        if ((objectA == null) || (objectB == null)) {
+            IJ.log("No intersection");
+            return new int[]{0, 0};
+        }
         int surfPos;
         int surfNeg = 0;
-        Voxel3D p0;
-        Voxel3D p1;
+        Voxel3D contourA;
+        Voxel3D contourB;
         double dist;
-        int s = getContours().size();
-        ArrayList othercontours = other.getContours();
-        int t = othercontours.size();
+        int sizeA = objectA.getContours().size();
+        ArrayList<Voxel3D> contoursA = objectA.getContours();
+        ArrayList<Voxel3D> contoursB = objectB.getContours();
+        int sizeB = contoursB.size();
         double dmax2 = dist_max * dist_max;
-        double[][] distres = new double[s][t];
+        double[][] distres = new double[sizeA][sizeB];
         double dmin;
-        int j0;
+        int closestB;
 
-        for (int i = 0; i < s; i++) {
-            for (int j = 0; j < t; j++) {
-                distres[i][j] = -1;
+        for (int iA = 0; iA < sizeA; iA++) {
+            for (int iB = 0; iB < sizeB; iB++) {
+                distres[iA][iB] = -1;
             }
         }
 
         // FIXME use kd-tree for optimisation
-        for (int i = 0; i < s; i++) {
-            p0 = contours.get(i);
-            j0 = -1;
-            // if voxel inside other object does not count it
-            if (other.inside(p0)) {
+        for (int iA = 0; iA < sizeA; iA++) {
+            contourA = contoursA.get(iA);
+            closestB = -1;
+            // if voxel inside objectB object, count it for negative contact
+            if (objectB.inside(contourA)) {
                 surfNeg++;
                 continue;
             }
             dmin = dmax2;
-            for (int j = 0; j < t; j++) {
-                p1 = (Voxel3D) othercontours.get(j);
-                dist = p0.distanceSquare(p1);
+            for (int j = 0; j < sizeB; j++) {
+                contourB = contoursB.get(j);
+                dist = contourA.distanceSquare(contourB);
                 if (dist <= dmin) {
                     dmin = dist;
-                    j0 = j;
+                    closestB = j;
                 }
             }
-            if (j0 != -1) {
-                distres[i][j0] = dmin;
+            if (closestB != -1) {
+                distres[iA][closestB] = dmin;
             }
         }
         // count nb pix from 2 --> 1 having min
         surfPos = 0;
-        for (int j = 0; j < t; j++) {
-            j0 = 0;
-            while ((j0 < s) && (distres[j0][j]) == -1) {
-                j0++;
+        for (int j = 0; j < sizeB; j++) {
+            closestB = 0;
+            while ((closestB < sizeA) && (distres[closestB][j]) == -1) {
+                closestB++;
             }
-            if (j0 < s) {
+            if (closestB < sizeA) {
                 surfPos++;
             }
         }
@@ -2516,19 +2509,6 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return The areaUnit value
      */
     public Vector3D vectorBorderBorder(Object3D other) {
-//        double distmin = Double.MAX_VALUE;
-//        Voxel3D p0 = null, p1 = null;
-//        for (Voxel3D othervox : other.getContours()) {
-//            double[] pos = othervox.getArray();
-//            //IJ.log("border " + kdtreeContours);
-//            Item item = getKdtreeContours().getNearestNeighbor(pos, 1)[0];
-//            //IJ.log("pixelborder " + item);
-//            if (item.distanceSq < distmin) {
-//                p0 = othervox;
-//                p1 = (Voxel3D) item.obj;
-//                distmin = item.distanceSq;
-//            }
-//        }
         Voxel3D[] voxs = this.VoxelsBorderBorder(other);
 
         return new Vector3D(voxs[0], voxs[1]);
@@ -2596,21 +2576,6 @@ public abstract class Object3D implements Comparable<Object3D> {
     public Vector3D vectorCenterBorder(Object3D other) {
 
         return other.vectorPixelBorder(this.getCenterAsVector());
-
-        /*
-         * double distmin = Double.MAX_VALUE; double dist; Voxel3D p1 = new
-         * Voxel3D(); Voxel3D ailleur = null; ArrayList autrecontour =
-         * other.getContours(); int s = autrecontour.size(); int c = 0; Iterator
-         * it = autrecontour.iterator(); while (it.hasNext()) { ailleur =
-         * (Voxel3D) it.next(); dist = (bx - ailleur.getX()) * (bx -
-         * ailleur.getX()) * resXY * resXY + (by - ailleur.getY()) * (by -
-         * ailleur.getY()) * resXY * resXY + (bz - ailleur.getZ()) * (bz -
-         * ailleur.getZ()) * resZ * resZ; if (dist < distmin) { distmin = dist;
-         * p1 = ailleur; } c++; } IJ.showStatus("Computing distance 100%");
-         * return new Vector3D(-bx + p1.getX(), -by + p1.getY(), -bz +
-         * p1.getZ());
-         *
-         */
     }
 
     /**
@@ -2641,31 +2606,9 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return the vector
      */
     public Vector3D vectorPixelBorder(double x, double y, double z) {
-//        // USE KDTREE
-//        double[] pos = {x, y, z};
-//        Item item = getKdtreeContours().getNearestNeighbor(pos, 1)[0];
-//        //System.out.println("object:"+this.getValue()+" contour: "+this.contours.size()+ " item null?"+(item==null));
         Voxel3D vox = this.getPixelBorder(x, y, z);
 
         return new Vector3D(vox.getX() - x, vox.getY() - y, vox.getZ() - z);
-
-//        double distmin = Double.MAX_VALUE;
-//        double dist;
-//        double rx2 = resXY * resXY;
-//        double rz2 = resZ * resZ;
-//        Voxel3D here;
-//        Voxel3D stock = new Voxel3D();
-//        ArrayList cont = this.getContours();
-//        Iterator it = cont.iterator();
-//        while (it.hasNext()) {
-//            here = (Voxel3D) it.next();
-//            dist = rx2 * ((x - here.getX()) * (x - here.getX()) + (y - here.getY()) * (y - here.getY())) + (z - here.getZ()) * (z - here.getZ()) * rz2;
-//            if (dist < distmin) {
-//                distmin = dist;
-//                stock = here;
-//            }
-//        }
-//        return new Vector3D(stock.getX() - x, stock.getY() - y, stock.getZ() - z);
     }
 
     /**
