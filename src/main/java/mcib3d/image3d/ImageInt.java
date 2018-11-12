@@ -91,7 +91,7 @@ public abstract class ImageInt extends ImageHandler {
     }
 
     public abstract void setPixel(int x, int y, int z, int value);
-
+    
     public abstract void setPixel(int xy, int z, int value);
 
     public abstract void setPixelCross3D(int x, int y, int z, int value);
@@ -102,6 +102,7 @@ public abstract class ImageInt extends ImageHandler {
 
     public abstract int getPixelInt(int x, int y, int z);
 
+    @Deprecated // Pb with images size > 2GB
     public abstract int getPixelInt(int coord);
 
     @Override
@@ -164,13 +165,14 @@ public abstract class ImageInt extends ImageHandler {
         boolean[] vals = new boolean[(int) (getMax() + 1)];
         Arrays.fill(vals, false);
         ArrayList<Integer> list = new ArrayList<Integer>();
-        for (int c = 0; c < sizeXYZ; c++) {
-            int pix = getPixelInt(c);
-            if ((pix > th) && (!vals[pix])) {
-                vals[pix] = true;
-                list.add(pix);
+        for (int z = 0; z < sizeZ; z++)
+            for (int c = 0; c < sizeXY; c++) {
+                int pix = getPixelInt(c, z);
+                if ((pix > th) && (!vals[pix])) {
+                    vals[pix] = true;
+                    list.add(pix);
+                }
             }
-        }
         return list;
     }
 
@@ -386,20 +388,22 @@ public abstract class ImageInt extends ImageHandler {
      * @param rep the new value
      */
     public void replacePixelsValue(int val, int rep) {
-        for (int k = 0; k < sizeXYZ; k++) {
-            if (this.getPixel(k) == val) {
-                this.setPixel(k, rep);
+        for (int z = 0; z < sizeZ; z++)
+            for (int k = 0; k < sizeXY; k++) {
+                if (this.getPixel(k, z) == val) {
+                    this.setPixel(k, z, rep);
+                }
             }
-        }
         resetStats();
     }
 
     public void transfertPixelValues(ImageInt other, int val, int rep) {
-        for (int k = 0; k < sizeXYZ; k++) {
-            if (this.getPixel(k) == val) {
-                other.setPixel(k, rep);
+        for (int z = 0; z < sizeZ; z++)
+            for (int k = 0; k < sizeXY; k++) {
+                if (this.getPixel(k, z) == val) {
+                    other.setPixel(k, z, rep);
+                }
             }
-        }
         other.resetStats();
     }
 
@@ -410,13 +414,14 @@ public abstract class ImageInt extends ImageHandler {
      * @param rep1 the new value
      */
     public void replacePixelsValue(int val1, int rep1, int val2, int rep2) {
-        for (int k = 0; k < sizeXYZ; k++) {
-            if (this.getPixel(k) == val1) {
-                this.setPixel(k, rep1);
-            } else if (this.getPixel(k) == val2) {
-                this.setPixel(k, rep2);
+        for (int z = 0; z < sizeZ; z++)
+            for (int k = 0; k < sizeXY; k++) {
+                if (this.getPixel(k, z) == val1) {
+                    this.setPixel(k, z, rep1);
+                } else if (this.getPixel(k, z) == val2) {
+                    this.setPixel(k, z, rep2);
+                }
             }
-        }
         resetStats();
     }
 
@@ -445,15 +450,16 @@ public abstract class ImageInt extends ImageHandler {
      * @param replace the new values
      */
     public void replacePixelsValue(int[] values, int[] replace) {
-        for (int k = 0; k < sizeXYZ; k++) {
-            int pix = getPixelInt(k);
-            for (int i = 0; i < values.length; i++) {
-                if (pix == values[i]) {
-                    setPixel(k, replace[i]);
-                    break;
+        for (int z = 0; z < sizeZ; z++)
+            for (int k = 0; k < sizeXY; k++) {
+                int pix = getPixelInt(k, z);
+                for (int i = 0; i < values.length; i++) {
+                    if (pix == values[i]) {
+                        setPixel(k, z, replace[i]);
+                        break;
+                    }
                 }
             }
-        }
         resetStats();
     }
 
@@ -464,15 +470,16 @@ public abstract class ImageInt extends ImageHandler {
      * @param replace the new value
      */
     public void replacePixelsValue(int[] values, int replace) {
-        for (int k = 0; k < sizeXYZ; k++) {
-            int pix = getPixelInt(k);
-            for (int i = 0; i < values.length; i++) {
-                if (pix == values[i]) {
-                    setPixel(k, replace);
-                    break;
+        for (int z = 0; z < sizeZ; z++)
+            for (int k = 0; k < sizeXY; k++) {
+                int pix = getPixelInt(k, z);
+                for (int i = 0; i < values.length; i++) {
+                    if (pix == values[i]) {
+                        setPixel(k, z, replace);
+                        break;
+                    }
                 }
             }
-        }
         resetStats();
     }
 
@@ -576,9 +583,10 @@ public abstract class ImageInt extends ImageHandler {
             res = new ImageShort("add", sizeX, sizeY, sizeZ);
         }
 
-        for (int i = 0; i < sizeXYZ; i++) {
-            res.setPixel(i, this.getPixelInt(i) + other.getPixelInt(i));
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                res.setPixel(i, z, this.getPixelInt(i, z) + other.getPixelInt(i, z));
+            }
 
         return res;
     }
@@ -595,9 +603,10 @@ public abstract class ImageInt extends ImageHandler {
             res = new ImageShort("diff", sizeX, sizeY, sizeZ);
         }
 
-        for (int i = 0; i < sizeXYZ; i++) {
-            res.setPixel(i, Math.abs(this.getPixel(i) - other.getPixel(i)));
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                res.setPixel(i, z, Math.abs(this.getPixel(i, z) - other.getPixel(i, z)));
+            }
 
         return res;
     }
@@ -624,9 +633,10 @@ public abstract class ImageInt extends ImageHandler {
             res = new ImageShort("add", sizeX, sizeY, sizeZ);
         }
 
-        for (int i = 0; i < sizeXYZ; i++) {
-            res.setPixel(i, this.getPixelInt(i) - other.getPixelInt(i));
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                res.setPixel(i, z, this.getPixelInt(i, z) - other.getPixelInt(i, z));
+            }
 
         return res;
     }
@@ -643,10 +653,10 @@ public abstract class ImageInt extends ImageHandler {
             res = new ImageShort("subtract", sizeX, sizeY, sizeZ);
         }
 
-
-        for (int i = 0; i < sizeXYZ; i++) {
-            res.setPixel(i, this.getPixelInt(i) - other.getPixelInt(i));
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                res.setPixel(i, z, this.getPixelInt(i, z) - other.getPixelInt(i, z));
+            }
 
         return res;
     }
@@ -801,7 +811,7 @@ public abstract class ImageInt extends ImageHandler {
                 } else if (operation == FastArithmetic3D.DIFF) {
                     value = Math.abs(this.getPixel(i, k) * par1 - other.getPixel(i, k) * par2);
                 }
-                out.setPixel(i, k, Math.round( value));
+                out.setPixel(i, k, Math.round(value));
             }
             if (timer != null) {
                 String ti = timer.getFullInfo(1);

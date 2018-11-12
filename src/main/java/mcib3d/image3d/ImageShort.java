@@ -418,7 +418,7 @@ public class ImageShort extends ImageInt {
         }
     }
 
-    @Override
+    @Override @Deprecated
     public float getPixel(int coord) {
         return (float) (pixels[coord / sizeXY][coord % sizeXY] & 0xffff);
     }
@@ -454,12 +454,12 @@ public class ImageShort extends ImageInt {
         return pixels[z][xy] & 0xffff;
     }
 
-    @Override
+    @Override @Deprecated
     public int getPixelInt(int coord) {
         return pixels[coord / sizeXY][coord % sizeXY] & 0xffff;
     }
 
-    @Override
+    @Override @Deprecated
     public void setPixel(int coord, float value) {
         pixels[coord / sizeXY][coord % sizeXY] = (short) value;
     }
@@ -529,8 +529,8 @@ public class ImageShort extends ImageInt {
         if (s.minAndMaxSet()) {
             return;
         }
-        int max = 0;
-        int min = Integer.MAX_VALUE;
+        int max = getPixelInt(0, 0);
+        int min = getPixelInt(0, 0);
         if (mask == null) {
             for (int z = 0; z < sizeZ; z++) {
                 for (int xy = 0; xy < sizeXY; xy++) {
@@ -1061,7 +1061,8 @@ public class ImageShort extends ImageInt {
 
     /**
      * Rescale the image to new dimension, only in Z
-     * @param newZ the new size in Z
+     *
+     * @param newZ   the new size in Z
      * @param method the method, see ImageProcessor
      * @return the rescaled image
      */
@@ -1075,7 +1076,7 @@ public class ImageShort extends ImageInt {
         // offset should be reset?
         res.setOffset(this);
         // change calibration only if XY linked
-        res.setScale(scaleXY , scaleZ * (double) sizeZ / (double) newZ, unit);
+        res.setScale(scaleXY, scaleZ * (double) sizeZ / (double) newZ, unit);
 
         return res;
     }

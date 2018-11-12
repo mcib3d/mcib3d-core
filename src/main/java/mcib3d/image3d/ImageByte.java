@@ -327,7 +327,7 @@ public class ImageByte extends ImageInt {
         return (float) (pixels[z][xy] & 0xff);
     }
 
-    @Override
+    @Override @Deprecated
     public float getPixel(int coord) {
         return (float) (pixels[coord / sizeXY][coord % sizeXY] & 0xff);
     }
@@ -346,7 +346,7 @@ public class ImageByte extends ImageInt {
         return pixels[z][xy] & 0xff;
     }
 
-    @Override
+    @Override @Deprecated
     public int getPixelInt(int coord) {
         return pixels[coord / sizeXY][coord % sizeXY] & 0xff;
     }
@@ -363,7 +363,7 @@ public class ImageByte extends ImageInt {
         return pixels[vox.z][vox.x + vox.y * sizeX] & 0xff;
     }
 
-    @Override
+    @Override @Deprecated
     public void setPixel(int coord, float value) {
         pixels[coord / sizeXY][coord % sizeXY] = (byte) (value);
     }

@@ -378,6 +378,8 @@ public abstract class ImageHandler {
         return (contains(x, y, z) && getPixel(x, y, z) != 0);
     }
 
+    // FIXME pb with big images where coord > 2GB
+    @Deprecated
     public abstract float getPixel(int coord);
 
     public abstract float getPixel(int x, int y, int z);
@@ -1048,6 +1050,7 @@ public abstract class ImageHandler {
 
     public abstract void draw(Object3D o, float value);
 
+    @Deprecated // pb with image size > 2GB
     public abstract void setPixel(int coord, float value);
 
     public abstract void setPixel(Point3D point, float value);
@@ -1195,9 +1198,10 @@ public abstract class ImageHandler {
         }
         // ImageFloat is returned
         ImageFloat res = new ImageFloat("res", this.sizeX, this.sizeY, this.sizeZ);
-        for (int i = 0; i < sizeXYZ; i++) {
-            res.setPixel(i, s1 * this.getPixel(i) + s2 * image.getPixel(i));
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                res.setPixel(i, z, s1 * this.getPixel(i, z) + s2 * image.getPixel(i, z));
+            }
 
         return res;
     }
@@ -1208,9 +1212,10 @@ public abstract class ImageHandler {
         }
         // Same type is returned is returned
         ImageHandler res = this.createSameDimensions();
-        for (int i = 0; i < sizeXYZ; i++) {
-            res.setPixel(i, s1 * this.getPixel(i) + s2 * image.getPixel(i));
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                res.setPixel(i, z, s1 * this.getPixel(i, z) + s2 * image.getPixel(i, z));
+            }
 
         return res;
     }
@@ -1224,9 +1229,10 @@ public abstract class ImageHandler {
     public ImageHandler multiplyImage(ImageHandler image, float coeff) {
         // ImageFloat is returned
         ImageFloat res = new ImageFloat("multiply", this.sizeX, this.sizeY, this.sizeZ);
-        for (int i = 0; i < sizeXYZ; i++) {
-            res.setPixel(i, coeff * this.getPixel(i) * image.getPixel(i));
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                res.setPixel(i, z, coeff * this.getPixel(i, z) * image.getPixel(i, z));
+            }
 
         return res;
     }
@@ -1234,9 +1240,10 @@ public abstract class ImageHandler {
     public ImageHandler powImage(double pow) {
         // ImageFloat is returned
         ImageFloat res = new ImageFloat("pow", this.sizeX, this.sizeY, this.sizeZ);
-        for (int i = 0; i < sizeXYZ; i++) {
-            res.setPixel(i, (float) Math.pow(getPixel(i), pow));
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                res.setPixel(i, z, (float) Math.pow(getPixel(i, z), pow));
+            }
         return res;
     }
 
@@ -1249,31 +1256,35 @@ public abstract class ImageHandler {
     public ImageHandler divideImage(ImageHandler image, float coeff) {
         // ImageFloat is returned
         ImageFloat res = new ImageFloat("divide", this.sizeX, this.sizeY, this.sizeZ);
-        for (int i = 0; i < sizeXYZ; i++) {
-            res.setPixel(i, this.getPixel(i) / (image.getPixel(i) * coeff));
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                res.setPixel(i, z, this.getPixel(i, z) / (image.getPixel(i, z) * coeff));
+            }
 
         return res;
     }
 
     public void divideByValue(float coeff) {
-        for (int i = 0; i < sizeXYZ; i++) {
-            setPixel(i, this.getPixel(i) / coeff);
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                setPixel(i, z, this.getPixel(i, z) / coeff);
+            }
         resetStats();
     }
 
     public void multiplyByValue(float coeff) {
-        for (int i = 0; i < sizeXYZ; i++) {
-            setPixel(i, this.getPixel(i) * coeff);
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                setPixel(i, z, this.getPixel(i, z) * coeff);
+            }
         resetStats();
     }
 
     public void addValue(float val) {
-        for (int i = 0; i < sizeXYZ; i++) {
-            this.setPixel(i, this.getPixel(i) + val);
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                this.setPixel(i, z, this.getPixel(i, z) + val);
+            }
         resetStats();
     }
 
@@ -1952,12 +1963,13 @@ public abstract class ImageHandler {
         ImageHandler res = this.createSameDimensions();
         double mean = this.getMean();
         double sd = this.getImageStats(null).getStandardDeviation();
-        for (int c = 0; c < this.sizeXYZ; c++) {
-            double pix = this.getPixel(c);
-            double pixNorma0 = ((pix - mean) / sd);
-            double pixNorma = pixNorma0 * sdV + meanV;
-            res.setPixel(c, (float) pixNorma);
-        }
+        for (int z = 0; z < sizeZ; z++)
+            for (int c = 0; c < this.sizeXY; c++) {
+                double pix = this.getPixel(c, z);
+                double pixNorma0 = ((pix - mean) / sd);
+                double pixNorma = pixNorma0 * sdV + meanV;
+                res.setPixel(c,z, (float) pixNorma);
+            }
 
         return res;
     }
@@ -1970,13 +1982,14 @@ public abstract class ImageHandler {
 
     // value for bckg values, 0 for non-backg values,
     public void invertBackground(float bckg, float value) {
-        for (int i = 0; i < sizeXYZ; i++) {
-            if (getPixel(i) == bckg) {
-                setPixel(i, value);
-            } else {
-                setPixel(i, 0);
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                if (getPixel(i, z) == bckg) {
+                    setPixel(i, z, value);
+                } else {
+                    setPixel(i, z, 0);
+                }
             }
-        }
         resetStats();
     }
 
@@ -2074,24 +2087,26 @@ public abstract class ImageHandler {
     public float getMinAboveValue(float value) {
         float mini = Float.MAX_VALUE;
         float pix;
-        for (int p = 0; p < this.sizeXYZ; p++) {
-            pix = this.getPixel(p);
-            if ((pix > value) && (pix < mini)) {
-                mini = pix;
+        for (int z = 0; z < sizeZ; z++)
+            for (int xy = 0; xy < this.sizeXY; xy++) {
+                pix = this.getPixel(xy, z);
+                if ((pix > value) && (pix < mini)) {
+                    mini = pix;
+                }
             }
-        }
         return mini;
     }
 
     public float getMaxBelowValue(float value) {
         float mini = Float.MIN_VALUE;
         float pix;
-        for (int p = 0; p < this.sizeXYZ; p++) {
-            pix = this.getPixel(p);
-            if ((pix < value) && (pix > mini)) {
-                mini = pix;
+        for (int z = 0; z < sizeZ; z++)
+            for (int p = 0; p < this.sizeXY; p++) {
+                pix = this.getPixel(p, z);
+                if ((pix < value) && (pix > mini)) {
+                    mini = pix;
+                }
             }
-        }
         return mini;
     }
 
@@ -2183,11 +2198,12 @@ public abstract class ImageHandler {
     }
 
     public boolean hasOneValue(float f) {
-        for (int i = 0; i < sizeXYZ; i++) {
-            if (getPixel(i) == f) {
-                return true;
+        for (int z = 0; z < sizeZ; z++)
+            for (int i = 0; i < sizeXY; i++) {
+                if (getPixel(i, z) == f) {
+                    return true;
+                }
             }
-        }
         return false;
     }
 
@@ -2198,11 +2214,12 @@ public abstract class ImageHandler {
      * @param rep the new value
      */
     public void replacePixelsValue(int val, int rep) {
-        for (int k = 0; k < sizeXYZ; k++) {
-            if (this.getPixel(k) == val) {
-                this.setPixel(k, rep);
+        for (int z = 0; z < sizeZ; z++)
+            for (int k = 0; k < sizeXY; k++) {
+                if (this.getPixel(k, z) == val) {
+                    this.setPixel(k, z, rep);
+                }
             }
-        }
         resetStats();
     }
 

@@ -331,7 +331,7 @@ public class ImageFloat extends ImageHandler {
         }
     }
 
-    @Override
+    @Override @Deprecated
     public float getPixel(int coord) {
         return pixels[coord / sizeXY][coord % sizeXY];
     }
@@ -354,7 +354,7 @@ public class ImageFloat extends ImageHandler {
         return pixels[z][xy];
     }
 
-    @Override
+    @Override @Deprecated
     public void setPixel(int coord, float value) {
         pixels[coord / sizeXY][coord % sizeXY] = value;
     }
