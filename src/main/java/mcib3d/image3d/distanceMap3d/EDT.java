@@ -34,7 +34,13 @@ public class EDT {
             if (ip instanceof ImageShort) {
                 return (inverse) ? new EdtShortInv().run((ImageShort) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs) : new EdtShort().run((ImageShort) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs);
             } else if (ip instanceof ImageByte) {
-                return ((inverse) ? new EdtByteInv().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs) : new EdtByte().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs));
+                //return ((inverse) ? new EdtByteInv().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs) : new EdtByte().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs));
+               if(inverse){
+                   return new EdtByteInv().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs);
+               }
+               else {
+                   return new EdtByte().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs);
+               }
             } else if (ip instanceof ImageFloat) {
                 return (inverse) ? new EdtFloatInv().run((ImageFloat) ip, thresh, scaleXY, scaleZ, nbCPUs) : new EdtFloat().run((ImageFloat) ip, thresh, scaleXY, scaleZ, nbCPUs);
             }

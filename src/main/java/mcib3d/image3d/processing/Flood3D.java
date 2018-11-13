@@ -34,7 +34,6 @@ import java.util.ArrayList;
  * @author Jean Ollion
  */
 public class Flood3D {
-
     public static void flood3d6(ImageInt img, int seedX, int seedY, int seedZ, int newVal) {
         IntCoord3D seed = new IntCoord3D(seedX, seedY, seedZ);
         if (img instanceof ImageShort) {
@@ -310,9 +309,75 @@ public class Flood3D {
                 }
             }
         }
-        img.replacePixelsValue((int) tmpVal, highVal);
-        img.replacePixelsValue(lowVal, 0);
+        img.replacePixelsValue((int) tmpVal, highVal, lowVal, 0);
         img.updateDisplay();
+    }
+
+
+    /**
+     * Connect in 3D pixel with low values to pixel with high values
+     * Pixels with low values not connected to pixels with high values will remain with low values
+     *
+     * @param img     The image to process, 8-bit image
+     * @param seed    one seed to start the connection
+     * @param highVal the high value
+     * @param lowVal  the low value
+     */
+    public static void connect2DByteXY(ImageByte img, int zcoord, IntCoord3D seed, byte lowVal, byte highVal, byte tmpVal) {
+        byte CAND = 1;
+        byte QUEUE = 2;
+        // tmp image to store queue pixels
+        byte[][] temp = img.duplicate().pixels;
+        for (int z = 0; z < img.sizeZ; z++) {
+            for (int xy = 0; xy < img.sizeXY; xy++) {
+                if ((temp[z][xy] == lowVal) || (temp[z][xy] == highVal)) {
+                    temp[z][xy] = CAND;
+                }
+            }
+        }
+        long step = 500;
+        byte[][] pixels = img.pixels;
+        int sizeX = img.sizeX;
+        int sizeY = img.sizeY;
+        int sizeZ = img.sizeZ;
+        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        if (pixels[seed.z][seed.x + seed.y * sizeX] != highVal) {
+            IJ.log("Seed not right value ");
+            return;
+        }
+        // if seed not in this Z return
+        if (seed.z != zcoord) return;
+        // do flooding
+        queue.add(seed);
+        Long t0 = System.currentTimeMillis();
+        while (!queue.isEmpty()) {
+            if (System.currentTimeMillis() - t0 > step) {
+                IJ.log("\\Update:Voxels to process : " + queue.size());
+                t0 = System.currentTimeMillis();
+            }
+            IntCoord3D curCoord = queue.remove(0);
+            int xy = curCoord.x + curCoord.y * sizeX;
+            pixels[curCoord.z][xy] = tmpVal;
+            int curZ, curY, curX;
+            curZ = curCoord.z;
+            for (int yy = -1; yy < 2; yy++) {
+                curY = curCoord.y + yy;
+                if (curY >= 0 && curY <= (sizeY - 1)) {
+                    for (int xx = -1; xx < 2; xx++) {
+                        curX = curCoord.x + xx;
+                        if (curX >= 0 && curX <= (sizeX - 1)) {
+                            if (temp[curZ][curY * sizeX + curX] == CAND) {
+                                temp[curZ][curY * sizeX + curX] = QUEUE;
+                                queue.add(new IntCoord3D(curX, curY, curZ));
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        }
+        temp = null;
     }
 
     /**

@@ -64,7 +64,7 @@ public class AllRegionsAssociation {
                         ArrayUtil tab = img.getNeighborhoodCross3D(x, y, z);
                         int val = (int) img.getPixel(x, y, z);
                         tab = tab.distinctValues();
-                        for (int i = 0; i < tab.getSize(); i++) {
+                        for (int i = 0; i < tab.size(); i++) {
                             int val2 = tab.getValueInt(i);
                             if (val2 != val) {
                                 AssociationRegion asso = new AssociationRegion();
@@ -276,9 +276,9 @@ public class AllRegionsAssociation {
         ArrayUtil tab = new ArrayUtil(clusters);
         tab = tab.distinctValues();
         if (tab.getMinimum() == 0) {
-            return tab.getSize() - 1;
+            return tab.size() - 1;
         } else {
-            return tab.getSize();
+            return tab.size();
         }
     }
 

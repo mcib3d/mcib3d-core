@@ -56,24 +56,24 @@ import mcib3d.image3d.ImageFloat;
 public class EdtByte {
 
     public ImageFloat run(ImageByte imp, int thresh, float scaleXY, float scaleZ, int nbCPUs) throws Exception {
-        int w = imp.sizeX;
-        int h = imp.sizeY;
-        int d = imp.sizeZ;
+        int sizeX = imp.sizeX;
+        int sizeY = imp.sizeY;
+        int sizeZ = imp.sizeZ;
         float scale = scaleZ / scaleXY;
         byte[][] data = imp.pixels;
         //Create 32 bit floating point stack for output, s.  Will also use it for g in Transformation 1.
-        ImageStack sStack = new ImageStack(w, h);
-        float[][] s = new float[d][];
-        for (int k = 0; k < d; k++) {
-            ImageProcessor ipk = new FloatProcessor(w, h);
+        ImageStack sStack = new ImageStack(sizeX, sizeY);
+        float[][] res = new float[sizeZ][];
+        for (int k = 0; k < sizeZ; k++) {
+            ImageProcessor ipk = new FloatProcessor(sizeX, sizeY);
             sStack.addSlice(null, ipk);
-            s[k] = (float[]) ipk.getPixels();
+            res[k] = (float[]) ipk.getPixels();
         }
         float[] sk;
         //Transformation 1.  Use s to store g.
         Step1Thread[] s1t = new Step1Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
-            s1t[thread] = new Step1Thread(thread, nbCPUs, w, h, d, thresh, s, data, scale);
+            s1t[thread] = new Step1Thread(thread, nbCPUs, sizeX, sizeY, sizeZ, thresh, res, data, scale);
             s1t[thread].start();
         }
         try {
@@ -86,7 +86,7 @@ public class EdtByte {
         //Transformation 2.  g (in s) -> h (in s)
         Step2Thread[] s2t = new Step2Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
-            s2t[thread] = new Step2Thread(thread, nbCPUs, w, h, d, s);
+            s2t[thread] = new Step2Thread(thread, nbCPUs, sizeX, sizeY, sizeZ, res);
             s2t[thread].start();
         }
         try {
@@ -99,7 +99,7 @@ public class EdtByte {
         //Transformation 3. h (in s) -> s
         Step3Thread[] s3t = new Step3Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
-            s3t[thread] = new Step3Thread(thread, nbCPUs, w, h, d, s, data, thresh, scale);
+            s3t[thread] = new Step3Thread(thread, nbCPUs, sizeX, sizeY, sizeZ, res, data, thresh, scale);
             s3t[thread].start();
         }
         try {
@@ -112,10 +112,10 @@ public class EdtByte {
         //Find the largest distance for scaling
         //Also fill in the background values.
         float distMax = 0;
-        int wh = w * h;
+        int wh = sizeX * sizeY;
         float dist;
-        for (int k = 0; k < d; k++) {
-            sk = s[k];
+        for (int k = 0; k < sizeZ; k++) {
+            sk = res[k];
             for (int ind = 0; ind < wh; ind++) {
                 if (((data[k][ind] & 255) <= thresh)) {
                     sk[ind] = 0;
@@ -127,11 +127,11 @@ public class EdtByte {
             }
         }
 
-        ImageFloat res = (ImageFloat) ImageFloat.wrap(sStack);
-        res.setScale(imp);
-        res.setOffset(imp);
-        res.setMinAndMax(0, distMax);
-        return res;
+        ImageFloat map = (ImageFloat) ImageFloat.wrap(sStack);
+        map.setScale(imp);
+        map.setOffset(imp);
+        map.setMinAndMax(0, distMax);
+        return map;
     }
     //Modified from ImageJ code by Wayne Rasband
 
@@ -147,49 +147,49 @@ public class EdtByte {
 
     class Step1Thread extends Thread {
 
-        int thread, nThreads, w, h, d, thresh;
-        float[][] s;
+        int thread, nThreads, sizeX, sizeY, sizeZ, thresh;
+        float[][] res;
         byte[][] data;
         float scaleZ;
 
         public Step1Thread(int thread, int nThreads, int w, int h, int d, int thresh, float[][] s, byte[][] data, float scaleZ) {
             this.thread = thread;
             this.nThreads = nThreads;
-            this.w = w;
-            this.h = h;
-            this.d = d;
+            this.sizeX = w;
+            this.sizeY = h;
+            this.sizeZ = d;
             this.thresh = thresh;
             this.data = data;
-            this.s = s;
+            this.res = s;
             this.scaleZ = scaleZ * scaleZ;
         }
 
         @Override
         public void run() {
-            float[] sk;
-            byte[] dk;
-            int n = w;
-            if (h > n) {
-                n = h;
+            float[] resk;
+            byte[] datak;
+            int n = sizeX;
+            if (sizeY > n) {
+                n = sizeY;
             }
-            if (d > n) {
-                n = d;
+            if (sizeZ > n) {
+                n = sizeZ;
             }
             //int noResult = 3 * (n + 1) * (n + 1);
             boolean[] background = new boolean[n];
             boolean nonempty;
             float test, min;
-            for (int k = thread; k < d; k += nThreads) {
-                sk = s[k];
-                dk = data[k];
-                for (int j = 0; j < h; j++) {
-                    for (int i = 0; i < w; i++) {
-                        background[i] = ((dk[i + w * j] & 255) <= thresh);
+            for (int k = thread; k < sizeZ; k += nThreads) {
+                resk = res[k];
+                datak = data[k];
+                for (int j = 0; j < sizeY; j++) {
+                    for (int i = 0; i < sizeX; i++) {
+                        background[i] = ((datak[i + sizeX * j] & 255) <= thresh);
                     }
-                    for (int i = 0; i < w; i++) {
-                        min = Math.min(i + 1, w - i); // distance minimale = distance au bord le plus proche + 1
+                    for (int i = 0; i < sizeX; i++) {
+                        min = Math.min(i + 1, sizeX - i); // distance minimale = distance au bord le plus proche + 1
                         min *= min;
-                        for (int x = i; x < w; x++) {
+                        for (int x = i; x < sizeX; x++) {
                             if (background[x]) {
                                 test = i - x;
                                 test *= test;
@@ -209,7 +209,7 @@ public class EdtByte {
                                 break;
                             }
                         }
-                        sk[i + w * j] = min;
+                        resk[i + sizeX * j] = min;
                     }
                 }
             }

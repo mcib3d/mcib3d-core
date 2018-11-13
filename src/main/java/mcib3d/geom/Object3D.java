@@ -1,10 +1,5 @@
 package mcib3d.geom;
 
-//import com.mongodb.BasicDBObject;
-//import com.mongodb.DBObject;
-
-//import ij.IJ;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;

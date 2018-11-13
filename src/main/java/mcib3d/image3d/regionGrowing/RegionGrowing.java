@@ -206,7 +206,7 @@ public class RegionGrowing extends Watershed3D_old {
                 boolean reprep = false;
                 String[] asso = S.split("_");
                 ArrayUtil assoTab = new ArrayUtil(asso.length);
-                for (int i = 0; i < assoTab.getSize(); i++) {
+                for (int i = 0; i < assoTab.size(); i++) {
                     int val = Integer.parseInt(asso[i]);
                     boolean rep = false;
                     for (int old : oldLabels) {
@@ -225,11 +225,11 @@ public class RegionGrowing extends Watershed3D_old {
                 if (reprep) {
                     assoTab = assoTab.distinctValues();
                     assoTab.reverse(); // array from max to min with unique values
-                    if (assoTab.getSize() == 1) {
+                    if (assoTab.size() == 1) {
                         toRemove.add(S);
                     } else {
                         String assoRep = "" + (int) assoTab.getValue(0);
-                        for (int i = 1; i < assoTab.getSize(); i++) {
+                        for (int i = 1; i < assoTab.size(); i++) {
                             assoRep = assoRep.concat("_" + (int) assoTab.getValue(i));
                         }
                         toRemove.add(S);
