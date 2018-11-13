@@ -91,7 +91,7 @@ public abstract class ImageInt extends ImageHandler {
     }
 
     public abstract void setPixel(int x, int y, int z, int value);
-    
+
     public abstract void setPixel(int xy, int z, int value);
 
     public abstract void setPixelCross3D(int x, int y, int z, int value);
@@ -680,9 +680,11 @@ public abstract class ImageInt extends ImageHandler {
     }
 
     public boolean hasOneValueInt(int f) {
-        for (int i = 0; i < sizeXYZ; i++) {
-            if (getPixelInt(i) == f) {
-                return true;
+        for (int k = 0; k < sizeZ; k++) {
+            for (int i = 0; i < sizeXY; i++) {
+                if (getPixelInt(i, k) == f) {
+                    return true;
+                }
             }
         }
         return false;
@@ -727,7 +729,8 @@ public abstract class ImageInt extends ImageHandler {
      * @param zmax
      * @param filter
      */
-    public void filterGeneric(ImageInt out, float radx, float rady, float radz, int zmin, int zmax, int filter, Chrono timer, AbstractLog log) {
+    public void filterGeneric(ImageInt out, float radx, float rady, float radz, int zmin, int zmax,
+                              int filter, Chrono timer, AbstractLog log) {
         int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
         int nb = FastFilters3D.getNbFromKernel(ker);
         if (zmin < 0) {
@@ -789,7 +792,8 @@ public abstract class ImageInt extends ImageHandler {
      * @param timer     timer for time
      * @param log       logger for print
      */
-    public void mathGeneric(ImageInt other, ImageInt out, int zmin, int zmax, int operation, float par1, float par2, Chrono timer, AbstractLog log) {
+    public void mathGeneric(ImageInt other, ImageInt out, int zmin, int zmax, int operation, float par1,
+                            float par2, Chrono timer, AbstractLog log) {
         if (zmin < 0) {
             zmin = 0;
         }
@@ -826,7 +830,8 @@ public abstract class ImageInt extends ImageHandler {
         return getListMaxima(radx, rady, radz, zmin, zmax, null, null);
     }
 
-    public ArrayList<Voxel3DComparable> getListMaxima(float radx, float rady, float radz, int zmin, int zmax, Chrono timer, AbstractLog log) {
+    public ArrayList<Voxel3DComparable> getListMaxima(float radx, float rady, float radz, int zmin,
+                                                      int zmax, Chrono timer, AbstractLog log) {
         ArrayList<Voxel3DComparable> res = new ArrayList<Voxel3DComparable>();
         int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
         int nb = FastFilters3D.getNbFromKernel(ker);
@@ -861,7 +866,8 @@ public abstract class ImageInt extends ImageHandler {
         filterGeneric(out, obj, zmin, zmax, filter, null, null);
     }
 
-    public void filterGeneric(ImageInt out, Object3DVoxels obj, int zmin, int zmax, int filter, Chrono timer, AbstractLog log) {
+    public void filterGeneric(ImageInt out, Object3DVoxels obj, int zmin, int zmax, int filter, Chrono
+            timer, AbstractLog log) {
         if (zmin < 0) {
             zmin = 0;
         }
@@ -952,7 +958,8 @@ public abstract class ImageInt extends ImageHandler {
         return res;
     }
 
-    public void adaptiveFilter(ImageInt filtered, float radx, float rady, float radz, int zmin, int zmax, Chrono timer, AbstractLog show) {
+    public void adaptiveFilter(ImageInt filtered, float radx, float rady, float radz, int zmin, int zmax, Chrono
+            timer, AbstractLog show) {
         if (zmin < 0) {
             zmin = 0;
         }

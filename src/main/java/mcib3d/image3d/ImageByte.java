@@ -216,13 +216,15 @@ public class ImageByte extends ImageInt {
      */
 
     public Object getArray1D() {
-        byte[] res = new byte[sizeXYZ];
-        int offZ = 0;
-        for (int slice = 0; slice < img.getNSlices(); slice++) {
-            System.arraycopy(img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
-            offZ += sizeXY;
-        }
-        return res;
+        if (sizeXYZ < Integer.MAX_VALUE) {
+            byte[] res = new byte[(int) sizeXYZ];
+            int offZ = 0;
+            for (int slice = 0; slice < img.getNSlices(); slice++) {
+                System.arraycopy(img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
+                offZ += sizeXY;
+            }
+            return res;
+        } else return null;
     }
 
     public Object getArray1D(int z) {
@@ -327,7 +329,8 @@ public class ImageByte extends ImageInt {
         return (float) (pixels[z][xy] & 0xff);
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public float getPixel(int coord) {
         return (float) (pixels[coord / sizeXY][coord % sizeXY] & 0xff);
     }
@@ -346,7 +349,8 @@ public class ImageByte extends ImageInt {
         return pixels[z][xy] & 0xff;
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public int getPixelInt(int coord) {
         return pixels[coord / sizeXY][coord % sizeXY] & 0xff;
     }
@@ -363,7 +367,8 @@ public class ImageByte extends ImageInt {
         return pixels[vox.z][vox.x + vox.y * sizeX] & 0xff;
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public void setPixel(int coord, float value) {
         pixels[coord / sizeXY][coord % sizeXY] = (byte) (value);
     }
@@ -914,7 +919,8 @@ public class ImageByte extends ImageInt {
 
     /**
      * Rescale the image to new dimension, only in Z
-     * @param newZ the new size in Z
+     *
+     * @param newZ   the new size in Z
      * @param method the method, see ImageProcessor
      * @return the rescaled image
      */
@@ -928,7 +934,7 @@ public class ImageByte extends ImageInt {
         // offset should be reset?
         res.setOffset(this);
         // change calibration only if XY linked
-        res.setScale(scaleXY , scaleZ * (double) sizeZ / (double) newZ, unit);
+        res.setScale(scaleXY, scaleZ * (double) sizeZ / (double) newZ, unit);
 
         return res;
     }

@@ -1091,11 +1091,12 @@ public class Object3DVoxels extends Object3D {
     private int getColocImageIntersection(Object3D other) {
         ImageInt inter = this.createIntersectionImage(other, 1, 2);
         int count = 0;
-        for (int i = 0; i < inter.sizeXYZ; i++) {
-            if (inter.getPixelInt(i) == 3) {
-                count++;
+        for (int z = 0; z < inter.sizeZ; z++)
+            for (int i = 0; i < inter.sizeXY; i++) {
+                if (inter.getPixelInt(i, z) == 3) {
+                    count++;
+                }
             }
-        }
         return count;
     }
 
@@ -1764,13 +1765,13 @@ public class Object3DVoxels extends Object3D {
     public ArrayUtil listValues(ImageHandler ima, float thresh) {
         //ArrayUtil list = new ArrayUtil(this.getVolumePixels());
 
-        ArrayList<Double> list=new ArrayList<>();
+        ArrayList<Double> list = new ArrayList<>();
 
-        for(Voxel3D voxel:voxels){
-            if(ima.contains(voxel.getRoundX(),voxel.getRoundY(),voxel.getRoundZ())){
-                float pixel=ima.getPixel(voxel.getRoundX(),voxel.getRoundY(),voxel.getRoundZ());
-                if(pixel>thresh){
-                    list.add((double)pixel);
+        for (Voxel3D voxel : voxels) {
+            if (ima.contains(voxel.getRoundX(), voxel.getRoundY(), voxel.getRoundZ())) {
+                float pixel = ima.getPixel(voxel.getRoundX(), voxel.getRoundY(), voxel.getRoundZ());
+                if (pixel > thresh) {
+                    list.add((double) pixel);
                 }
             }
         }

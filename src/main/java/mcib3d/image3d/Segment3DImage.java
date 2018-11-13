@@ -137,6 +137,7 @@ public class Segment3DImage {
      * Generates the connexity analysis.
      */
     public void segment() {
+        // may be problematic with images >2Gb
         //First ID attribution
         int currID = 0;
         int currPos = 0;

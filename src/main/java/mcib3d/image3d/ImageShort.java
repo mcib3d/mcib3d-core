@@ -257,13 +257,15 @@ public class ImageShort extends ImageInt {
      * @return the array as Object
      */
     public Object getArray1D() {
-        short[] res = new short[sizeXYZ];
-        int offZ = 0;
-        for (int slice = 0; slice < img.getNSlices(); slice++) {
-            System.arraycopy(img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
-            offZ += sizeXY;
-        }
-        return res;
+        if (sizeXYZ < Integer.MAX_VALUE) {
+            short[] res = new short[(int) sizeXYZ];
+            int offZ = 0;
+            for (int slice = 0; slice < img.getNSlices(); slice++) {
+                System.arraycopy(img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
+                offZ += sizeXY;
+            }
+            return res;
+        } else return null;
     }
 
     /**
@@ -418,7 +420,8 @@ public class ImageShort extends ImageInt {
         }
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public float getPixel(int coord) {
         return (float) (pixels[coord / sizeXY][coord % sizeXY] & 0xffff);
     }
@@ -454,12 +457,14 @@ public class ImageShort extends ImageInt {
         return pixels[z][xy] & 0xffff;
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public int getPixelInt(int coord) {
         return pixels[coord / sizeXY][coord % sizeXY] & 0xffff;
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public void setPixel(int coord, float value) {
         pixels[coord / sizeXY][coord % sizeXY] = (short) value;
     }

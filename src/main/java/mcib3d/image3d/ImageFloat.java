@@ -221,13 +221,15 @@ public class ImageFloat extends ImageHandler {
     }
 
     public Object getArray1D() {
-        float[] res = new float[sizeXYZ];
-        int offZ = 0;
-        for (int slice = 0; slice < img.getNSlices(); slice++) {
-            System.arraycopy((float[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
-            offZ += sizeXY;
-        }
-        return res;
+        if (sizeXYZ < Integer.MAX_VALUE) {
+            float[] res = new float[(int) sizeXYZ];
+            int offZ = 0;
+            for (int slice = 0; slice < img.getNSlices(); slice++) {
+                System.arraycopy((float[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
+                offZ += sizeXY;
+            }
+            return res;
+        } else return null;
     }
 
     public Object getArray1D(int z) {
@@ -331,7 +333,8 @@ public class ImageFloat extends ImageHandler {
         }
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public float getPixel(int coord) {
         return pixels[coord / sizeXY][coord % sizeXY];
     }
@@ -354,7 +357,8 @@ public class ImageFloat extends ImageHandler {
         return pixels[z][xy];
     }
 
-    @Override @Deprecated
+    @Override
+    @Deprecated
     public void setPixel(int coord, float value) {
         pixels[coord / sizeXY][coord % sizeXY] = value;
     }

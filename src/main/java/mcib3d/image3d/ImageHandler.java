@@ -59,7 +59,8 @@ import static java.lang.Math.min;
 public abstract class ImageHandler {
 
     public static double defZoomFactor = 1d;
-    public int sizeX, sizeY, sizeZ, sizeXY, sizeXYZ, offsetX, offsetY, offsetZ;
+    public int sizeX, sizeY, sizeZ, sizeXY, offsetX, offsetY, offsetZ;
+    public long sizeXYZ;// for images > 2GB
     protected ImagePlus img;
     protected String title;
     double scaleXY = 1.0, scaleZ = 1.0;
