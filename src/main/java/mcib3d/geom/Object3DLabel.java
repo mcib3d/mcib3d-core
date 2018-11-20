@@ -775,6 +775,20 @@ public class Object3DLabel extends Object3D {
         }
     }
 
+    public void draw(ImageHandler mask, float val) {
+        for (int z = zmin; z <= zmax; z++) {
+            for (int x = xmin; x <= xmax; x++) {
+                for (int y = ymin; y <= ymax; y++) {
+                    if (labelImage.getPixel(x, y, z) == value) {
+                        mask.setPixel(x, y, z, val);
+                    }
+                }
+            }
+        }
+    }
+
+
+
     /**
      * @param mask
      * @param red

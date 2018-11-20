@@ -947,6 +947,15 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public abstract void draw(ImageHandler mask, int col);
 
+    /**
+     * drawing inside an ImageHandler
+     *
+     * @param mask the image
+     * @param val  the real value
+     *             */
+    public abstract void draw(ImageHandler mask, float val);
+
+
     public void drawAt(ImageHandler mask, int col, Point3D center) {
         double cx = getCenterX();
         double cy = getCenterY();
@@ -2509,6 +2518,11 @@ public abstract class Object3D implements Comparable<Object3D> {
         return new Vector3D(voxs[0], voxs[1]);
     }
 
+    /**
+     * Return the two voxels defining the border-border distance
+     * @param other The other object
+     * @return The two voxels(from this object, from other object)
+     */
     public Voxel3D[] VoxelsBorderBorder(Object3D other) {
         double distanceMinimum = Double.MAX_VALUE;
         Voxel3D otherBorder = null, thisBorder = null;

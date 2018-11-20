@@ -1957,6 +1957,20 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
+    public void draw(ImageHandler mask, float val) {
+        for (Voxel3D vox : this.getVoxels()) {
+            int px = (int) Math.round(vox.getX());
+            int py = (int) Math.round(vox.getX());
+            int pz = (int) Math.round(vox.getZ());
+            if (mask.contains(px, py, pz)) {
+                mask.setPixel(px, py, pz, val);
+            }
+        }
+    }
+
+
+
+    @Override
     public void draw(ImageHandler mask, int col, int tx, int ty, int tz) {
         for (Voxel3D vox : this.getVoxels()) {
             int px = (int) Math.round(vox.getX()) + tx;

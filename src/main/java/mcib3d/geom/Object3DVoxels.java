@@ -1729,6 +1729,22 @@ public class Object3DVoxels extends Object3D {
     }
 
     @Override
+    public void draw(ImageHandler mask, float val) {
+        Voxel3D vox;
+        for (Voxel3D voxel : voxels) {
+            vox = voxel;
+            int x = vox.getRoundX();
+            int y = vox.getRoundY();
+            int z = vox.getRoundZ();
+            if (mask.contains(x, y, z)) {
+                mask.setPixel(x, y, z, val);
+            }
+        }
+    }
+
+
+
+    @Override
     public void draw(ImageHandler mask, int col, int tx, int ty, int tz) {
         Voxel3D vox;
         for (Voxel3D voxel : voxels) {
