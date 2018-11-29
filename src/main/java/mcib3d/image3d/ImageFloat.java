@@ -10,6 +10,7 @@ import ij.process.StackProcessor;
 import mcib3d.geom.*;
 import mcib3d.image3d.processing.FastArithmetic3D;
 import mcib3d.image3d.processing.FastFilters3D;
+import mcib3d.image3d.processing.FastOperation3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.Chrono;
 import mcib3d.utils.Logger.AbstractLog;
@@ -1172,6 +1173,59 @@ public class ImageFloat extends ImageHandler {
                     value = Math.abs(this.getPixel(i, k) * par1 - other.getPixel(i, k) * par2);
                 }
                 out.setPixel(i, k, value);
+            }
+            if (timer != null) {
+                String ti = timer.getFullInfo(1);
+                if (ti != null) log.log("3D filtering : " + ti);
+            }
+        }
+        resetStats(); // ??
+    }
+
+    public void operationGeneric(ImageFloat out, int zmin, int zmax, int operation, float par1, float par2, Chrono timer, AbstractLog log) {
+        float pix;
+        if (zmin < 0) {
+            zmin = 0;
+        }
+        if (zmax > this.sizeZ) {
+            zmax = this.sizeZ;
+        }
+        float value = 0;
+        for (int k = zmin; k < zmax; k++) {
+            for (int i = 0; i < sizeXY; i++) {
+                switch (operation) {
+                    case FastOperation3D.ADD:
+                        value = this.getPixel(i, k) + par1;
+                        break;
+                    case FastOperation3D.FILL:
+                        value = par1;
+                        break;
+                    case FastOperation3D.INVERT:
+                        value = par1 - this.getPixel(i, k);
+                        break;
+                    case FastOperation3D.MULT:
+                        value = this.getPixel(i, k) * par1;
+                        break;
+                    case FastOperation3D.POW:
+                        value = (float) Math.pow(this.getPixel(i, k), par1);
+                        break;
+                    case FastOperation3D.REPLACE:
+                        pix = this.getPixel(i, k);
+                        if (pix == par1) value = par2;
+                        else value = pix;
+                        break;
+                    case FastOperation3D.THRESHOLDEXC:
+                        pix = this.getPixel(i, k);
+                        if ((pix > par1) && (pix < par2)) value = 255;
+                        else value = 0;
+                        break;
+                    case FastOperation3D.THRESHOLDINC:
+                        pix = this.getPixel(i, k);
+                        if ((pix >= par1) && (pix <= par2)) value = 255;
+                        else value = 0;
+                        break;
+                }
+                out.setPixel(i, k, Math.round(value));
             }
             if (timer != null) {
                 String ti = timer.getFullInfo(1);

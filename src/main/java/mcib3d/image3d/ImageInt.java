@@ -7,6 +7,7 @@ import mcib3d.geom.*;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.image3d.processing.FastArithmetic3D;
 import mcib3d.image3d.processing.FastFilters3D;
+import mcib3d.image3d.processing.FastOperation3D;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.Chrono;
 import mcib3d.utils.Logger.AbstractLog;
@@ -729,8 +730,7 @@ public abstract class ImageInt extends ImageHandler {
      * @param zmax
      * @param filter
      */
-    public void filterGeneric(ImageInt out, float radx, float rady, float radz, int zmin, int zmax,
-                              int filter, Chrono timer, AbstractLog log) {
+    public void filterGeneric(ImageInt out, float radx, float rady, float radz, int zmin, int zmax, int filter, Chrono timer, AbstractLog log) {
         int[] ker = FastFilters3D.createKernelEllipsoid(radx, rady, radz);
         int nb = FastFilters3D.getNbFromKernel(ker);
         if (zmin < 0) {
@@ -792,8 +792,7 @@ public abstract class ImageInt extends ImageHandler {
      * @param timer     timer for time
      * @param log       logger for print
      */
-    public void mathGeneric(ImageInt other, ImageInt out, int zmin, int zmax, int operation, float par1,
-                            float par2, Chrono timer, AbstractLog log) {
+    public void mathGeneric(ImageInt other, ImageInt out, int zmin, int zmax, int operation, float par1, float par2, Chrono timer, AbstractLog log) {
         if (zmin < 0) {
             zmin = 0;
         }
@@ -823,6 +822,55 @@ public abstract class ImageInt extends ImageHandler {
             }
         }
         resetStats(); // ??
+    }
+
+    public void operationGeneric(ImageInt out, int zmin, int zmax, int operation, float par1, float par2, Chrono timer, AbstractLog log) {
+        float pix;
+        if (zmin < 0) {
+            zmin = 0;
+        }
+        if (zmax > this.sizeZ) {
+            zmax = this.sizeZ;
+        }
+        float value = 0;
+        for (int k = zmin; k < zmax; k++) {
+            for (int i = 0; i < sizeXY; i++) {
+                if (operation == FastOperation3D.ADD) {
+                    value = this.getPixel(i, k) + par1;
+                } else if (operation == FastOperation3D.FILL) {
+                    value = par1;
+                } else if (operation == FastOperation3D.INVERT) {
+                    value = par1 - this.getPixel(i, k);
+                } else if (operation == FastOperation3D.MULT) {
+                    value = this.getPixel(i, k) * par1;
+                } else if (operation == FastOperation3D.POW) {
+                    value = (float) Math.pow(this.getPixel(i, k), par1);
+                } else if (operation == FastOperation3D.REPLACE) {
+                    pix = this.getPixel(i, k);
+                    value = pix;
+                    if (pix == par1) {
+                        value = par2;
+                    }
+                    out.setPixel(i, k, value);
+                } else if (operation == FastOperation3D.THRESHOLDEXC) {
+                    pix = this.getPixel(i, k);
+                    if ((pix > par1) && (pix < par2)) value = 255;
+                    else value = 0;
+                } else if (operation == FastOperation3D.THRESHOLDINC) {
+                    pix = this.getPixel(i, k);
+                    if ((pix >= par1) && (pix <= par2)) value = 255;
+                    else value = 0;
+                }
+                out.setPixel(i, k, value);
+            }
+            if (timer != null) {
+                String ti = timer.getFullInfo(1);
+                if (ti != null) log.log("3D operation : " + ti);
+            }
+        }
+
+        resetStats(); // ??
+
     }
 
 

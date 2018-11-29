@@ -52,6 +52,7 @@ public class ImageShort extends ImageInt {
      * Constructor from ImagePlus
      *
      * @param img ImagePlus
+     *            
      */
     public ImageShort(ImagePlus img) {
         super(img);

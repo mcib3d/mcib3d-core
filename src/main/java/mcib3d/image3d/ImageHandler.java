@@ -1969,7 +1969,7 @@ public abstract class ImageHandler {
                 double pix = this.getPixel(c, z);
                 double pixNorma0 = ((pix - mean) / sd);
                 double pixNorma = pixNorma0 * sdV + meanV;
-                res.setPixel(c,z, (float) pixNorma);
+                res.setPixel(c, z, (float) pixNorma);
             }
 
         return res;
@@ -2223,6 +2223,19 @@ public abstract class ImageHandler {
             }
         resetStats();
     }
+
+    public void replacePixelsValue(int val1, int rep1, int val2, int rep2) {
+        for (int z = 0; z < sizeZ; z++)
+            for (int k = 0; k < sizeXY; k++) {
+                if (this.getPixel(k, z) == val1) {
+                    this.setPixel(k, z, rep1);
+                } else if (this.getPixel(k, z) == val2) {
+                    this.setPixel(k, z, rep2);
+                }
+            }
+        resetStats();
+    }
+
 
     public ArrayList<Voxel3D> createListVoxels(int thresh) {
         ArrayList<Voxel3D> voxelList = new ArrayList<Voxel3D>();
