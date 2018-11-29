@@ -130,7 +130,7 @@ public class MaximaFinder {
                         }
                         c++;
                     }
-                    Flood3D.flood3DNoise26(img, new IntCoord3D(V.getRoundX(), V.getRoundY(), V.getRoundZ()), (int) (Math.max(1, V.getValue() - noiseTolerance)), 0);
+                    Flood3D.flood3DNoise(img, new IntCoord3D(V.getRoundX(), V.getRoundY(), V.getRoundZ()), (int) (Math.max(1, V.getValue() - noiseTolerance)), 0);
                 }
             }
         }

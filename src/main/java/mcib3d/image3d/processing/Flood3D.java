@@ -104,7 +104,7 @@ public class Flood3D {
     }
 
     @Deprecated
-    public static void flood3DNoiseShort6(ImageShort img, IntCoord3D seed, short limit, short newVal) {
+    private static void flood3DNoiseShort6(ImageShort img, IntCoord3D seed, short limit, short newVal) {
         short[][] pixels = img.pixels;
         int sizeX = img.sizeX;
         int sizeY = img.sizeY;
@@ -240,16 +240,22 @@ public class Flood3D {
         }
     }
 
+    public static void flood3DNoise(ImageHandler img, IntCoord3D seed, int limit, int newVal) {
+        if (img instanceof ImageByte)
+            flood3DNoise26Byte((ImageByte) img, seed, limit, newVal);
+        else if (img instanceof ImageShort)
+            flood3DNoise26Short((ImageShort) img, seed, limit, newVal);
+    }
 
-    public static void flood3DNoise26(ImageHandler img, IntCoord3D seed, int limit, int newVal) {
+    private static void flood3DNoise26Byte(ImageByte img, IntCoord3D seed, int limit, int newVal) {
         // temp image
-        int CAND = 1;
-        int QUEUE = 2;
-        ImageByte temp = new ImageByte("tmp", img.sizeX, img.sizeY, img.sizeZ);
+        byte CAND = 1;
+        byte QUEUE = 2;
+        byte[][] temp = img.duplicate().pixels;
         for (int z = 0; z < img.sizeZ; z++) {
             for (int xy = 0; xy < img.sizeXY; xy++) {
                 if (img.getPixel(xy, z) >= limit) {
-                    temp.setPixel(xy, z, CAND);
+                    temp[z][xy] = CAND;
                 }
             }
         }
@@ -271,9 +277,52 @@ public class Flood3D {
                             for (int xx = -1; xx < 2; xx++) {
                                 curX = curCoord.x + xx;
                                 if ((curX >= 0) && (curX <= (sizeX - 1))) {
-                                    if (temp.getPixel(curX, curY, curZ) == CAND) {
+                                    if (temp[curZ][curX + curY * sizeX] == CAND) {
                                         queue.add(new IntCoord3D(curX, curY, curZ));
-                                        temp.setPixel(curX, curY, curZ, QUEUE);
+                                        temp[curZ][curX + curY * sizeX] = QUEUE;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static void flood3DNoise26Short(ImageShort img, IntCoord3D seed, int limit, int newVal) {
+        // temp image
+        short CAND = 1;
+        short QUEUE = 2;
+        short[][] temp = img.duplicate().pixels;
+        for (int z = 0; z < img.sizeZ; z++) {
+            for (int xy = 0; xy < img.sizeXY; xy++) {
+                if (img.getPixel(xy, z) >= limit) {
+                    temp[z][xy] = CAND;
+                }
+            }
+        }
+        int sizeX = img.sizeX;
+        int sizeY = img.sizeY;
+        int sizeZ = img.sizeZ;
+        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        queue.add(seed);
+        while (!queue.isEmpty()) {
+            IntCoord3D curCoord = queue.remove(0);
+            img.setPixel(curCoord.x, curCoord.y, curCoord.z, newVal);
+            int curZ, curY, curX;
+            for (int zz = -1; zz < 2; zz++) {
+                curZ = curCoord.z + zz;
+                if ((curZ >= 0) && (curZ <= (sizeZ - 1))) {
+                    for (int yy = -1; yy < 2; yy++) {
+                        curY = curCoord.y + yy;
+                        if ((curY >= 0) && (curY <= (sizeY - 1))) {
+                            for (int xx = -1; xx < 2; xx++) {
+                                curX = curCoord.x + xx;
+                                if ((curX >= 0) && (curX <= (sizeX - 1))) {
+                                    if (temp[curZ][curX + curY * sizeX] == CAND) {
+                                        queue.add(new IntCoord3D(curX, curY, curZ));
+                                        temp[curZ][curX + curY * sizeX] = QUEUE;
                                     }
                                 }
                             }
@@ -285,6 +334,10 @@ public class Flood3D {
     }
 
     public static void connect3D(ImageInt img, int lowVal, int highVal) {
+        connect3D(img, lowVal, highVal, false);
+    }
+
+    public static void connect3D(ImageHandler img, int lowVal, int highVal, boolean log) {
         // find temporary value
         float tmpVal = 1;
         float c = img.getMinAboveValue(0);
@@ -299,18 +352,21 @@ public class Flood3D {
                     if (img.getPixel(x, y, z) == highVal) {
                         // byte
                         if (img instanceof ImageByte) {
-                            connect3DByte26((ImageByte) img, new IntCoord3D(x, y, z), (byte) lowVal, (byte) highVal, (byte) tmpVal);
+                            connect3DByte26((ImageByte) img, new IntCoord3D(x, y, z), (byte) lowVal, (byte) highVal, (byte) tmpVal, log);
                         }
                         // short
                         if (img instanceof ImageShort) {
-                            connect3DShort26((ImageShort) img, new IntCoord3D(x, y, z), (short) lowVal, (short) highVal, (short) tmpVal);
+                            connect3DShort26((ImageShort) img, new IntCoord3D(x, y, z), (short) lowVal, (short) highVal, (short) tmpVal, log);
                         }
                     }
                 }
             }
         }
+        // multi-threaded version
+        //img = FastOperation3D.operationImage(img, FastOperation3D.INVERT, 255, 0);
+        //IJ.log("" + tmpVal + " " + highVal + " " + lowVal);
+        //ImageHandler replaced = FastOperation3D.operationImage(img, FastOperation3D.REPLACE, tmpVal, highVal);
         img.replacePixelsValue((int) tmpVal, highVal, lowVal, 0);
-        img.updateDisplay();
     }
 
 
@@ -389,7 +445,7 @@ public class Flood3D {
      * @param highVal the high value
      * @param lowVal  the low value
      */
-    public static void connect3DByte26(ImageByte img, IntCoord3D seed, byte lowVal, byte highVal, byte tmpVal) {
+    private static void connect3DByte26OK(ImageByte img, IntCoord3D seed, byte lowVal, byte highVal, byte tmpVal, boolean log) {
         byte CAND = 1;
         byte QUEUE = 2;
         // tmp image to store queue pixels
@@ -401,7 +457,7 @@ public class Flood3D {
                 }
             }
         }
-        long step = 500;
+        long step = 50;
         byte[][] pixels = img.pixels;
         int sizeX = img.sizeX;
         int sizeY = img.sizeY;
@@ -413,8 +469,12 @@ public class Flood3D {
         }
         queue.add(seed);
         Long t0 = System.currentTimeMillis();
+        // test
+        log = false;
+        IJ.log("flooding started for " + seed.x + " " + seed.y + " " + seed.z);
+        // test
         while (!queue.isEmpty()) {
-            if (System.currentTimeMillis() - t0 > step) {
+            if (log && (System.currentTimeMillis() - t0 > step)) {
                 IJ.log("\\Update:Voxels to process : " + queue.size());
                 t0 = System.currentTimeMillis();
             }
@@ -454,7 +514,192 @@ public class Flood3D {
      * @param highVal the high value
      * @param lowVal  the low value
      */
-    public static void connect3DShort26(ImageShort img, IntCoord3D seed, short lowVal, short highVal, short tmpVal) {
+    private static void connect3DByte26(ImageByte img, IntCoord3D seed, byte lowVal, byte highVal, byte tmpVal, boolean log) {
+        byte CAND = 1;
+        byte QUEUE = 2;
+        // tmp image to store queue pixels
+        byte[][] temp = img.duplicate().pixels;
+        for (int z = 0; z < img.sizeZ; z++) {
+            for (int xy = 0; xy < img.sizeXY; xy++) {
+                if ((temp[z][xy] == lowVal) || (temp[z][xy] == highVal)) {
+                    temp[z][xy] = CAND;
+                }
+            }
+        }
+        long step = 50;
+        byte[][] pixels = img.pixels;
+        int sizeX = img.sizeX;
+        int sizeY = img.sizeY;
+        int sizeZ = img.sizeZ;
+        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        if (pixels[seed.z][seed.x + seed.y * sizeX] != highVal) {
+            IJ.log("Seed not right value ");
+            return;
+        }
+        queue.add(seed);
+        Long t0 = System.currentTimeMillis();
+        // test
+        log = false;
+        IJ.showStatus("flooding started for " + seed.x + " " + seed.y + " " + seed.z);
+        // test
+        while (!queue.isEmpty()) {
+            //if (log && (System.currentTimeMillis() - t0 > step)) {
+            //    IJ.log("\\Update:Voxels to process : " + queue.size());
+            //    t0 = System.currentTimeMillis();
+            //}
+            IntCoord3D curCoord = queue.remove(0);
+            int xy = curCoord.x + curCoord.y * sizeX;
+            pixels[curCoord.z][xy] = tmpVal;
+
+            // x++
+            int xx = curCoord.x + 1;
+            while ((xx < img.sizeX) && (temp[curCoord.z][curCoord.y * sizeX + xx] == CAND)) {
+                temp[curCoord.z][curCoord.y * sizeX + xx] = QUEUE;
+                queue.add(new IntCoord3D(xx, curCoord.y, curCoord.z));
+                xx++;
+            }
+            // x--
+            xx = curCoord.x - 1;
+            while ((xx >= 0) && (temp[curCoord.z][curCoord.y * sizeX + xx] == CAND)) {
+                temp[curCoord.z][curCoord.y * sizeX + xx] = QUEUE;
+                queue.add(new IntCoord3D(xx, curCoord.y, curCoord.z));
+                xx--;
+            }
+            // y++
+            int yy = curCoord.y + 1;
+            while ((yy < img.sizeY) && (temp[curCoord.z][yy * sizeX + curCoord.x] == CAND)) {
+                temp[curCoord.z][yy * sizeX + curCoord.x] = QUEUE;
+                queue.add(new IntCoord3D(curCoord.x, yy, curCoord.z));
+                yy++;
+            }
+            // y--
+            yy = curCoord.y - 1;
+            while ((yy >= 0) && (temp[curCoord.z][yy * sizeX + curCoord.x] == CAND)) {
+                temp[curCoord.z][yy * sizeX + curCoord.x] = QUEUE;
+                queue.add(new IntCoord3D(curCoord.x, yy, curCoord.z));
+                yy--;
+            }
+            // z++
+            int zz = curCoord.z + 1;
+            while ((zz < img.sizeZ) && (temp[zz][curCoord.y * sizeX + curCoord.x] == CAND)) {
+                temp[zz][curCoord.y * sizeX + curCoord.x] = QUEUE;
+                queue.add(new IntCoord3D(curCoord.x, curCoord.y, zz));
+                zz++;
+            }
+            // z--
+            zz = curCoord.z - 1;
+            while ((zz >= 0) && (temp[zz][curCoord.y * sizeX + curCoord.x] == CAND)) {
+                temp[zz][curCoord.y * sizeX + curCoord.x] = QUEUE;
+                queue.add(new IntCoord3D(curCoord.x, curCoord.y, zz));
+                zz--;
+            }
+        }
+        temp = null;
+    }
+
+    /**
+     * Connect in 3D pixel with low values to pixel with high values
+     * Pixels with low values not connected to pixels with high values will remain with low values
+     *
+     * @param img     The image to process, 8-bit image
+     * @param seed    one seed to start the connection
+     * @param highVal the high value
+     * @param lowVal  the low value
+     */
+    private static void connect3DShort26(ImageShort img, IntCoord3D seed, short lowVal, short highVal, short tmpVal, boolean log) {
+        byte CAND = 1;
+        byte QUEUE = 2;
+        // tmp image to store queue pixels
+        short[][] temp = img.duplicate().pixels;
+        for (int z = 0; z < img.sizeZ; z++) {
+            for (int xy = 0; xy < img.sizeXY; xy++) {
+                if ((temp[z][xy] == lowVal) || (temp[z][xy] == highVal)) {
+                    temp[z][xy] = CAND;
+                }
+            }
+        }
+        long step = 50;
+        short[][] pixels = img.pixels;
+        int sizeX = img.sizeX;
+        int sizeY = img.sizeY;
+        int sizeZ = img.sizeZ;
+        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        if (pixels[seed.z][seed.x + seed.y * sizeX] != highVal) {
+            IJ.log("Seed not right value ");
+            return;
+        }
+        queue.add(seed);
+        Long t0 = System.currentTimeMillis();
+        // test
+        log = false;
+        IJ.showStatus("flooding started for " + seed.x + " " + seed.y + " " + seed.z);
+        // test
+        while (!queue.isEmpty()) {
+            //if (log && (System.currentTimeMillis() - t0 > step)) {
+            //    IJ.log("\\Update:Voxels to process : " + queue.size());
+            //    t0 = System.currentTimeMillis();
+            //}
+            IntCoord3D curCoord = queue.remove(0);
+            int xy = curCoord.x + curCoord.y * sizeX;
+            pixels[curCoord.z][xy] = tmpVal;
+
+            // x++
+            int xx = curCoord.x + 1;
+            while ((xx < img.sizeX) && (temp[curCoord.z][curCoord.y * sizeX + xx] == CAND)) {
+                temp[curCoord.z][curCoord.y * sizeX + xx] = QUEUE;
+                queue.add(new IntCoord3D(xx, curCoord.y, curCoord.z));
+                xx++;
+            }
+            // x--
+            xx = curCoord.x - 1;
+            while ((xx >= 0) && (temp[curCoord.z][curCoord.y * sizeX + xx] == CAND)) {
+                temp[curCoord.z][curCoord.y * sizeX + xx] = QUEUE;
+                queue.add(new IntCoord3D(xx, curCoord.y, curCoord.z));
+                xx--;
+            }
+            // y++
+            int yy = curCoord.y + 1;
+            while ((yy < img.sizeY) && (temp[curCoord.z][yy * sizeX + curCoord.x] == CAND)) {
+                temp[curCoord.z][yy * sizeX + curCoord.x] = QUEUE;
+                queue.add(new IntCoord3D(curCoord.x, yy, curCoord.z));
+                yy++;
+            }
+            // y--
+            yy = curCoord.y - 1;
+            while ((yy >= 0) && (temp[curCoord.z][yy * sizeX + curCoord.x] == CAND)) {
+                temp[curCoord.z][yy * sizeX + curCoord.x] = QUEUE;
+                queue.add(new IntCoord3D(curCoord.x, yy, curCoord.z));
+                yy--;
+            }
+            // z++
+            int zz = curCoord.z + 1;
+            while ((zz < img.sizeZ) && (temp[zz][curCoord.y * sizeX + curCoord.x] == CAND)) {
+                temp[zz][curCoord.y * sizeX + curCoord.x] = QUEUE;
+                queue.add(new IntCoord3D(curCoord.x, curCoord.y, zz));
+                zz++;
+            }
+            // z--
+            zz = curCoord.z - 1;
+            while ((zz >= 0) && (temp[zz][curCoord.y * sizeX + curCoord.x] == CAND)) {
+                temp[zz][curCoord.y * sizeX + curCoord.x] = QUEUE;
+                queue.add(new IntCoord3D(curCoord.x, curCoord.y, zz));
+                zz--;
+            }
+        }
+        temp = null;
+    }
+
+
+    /**
+     * Connect in 3D pixel with low values to pixel with high values
+     * Pixels with low values not connected to pixels with high values will remain with low values
+     *
+     * @param img     The image to process, 8-bit image
+     * @param seed    one seed to start the connection
+     * @param highVal the high value
+     * @param lowVal  the low value
+     */
+    private static void connect3DShort26OK(ImageShort img, IntCoord3D seed, short lowVal, short highVal, short tmpVal, boolean log) {
         short CAND = 1;
         short QUEUE = 2;
         // tmp image to store queue pixels
@@ -479,7 +724,7 @@ public class Flood3D {
         long step = 500;
         Long t0 = System.currentTimeMillis();
         while (!queue.isEmpty()) {
-            if (System.currentTimeMillis() - t0 > step) {
+            if (log && (System.currentTimeMillis() - t0 > step)) {
                 IJ.log("\\Update:Voxels to process : " + queue.size());
                 t0 = System.currentTimeMillis();
             }
