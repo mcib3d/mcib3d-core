@@ -50,17 +50,20 @@ public class Objects3DPopulationColocalisation {
         int Ymax = Math.min(image1.sizeY, image2.sizeY);
         int Zmax = Math.min(image1.sizeZ, image2.sizeZ);
 
-        for (int z = 0; z < Zmax; z++) {
+        for (int k = 0; k < Zmax; k++) {
+            IJ.showStatus("Colocalisation " + k);
             for (int x = 0; x < Xmax; x++) {
                 for (int y = 0; y < Ymax; y++) {
-                    int pix1 = image1.getPixelInt(x, y, z);
-                    int pix2 = image2.getPixelInt(x, y, z);
+                    int pix1 = image1.getPixelInt(x, y, k);
+                    int pix2 = image2.getPixelInt(x, y, k);
                     if ((pix1 > 0) && (pix2 > 0)) {
                         colocs[population1.getObjectIndex(pix1)][population2.getObjectIndex(pix2)]++;
                     }
                 }
             }
         }
+
+
         needToComputeColoc = false;
     }
 
@@ -72,7 +75,7 @@ public class Objects3DPopulationColocalisation {
      *                       else use incremental values
      * @return the Results Table
      */
-    public ResultsTable getResultsTable(boolean useValueObject) {
+    public ResultsTable getResultsTableAll(boolean useValueObject) {
         if (needToComputeColoc) computeColocalisation();
         ResultsTable rt = ResultsTable.getResultsTable();
         if (rt == null) rt = new ResultsTable();
@@ -94,6 +97,34 @@ public class Objects3DPopulationColocalisation {
         }
         return rt;
     }
+
+    public ResultsTable getResultsTableOnlyColoc(boolean useValueObject) {
+        if (needToComputeColoc) computeColocalisation();
+        ResultsTable rt = ResultsTable.getResultsTable();
+        if (rt == null) rt = new ResultsTable();
+        rt.reset();
+        for (int ia = 0; ia < population1.getNbObjects(); ia++) {
+            Object3D object1 = population1.getObject(ia);
+            rt.incrementCounter();
+            if (!useValueObject) {
+                rt.setLabel("A" + ia, ia);
+            } else {
+                rt.setLabel("A" + object1.getValue(), ia);
+            }
+            ArrayList<PairColocalisation> list = getObject1ColocalisationPairs(object1);
+            for (int c = 0; c < list.size(); c++) {
+                PairColocalisation colocalisation = list.get(c);
+                if (colocalisation.getObject3D1() != object1) IJ.log("Pb colocalisation " + object1);
+                Object3D object2 = colocalisation.getObject3D2();
+                int i2 = population2.getIndexOf(object2);
+                rt.setValue("O" + (c + 1), ia, i2);
+                rt.setValue("V" + (c + 1), ia, colocalisation.getVolumeColoc());
+                rt.setValue("P" + (c + 1), ia, (double) colocalisation.getVolumeColoc() / (double) object1.getVolumePixels());
+            }
+        }
+        return rt;
+    }
+
 
     /**
      * Compute the colocalisation between the two populations
