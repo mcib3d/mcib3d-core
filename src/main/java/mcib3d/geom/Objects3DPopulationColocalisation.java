@@ -5,6 +5,7 @@ import ij.measure.ResultsTable;
 import mcib3d.image3d.ImageInt;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Public class to compute (fast) co-localisation between two images
@@ -51,7 +52,7 @@ public class Objects3DPopulationColocalisation {
         int Zmax = Math.min(image1.sizeZ, image2.sizeZ);
 
         for (int k = 0; k < Zmax; k++) {
-            IJ.showStatus("Colocalisation " + k);
+            //IJ.showStatus("Colocalisation " + k);
             for (int x = 0; x < Xmax; x++) {
                 for (int y = 0; y < Ymax; y++) {
                     int pix1 = image1.getPixelInt(x, y, k);
@@ -77,9 +78,12 @@ public class Objects3DPopulationColocalisation {
      */
     public ResultsTable getResultsTableAll(boolean useValueObject) {
         if (needToComputeColoc) computeColocalisation();
+        IJ.log("Colocalisation completed, building results table");
         ResultsTable rt = ResultsTable.getResultsTable();
         if (rt == null) rt = new ResultsTable();
         rt.reset();
+        // temp colum index
+        HashMap<String, Integer> colums = new HashMap<>(population2.getNbObjects());
         for (int ia = 0; ia < population1.getNbObjects(); ia++) {
             rt.incrementCounter();
             if (!useValueObject) {
@@ -88,10 +92,22 @@ public class Objects3DPopulationColocalisation {
                 rt.setLabel("A" + population1.getObject(ia).getValue(), ia);
             }
             for (int ib = 0; ib < population2.getNbObjects(); ib++) {
-                if (!useValueObject) {
-                    rt.setValue("B" + ib, ia, colocs[ia][ib]);
+                if (ia == 0) {
+                    if (!useValueObject) {
+                        rt.setValue("B" + ib, ia, colocs[ia][ib]);
+                        colums.put("B" + ib, rt.getColumnIndex("B" + ib));
+                    } else {
+                        int v2 = population2.getObject(ib).getValue();
+                        rt.setValue("B" + v2, ia, colocs[ia][ib]);
+                        colums.put("B" + v2, rt.getColumnIndex("B" + v2));
+                    }
                 } else {
-                    rt.setValue("B" + population2.getObject(ib).getValue(), ia, colocs[ia][ib]);
+                    if (!useValueObject) {
+                        rt.setValue(colums.get("B" + ib), ia, colocs[ia][ib]);
+                    } else {
+                        int v2 = population2.getObject(ib).getValue();
+                        rt.setValue(colums.get("B" + v2), ia, colocs[ia][ib]);
+                    }
                 }
             }
         }
@@ -100,6 +116,7 @@ public class Objects3DPopulationColocalisation {
 
     public ResultsTable getResultsTableOnlyColoc(boolean useValueObject) {
         if (needToComputeColoc) computeColocalisation();
+        IJ.log("Colocalisation completed, building results table");
         ResultsTable rt = ResultsTable.getResultsTable();
         if (rt == null) rt = new ResultsTable();
         rt.reset();
