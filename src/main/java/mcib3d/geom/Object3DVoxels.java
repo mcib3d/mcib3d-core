@@ -68,7 +68,7 @@ public class Object3DVoxels extends Object3D {
         resXY = 1.0;
         resZ = 1.0;
         units = "pix";
-        voxels = new LinkedList<Voxel3D>();
+        voxels = new LinkedList<>();
     }
 
     public Object3DVoxels(int val) {
@@ -76,7 +76,7 @@ public class Object3DVoxels extends Object3D {
         resXY = 1.0;
         resZ = 1.0;
         units = "pix";
-        voxels = new LinkedList<Voxel3D>();
+        voxels = new LinkedList<>();
     }
 
     /**
@@ -179,7 +179,7 @@ public class Object3DVoxels extends Object3D {
      * @param other
      */
     public Object3DVoxels(Object3DVoxels other) {
-        voxels = new LinkedList<Voxel3D>();
+        voxels = new LinkedList<>();
         this.addVoxels(other.getVoxels());
         init();
         value = other.getValue();
@@ -191,7 +191,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     public Object3DVoxels(Object3D other) {
-        voxels = new LinkedList<Voxel3D>();
+        voxels = new LinkedList<>();
         addVoxels(other.getVoxels());
         init();
         value = other.getValue();
