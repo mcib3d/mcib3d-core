@@ -134,7 +134,10 @@ public class Objects3DPopulationColocalisation {
                 if (colocalisation.getObject3D1() != object1) IJ.log("Pb colocalisation " + object1);
                 Object3D object2 = colocalisation.getObject3D2();
                 int i2 = population2.getIndexOf(object2);
-                rt.setValue("O" + (c + 1), ia, i2);
+                if (!useValueObject)
+                    rt.setValue("O" + (c + 1), ia, i2);
+                else
+                    rt.setValue("O" + (c + 1), ia, object2.getValue());
                 rt.setValue("V" + (c + 1), ia, colocalisation.getVolumeColoc());
                 rt.setValue("P" + (c + 1), ia, (double) colocalisation.getVolumeColoc() / (double) object1.getVolumePixels());
             }

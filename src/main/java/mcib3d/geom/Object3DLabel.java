@@ -20,6 +20,7 @@ import mcib3d.utils.KDTreeC;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  * *
@@ -48,7 +49,7 @@ import java.util.ArrayList;
 public class Object3DLabel extends Object3D {
 
     //ImageInt labelImage;
-    private ArrayList<Voxel3D> voxels = null;
+    private LinkedList<Voxel3D> voxels = null;
 
     /**
      * constructor
@@ -174,7 +175,7 @@ public class Object3DLabel extends Object3D {
      * @return array of listed values (with coordinates)
      */
     @Override
-    public ArrayList listVoxels(ImageHandler ima, double threshold) {
+    public LinkedList listVoxels(ImageHandler ima, double threshold) {
 //        ArrayList<Voxel3D> list = new ArrayList();
 //        Voxel3D pixel;
 //        int xmin0;
@@ -215,8 +216,8 @@ public class Object3DLabel extends Object3D {
     }
 
     @Override
-    public ArrayList listVoxels(ImageHandler ima, double threshold1, double threshold2) {
-        ArrayList<Voxel3D> list = new ArrayList();
+    public LinkedList listVoxels(ImageHandler ima, double threshold1, double threshold2) {
+        LinkedList<Voxel3D> list = new LinkedList();
         Voxel3D pixel;
         int xmin0;
         int ymin0;
@@ -297,7 +298,7 @@ public class Object3DLabel extends Object3D {
 
     public void computeContours() {
         boolean cont;
-        contours = new ArrayList();
+        contours = new LinkedList();
         kdtreeContours = new KDTreeC(3);
         kdtreeContours.setScale3(this.resXY, this.resXY, this.resZ);
         int pix0, pix1, pix2, pix3, pix4, pix5, pix6;
@@ -908,7 +909,7 @@ public class Object3DLabel extends Object3D {
     }
 
     @Override
-    public ArrayList<Voxel3D> getVoxels() {
+    public LinkedList<Voxel3D> getVoxels() {
         if (voxels == null) {
             voxels = listVoxels(null);
         }

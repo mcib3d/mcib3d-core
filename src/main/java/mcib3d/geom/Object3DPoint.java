@@ -5,6 +5,7 @@
 package mcib3d.geom;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  *
@@ -21,7 +22,7 @@ public class Object3DPoint extends Object3DVoxels {
     }
     
     private void init(int label, double x, double y, double z) {
-        this.voxels = new ArrayList<Voxel3D>(1);
+        this.voxels = new LinkedList<Voxel3D>();
         voxels.add(new Voxel3D(x, y, z, 0));
         this.contours=voxels;
         this.value = label;

@@ -20,7 +20,6 @@ import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.Chrono;
 import mcib3d.utils.KDTreeC;
 import mcib3d.utils.Logger.AbstractLog;
-import mcib3d.utils.Logger.IJLog;
 import mcib3d.utils.Logger.IJStatus;
 import mcib3d.utils.ThreadUtil;
 import org.scijava.vecmath.Color3f;
@@ -75,7 +74,7 @@ public class Object3DSurface extends Object3D {
     protected List<List<Integer>> vertices_faces_index = null;
     protected List<Integer> faces_vertices_index = null;
     protected ArrayList<Vector3D> verticesNormals;
-    ArrayList<Voxel3D> voxels = null;
+    LinkedList<Voxel3D> voxels = null;
     //double surface_area = Double.NaN;
     double surfaceMesh = Double.NaN;
     double surfaceMeshUnit = Double.NaN;
@@ -440,9 +439,9 @@ public class Object3DSurface extends Object3D {
         return surfarea;
     }
 
-    public ArrayList<Point3f> computeConvexHull3D() {
+    public LinkedList<Point3f> computeConvexHull3D() {
         QuickHull3D hull = new QuickHull3D();
-        ArrayList<Voxel3D> pointsList = this.getContours();
+        LinkedList<Voxel3D> pointsList = this.getContours();
         Point3d[] points = new Point3d[pointsList.size()];
         for (int ve = 0; ve < points.length; ve++) {
             points[ve] = new Point3d(pointsList.get(ve).getX(), pointsList.get(ve).getY(), pointsList.get(ve).getZ());
@@ -451,7 +450,7 @@ public class Object3DSurface extends Object3D {
         hull.build(points);
         hull.triangulate();
 
-        ArrayList<Point3f> convex = new ArrayList<Point3f>();
+        LinkedList<Point3f> convex = new LinkedList<>();
         int[][] faceIndices = hull.getFaces();
         Point3d[] verticesHull = hull.getVertices();
         for (int ve = 0; ve < verticesHull.length; ve++) {
@@ -1253,7 +1252,7 @@ public class Object3DSurface extends Object3D {
         // Contours pixels are same as surface vertices
         kdtreeContours = new KDTreeC(3);
         kdtreeContours.setScale3(this.resXY, this.resXY, this.resZ);
-        contours = new ArrayList();
+        contours = new LinkedList();
         Point3f P;
         // Value ?
         double val = 1;
@@ -1307,7 +1306,7 @@ public class Object3DSurface extends Object3D {
 //
 //    }
     // Voxellisation ; coordinates should be backed to pixels coordinates
-    private ArrayList<Voxel3D> computeVoxelsMultithread() {
+    private LinkedList<Voxel3D> computeVoxelsMultithread() {
         final int zminv = (int) Math.floor(getZmin()) - 1;
         final int yminv = (int) Math.floor(getYmin()) - 1;
         final int xminv = (int) Math.floor(getXmin()) - 1;
@@ -1316,9 +1315,9 @@ public class Object3DSurface extends Object3D {
         final int xmaxv = (int) Math.ceil(getXmax()) + 1;
         final int n_cpus = ThreadUtil.getNbCpus();
         final int val = this.getValue();
-        final ArrayList[] voxelss = new ArrayList[n_cpus];
+        final LinkedList[] voxelss = new LinkedList[n_cpus];
         for (int i = 0; i < voxelss.length; i++) {
-            voxelss[i] = new ArrayList();
+            voxelss[i] = new LinkedList();
         }
         final Vector3D dir0 = new Vector3D(1, 0, 0);
         final Vector3D dir1 = new Vector3D(-1, 0, 0);
@@ -1386,14 +1385,14 @@ public class Object3DSurface extends Object3D {
         ThreadUtil.startAndJoin(threads);
 
         // put all arrays in one
-        ArrayList<Voxel3D> newVox = new ArrayList<Voxel3D>();
-        for (ArrayList voxels1 : voxelss) {
+        LinkedList<Voxel3D> newVox = new LinkedList<Voxel3D>();
+        for (LinkedList voxels1 : voxelss) {
             newVox.addAll(voxels1);
         }
         return newVox;
     }
 
-    private ArrayList<Voxel3D> computeVoxels() {
+    private LinkedList<Voxel3D> computeVoxels() {
         Point3D origin;
         boolean in;
         Vector3D dir0 = new Vector3D(1, 0, 0);
@@ -1401,7 +1400,7 @@ public class Object3DSurface extends Object3D {
 
         int val = this.getValue();
 
-        ArrayList<Voxel3D> newVox = new ArrayList<Voxel3D>();
+        LinkedList<Voxel3D> newVox = new LinkedList<Voxel3D>();
 
         final float zminv = getZmin() - (float) 1;
         final float yminv = getYmin() - (float) 1;
@@ -1447,7 +1446,7 @@ public class Object3DSurface extends Object3D {
         return newVox;
     }
 
-    private void addLineXVoxels(ArrayList<Voxel3D> list, int val, float x0, float y0, float z0, int nb) {
+    private void addLineXVoxels(LinkedList<Voxel3D> list, int val, float x0, float y0, float z0, int nb) {
         for (float i = 0; i < nb; i += 1) {
             list.add(new Voxel3D((x0 + i), y0, z0, val));
         }
@@ -1612,7 +1611,7 @@ public class Object3DSurface extends Object3D {
 //        sxz /= nb;
 //        syz /= nb;
         // TEST VOXELLISATION
-        ArrayList<Voxel3D> voxlist = this.getVoxels();
+        LinkedList<Voxel3D> voxlist = this.getVoxels();
         Iterator<Voxel3D> it2 = voxlist.iterator();
         Voxel3D v;
         while (it2.hasNext()) {
@@ -1672,7 +1671,7 @@ public class Object3DSurface extends Object3D {
 //        sxz /= nb;
 //        syz /= nb;
         //  VOXELLISATION
-        ArrayList<Voxel3D> voxlist = this.getVoxels();
+        LinkedList<Voxel3D> voxlist = this.getVoxels();
         Iterator<Voxel3D> it2 = voxlist.iterator();
         Voxel3D v;
         while (it2.hasNext()) {
@@ -1726,7 +1725,7 @@ public class Object3DSurface extends Object3D {
         s103 = s301 = s130 = s310 = s013 = s031 = 0;
 
         //  VOXELLISATION
-        ArrayList<Voxel3D> voxlist = this.getVoxels();
+        LinkedList<Voxel3D> voxlist = this.getVoxels();
         Iterator<Voxel3D> it = voxlist.iterator();
         Voxel3D vox;
         double i, j, k;
@@ -1793,14 +1792,14 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
-    public ArrayList listVoxels(ImageHandler ima, double threshold) {
+    public LinkedList listVoxels(ImageHandler ima, double threshold) {
 
         return listVoxels(ima, threshold, Double.POSITIVE_INFINITY);
     }
 
     @Override
-    public ArrayList listVoxels(ImageHandler ima, double threshold1, double threshold2) {
-        ArrayList vector = new ArrayList();
+    public LinkedList listVoxels(ImageHandler ima, double threshold1, double threshold2) {
+        LinkedList vector = new LinkedList();
         Voxel3D pixel;
         float pixvalue;
 
@@ -1817,7 +1816,7 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
-    public ArrayList<Voxel3D> getVoxels() {
+    public LinkedList<Voxel3D> getVoxels() {
         //IJ.log("voxels  begin " + voxels+" "+this.resXY+" "+this.resZ);
         // check if already computed
         if (voxels != null) {

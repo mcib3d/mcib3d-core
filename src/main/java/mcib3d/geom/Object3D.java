@@ -23,10 +23,7 @@ import mcib3d.utils.Logger.AbstractLog;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 /**
  * Copyright (C) 2008- 2011 Thomas Boudier
@@ -180,7 +177,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * Contours pixels
      */
-    protected ArrayList<Voxel3D> contours = null;
+    protected LinkedList<Voxel3D> contours = null;
     /**
      * kd-tree for the contour
      */
@@ -546,7 +543,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return the array of pixel values
      */
     public float[] getArrayValues(ImageHandler ima) {
-        ArrayList<Voxel3D> vox = getVoxels();
+        LinkedList<Voxel3D> vox = getVoxels();
         float[] res = new float[vox.size()];
         int i = 0;
         int x, y, z;
@@ -786,7 +783,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param ima the image with signal
      * @return the list of voxels
      */
-    public ArrayList<Voxel3D> listVoxels(ImageHandler ima) {
+    public LinkedList<Voxel3D> listVoxels(ImageHandler ima) {
         return listVoxels(ima, Double.NEGATIVE_INFINITY);
     }
 
@@ -813,7 +810,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param thresh the threshold
      * @return the list of voxels with values > threshold
      */
-    public abstract ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh);
+    public abstract LinkedList<Voxel3D> listVoxels(ImageHandler ima, double thresh);
 
     /**
      * List voxels in the image with values > threshold0 and < threshold1
@@ -823,7 +820,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param thres1  the max threshold
      * @return the list of voxels with values > threshold
      */
-    public abstract ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thres1);
+    public abstract LinkedList<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thres1);
 
     /**
      * List voxels in the image with with distances in specific range from a reference point
@@ -834,9 +831,9 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param contourOnly lsit only voxels from the contour of the object
      * @return
      */
-    public ArrayList<Voxel3D> listVoxelsByDistance(Point3D P0, double dist0, double dist1, boolean contourOnly) {
-        ArrayList<Voxel3D> res = new ArrayList<Voxel3D>();
-        ArrayList<Voxel3D> list;
+    public LinkedList<Voxel3D> listVoxelsByDistance(Point3D P0, double dist0, double dist1, boolean contourOnly) {
+        LinkedList<Voxel3D> res = new LinkedList<Voxel3D>();
+        LinkedList<Voxel3D> list;
         if (contourOnly) {
             if (contours == null) {
                 computeContours();
@@ -1015,7 +1012,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     public abstract Roi createRoi(int z);
 
     public PolygonRoi getConvexPolygonRoi(int z) {
-        ArrayList<Voxel3D> contours3D = this.getContours();
+        LinkedList<Voxel3D> contours3D = this.getContours();
         int[] x = new int[contours3D.size()];
         int[] y = new int[contours3D.size()];
         int nbPoint = -1;
@@ -1081,7 +1078,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      *
      * @return the list of contour voxels
      */
-    public ArrayList<Voxel3D> getContours() {
+    public LinkedList<Voxel3D> getContours() {
         if (contours == null) {
             this.computeContours();
         }
@@ -1530,7 +1527,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         double ccy = cen[1];
         double ccz = cen[2];
 
-        ArrayList<Voxel3D> cont = getContours();
+        LinkedList<Voxel3D> cont = getContours();
         ArrayList<Voxel3D> orientedCont = new ArrayList<Voxel3D>();
         for (Voxel3D vox : cont) {
             double nx = v0x * (vox.getX() - ccx) + v1x * (vox.getY() - ccy) + v2x * (vox.getZ() - ccz) + ccx;
@@ -1684,7 +1681,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public void computeContours(ImageHandler ima) {
         areaNbVoxels = 0;
-        contours = new ArrayList<Voxel3D>();
+        contours = new LinkedList<Voxel3D>();
         for (int k = zmin; k <= zmax; k++) {
             for (int j = ymin; j <= ymax; j++) {
                 for (int i = xmin; i <= xmax; i++) {
@@ -1776,7 +1773,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             double ccy = center.getY();
             double ccz = center.getZ();
             Voxel3D p2;
-            ArrayList cont = this.getContours();
+            LinkedList cont = this.getContours();
 
             int s = getContours().size();
             //Voxel3D tmpmin = null;
@@ -1814,7 +1811,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         double rz2 = resZ * resZ;
         Voxel3D p1;
         Voxel3D p2;
-        ArrayList<Voxel3D> cont = this.getContours();
+        LinkedList<Voxel3D> cont = this.getContours();
 
         int s = cont.size();
         // case object only one voxel
@@ -2367,8 +2364,8 @@ public abstract class Object3D implements Comparable<Object3D> {
         Voxel3D contourB;
         double dist;
         int sizeA = objectA.getContours().size();
-        ArrayList<Voxel3D> contoursA = objectA.getContours();
-        ArrayList<Voxel3D> contoursB = objectB.getContours();
+        LinkedList<Voxel3D> contoursA = objectA.getContours();
+        LinkedList<Voxel3D> contoursB = objectB.getContours();
         int sizeB = contoursB.size();
         double dmax2 = dist_max * dist_max;
         double[][] distres = new double[sizeA][sizeB];
@@ -2683,7 +2680,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         Voxel3D stock = new Voxel3D();
         Vector3D here = new Vector3D(x, y, z);
         Vector3D rad;
-        ArrayList<Voxel3D> cont = this.getContours();
+        LinkedList<Voxel3D> cont = this.getContours();
         for (Voxel3D aCont : cont) {
             edge = aCont;
             rad = new Vector3D(here, edge);
@@ -2782,7 +2779,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     public double getPixMeanValueContour(ImageHandler ima) {
         if (volume > 0) {
-            ArrayList<Voxel3D> contours = getContours();
+            LinkedList<Voxel3D> contours = getContours();
             double sum = 0;
             for (Voxel3D voxel3D : contours) {
                 sum += ima.getPixel(voxel3D);
@@ -3085,7 +3082,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      *
      * @return the list of voxels
      */
-    public abstract ArrayList<Voxel3D> getVoxels();
+    public abstract LinkedList<Voxel3D> getVoxels();
 
     /**
      * @param path
@@ -3576,7 +3573,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         //IJ.showStatus("Computing convex object");
         Object3DSurface conv = this.getConvexSurface();
         conv.multiThread = multi;
-        ArrayList<Voxel3D> vox = conv.getVoxels();
+        LinkedList<Voxel3D> vox = conv.getVoxels();
         Object3DVoxels obj = new Object3DVoxels(vox);
         obj.setCalibration(this.getCalibration());
         obj.computeContours();

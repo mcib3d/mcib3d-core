@@ -16,6 +16,8 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.LinkedList;
+
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 import mcib3d.geom.Objects3DPopulation;
@@ -732,7 +734,7 @@ public class ManualSpot extends javax.swing.JFrame {
             popOrig.draw(labelImage);
             segSpots.setLabelImage(labelImage);
 
-            ArrayList<Voxel3D> spot = segSpots.segmentOneSpot(x, y, z, col);
+            LinkedList<Voxel3D> spot = segSpots.segmentOneSpot(x, y, z, col);
             //IJ.log("spot " + r + " at " + x + " " + y + " " + z + " : " + spot);
             if (spot != null) {
                 //jTextFieldLog.setText(jTextFieldLog.getText() + "\nspot found, size " + spot.size());

@@ -34,10 +34,7 @@ import mcib3d.utils.KDTreeC.Item;
 import mcib3d.utils.Logger.AbstractLog;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -199,7 +196,7 @@ public class Objects3DPopulation {
      * @param hardcore
      */
     public boolean createRandomPopulation(int nb, double hardcore) {
-        ArrayList<Voxel3D> voxlist;
+        LinkedList<Voxel3D> voxlist;
         Voxel3D v;
         Object3D closest;
         double dist;
@@ -210,7 +207,7 @@ public class Objects3DPopulation {
         Random ra = new Random();
         P = maskVox.getRandomVoxel(ra);
         v = new Voxel3D(P.getX(), P.getY(), P.getZ(), 1);
-        voxlist = new ArrayList<Voxel3D>(1);
+        voxlist = new LinkedList<Voxel3D>();
         voxlist.add(v);
         Object3DVoxels ob = new Object3DVoxels(voxlist);
         ob.setCalibration(scaleXY, scaleZ, unit);
@@ -238,7 +235,7 @@ public class Objects3DPopulation {
                 return false;
             }
             v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) (i + 1));
-            voxlist = new ArrayList<Voxel3D>(1);
+            voxlist = new LinkedList<Voxel3D>();
             voxlist.add(v);
             ob = new Object3DVoxels(voxlist);
             //Object3D_IJUtils.setCalibration(ob, calibration);
@@ -255,11 +252,11 @@ public class Objects3DPopulation {
      * @param r1
      */
     public void createRandomPopulationDistAbsMb(int nb, double r0, double r1) {
-        ArrayList<Voxel3D> voxlist;
+        LinkedList<Voxel3D> voxlist;
         Voxel3D v;
         Point3D P;
         for (int i = 0; i < nb; i++) {
-            voxlist = new ArrayList<Voxel3D>(1);
+            voxlist = new LinkedList<Voxel3D>();
             P = getRandomPointInMaskDistAbsMb(r0, r1);
             v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) i);
             voxlist.add(v);
@@ -455,7 +452,7 @@ public class Objects3DPopulation {
         for (int i = 0; i < points.length; i++) {
             Point3D P = points[i];
             Voxel3D v = new Voxel3D(P.getX(), P.getY(), P.getZ(), (float) i + inc);
-            ArrayList<Voxel3D> voxlist = new ArrayList<Voxel3D>(1);
+            LinkedList<Voxel3D> voxlist = new LinkedList<Voxel3D>();
             voxlist.add(v);
             Object3DVoxels ob = new Object3DVoxels(voxlist);
             //Object3D_IJUtils.setCalibration(ob, calibration);
@@ -525,9 +522,9 @@ public class Objects3DPopulation {
         //IJ.log("mm "+min+" "+max);
         // iterate in image  and constructs objects
         calibration = cali;
-        ArrayList<Voxel3D>[] objectstmp = new ArrayList[max - min + 1];
+        LinkedList<Voxel3D>[] objectstmp = new LinkedList[max - min + 1];
         for (int i = 0; i < max - min + 1; i++) {
-            objectstmp[i] = new ArrayList<Voxel3D>();
+            objectstmp[i] = new LinkedList<Voxel3D>();
         }
         int pix;
         int sz = seg.sizeZ;
@@ -573,9 +570,9 @@ public class Objects3DPopulation {
         }
         //IJ.log("mm "+min+" "+max);
         // iterate in image  and constructs objects
-        ArrayList<Voxel3D>[] objectstmp = new ArrayList[max - min + 1];
+        LinkedList<Voxel3D>[] objectstmp = new LinkedList[max - min + 1];
         for (int i = 0; i < max - min + 1; i++) {
-            objectstmp[i] = new ArrayList<Voxel3D>();
+            objectstmp[i] = new LinkedList<Voxel3D>();
         }
         int pix;
         int sz = seg.sizeZ;

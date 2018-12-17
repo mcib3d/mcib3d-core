@@ -106,14 +106,11 @@ public class FastOperation3D {
         Thread[] threads = ThreadUtil.createThreadArray(n_cpus);
         show.log("Starting");
         for (int ithread = 0; ithread < threads.length; ithread++) {
-            threads[ithread] = new Thread() {
-                @Override
-                public void run() {
-                    for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
-                        ima.operationGeneric(out, dec * k, dec * (k + 1), fi, par1, par2, time, log);
-                    }
+            threads[ithread] = new Thread(() -> {
+                for (int k = ai.getAndIncrement(); k < n_cpus; k = ai.getAndIncrement()) {
+                    ima.operationGeneric(out, dec * k, dec * (k + 1), fi, par1, par2, time, log);
                 }
-            };
+            });
         }
         ThreadUtil.startAndJoin(threads);
         show.log("Finished");

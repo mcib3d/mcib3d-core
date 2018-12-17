@@ -10,6 +10,8 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
+
 import mcib3d.image3d.ImageHandler;
 
 /**
@@ -18,14 +20,14 @@ import mcib3d.image3d.ImageHandler;
  */
 public class Object3DFuzzy extends Object3DVoxels {
 
-    public Object3DFuzzy(int label, ArrayList<Voxel3D> voxels) {
+    public Object3DFuzzy(int label, LinkedList<Voxel3D> voxels) {
         this.value = label;
         this.voxels = voxels;
         init();
     }
 
     @Override
-    public ArrayList<Voxel3D> getContours() {
+    public LinkedList<Voxel3D> getContours() {
         return this.contours;
     }
     // TODO : methode "propre" de calcul des contours .. (coord subvoxelaires.. )
@@ -52,7 +54,7 @@ public class Object3DFuzzy extends Object3DVoxels {
      }
      * 
      */
-    public void setContours(ArrayList<Voxel3D> contours) {
+    public void setContours(LinkedList<Voxel3D> contours) {
         this.contours = contours;
     }
 
@@ -235,8 +237,8 @@ public class Object3DFuzzy extends Object3DVoxels {
     }
 
     @Override
-    public ArrayList listVoxels(ImageHandler ima) {
-        ArrayList vector = new ArrayList();
+    public LinkedList listVoxels(ImageHandler ima) {
+        LinkedList vector = new LinkedList();
         Voxel3D pixel;
 
         Iterator it = voxels.iterator();
@@ -342,7 +344,7 @@ public class Object3DFuzzy extends Object3DVoxels {
     }
 
     @Override
-    public ArrayList<Voxel3D> getVoxels() {
+    public LinkedList<Voxel3D> getVoxels() {
         return voxels;
     }
 

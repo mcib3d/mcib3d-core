@@ -17,6 +17,7 @@ import mcib3d.utils.exceptionPrinter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -295,7 +296,7 @@ public abstract class ImageInt extends ImageHandler {
     }
 
     public Object3DVoxels getObjectMask() {
-        ArrayList<Voxel3D> vox = new ArrayList<Voxel3D>();
+        LinkedList<Voxel3D> vox = new LinkedList<Voxel3D>();
         // should be a labelled image
         // extracting the value of the object
         int value = (int) this.getMinAboveValue(0);
@@ -321,7 +322,7 @@ public abstract class ImageInt extends ImageHandler {
     }
 
     public Object3DVoxels getObject3DBackground(ImageInt mask) {
-        ArrayList<Voxel3D> al = new ArrayList<Voxel3D>();
+        LinkedList<Voxel3D> al = new LinkedList<Voxel3D>();
         for (int z = 0; z < sizeZ; z++) {
             for (int xy = 0; xy < sizeXY; xy++) {
                 if (mask.getPixel(xy, z) != 0 && getPixel(xy, z) == 0) {

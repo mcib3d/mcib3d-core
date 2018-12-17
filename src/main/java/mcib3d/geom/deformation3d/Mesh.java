@@ -3,10 +3,8 @@ package mcib3d.geom.deformation3d;
 
 import com.github.quickhull3d.Point3d;
 import com.github.quickhull3d.QuickHull3D;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+
+import java.util.*;
 //import javax.vecmath.Point3f;
 import org.scijava.vecmath.Point3f;
 import mcib3d.geom.Object3DSurface;
@@ -496,8 +494,8 @@ public class Mesh {
         System.out.println("Computing 3d convex hull...");
         
         Object3DSurface o = new Object3DSurface(vertices);
-        
-        ArrayList<Voxel3D> pointsList = o.getContours();
+
+        LinkedList<Voxel3D> pointsList = o.getContours();
         Point3d[] points = new Point3d[pointsList.size()];
         for (int ve = 0; ve < points.length; ve++) {
             points[ve] = new Point3d(pointsList.get(ve).getX(), pointsList.get(ve).getY(), pointsList.get(ve).getZ());

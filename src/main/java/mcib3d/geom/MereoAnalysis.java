@@ -14,6 +14,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -120,7 +121,7 @@ public class MereoAnalysis {
             Object3D Adil = A.getDilatedObject(RadX, RadY, RadZ);
             // TEST 
             //Adil.getLabelImage().show("dilated "+Adil);
-            ArrayList<Voxel3D> al = Adil.listVoxels(segB);
+            LinkedList<Voxel3D> al = Adil.listVoxels(segB);
             for (Voxel3D vox : al) {
                 int pix = (int) vox.getValue();
                 if (pix != 0) {

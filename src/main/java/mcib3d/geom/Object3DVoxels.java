@@ -20,6 +20,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +55,7 @@ import java.util.logging.Logger;
 public class Object3DVoxels extends Object3D {
 
     // Objexcts as ArrayList of voxels
-    ArrayList<Voxel3D> voxels = null;
+    LinkedList<Voxel3D> voxels = null;
     // debug
     private boolean showStatus = false;
     private double correctedSurfaceArea = -1;
@@ -67,7 +68,7 @@ public class Object3DVoxels extends Object3D {
         resXY = 1.0;
         resZ = 1.0;
         units = "pix";
-        voxels = new ArrayList<Voxel3D>();
+        voxels = new LinkedList<Voxel3D>();
     }
 
     public Object3DVoxels(int val) {
@@ -75,7 +76,7 @@ public class Object3DVoxels extends Object3D {
         resXY = 1.0;
         resZ = 1.0;
         units = "pix";
-        voxels = new ArrayList<Voxel3D>();
+        voxels = new LinkedList<Voxel3D>();
     }
 
     /**
@@ -162,7 +163,7 @@ public class Object3DVoxels extends Object3D {
     /**
      * @param al
      */
-    public Object3DVoxels(ArrayList<Voxel3D> al) {
+    public Object3DVoxels(LinkedList<Voxel3D> al) {
         voxels = al;
         init();
         value = (int) voxels.get(0).getValue();
@@ -178,7 +179,7 @@ public class Object3DVoxels extends Object3D {
      * @param other
      */
     public Object3DVoxels(Object3DVoxels other) {
-        voxels = new ArrayList<Voxel3D>();
+        voxels = new LinkedList<Voxel3D>();
         this.addVoxels(other.getVoxels());
         init();
         value = other.getValue();
@@ -190,7 +191,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     public Object3DVoxels(Object3D other) {
-        voxels = new ArrayList<Voxel3D>();
+        voxels = new LinkedList<Voxel3D>();
         addVoxels(other.getVoxels());
         init();
         value = other.getValue();
@@ -217,8 +218,8 @@ public class Object3DVoxels extends Object3D {
         return res;
     }
 
-    private ArrayList<Voxel3D> createArrayList(ImageHandler ima, ImageHandler raw) {
-        ArrayList<Voxel3D> voxelsTmp = new ArrayList<Voxel3D>();
+    private LinkedList<Voxel3D> createArrayList(ImageHandler ima, ImageHandler raw) {
+        LinkedList<Voxel3D> voxelsTmp = new LinkedList<Voxel3D>();
         xmin = ima.sizeX;
         xmax = 0;
         ymin = ima.sizeY;
@@ -273,8 +274,8 @@ public class Object3DVoxels extends Object3D {
 
     // intersection
     public void addVoxelsIntersection(Object3D ob1, Object3D ob2) {
-        ArrayList<Voxel3D> al1 = ob1.getVoxels();
-        ArrayList<Voxel3D> al2 = ob2.getVoxels();
+        LinkedList<Voxel3D> al1 = ob1.getVoxels();
+        LinkedList<Voxel3D> al2 = ob2.getVoxels();
         double dist = 0.25;// normally int values (0.25=0.5²)
         Voxel3D v1, v2;
         for (Voxel3D anAl1 : al1) {
@@ -294,8 +295,8 @@ public class Object3DVoxels extends Object3D {
     // intersection multiple
     public void addVoxelsIntersection(ArrayList<Object3D> objs) {
         int nbob = objs.size();
-        ArrayList<Voxel3D> al1 = objs.get(0).getVoxels();
-        ArrayList<Voxel3D> al2 = objs.get(1).getVoxels();
+        LinkedList<Voxel3D> al1 = objs.get(0).getVoxels();
+        LinkedList<Voxel3D> al2 = objs.get(1).getVoxels();
         double dist = 0.25;// normally int values (0.25=0.5²)
         Voxel3D v1, v2;
         for (Voxel3D anAl1 : al1) {
@@ -327,8 +328,8 @@ public class Object3DVoxels extends Object3D {
 
     // union
     public void addVoxelsUnion(Object3D ob1, Object3D ob2) {
-        ArrayList<Voxel3D> al1 = ob1.getVoxels();
-        ArrayList<Voxel3D> al2 = ob2.getVoxels();
+        LinkedList<Voxel3D> al1 = ob1.getVoxels();
+        LinkedList<Voxel3D> al2 = ob2.getVoxels();
         Voxel3D v;
         for (Voxel3D anAl1 : al1) {
             v = anAl1;
@@ -355,8 +356,8 @@ public class Object3DVoxels extends Object3D {
 
     // substraction
     private void substractObjectVoxels(Object3D other) {
-        ArrayList<Voxel3D> al2 = other.getVoxels();
-        ArrayList<Voxel3D> al11 = new ArrayList<Voxel3D>();
+        LinkedList<Voxel3D> al2 = other.getVoxels();
+        LinkedList<Voxel3D> al11 = new LinkedList<Voxel3D>();
         //IJ.log("sub vox " + al11.size());
         double dist = 0.25;// normally int values (0.25=0.5²)
         //IJ.showStatus("Substracting " + other.getVolumePixels() + " voxels");
@@ -399,7 +400,7 @@ public class Object3DVoxels extends Object3D {
     /**
      * @param vox
      */
-    public final void addVoxels(ArrayList<Voxel3D> vox) {
+    public final void addVoxels(LinkedList<Voxel3D> vox) {
         voxels.addAll(vox);
         init();
         contours = null;
@@ -667,7 +668,7 @@ public class Object3DVoxels extends Object3D {
         volume = sum;
     }
 
-    public void setContours(ArrayList<Voxel3D> contours, double areaUnit) {
+    public void setContours(LinkedList<Voxel3D> contours, double areaUnit) {
         this.areaContactUnit = areaUnit;
         this.areaNbVoxels = contours.size();
         this.contours = contours;
@@ -686,7 +687,7 @@ public class Object3DVoxels extends Object3D {
         areaNbVoxels = 0;
         areaContactUnit = 0;
         areaContactVoxels = 0;
-        contours = new ArrayList<Voxel3D>();
+        contours = new LinkedList<Voxel3D>();
         boolean cont;
         double XZ = resXY * resZ;
         double XX = resXY * resXY;
@@ -1387,11 +1388,11 @@ public class Object3DVoxels extends Object3D {
     }
 
     @Override
-    public ArrayList<Voxel3D> getVoxels() {
+    public LinkedList<Voxel3D> getVoxels() {
         return voxels;
     }
 
-    public void setVoxels(ArrayList<Voxel3D> al) {
+    public void setVoxels(LinkedList<Voxel3D> al) {
         voxels = al;
         init();
     }
@@ -1493,7 +1494,7 @@ public class Object3DVoxels extends Object3D {
         double dx, dy, dz;
         int v;
         this.setName(name);
-        voxels = new ArrayList<Voxel3D>();
+        voxels = new LinkedList<Voxel3D>();
         try {
             bf = new BufferedReader(new FileReader(path + name));
             data = loadInfo(bf);
@@ -1660,13 +1661,13 @@ public class Object3DVoxels extends Object3D {
     }
 
     @Override
-    public ArrayList<Voxel3D> listVoxels(ImageHandler ima, double threshold) {
+    public LinkedList<Voxel3D> listVoxels(ImageHandler ima, double threshold) {
         return listVoxels(ima, threshold, Double.POSITIVE_INFINITY);
     }
 
     @Override
-    public ArrayList<Voxel3D> listVoxels(ImageHandler ima, double thresholdLow, double thresholdHigh) {
-        ArrayList<Voxel3D> list = new ArrayList<Voxel3D>();
+    public LinkedList<Voxel3D> listVoxels(ImageHandler ima, double thresholdLow, double thresholdHigh) {
+        LinkedList<Voxel3D> list = new LinkedList<Voxel3D>();
         Voxel3D voxel, newVoxel;
 
         Iterator<Voxel3D> it = voxels.iterator();
@@ -1832,7 +1833,7 @@ public class Object3DVoxels extends Object3D {
 //        ImageInt dil = BinaryMorpho.binaryDilate(seg, dilateSize, dilateSizeZ, true, type);
 //        //dil.show("Dilate");
         ImageInt label = this.getLabelImage();
-        ArrayList<Voxel3D> vox = new ArrayList<Voxel3D>();
+        LinkedList<Voxel3D> vox = new LinkedList<Voxel3D>();
         int xx, yy, zz;
         for (int z = 0; z < seg.sizeZ; z++) {
             for (int y = 0; y < seg.sizeY; y++) {

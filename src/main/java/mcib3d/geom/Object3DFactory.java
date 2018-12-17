@@ -1,9 +1,7 @@
 package mcib3d.geom;
 //import gui.utils.exceptionPrinter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.*;
+
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageInt;
 import mcib3d.utils.exceptionPrinter;
@@ -49,7 +47,7 @@ public class Object3DFactory {
             }
             ArrayList<Object3D> res = new ArrayList<Object3D>(objects.size());
             for (int label : objects.keySet()) {                
-                Object3DFuzzy o = new Object3DFuzzy(label, new ArrayList<Voxel3D>(objects.get(label).values()));
+                Object3DFuzzy o = new Object3DFuzzy(label, new LinkedList<Voxel3D>(objects.get(label).values()));
                 //compute contours...
                 HashMap<Integer, Voxel3D> curVoxels = objects.get(label);
                 boolean change = true;
@@ -63,7 +61,7 @@ public class Object3DFactory {
                     }
                 }
                 //get contours
-                ArrayList<Voxel3D> contours = new ArrayList<Voxel3D>();
+                LinkedList<Voxel3D> contours = new LinkedList<Voxel3D>();
                 for (Voxel3D vox : curVoxels.values()) {
                     if (S.getPixelInt(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ()) == label && isContour(vox, label)) {
                         contours.add(vox);
@@ -80,7 +78,7 @@ public class Object3DFactory {
                     }
                     contours.add(maxvox);
                 }
-                contours.trimToSize();
+                //contours.trimToSize();
 
                 //restore voxels values
                 for (Voxel3D vox : curVoxels.values()) {
@@ -111,11 +109,11 @@ public class Object3DFactory {
         }
         ArrayList<Object3DVoxels> res = new ArrayList<Object3DVoxels>(objects.size());
         for (int label : objects.keySet()) {
-            Object3DVoxels o = new Object3DVoxels(new ArrayList<Voxel3D>(objects.get(label).values()));
+            Object3DVoxels o = new Object3DVoxels(new LinkedList<Voxel3D>(objects.get(label).values()));
             o.setValue(label);
                 if (computeContours) {
                     HashMap<Integer, Voxel3D> curVoxels = objects.get(label);
-                    ArrayList<Voxel3D> contours = new ArrayList<Voxel3D>();
+                    LinkedList<Voxel3D> contours = new LinkedList<Voxel3D>();
                     double surf = 0;
                     double s;
                     for (Voxel3D vox : curVoxels.values()) {
