@@ -1,6 +1,7 @@
 package mcib3d.image3d;
 
 import mcib3d.geom.Object3DVoxels;
+import mcib3d.geom.Point3DInt;
 import mcib3d.geom.Voxel3D;
 
 import java.util.ArrayList;
@@ -539,10 +540,14 @@ public class ImageLabeller {
         return objects;
     }
 
+
+
+
     // classical default neighborhood for segmentation is 26
     public ArrayList<Object3DVoxels> getObjects(ImageHandler mask) {
         return getObjects(mask, false);
     }
+
 
     private class Spot {
 
@@ -552,7 +557,7 @@ public class ImageLabeller {
 
         public Spot(int label, Vox3D v) {
             this.label = label;
-            this.voxels = new LinkedList<Vox3D>();
+            this.voxels = new LinkedList();
             voxels.add(v);
             v.setLabel(label);
         }
@@ -573,17 +578,17 @@ public class ImageLabeller {
             if (other.label < label) {
                 return other.fusion(this);
             }
+
             spots.remove(other.label);
-            if (voxels.size() < Integer.MAX_VALUE) // pb if size >= integer max size
-                voxels.addAll(other.voxels);
-            else {
-                for (Vox3D vox : other.voxels) voxels.add(vox);
-            }
+            // FIXME pb if size >= integer max size
+            voxels.addAll(other.voxels);
+
             other.setLabel(label);
+
             return this;
         }
 
-        public int getSize() {
+        public long getSize() {
             return voxels.size();
         }
     }

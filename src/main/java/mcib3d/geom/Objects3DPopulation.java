@@ -53,31 +53,31 @@ public class Objects3DPopulation {
     private Calibration calibration = null; // deprecated
     private double scaleXY = 1, scaleZ = 1;
     private String unit = "pix";
-    private KDTreeC kdtree = null;
+    protected KDTreeC kdtree = null;
     // link between values and index
-    private HashMap<Integer, Integer> hashValue = null;
-    private HashMap<String, Integer> hashName = null;
+    protected HashMap<Integer, Integer> hashValue = null;
+    protected HashMap<String, Integer> hashName = null;
 
     /**
      * Conctructor
      */
     public Objects3DPopulation() {
-        objects = new ArrayList<Object3D>();
+        objects = new ArrayList<>();
     }
 
     public Objects3DPopulation(Object3D[] objs) {
-        objects = new ArrayList<Object3D>();
+        objects = new ArrayList<>();
         this.addObjects(objs);
     }
 
     public Objects3DPopulation(ArrayList<Object3D> objs) {
-        objects = new ArrayList<Object3D>();
+        objects = new ArrayList<>();
         this.addObjects(objs);
     }
 
     @Deprecated
     public Objects3DPopulation(Object3D[] objs, Calibration cal) {
-        objects = new ArrayList<Object3D>();
+        objects = new ArrayList<>();
         if (cal != null) {
             calibration = cal;
         } else {
@@ -88,28 +88,29 @@ public class Objects3DPopulation {
 
     @Deprecated
     public Objects3DPopulation(ImagePlus plus) {
-        objects = new ArrayList<Object3D>();
+        objects = new ArrayList<>();
         addImagePlus(plus);
     }
 
     public Objects3DPopulation(ImageHandler plus) {
-        objects = new ArrayList<Object3D>();
+        objects = new ArrayList<>();
+        // TEST addImageInt
         addImage(plus, 0);
     }
 
     public Objects3DPopulation(ImageInt plus) {
-        objects = new ArrayList<Object3D>();
+        objects = new ArrayList<>();
         addImage(plus, 0);
     }
 
 
     public Objects3DPopulation(ImageHandler plus, int threshold) {
-        objects = new ArrayList<Object3D>();
+        objects = new ArrayList<>();
         addImage(plus, threshold);
     }
 
     public Objects3DPopulation(ImageInt plus, int threshold) {
-        objects = new ArrayList<Object3D>();
+        objects = new ArrayList<>();
         addImage(plus, threshold);
     }
 
@@ -608,6 +609,9 @@ public class Objects3DPopulation {
         hashValue = null;
         hashName = null;
     }
+
+
+
 
     @Deprecated
     public void addImage(ImageInt seg, Calibration cali) {

@@ -1047,6 +1047,11 @@ public class ImageByte extends ImageInt {
     }
 
     @Override
+    public float getPixel(Point3DInt P) {
+        return (float) (pixels[P.getZ()][P.getX() + P.getY() * sizeX] & 0xff);
+    }
+
+    @Override
     public int getPixelInt(Point3D P) {
         return pixels[P.getRoundZ()][P.getRoundX() + P.getRoundY() * sizeX] & 0xff;
     }

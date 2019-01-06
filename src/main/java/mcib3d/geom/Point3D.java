@@ -329,6 +329,13 @@ public class Point3D {
         return Math.abs(x - other.x) < 0.5 && Math.abs(y - other.y) < 0.5 && Math.abs(z - other.z) < 0.5;
     }
 
+    public boolean sameVoxel(Point3DInt other) { //returns true if 2 points in the same voxel
+        //return this.distanceSquare(other) < 0.25;
+        return Math.abs(x - other.x) < 0.5 && Math.abs(y - other.y) < 0.5 && Math.abs(z - other.z) < 0.5;
+    }
+
+
+
     public boolean samePosition(Point3D other, double error) {
         return (other.x - x < error) && (x - other.x < error) && (other.y - y < error) && (y - other.y < error) && (other.z - z < error) && (z - other.z < error);
     }

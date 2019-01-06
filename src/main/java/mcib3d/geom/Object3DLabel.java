@@ -257,7 +257,7 @@ public class Object3DLabel extends Object3D {
     }
 
     /**
-     * Compute the bounding box of the object and the array list of voxels
+     * Compute the bounding box of the object
      */
     protected void computeBounding() {
         xmin = labelImage.sizeX;
@@ -270,8 +270,8 @@ public class Object3DLabel extends Object3D {
             for (int j = 0; j < labelImage.sizeY; j++) {
                 for (int i = 0; i < labelImage.sizeX; i++) {
                     if (labelImage.getPixel(i, j, k) == value) {
-                        // add to vxel list
-                        //voxels.add(new Voxel3D(i, j, k, value));
+                        // add to voxel list
+                        //listVoxels.add(new Voxel3D(i, j, k, value));
                         if (i < xmin) {
                             xmin = i;
                         }

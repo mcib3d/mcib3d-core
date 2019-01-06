@@ -781,14 +781,14 @@ public abstract class Object3D implements Comparable<Object3D> {
      * gets the list of all pixels within an image as an ArrayList
      *
      * @param ima the image with signal
-     * @return the list of voxels
+     * @return the list of Voxels
      */
     public LinkedList<Voxel3D> listVoxels(ImageHandler ima) {
         return listVoxels(ima, Double.NEGATIVE_INFINITY);
     }
 
     /**
-     * Outputs the list of voxels values using intensity image
+     * Outputs the list of Voxels values using intensity image
      *
      * @param ima the intensity image
      * @return a array of values
@@ -796,7 +796,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     public abstract ArrayUtil listValues(ImageHandler ima);
 
     /**
-     * Outputs the list of voxels values using intensity image above a fixed threshold
+     * Outputs the list of Voxels values using intensity image above a fixed threshold
      *
      * @param ima the intensity image
      * @return a array of values
@@ -804,26 +804,26 @@ public abstract class Object3D implements Comparable<Object3D> {
     public abstract ArrayUtil listValues(ImageHandler ima, float thresh);
 
     /**
-     * List voxels in the image with values > threshold
+     * List Voxels in the image with values > threshold
      *
      * @param ima    The image with values
      * @param thresh the threshold
-     * @return the list of voxels with values > threshold
+     * @return the list of Voxels with values > threshold
      */
     public abstract LinkedList<Voxel3D> listVoxels(ImageHandler ima, double thresh);
 
     /**
-     * List voxels in the image with values > threshold0 and < threshold1
+     * List Voxels in the image with values > threshold0 and < threshold1
      *
      * @param ima     The image with values
      * @param thresh0 the min threshold
      * @param thres1  the max threshold
-     * @return the list of voxels with values > threshold
+     * @return the list of Voxels with values > threshold
      */
     public abstract LinkedList<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thres1);
 
     /**
-     * List voxels in the image with with distances in specific range from a reference point
+     * List Voxels in the image with with distances in specific range from a reference point
      *
      * @param P0          the reference point
      * @param dist0       the min distance
@@ -866,9 +866,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             return ((Object3DSurface) this).buildObject3DVoxels();
         } else if (this instanceof Object3DLabel) {
             return ((Object3DLabel) this).buildObject3DVoxels();
-        } else {
-            return null;
-        }
+        }  else return null;
     }
 
     /**
@@ -949,7 +947,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      *
      * @param mask the image
      * @param val  the real value
-     *             */
+     */
     public abstract void draw(ImageHandler mask, float val);
 
 
@@ -2517,6 +2515,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * Return the two voxels defining the border-border distance
+     *
      * @param other The other object
      * @return The two voxels(from this object, from other object)
      */

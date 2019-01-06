@@ -35,17 +35,17 @@ public class Object3DFuzzy extends Object3DVoxels {
     /*public double colocPixels(Object3DFuzzy other) {
      double res=0;
      //NEEDS A COMPARATOR FOR VOXEL3D THAT TAKES ONLY THE COORDS IN ACCOUNT
-     /*if (other.voxels.size()>voxels.size()) {
-     ArrayList<Voxel3D> coloc=new ArrayList<Voxel3D>(voxels);
-     coloc.retainAll(other.voxels);
+     /*if (other.listVoxels.size()>listVoxels.size()) {
+     ArrayList<Voxel3D> coloc=new ArrayList<Voxel3D>(listVoxels);
+     coloc.retainAll(other.listVoxels);
      for (Voxel3D key : coloc) {
-     res+=Math.sqrt(key.getValue()*other.voxels.get(other.voxels.indexOf(key)).getValue());
+     res+=Math.sqrt(key.getValue()*other.listVoxels.get(other.listVoxels.indexOf(key)).getValue());
      }
      } else {
-     ArrayList<Voxel3D> coloc=new ArrayList<Voxel3D>(other.voxels);
-     coloc.retainAll(voxels);
+     ArrayList<Voxel3D> coloc=new ArrayList<Voxel3D>(other.listVoxels);
+     coloc.retainAll(listVoxels);
      for (Voxel3D key : coloc) {
-     res+=Math.sqrt(key.getValue()*voxels.get(voxels.indexOf(key)).getValue());
+     res+=Math.sqrt(key.getValue()*listVoxels.get(listVoxels.indexOf(key)).getValue());
      }
      }
           

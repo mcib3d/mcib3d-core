@@ -7,10 +7,7 @@ import ij.gui.NewImage;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 import ij.process.StackProcessor;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.Point3D;
-import mcib3d.geom.Voxel3D;
+import mcib3d.geom.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -430,6 +427,11 @@ public class ImageShort extends ImageInt {
     @Override
     public float getPixel(Point3D v) {
         return (float) (pixels[v.getRoundZ()][v.getRoundX() + v.getRoundY() * sizeX] & 0xffff);
+    }
+
+    @Override
+    public float getPixel(Point3DInt P) {
+        return (float) (pixels[P.getZ()][P.getX() + P.getY() * sizeX] & 0xffff);
     }
 
     @Override

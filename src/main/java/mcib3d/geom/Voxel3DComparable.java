@@ -72,7 +72,7 @@ public class Voxel3DComparable extends Voxel3D {
         this.label = label;
     }
 
-    // order (inverted for bright voxels)
+    // order (inverted for bright listVoxels)
     /**
      *
      * @param t

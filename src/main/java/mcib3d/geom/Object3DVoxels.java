@@ -72,7 +72,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     public Object3DVoxels(int val) {
-        value = val;
+        value =  val;
         resXY = 1.0;
         resZ = 1.0;
         units = "pix";
@@ -97,7 +97,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     public Object3DVoxels(ImageHandler ima) {
-        value = (int) ima.getMax();
+        value = (int)ima.getMax();
         // Calibration
         resXY = ima.getScaleXY();
         resZ = ima.getScaleZ();
@@ -150,7 +150,7 @@ public class Object3DVoxels extends Object3D {
      * Constructor for the Object3D object
      */
     public Object3DVoxels(ImageStack stack, int val) {
-        value = val;
+        value =val;
         // No Calibration in ImageStack
         resXY = 1.0;
         resZ = 1.0;
@@ -599,7 +599,7 @@ public class Object3DVoxels extends Object3D {
 
     @Override
     public void computeMoments4() {
-        s400 = s040 = s040 = s220 = s202 = s022 = s121 = s112 = s211 = 0;
+        s004 = s400 = s040 = s220 = s202 = s022 = s121 = s112 = s211 = 0;
         s103 = s301 = s130 = s310 = s013 = s031 = 0;
 
         double i, j, k;
@@ -943,8 +943,8 @@ public class Object3DVoxels extends Object3D {
 //
 //        return pourc;
 //    }
-    protected ArrayList<Voxel3D> getVoxelInsideBoundingBox(int[] boundingBox) { //xmin, xmax, ymin, ymax, zmin, zmax
-        ArrayList<Voxel3D> res = new ArrayList<Voxel3D>();
+    protected LinkedList<Voxel3D> getVoxelInsideBoundingBox(int[] boundingBox) { //xmin, xmax, ymin, ymax, zmin, zmax
+        LinkedList<Voxel3D> res = new LinkedList<Voxel3D>();
         for (Voxel3D v : voxels) {
             if (v.isInsideBoundingBox(boundingBox)) {
                 res.add(v);
@@ -1106,11 +1106,11 @@ public class Object3DVoxels extends Object3D {
             return 0;
         }
         int[] intersec = this.getIntersectionBox(obj);
-        ArrayList<Voxel3D> al1 = this.getVoxelInsideBoundingBox(intersec);
+        LinkedList<Voxel3D> al1 = this.getVoxelInsideBoundingBox(intersec);
         if (!(obj instanceof Object3DVoxels)) {
             obj = obj.getObject3DVoxels();
         }
-        ArrayList<Voxel3D> al2 = ((Object3DVoxels) obj).getVoxelInsideBoundingBox(intersec);
+        LinkedList<Voxel3D> al2 = ((Object3DVoxels) obj).getVoxelInsideBoundingBox(intersec);
 
         int cpt = 0;
         for (Voxel3D v1 : al1) {
@@ -1183,11 +1183,11 @@ public class Object3DVoxels extends Object3D {
             return false;
         }
         int[] intersec = this.getIntersectionBox(obj);
-        ArrayList<Voxel3D> al1 = this.getVoxelInsideBoundingBox(intersec);
+        LinkedList<Voxel3D> al1 = this.getVoxelInsideBoundingBox(intersec);
         if (!(obj instanceof Object3DVoxels)) {
             obj = obj.getObject3DVoxels();
         }
-        ArrayList<Voxel3D> al2 = ((Object3DVoxels) obj).getVoxelInsideBoundingBox(intersec);
+        LinkedList<Voxel3D> al2 = ((Object3DVoxels) obj).getVoxelInsideBoundingBox(intersec);
         for (Voxel3D v1 : al1) {
             for (Voxel3D v2 : al2) {
                 if (v1.sameVoxel(v2)) {
@@ -1742,7 +1742,6 @@ public class Object3DVoxels extends Object3D {
             }
         }
     }
-
 
 
     @Override

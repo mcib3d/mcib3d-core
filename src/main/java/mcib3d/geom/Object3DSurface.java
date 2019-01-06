@@ -1298,7 +1298,7 @@ public class Object3DSurface extends Object3D {
 //                        xx = x + getXmin() - 1;
 //                        yy = y + getYmin() - 1;
 //                        zz = z + getZmin() - 1;
-//                        voxels.add(new Voxel3D(xx, yy, zz, val));
+//                        listVoxels.add(new Voxel3D(xx, yy, zz, val));
 //                    }
 //                }
 //            }
@@ -1817,7 +1817,7 @@ public class Object3DSurface extends Object3D {
 
     @Override
     public LinkedList<Voxel3D> getVoxels() {
-        //IJ.log("voxels  begin " + voxels+" "+this.resXY+" "+this.resZ);
+        //IJ.log("voxels  begin " + listVoxels+" "+this.resXY+" "+this.resZ);
         // check if already computed
         if (voxels != null) {
             return voxels;
@@ -1831,7 +1831,7 @@ public class Object3DSurface extends Object3D {
         //IJ.log("after decalibrate " + unique_vertices.size() + " " + unique_vertices.get(0));
         if (multiThread) {
             voxels = computeVoxelsMultithread();
-            //IJ.log("voxelisation multi " + voxels.size() + " " + voxels.get(0));
+            //IJ.log("voxelisation multi " + listVoxels.size() + " " + listVoxels.get(0));
         } else {
             voxels = computeVoxels();
         }

@@ -964,6 +964,11 @@ public class ImageFloat extends ImageHandler {
     }
 
     @Override
+    public float getPixel(Point3DInt P) {
+        return pixels[P.getZ()][P.getX() + P.getY() * sizeX];
+    }
+
+    @Override
     public float getPixelInterpolated(Point3D P) {
         return getPixel((float) P.x, (float) P.y, (float) P.z);
     }

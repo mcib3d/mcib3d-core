@@ -11,10 +11,7 @@ import ij.measure.Calibration;
 import ij.plugin.ContrastEnhancer;
 import ij.plugin.ZProjector;
 import ij.process.ImageProcessor;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Point3D;
-import mcib3d.geom.Vector3D;
-import mcib3d.geom.Voxel3D;
+import mcib3d.geom.*;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.exceptionPrinter;
@@ -375,6 +372,11 @@ public abstract class ImageHandler {
         return (V.x >= 0 && V.x < sizeX && V.y >= 0 && V.y < sizeY && V.z >= 0 && V.z < sizeZ);
     }
 
+    public boolean contains(Point3DInt V) {
+        return (V.x >= 0 && V.x < sizeX && V.y >= 0 && V.y < sizeY && V.z >= 0 && V.z < sizeZ);
+    }
+
+
     public boolean maskContains(int x, int y, int z) {
         return (contains(x, y, z) && getPixel(x, y, z) != 0);
     }
@@ -388,6 +390,9 @@ public abstract class ImageHandler {
     public abstract float getPixel(int xy, int z);
 
     public abstract float getPixel(Point3D P);
+
+    public abstract float getPixel(Point3DInt P);
+
 
     //public abstract int getPixelInt(Point3D P);
     public abstract float getPixelInterpolated(Point3D P);
