@@ -35,13 +35,13 @@ import java.util.LinkedList;
  */
 public class ImageLabeller {
 
-    HashMap<Integer, Spot> spots = null;
+    protected HashMap<Integer, Spot> spots = null;
     int[][] labels;
     boolean debug = false;
     long minSize = 0;
-    long maxsize = Long.MAX_VALUE;
+    long maxsize = Integer.MAX_VALUE;
     // current mask
-    ImageHandler currentMask = null;
+    protected ImageHandler currentMask = null;
 
     public ImageLabeller(boolean debug) {
         this.debug = debug;
@@ -549,7 +549,7 @@ public class ImageLabeller {
     }
 
 
-    private class Spot {
+    protected class Spot {
 
         LinkedList<Vox3D> voxels;
         int label;

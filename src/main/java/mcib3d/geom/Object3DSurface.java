@@ -1793,7 +1793,6 @@ public class Object3DSurface extends Object3D {
 
     @Override
     public LinkedList listVoxels(ImageHandler ima, double threshold) {
-
         return listVoxels(ima, threshold, Double.POSITIVE_INFINITY);
     }
 
@@ -1966,7 +1965,6 @@ public class Object3DSurface extends Object3D {
             }
         }
     }
-
 
 
     @Override
@@ -2217,12 +2215,26 @@ public class Object3DSurface extends Object3D {
     }
 
     @Override
+    public boolean hasOneVoxelValueRange(ImageHandler ima, int t0, int t1) {
+        float pixvalue;
+
+        for (Voxel3D pixel : getVoxels()) {
+            if (ima.contains(pixel)) {
+                pixvalue = ima.getPixel(pixel);
+                if ((pixvalue >= t0) && (pixvalue <= t1)) return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
     public ArrayUtil listValues(ImageHandler ima) {
         ArrayUtil vector = new ArrayUtil(this.getVolumePixels());
         float pixvalue;
         int idx = 0;
 
-        for (Voxel3D pixel : voxels) {
+        for (Voxel3D pixel : getVoxels()) {
             if (ima.contains(pixel)) {
                 pixvalue = ima.getPixel(pixel);
                 vector.addValue(idx, pixvalue);

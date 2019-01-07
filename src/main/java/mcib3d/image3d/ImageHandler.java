@@ -393,7 +393,6 @@ public abstract class ImageHandler {
 
     public abstract float getPixel(Point3DInt P);
 
-
     //public abstract int getPixelInt(Point3D P);
     public abstract float getPixelInterpolated(Point3D P);
 

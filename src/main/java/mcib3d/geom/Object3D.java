@@ -3292,6 +3292,8 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public abstract boolean hasOneVoxelColoc(Object3D obj);
 
+    public abstract boolean hasOneVoxelValueRange(ImageHandler img, int t0, int t1);
+
     /**
      * @param obj
      * @return

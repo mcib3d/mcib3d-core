@@ -789,7 +789,6 @@ public class Object3DLabel extends Object3D {
     }
 
 
-
     /**
      * @param mask
      * @param red
@@ -1026,7 +1025,7 @@ public class Object3DLabel extends Object3D {
         for (int k = zmin0; k <= zmax0; k++) {
             for (int j = ymin0; j <= ymax0; j++) {
                 for (int i = xmin0; i <= xmax0; i++) {
-                    if ((labelImage.getPixel(i , j , k ) == value) && (otherseg.getPixel(i - offX1, j - offY1, k - offZ1) == val)) {
+                    if ((labelImage.getPixel(i, j, k) == value) && (otherseg.getPixel(i - offX1, j - offY1, k - offZ1) == val)) {
                         return true;
                     }
                 }
@@ -1037,9 +1036,29 @@ public class Object3DLabel extends Object3D {
     }
 
     @Override
+    public boolean hasOneVoxelValueRange(ImageHandler img, int t0, int t1) {
+        int xmin0 = getXmin();
+        int ymin0 = getYmin();
+        int zmin0 = getZmin();
+        int xmax0 = getXmax();
+        int ymax0 = getYmax();
+        int zmax0 = getZmax();
+
+        for (int k = zmin0; k <= zmax0; k++) {
+            for (int j = ymin0; j <= ymax0; j++) {
+                for (int i = xmin0; i <= xmax0; i++) {
+                    float pixel = labelImage.getPixel(i, j, k);
+                    if ((pixel >= t0) && (pixel <= t1)) return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
     public ArrayUtil listValues(ImageHandler ima) {
         ArrayUtil list = new ArrayUtil(this.getVolumePixels());
-        Voxel3D pixel;
         int xmin0;
         int ymin0;
         int zmin0;

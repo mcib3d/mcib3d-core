@@ -943,6 +943,17 @@ public class Object3DVoxels extends Object3D {
 //
 //        return pourc;
 //    }
+
+
+    public boolean hasOneVoxelValueRange(ImageHandler img, int t0, int t1) {
+       for (Voxel3D vox : voxels) {
+                float pix = img.getPixel(vox);
+                if ((pix >= t0) && (pix <= t1)) return true;
+            }
+
+        return false;
+    }
+
     protected LinkedList<Voxel3D> getVoxelInsideBoundingBox(int[] boundingBox) { //xmin, xmax, ymin, ymax, zmin, zmax
         LinkedList<Voxel3D> res = new LinkedList<Voxel3D>();
         for (Voxel3D v : voxels) {
