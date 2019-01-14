@@ -214,12 +214,11 @@ public class Objects3DPopulationColocalisation {
         ArrayList<PairColocalisation> pairColocalisations = new ArrayList<PairColocalisation>();
         int i1 = population1.getObjectIndex(object3D.getValue());
         for (int i2 = 0; i2 < population2.getNbObjects(); i2++) {
-            if (i1 >= colocs.length) IJ.log(" " + i1 + " " + colocs.length);
-            if (i2 >= colocs[0].length) {
-                IJ.log(" " + i1 + " " + colocs.length + " " + population1.getNbObjects());
-                IJ.log(" " + i2 + " " + colocs[0].length + " " + population2.getNbObjects());
-            }
-
+//            if (i1 >= colocs.length) IJ.log(" " + i1 + " " + colocs.length);
+//            if (i2 >= colocs[0].length) {
+//                IJ.log(" " + i1 + " " + colocs.length + " " + population1.getNbObjects());
+//                IJ.log(" " + i2 + " " + colocs[0].length + " " + population2.getNbObjects());
+//            }
             int vol = colocs[i1][i2];
             if (vol > 0) {
                 PairColocalisation pairColocalisation = new PairColocalisation(population1.getObject(i1), population2.getObject(i2), vol);

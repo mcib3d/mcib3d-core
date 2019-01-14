@@ -38,8 +38,8 @@ public class ImageLabeller {
     protected HashMap<Integer, Spot> spots = null;
     int[][] labels;
     boolean debug = false;
-    long minSize = 0;
-    long maxsize = Integer.MAX_VALUE;
+    int minSize = 0;
+    int maxsize = Integer.MAX_VALUE;
     // current mask
     protected ImageHandler currentMask = null;
 
