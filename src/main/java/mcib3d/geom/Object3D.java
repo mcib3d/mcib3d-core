@@ -866,7 +866,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             return ((Object3DSurface) this).buildObject3DVoxels();
         } else if (this instanceof Object3DLabel) {
             return ((Object3DLabel) this).buildObject3DVoxels();
-        }  else return null;
+        } else return null;
     }
 
     /**
@@ -2879,6 +2879,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         return pixmax;
     }
 
+
     public double getPixCenterValue(ImageHandler ima) {
         if (ima.contains(getCenterX(), getCenterY(), getCenterZ())) {
             return ima.getPixel(getCenterAsPoint());
@@ -2899,6 +2900,30 @@ public abstract class Object3D implements Comparable<Object3D> {
             currentQuantifImage = ima;
         }
         return pixmin;
+    }
+
+    /**
+     * Will count the number of different objects within this object
+     * @param ima A labelled image
+     * @return the number of objects and the volume occupied by the objects
+     */
+    public int[] getNumbering(ImageHandler ima) {
+        int vol = 0;
+        int min = (int) this.getPixMinValue(ima);
+        int max = (int) this.getPixMaxValue(ima);
+        BitSet bitSet = new BitSet(max - min + 1);
+
+        for (Voxel3D voxel3D : getVoxels()) {
+            int x = voxel3D.getRoundX();
+            int y = voxel3D.getRoundY();
+            int z = voxel3D.getRoundZ();
+            int pix = (int) ima.getPixel(x, y, z);
+            if (pix > 0) {
+                vol++;
+                bitSet.set(pix);
+            }
+        }
+        return new int[]{bitSet.cardinality(), vol};
     }
 
     public void resetQuantifImage() {

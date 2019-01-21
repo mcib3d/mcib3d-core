@@ -63,7 +63,7 @@ public abstract class ImageHandler {
     double scaleXY = 1.0, scaleZ = 1.0;
     String unit = "pix";
 
-    HashMap<ImageHandler, ImageStats> stats = new HashMap<ImageHandler, ImageStats>(2);
+    HashMap<ImageHandler, ImageStats> stats = new HashMap<>(2);
 
     protected ImageHandler(ImagePlus img) {
         this.img = img;
@@ -1890,6 +1890,7 @@ public abstract class ImageHandler {
      * @param average average with original image or not
      */
     public void insert(ImageHandler vol, int x0, int y0, int z0, boolean average) {
+        //IJ.log("Inserting at " + x0 + " " + y0 + " " + z0);
         int xx0 = Math.max(x0, 0);
         int yy0 = Math.max(y0, 0);
         int zz0 = Math.max(z0, 0);
