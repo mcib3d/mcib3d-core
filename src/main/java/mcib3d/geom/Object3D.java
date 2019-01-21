@@ -2438,9 +2438,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             }
         }
         if (edgeZ) {
-            if ((zmin <= 0) || (zmax >= img.sizeZ - 1)) {
-                return true;
-            }
+            return (zmin <= 0) || (zmax >= img.sizeZ - 1);
         }
 
         return false;
@@ -2903,7 +2901,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     }
 
     /**
-     * Will count the number of different objects within this object
+     * Will count the number of different objects within this object     *
      * @param ima A labelled image
      * @return the number of objects and the volume occupied by the objects
      */
@@ -2920,7 +2918,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             int pix = (int) ima.getPixel(x, y, z);
             if (pix > 0) {
                 vol++;
-                bitSet.set(pix);
+                bitSet.set(pix - min);
             }
         }
         return new int[]{bitSet.cardinality(), vol};
