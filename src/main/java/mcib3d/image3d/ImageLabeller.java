@@ -1,7 +1,6 @@
 package mcib3d.image3d;
 
 import mcib3d.geom.Object3DVoxels;
-import mcib3d.geom.Point3DInt;
 import mcib3d.geom.Voxel3D;
 
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ import java.util.LinkedList;
  */
 public class ImageLabeller {
 
-    protected HashMap<Integer, Spot> spots = null;
+    protected HashMap<Integer, Spot> listSpots = null;
     int[][] labels;
     boolean debug = false;
     int minSize = 0;
@@ -75,11 +74,8 @@ public class ImageLabeller {
         currentMask = mask;
         //label objects
         labels = new int[mask.sizeZ][mask.sizeXY];
-//        int limX = mask.sizeX - 1;
-//        int limY = mask.sizeY - 1;
-//        int limZ = mask.sizeZ - 1;
         int sizeX = mask.sizeX;
-        spots = new HashMap<Integer, Spot>();
+        listSpots = new HashMap<Integer, Spot>();
         int currentLabel = (short) 1;
         Spot currentSpot;
         Vox3D v;
@@ -99,10 +95,10 @@ public class ImageLabeller {
                          nextLabel = labels[z][xy+1];
                          if (nextLabel!=0) {
                          if (currentSpot==null) {
-                         currentSpot = spots.get(nextLabel);
+                         currentSpot = listSpots.get(nextLabel);
                          currentSpot.addVox(v);
                          } else if (nextLabel!=currentSpot.label) {
-                         currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                         currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                          currentSpot.addVox(v);
                          }
                          }
@@ -113,10 +109,10 @@ public class ImageLabeller {
                             nextLabel = labels[z][xy - 1];
                             if (nextLabel != 0) {
                                 if (currentSpot == null) {
-                                    currentSpot = spots.get(nextLabel);
+                                    currentSpot = listSpots.get(nextLabel);
                                     currentSpot.addVox(v);
                                 } else if (nextLabel != currentSpot.label) {
-                                    currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                                    currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                                     currentSpot.addVox(v);
                                 }
                             }
@@ -126,10 +122,10 @@ public class ImageLabeller {
                          nextLabel = labels[z][xy+sizeX];
                          if (nextLabel!=0) {
                          if (currentSpot==null) {
-                         currentSpot = spots.get(nextLabel);
+                         currentSpot = listSpots.get(nextLabel);
                          currentSpot.addVox(v);
                          } else if (nextLabel!=currentSpot.label) {
-                         currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                         currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                          currentSpot.addVox(v);
                          }
                          }
@@ -140,10 +136,10 @@ public class ImageLabeller {
                             nextLabel = labels[z][xy - sizeX];
                             if (nextLabel != 0) {
                                 if (currentSpot == null) {
-                                    currentSpot = spots.get(nextLabel);
+                                    currentSpot = listSpots.get(nextLabel);
                                     currentSpot.addVox(v);
                                 } else if (nextLabel != currentSpot.label) {
-                                    currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                                    currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                                     currentSpot.addVox(v);
                                 }
                             }
@@ -154,10 +150,10 @@ public class ImageLabeller {
                          nextLabel = labels[z+1][xy];
                          if (nextLabel!=0) {
                          if (currentSpot==null) {
-                         currentSpot = spots.get(nextLabel);
+                         currentSpot = listSpots.get(nextLabel);
                          currentSpot.addVox(v);
                          } else if (nextLabel!=currentSpot.label) {
-                         currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                         currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                          currentSpot.addVox(v);
                          }
                          }
@@ -168,17 +164,17 @@ public class ImageLabeller {
                             nextLabel = labels[z - 1][xy];
                             if (nextLabel != 0) {
                                 if (currentSpot == null) {
-                                    currentSpot = spots.get(nextLabel);
+                                    currentSpot = listSpots.get(nextLabel);
                                     currentSpot.addVox(v);
                                 } else if (nextLabel != currentSpot.label) {
-                                    currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                                    currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                                     currentSpot.addVox(v);
                                 }
                             }
                         }
 
                         if (currentSpot == null) {
-                            spots.put(currentLabel, new Spot(currentLabel++, v));
+                            listSpots.put(currentLabel, new Spot(currentLabel++, v));
                         }
                     }
                 }
@@ -190,12 +186,9 @@ public class ImageLabeller {
         currentMask = mask;
         //label objects
         labels = new int[mask.sizeZ][mask.sizeXY];
-//        int limX = mask.sizeX - 1;
-//        int limY = mask.sizeY - 1;
-//        int limZ = mask.sizeZ - 1;
         int sizeX = mask.sizeX;
-        spots = new HashMap<Integer, Spot>();
-        int currentLabel = (short) 1;
+        listSpots = new HashMap<>();
+        int currentLabel = 1;
         Spot currentSpot;
         Vox3D v;
         int nextLabel;
@@ -210,7 +203,6 @@ public class ImageLabeller {
                     if (mask.getPixel(xy, z) != 0) {
                         currentSpot = null;
                         v = new Vox3D(xy, z);
-
                         for (int k = -1; k <= 1; k++) {
                             for (int j = -1; j <= 1; j++) {
                                 for (int i = -1; i <= 1; i++) {
@@ -218,10 +210,10 @@ public class ImageLabeller {
                                         nextLabel = labels[z + k][xy + i + j * sizeX];
                                         if (nextLabel != 0) {
                                             if (currentSpot == null) {
-                                                currentSpot = spots.get(nextLabel);
+                                                currentSpot = listSpots.get(nextLabel);
                                                 currentSpot.addVox(v);
                                             } else if (nextLabel != currentSpot.label) {
-                                                currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                                                currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                                                 currentSpot.addVox(v);
                                             }
                                         }
@@ -230,7 +222,7 @@ public class ImageLabeller {
                             }
                         }
                         if (currentSpot == null) {
-                            spots.put(currentLabel, new Spot(currentLabel++, v));
+                            listSpots.put(currentLabel, new Spot(currentLabel++, v));
                         }
                     }
                 }
@@ -247,7 +239,7 @@ public class ImageLabeller {
 //        int limY = mask.sizeY - 1;
 //        int limZ = mask.sizeZ - 1;
         int sizeX = mask.sizeX;
-        spots = new HashMap<Integer, Spot>();
+        listSpots = new HashMap<Integer, Spot>();
         int currentLabel = (short) 1;
         Spot currentSpot;
         Vox3D v;
@@ -267,10 +259,10 @@ public class ImageLabeller {
                          nextLabel = labels[z][xy+1];
                          if (nextLabel!=0) {
                          if (currentSpot==null) {
-                         currentSpot = spots.get(nextLabel);
+                         currentSpot = listSpots.get(nextLabel);
                          currentSpot.addVox(v);
                          } else if (nextLabel!=currentSpot.label) {
-                         currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                         currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                          currentSpot.addVox(v);
                          }
                          }
@@ -281,7 +273,7 @@ public class ImageLabeller {
                             nextLabel = labels[z][xy - 1];
                             if (nextLabel != 0) {
                                 if (currentSpot == null) {
-                                    currentSpot = spots.get(nextLabel);
+                                    currentSpot = listSpots.get(nextLabel);
                                     if (!currentSpot.tooBig) {
                                         currentSpot.addVox(v);
                                         if (currentSpot.getSize() > maxsize) {
@@ -290,8 +282,8 @@ public class ImageLabeller {
                                     }
                                 } else if (nextLabel != currentSpot.label) {
                                     if (!currentSpot.tooBig) {
-                                        if (!spots.get(nextLabel).tooBig) {
-                                            currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                                        if (!listSpots.get(nextLabel).tooBig) {
+                                            currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                                             currentSpot.addVox(v);
                                             if (currentSpot.getSize() > maxsize) {
                                                 currentSpot.tooBig = true;
@@ -306,10 +298,10 @@ public class ImageLabeller {
                          nextLabel = labels[z][xy+sizeX];
                          if (nextLabel!=0) {
                          if (currentSpot==null) {
-                         currentSpot = spots.get(nextLabel);
+                         currentSpot = listSpots.get(nextLabel);
                          currentSpot.addVox(v);
                          } else if (nextLabel!=currentSpot.label) {
-                         currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                         currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                          currentSpot.addVox(v);
                          }
                          }
@@ -320,7 +312,7 @@ public class ImageLabeller {
                             nextLabel = labels[z][xy - sizeX];
                             if (nextLabel != 0) {
                                 if (currentSpot == null) {
-                                    currentSpot = spots.get(nextLabel);
+                                    currentSpot = listSpots.get(nextLabel);
                                     if (!currentSpot.tooBig) {
                                         currentSpot.addVox(v);
                                         if (currentSpot.getSize() > maxsize) {
@@ -329,8 +321,8 @@ public class ImageLabeller {
                                     }
                                 } else if (nextLabel != currentSpot.label) {
                                     if (!currentSpot.tooBig) {
-                                        if (!spots.get(nextLabel).tooBig) {
-                                            currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                                        if (!listSpots.get(nextLabel).tooBig) {
+                                            currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                                             currentSpot.addVox(v);
                                             if (currentSpot.getSize() > maxsize) {
                                                 currentSpot.tooBig = true;
@@ -346,10 +338,10 @@ public class ImageLabeller {
                          nextLabel = labels[z+1][xy];
                          if (nextLabel!=0) {
                          if (currentSpot==null) {
-                         currentSpot = spots.get(nextLabel);
+                         currentSpot = listSpots.get(nextLabel);
                          currentSpot.addVox(v);
                          } else if (nextLabel!=currentSpot.label) {
-                         currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                         currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                          currentSpot.addVox(v);
                          }
                          }
@@ -360,7 +352,7 @@ public class ImageLabeller {
                             nextLabel = labels[z - 1][xy];
                             if (nextLabel != 0) {
                                 if (currentSpot == null) {
-                                    currentSpot = spots.get(nextLabel);
+                                    currentSpot = listSpots.get(nextLabel);
                                     if (!currentSpot.tooBig) {
                                         currentSpot.addVox(v);
                                         if (currentSpot.getSize() > maxsize) {
@@ -369,8 +361,8 @@ public class ImageLabeller {
                                     }
                                 } else if (nextLabel != currentSpot.label) {
                                     if (!currentSpot.tooBig) {
-                                        if (!spots.get(nextLabel).tooBig) {
-                                            currentSpot = currentSpot.fusion(spots.get(nextLabel));
+                                        if (!listSpots.get(nextLabel).tooBig) {
+                                            currentSpot = currentSpot.fusion(listSpots.get(nextLabel));
                                             currentSpot.addVox(v);
                                             if (currentSpot.getSize() > maxsize) {
                                                 currentSpot.tooBig = true;
@@ -381,7 +373,7 @@ public class ImageLabeller {
                             }
                         }
                         if (currentSpot == null) {
-                            spots.put(currentLabel, new Spot(currentLabel++, v));
+                            listSpots.put(currentLabel, new Spot(currentLabel++, v));
                         }
                     }
                 }
@@ -393,7 +385,7 @@ public class ImageLabeller {
         currentMask = mask;
         labels = new int[mask.sizeZ][mask.sizeXY];
         int sizeX = mask.sizeX;
-        spots = new HashMap<Integer, Spot>();
+        listSpots = new HashMap<Integer, Spot>();
         int currentLabel = 1;
         Vox3D v;
         int xy;
@@ -406,7 +398,7 @@ public class ImageLabeller {
                     xy = x + y * sizeX;
                     if (mask.getPixel(xy, z) != 0) {
                         v = new Vox3D(xy, z);
-                        spots.put(currentLabel, new Spot(currentLabel++, v));
+                        listSpots.put(currentLabel, new Spot(currentLabel++, v));
                     }
                 }
             }
@@ -414,7 +406,7 @@ public class ImageLabeller {
     }
 
     public ImageInt getLabels(ImageHandler mask, boolean connex6) {
-        if ((spots == null) || (mask != currentMask)) {
+        if ((listSpots == null) || (mask != currentMask)) {
             if (connex6) {
                 this.labelSpots6(mask);
             } else {
@@ -424,7 +416,7 @@ public class ImageLabeller {
         ImageShort res = new ImageShort(mask.getTitle() + "::segmented", mask.sizeX, mask.sizeY, mask.sizeZ);
         res.setScale(mask);
         short label = 1;
-        for (Spot s : spots.values()) {
+        for (Spot s : listSpots.values()) {
             LinkedList<Vox3D> a = s.voxels;
             // check size
             if ((a.size() >= minSize) && (a.size() <= maxsize)) {
@@ -442,7 +434,7 @@ public class ImageLabeller {
     }
 
     public ImageFloat getLabelsFloat(ImageHandler mask, boolean connex6) {
-        if ((spots == null) || (mask != currentMask)) {
+        if ((listSpots == null) || (mask != currentMask)) {
             if (connex6) {
                 this.labelSpots6(mask);
             } else {
@@ -450,8 +442,8 @@ public class ImageLabeller {
             }
         }
         ImageFloat res = new ImageFloat(mask.getTitle() + "::segmented", mask.sizeX, mask.sizeY, mask.sizeZ);
-        short label = 1;
-        for (Spot s : spots.values()) {
+        int label = 1;
+        for (Spot s : listSpots.values()) {
             LinkedList<Vox3D> a = s.voxels;
             // check size
             if ((a.size() >= minSize) && (a.size() <= maxsize)) {
@@ -470,23 +462,23 @@ public class ImageLabeller {
     }
 
     public int getNbObjectsTotal(ImageHandler mask, boolean connex6) {
-        if ((spots == null) || (mask != currentMask)) {
+        if ((listSpots == null) || (mask != currentMask)) {
             if (connex6) {
                 this.labelSpots6(mask);
             } else {
                 this.labelSpots26(mask);
             }
         }
-        return spots.size();
+        return listSpots.size();
     }
 
     public ImageInt getLabelsIndividualVoxels(ImageHandler mask) {
-        if ((spots == null) || (mask != currentMask)) {
+        if ((listSpots == null) || (mask != currentMask)) {
             labelIndividualVoxel(mask);
         }
         ImageShort res = new ImageShort(mask.getTitle() + "::segmented", mask.sizeX, mask.sizeY, mask.sizeZ);
         short label = 1;
-        for (Spot s : spots.values()) {
+        for (Spot s : listSpots.values()) {
             Vox3D vox = s.voxels.get(0);
             res.pixels[vox.z][vox.xy] = label;
             label++;
@@ -511,7 +503,7 @@ public class ImageLabeller {
 
     // classical default neighborhood for segmentation is 26
     public ArrayList<Object3DVoxels> getObjects(ImageHandler mask, boolean connex6) {
-        if ((spots == null) || (mask != currentMask)) {
+        if ((listSpots == null) || (mask != currentMask)) {
             if (connex6) {
                 this.labelSpots6(mask);
             } else {
@@ -521,7 +513,7 @@ public class ImageLabeller {
         ArrayList<Object3DVoxels> objects = new ArrayList<Object3DVoxels>();
         int sizeX = mask.sizeX;
         short label = 1;
-        for (Spot s : spots.values()) {
+        for (Spot s : listSpots.values()) {
             LinkedList<Vox3D> a = s.voxels;
             // check size
             if ((a.size() >= minSize) && (a.size() <= maxsize)) {
@@ -541,8 +533,6 @@ public class ImageLabeller {
     }
 
 
-
-
     // classical default neighborhood for segmentation is 26
     public ArrayList<Object3DVoxels> getObjects(ImageHandler mask) {
         return getObjects(mask, false);
@@ -550,7 +540,6 @@ public class ImageLabeller {
 
 
     protected class Spot {
-
         LinkedList<Vox3D> voxels;
         int label;
         boolean tooBig = false;
@@ -579,7 +568,7 @@ public class ImageLabeller {
                 return other.fusion(this);
             }
 
-            spots.remove(other.label);
+            listSpots.remove(other.label);
             // FIXME pb if size >= integer max size
             voxels.addAll(other.voxels);
 
