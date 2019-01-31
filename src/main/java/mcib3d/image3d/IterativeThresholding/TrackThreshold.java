@@ -403,7 +403,6 @@ public class TrackThreshold {
             ImageHandler labels2 = labeler.getLabels(bin2);
             ArrayList<ObjectTrack> frame2 = computeFrame(img, labeler.getObjects(bin2), markers, T2, criterion);
 
-
             System.gc();
             // T2--> new T1
             T1 = T2;
@@ -434,9 +433,7 @@ public class TrackThreshold {
         while (deleteLowContrastTracks(allFrames, contrastMin)) ;
 
         while ((!allFrames.isEmpty()) && (level < maxLevel)) {
-            if (log != null) {
-                log.log("Nb total objects level " + level + " : " + allFrames.size());
-            }
+
             ImageHandler drawIdx, drawContrast;
             // 32-bits case
             //if (allFrames.size() < 65535) {
@@ -484,6 +481,9 @@ public class TrackThreshold {
                     toBeRemoved.addAll(list);
                     idx++;
                 }
+            }
+            if (log != null) {
+                log.log("Nb total objects level " + level + " : " + (idx - 1));
             }
             level++;
             // really remove all objects set to be removed

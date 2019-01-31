@@ -35,7 +35,7 @@ public class F_Function implements SpatialDescriptor {
         // TODO, may use double coordinates
         // FIXME, check if already selected and too many points
         for (int i = 0; i < nbEvaluationpoints; ++i) {
-            evaluationPoints[i] = maskV.getRandomvoxel(ra);
+            evaluationPoints[i] = maskV.getRandomVoxel(ra);
         }
         
         return true;

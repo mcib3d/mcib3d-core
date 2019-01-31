@@ -184,7 +184,7 @@ public class Watershed3D {
             while (!tree.isEmpty()) {
                 Voxel3DComparable V = tree.pollFirst();
 
-                ArrayList<Voxel3D> Nei = watershedImage.getNeighborhood3x3x3ListNoCenter(V.getRoundX(), V.getRoundY(), V.getRoundZ());
+                LinkedList<Voxel3D> Nei = watershedImage.getNeighborhood3x3x3NoCenterList(V.getRoundX(), V.getRoundY(), V.getRoundZ());
 
                 // if in DAM, do not process
                 if (watershedImage.getPixel(V) == DAM) continue;
@@ -285,7 +285,7 @@ public class Watershed3D {
                         if (se > 0) {
                             watershedImage.setPixel(x, y, z, se);
                             //okseeds = true;
-                            ArrayList<Voxel3D> list = watershedImage.getNeighborhood3x3x3ListNoCenter(x, y, z);
+                            LinkedList<Voxel3D> list = watershedImage.getNeighborhood3x3x3NoCenterList(x, y, z);
                             Collections.shuffle(list);
                             for (Voxel3D N : list) {
                                 int vx = (int) N.getX();

@@ -78,7 +78,6 @@ public class Objects3DPopulationColocalisation {
      */
     public ResultsTable getResultsTableAll(boolean useValueObject) {
         if (needToComputeColoc) computeColocalisation();
-        IJ.log("Colocalisation completed, building results table");
         ResultsTable rt = ResultsTable.getResultsTable();
         if (rt == null) rt = new ResultsTable();
         rt.reset();

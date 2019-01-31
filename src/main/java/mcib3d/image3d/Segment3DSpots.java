@@ -293,7 +293,7 @@ public class Segment3DSpots {
         int nb;
 
         if (debug) {
-            System.out.println("separe spots 2D : " + val);
+            System.out.println("separate spots 2D : " + val);
         }
 
         // compter nb de max locaux

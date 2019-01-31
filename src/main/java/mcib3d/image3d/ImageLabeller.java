@@ -34,7 +34,7 @@ import java.util.LinkedList;
  */
 public class ImageLabeller {
 
-    protected HashMap<Integer, Spot> listSpots = null;
+    protected HashMap<Integer, Spot3D> listSpots = null;
     int[][] labels;
     boolean debug = false;
     int minSize = 0;
@@ -75,9 +75,9 @@ public class ImageLabeller {
         //label objects
         labels = new int[mask.sizeZ][mask.sizeXY];
         int sizeX = mask.sizeX;
-        listSpots = new HashMap<Integer, Spot>();
+        listSpots = new HashMap<Integer, Spot3D>();
         int currentLabel = (short) 1;
-        Spot currentSpot;
+        Spot3D currentSpot;
         Vox3D v;
         int nextLabel;
         int xy;
@@ -174,13 +174,14 @@ public class ImageLabeller {
                         }
 
                         if (currentSpot == null) {
-                            listSpots.put(currentLabel, new Spot(currentLabel++, v));
+                            listSpots.put(currentLabel, new Spot3D(currentLabel++, v));
                         }
                     }
                 }
             }
         }
     }
+
 
     private void labelSpots26(ImageHandler mask) {
         currentMask = mask;
@@ -189,7 +190,7 @@ public class ImageLabeller {
         int sizeX = mask.sizeX;
         listSpots = new HashMap<>();
         int currentLabel = 1;
-        Spot currentSpot;
+        Spot3D currentSpot;
         Vox3D v;
         int nextLabel;
         int xy;
@@ -222,7 +223,7 @@ public class ImageLabeller {
                             }
                         }
                         if (currentSpot == null) {
-                            listSpots.put(currentLabel, new Spot(currentLabel++, v));
+                            listSpots.put(currentLabel, new Spot3D(currentLabel++, v));
                         }
                     }
                 }
@@ -239,9 +240,9 @@ public class ImageLabeller {
 //        int limY = mask.sizeY - 1;
 //        int limZ = mask.sizeZ - 1;
         int sizeX = mask.sizeX;
-        listSpots = new HashMap<Integer, Spot>();
+        listSpots = new HashMap<Integer, Spot3D>();
         int currentLabel = (short) 1;
-        Spot currentSpot;
+        Spot3D currentSpot;
         Vox3D v;
         int nextLabel;
         int xy;
@@ -373,7 +374,7 @@ public class ImageLabeller {
                             }
                         }
                         if (currentSpot == null) {
-                            listSpots.put(currentLabel, new Spot(currentLabel++, v));
+                            listSpots.put(currentLabel, new Spot3D(currentLabel++, v));
                         }
                     }
                 }
@@ -385,7 +386,7 @@ public class ImageLabeller {
         currentMask = mask;
         labels = new int[mask.sizeZ][mask.sizeXY];
         int sizeX = mask.sizeX;
-        listSpots = new HashMap<Integer, Spot>();
+        listSpots = new HashMap<Integer, Spot3D>();
         int currentLabel = 1;
         Vox3D v;
         int xy;
@@ -398,7 +399,7 @@ public class ImageLabeller {
                     xy = x + y * sizeX;
                     if (mask.getPixel(xy, z) != 0) {
                         v = new Vox3D(xy, z);
-                        listSpots.put(currentLabel, new Spot(currentLabel++, v));
+                        listSpots.put(currentLabel, new Spot3D(currentLabel++, v));
                     }
                 }
             }
@@ -416,7 +417,7 @@ public class ImageLabeller {
         ImageShort res = new ImageShort(mask.getTitle() + "::segmented", mask.sizeX, mask.sizeY, mask.sizeZ);
         res.setScale(mask);
         short label = 1;
-        for (Spot s : listSpots.values()) {
+        for (Spot3D s : listSpots.values()) {
             LinkedList<Vox3D> a = s.voxels;
             // check size
             if ((a.size() >= minSize) && (a.size() <= maxsize)) {
@@ -443,7 +444,7 @@ public class ImageLabeller {
         }
         ImageFloat res = new ImageFloat(mask.getTitle() + "::segmented", mask.sizeX, mask.sizeY, mask.sizeZ);
         int label = 1;
-        for (Spot s : listSpots.values()) {
+        for (Spot3D s : listSpots.values()) {
             LinkedList<Vox3D> a = s.voxels;
             // check size
             if ((a.size() >= minSize) && (a.size() <= maxsize)) {
@@ -469,6 +470,7 @@ public class ImageLabeller {
                 this.labelSpots26(mask);
             }
         }
+
         return listSpots.size();
     }
 
@@ -478,7 +480,7 @@ public class ImageLabeller {
         }
         ImageShort res = new ImageShort(mask.getTitle() + "::segmented", mask.sizeX, mask.sizeY, mask.sizeZ);
         short label = 1;
-        for (Spot s : listSpots.values()) {
+        for (Spot3D s : listSpots.values()) {
             Vox3D vox = s.voxels.get(0);
             res.pixels[vox.z][vox.xy] = label;
             label++;
@@ -493,7 +495,27 @@ public class ImageLabeller {
     }
 
     public int getNbObjectsinSizeRange(ImageHandler mask, boolean connex6) {
-        return getObjects(mask, connex6).size();
+        // check if labelling needed
+        if ((listSpots == null) || (mask != currentMask)) {
+            if (connex6) {
+                this.labelSpots6(mask);
+            } else {
+                this.labelSpots26(mask);
+            }
+        }
+        // count nb objects
+        int nbObj = 0;
+        int sizeX = mask.sizeX;
+        short label = 1;
+        for (Spot3D s : listSpots.values()) {
+            LinkedList<Vox3D> a = s.voxels;
+            // check size
+            if ((a.size() >= minSize) && (a.size() <= maxsize)) {
+                nbObj++;
+            }
+        }
+
+        return nbObj;
     }
 
     // classical default neighborhood for segmentation is 26
@@ -513,7 +535,7 @@ public class ImageLabeller {
         ArrayList<Object3DVoxels> objects = new ArrayList<Object3DVoxels>();
         int sizeX = mask.sizeX;
         short label = 1;
-        for (Spot s : listSpots.values()) {
+        for (Spot3D s : listSpots.values()) {
             LinkedList<Vox3D> a = s.voxels;
             // check size
             if ((a.size() >= minSize) && (a.size() <= maxsize)) {
@@ -539,12 +561,12 @@ public class ImageLabeller {
     }
 
 
-    protected class Spot {
+    protected class Spot3D {
         LinkedList<Vox3D> voxels;
         int label;
         boolean tooBig = false;
 
-        public Spot(int label, Vox3D v) {
+        public Spot3D(int label, Vox3D v) {
             this.label = label;
             this.voxels = new LinkedList();
             voxels.add(v);
@@ -563,7 +585,7 @@ public class ImageLabeller {
             }
         }
 
-        public Spot fusion(Spot other) {
+        public Spot3D fusion(Spot3D other) {
             if (other.label < label) {
                 return other.fusion(this);
             }

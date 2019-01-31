@@ -7,6 +7,7 @@ import mcib3d.image3d.comparator.ComparatorFloat;
 import mcib3d.image3d.comparator.ComparatorShort;
 import java.util.*;
 
+@Deprecated
 public class MaskIterator{
     ImageHandler mask;
     public Integer[] coords;

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -488,6 +489,7 @@ public abstract class ImageHandler {
         return res;
     }
 
+    @Deprecated
     public ArrayList<Voxel3D> getNeighborhood3x3x3ListCenter(int x, int y, int z) {
         ArrayList<Voxel3D> res = new ArrayList<Voxel3D>(27);
         for (int k = z - 1; k <= z + 1; k++) {
@@ -502,6 +504,22 @@ public abstract class ImageHandler {
         return res;
     }
 
+    public LinkedList<Voxel3D> getNeighborhood3x3x3CenterList(int x, int y, int z) {
+        LinkedList<Voxel3D> res = new LinkedList<>();
+        for (int k = z - 1; k <= z + 1; k++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if ((i >= 0) && (j >= 0) && (k >= 0) && (i < sizeX) && (j < sizeY) && (k < sizeZ)) {
+                        res.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+
+    @Deprecated
     public ArrayList<Voxel3D> getNeighborhood3x3x3ListNoCenter(int x, int y, int z) {
         ArrayList<Voxel3D> res = new ArrayList<Voxel3D>(27);
         for (int k = z - 1; k <= z + 1; k++) {
@@ -518,6 +536,25 @@ public abstract class ImageHandler {
         }
         return res;
     }
+
+    public LinkedList<Voxel3D> getNeighborhood3x3x3NoCenterList(int x, int y, int z) {
+        LinkedList<Voxel3D> res = new LinkedList<>();
+        for (int k = z - 1; k <= z + 1; k++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                for (int i = x - 1; i <= x + 1; i++) {
+                    if ((i == x) && (j == y) && (k == z)) {
+                        continue;
+                    }
+                    if ((i >= 0) && (j >= 0) && (k >= 0) && (i < sizeX) && (j < sizeY) && (k < sizeZ)) {
+                        res.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+
 
     /**
      * 6-neighborhood in 3D cross of a given voxel
@@ -569,6 +606,7 @@ public abstract class ImageHandler {
      * @param excludeCenter exclude centre pixel from list
      * @return the ArrayUtil list of neighborhood voxels
      */
+    @Deprecated
     public ArrayList<Voxel3D> getNeighborhoodCross3DList(int x, int y, int z, boolean excludeCenter) {
         ArrayList<Voxel3D> res = new ArrayList();
         if (!excludeCenter) {
@@ -945,6 +983,7 @@ public abstract class ImageHandler {
         }
     }
 
+    @Deprecated
     public ArrayList<Voxel3D> getNeighborhoodLayerList(int x, int y, int z, float r0, float r1) {
         return getNeighborhoodLayerList(x, y, z, r0, r1, null);
     }
@@ -960,6 +999,7 @@ public abstract class ImageHandler {
      * @param water Watershed image, can be null
      * @return arrayList ogf voxels3D
      */
+    @Deprecated
     public ArrayList<Voxel3D> getNeighborhoodLayerList(int x, int y, int z, float r0, float r1, ImageInt water) {
         int index = 0;
         double r02 = r0 * r0;
@@ -1322,6 +1362,7 @@ public abstract class ImageHandler {
         }
     }
 
+    @Deprecated
     public double[] getMinAndMaxArray(ArrayList<? extends Point3D> mask) {
         double min = Double.MAX_VALUE;
         double max = -min;
@@ -1336,6 +1377,22 @@ public abstract class ImageHandler {
         }
         return new double[]{min, max};
     }
+
+    public double[] getMinAndMaxArray(LinkedList<? extends Point3D> mask) {
+        double min = Double.MAX_VALUE;
+        double max = -min;
+        for (Point3D p : mask) {
+            double v = getPixel(p);
+            if (v > max) {
+                max = v;
+            }
+            if (v < min) {
+                min = v;
+            }
+        }
+        return new double[]{min, max};
+    }
+
 
     protected abstract void getMinAndMax(ImageInt mask);
 
@@ -1585,7 +1642,23 @@ public abstract class ImageHandler {
         return getHisto(mask, nBins, min, max);
     }
 
+    @Deprecated
     public int[] getHistogram(ArrayList<? extends Point3D> mask, int nBins, double min, double max) {
+        int[] histo = new int[nBins];
+        double coeff = nBins / (max - min);
+        int idx;
+        for (Point3D p : mask) {
+            idx = (int) ((getPixel(p) - min) * coeff);
+            if (idx >= 255) {
+                histo[255]++;
+            } else {
+                histo[idx]++;
+            }
+        }
+        return histo;
+    }
+
+    public int[] getHistogram(LinkedList<? extends Point3D> mask, int nBins, double min, double max) {
         int[] histo = new int[nBins];
         double coeff = nBins / (max - min);
         int idx;
