@@ -687,7 +687,7 @@ public class Object3DVoxels extends Object3D {
         areaNbVoxels = 0;
         areaContactUnit = 0;
         areaContactVoxels = 0;
-        contours = new LinkedList<Voxel3D>();
+        contours = new LinkedList<>();
         boolean cont;
         double XZ = resXY * resZ;
         double XX = resXY * resXY;

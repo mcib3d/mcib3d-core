@@ -1807,8 +1807,8 @@ public abstract class Object3D implements Comparable<Object3D> {
         double dist;
         double rx2 = resXY * resXY;
         double rz2 = resZ * resZ;
-        Voxel3D p1;
-        Voxel3D p2;
+        //Voxel3D p1;
+        //Voxel3D p2;
         LinkedList<Voxel3D> cont = this.getContours();
 
         int s = cont.size();
@@ -1818,18 +1818,24 @@ public abstract class Object3D implements Comparable<Object3D> {
             feret2 = cont.get(0);
             feret = 0;
         }
-        for (int i = 0; i < s; i++) {
-            p1 = cont.get(i);
-            for (int j = i + 1; j < s; j++) {
-                p2 = cont.get(j);
-                dist = rx2 * ((p1.getX() - p2.getX()) * (p1.getX() - p2.getX()) + ((p1.getY() - p2.getY()) * (p1.getY() - p2.getY()))) + rz2 * (p1.getZ() - p2.getZ()) * (p1.getZ() - p2.getZ());
-                if (dist > distmax) {
-                    distmax = dist;
-                    feret1 = p1;
-                    feret2 = p2;
+
+        int i1 = 0, i2 = 0;
+        for (Voxel3D p1 : cont) {
+            i2 = 0;
+            for (Voxel3D p2 : cont) {
+                if (i2 > i1) {
+                    dist = rx2 * ((p1.getX() - p2.getX()) * (p1.getX() - p2.getX()) + ((p1.getY() - p2.getY()) * (p1.getY() - p2.getY()))) + rz2 * (p1.getZ() - p2.getZ()) * (p1.getZ() - p2.getZ());
+                    if (dist > distmax) {
+                        distmax = dist;
+                        feret1 = p1;
+                        feret2 = p2;
+                    }
                 }
+                i2++;
             }
+            i1++;
         }
+
         feret = (float) Math.sqrt(distmax);
     }
 
@@ -2902,6 +2908,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     /**
      * Will count the number of different objects within this object     *
+     *
      * @param ima A labelled image
      * @return the number of objects and the volume occupied by the objects
      */
