@@ -7,9 +7,10 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.concurrent.LinkedBlockingQueue;
+
+//import java.util.ArrayList;
 
 /**
  * *
@@ -72,10 +73,10 @@ public class Flood3D {
                 }
             }
         }
-        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        LinkedList<IntCoord3D> queue = new LinkedList<IntCoord3D>();
         queue.add(seed);
         while (!queue.isEmpty()) {
-            IntCoord3D curCoord = queue.remove(0);
+            IntCoord3D curCoord = queue.removeFirst();
             int xy = curCoord.x + curCoord.y * sizeX;
             pixels[curCoord.z][xy] = newVal;
             if (curCoord.x > 0 && temp[curCoord.z][xy - 1] == CAND) {
@@ -113,10 +114,10 @@ public class Flood3D {
         int sizeZ = img.sizeZ;
         int oldVal = pixels[seed.z][seed.x + seed.y * sizeX];
         //int limit=oldVal-noise;
-        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        LinkedList<IntCoord3D> queue = new LinkedList<IntCoord3D>();
         queue.add(seed);
         while (!queue.isEmpty()) {
-            IntCoord3D curCoord = queue.remove(0); // FIXME last element?
+            IntCoord3D curCoord = queue.removeFirst(); // FIXME last element?
             IJ.log("processing " + curCoord.x + " " + curCoord.y + " " + curCoord.z + " " + oldVal + " " + limit);
             int xy = curCoord.x + curCoord.y * sizeX;
             if (pixels[curCoord.z][xy] >= limit) {
@@ -161,10 +162,10 @@ public class Flood3D {
                 }
             }
         }
-        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        LinkedList<IntCoord3D> queue = new LinkedList<IntCoord3D>();
         queue.add(seed);
         while (!queue.isEmpty()) {
-            IntCoord3D curCoord = queue.remove(0);
+            IntCoord3D curCoord = queue.removeFirst();
             int xy = curCoord.x + curCoord.y * sizeX;
             pixels[curCoord.z][xy] = newVal;
             if (curCoord.x > 0 && temp[curCoord.z][xy - 1] == CAND) {
@@ -212,10 +213,10 @@ public class Flood3D {
                 }
             }
         }
-        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        LinkedList<IntCoord3D> queue = new LinkedList<IntCoord3D>();
         queue.add(seed);
         while (!queue.isEmpty()) {
-            IntCoord3D curCoord = queue.remove(0);
+            IntCoord3D curCoord = queue.removeFirst();
             int xy = curCoord.x + curCoord.y * sizeX;
             pixels[curCoord.z][xy] = newVal;
             int curZ, curY, curX;
@@ -264,10 +265,10 @@ public class Flood3D {
         int sizeX = img.sizeX;
         int sizeY = img.sizeY;
         int sizeZ = img.sizeZ;
-        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        LinkedList<IntCoord3D> queue = new LinkedList<IntCoord3D>();
         queue.add(seed);
         while (!queue.isEmpty()) {
-            IntCoord3D curCoord = queue.remove(0);
+            IntCoord3D curCoord = queue.removeFirst();
             img.setPixel(curCoord.x, curCoord.y, curCoord.z, newVal);
             int curZ, curY, curX;
             for (int zz = -1; zz < 2; zz++) {
@@ -307,10 +308,10 @@ public class Flood3D {
         int sizeX = img.sizeX;
         int sizeY = img.sizeY;
         int sizeZ = img.sizeZ;
-        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        LinkedList<IntCoord3D> queue = new LinkedList<IntCoord3D>();
         queue.add(seed);
         while (!queue.isEmpty()) {
-            IntCoord3D curCoord = queue.remove(0);
+            IntCoord3D curCoord = queue.removeFirst();
             img.setPixel(curCoord.x, curCoord.y, curCoord.z, newVal);
             int curZ, curY, curX;
             for (int zz = -1; zz < 2; zz++) {
@@ -826,7 +827,7 @@ public class Flood3D {
         int sizeX = img.sizeX;
         int sizeY = img.sizeY;
         int sizeZ = img.sizeZ;
-        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        LinkedList<IntCoord3D> queue = new LinkedList<IntCoord3D>();
         if (pixels[seed.z][seed.x + seed.y * sizeX] != highVal) {
             IJ.log("Seed not right value ");
             return;
@@ -842,7 +843,7 @@ public class Flood3D {
             //    IJ.log("\\Update:Voxels to process : " + queue.size());
             //    t0 = System.currentTimeMillis();
             //}
-            IntCoord3D curCoord = queue.remove(0);
+            IntCoord3D curCoord = queue.removeFirst();
             int xy = curCoord.x + curCoord.y * sizeX;
             pixels[curCoord.z][xy] = tmpVal;
 
@@ -976,10 +977,10 @@ public class Flood3D {
             }
         }
 
-        ArrayList<IntCoord3D> queue = new ArrayList<IntCoord3D>();
+        LinkedList<IntCoord3D> queue = new LinkedList<IntCoord3D>();
         queue.add(seed);
         while (!queue.isEmpty()) {
-            IntCoord3D curCoord = queue.remove(0);
+            IntCoord3D curCoord = queue.removeFirst();
             int xy = curCoord.x + curCoord.y * sizeX;
             pixels[curCoord.z][xy] = newVal;
             int curZ, curY, curX;
