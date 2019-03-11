@@ -199,11 +199,11 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     protected EigenvalueDecomposition eigen = null;
     /**
-     * The image where the object lies with offset usually xmin, ymin abd zmin
+     * The image where the object lies with offset usually xmin, ymin and zmin
      */
     protected ImageInt miniLabelImage = null;
     /**
-     * label image, starts at 0,0
+     * label image, starts at 0,0,0
      */
     protected ImageInt labelImage = null;
     /**
@@ -214,7 +214,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * the resolution in XY
      */
     protected double resXY = 1;
-    //protected int offX = 0, offY = 0, offZ = 0; // offset of objectt into label image
+    //protected int offX = 0, offY = 0, offZ = 0; // offset of object into label image
     /**
      * the resolution in Z
      */
@@ -1807,8 +1807,8 @@ public abstract class Object3D implements Comparable<Object3D> {
         double dist;
         double rx2 = resXY * resXY;
         double rz2 = resZ * resZ;
-        //Voxel3D p1;
-        //Voxel3D p2;
+        Voxel3D p1;
+        Voxel3D p2;
         LinkedList<Voxel3D> cont = this.getContours();
 
         int s = cont.size();
@@ -1819,24 +1819,26 @@ public abstract class Object3D implements Comparable<Object3D> {
             feret = 0;
         }
 
-        int i1 = 0, i2 = 0;
-        for (Voxel3D p1 : cont) {
-            i2 = 0;
-            for (Voxel3D p2 : cont) {
-                if (i2 > i1) {
-                    dist = rx2 * ((p1.getX() - p2.getX()) * (p1.getX() - p2.getX()) + ((p1.getY() - p2.getY()) * (p1.getY() - p2.getY()))) + rz2 * (p1.getZ() - p2.getZ()) * (p1.getZ() - p2.getZ());
-                    if (dist > distmax) {
-                        distmax = dist;
-                        feret1 = p1;
-                        feret2 = p2;
-                    }
+        Voxel3D[] voxel3DS = new Voxel3D[cont.size()];
+        voxel3DS = cont.toArray(voxel3DS);
+
+        for (int i1 = 0; i1 < voxel3DS.length; i1++) {
+            IJ.showStatus("Feret " + i1 + "/" + voxel3DS.length);
+            p1 = voxel3DS[i1];
+            for (int i2 = i1 + 1; i2 < voxel3DS.length; i2++) {
+                p2 = voxel3DS[i2];
+                dist = rx2 * ((p1.getX() - p2.getX()) * (p1.getX() - p2.getX()) + ((p1.getY() - p2.getY()) * (p1.getY() - p2.getY()))) + rz2 * (p1.getZ() - p2.getZ()) * (p1.getZ() - p2.getZ());
+                if (dist > distmax) {
+                    distmax = dist;
+                    feret1 = p1;
+                    feret2 = p2;
                 }
-                i2++;
             }
             i1++;
         }
-
         feret = (float) Math.sqrt(distmax);
+
+        voxel3DS = null;
     }
 
     /**
@@ -1905,6 +1907,18 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     public double distBorderUnit(Object3D other) {
         return vectorBorderBorder(other).getLength(resXY, resZ);
+    }
+
+    public double distHausdorffUnit(Object3D other) {
+        double dist = 0;
+        for (Voxel3D voxel3D : contours) {
+            double d = other.distPixelBorderUnit(voxel3D.getX(), voxel3D.getY(), voxel3D.getZ());
+            if (d > dist) {
+                dist = d;
+            }
+        }
+
+        return dist;
     }
 
     /**
