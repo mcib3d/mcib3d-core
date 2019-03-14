@@ -1911,7 +1911,7 @@ public abstract class Object3D implements Comparable<Object3D> {
 
     public double distHausdorffUnit(Object3D other) {
         double dist = 0;
-        for (Voxel3D voxel3D : contours) {
+        for (Voxel3D voxel3D : getContours()) {
             double d = other.distPixelBorderUnit(voxel3D.getX(), voxel3D.getY(), voxel3D.getZ());
             if (d > dist) {
                 dist = d;

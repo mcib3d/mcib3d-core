@@ -611,8 +611,6 @@ public class Objects3DPopulation {
     }
 
 
-
-
     @Deprecated
     public void addImage(ImageInt seg, Calibration cali) {
         addImage(seg, 0, cali);
@@ -869,7 +867,7 @@ public class Objects3DPopulation {
      */
     public double[][] distancesAllPairsCenter() {
         int s = objects.size();
-        double res[][] = new double[s][s];
+        double[][] res = new double[s][s];
         Object3D obj1, obj2;
         double dist;
 
@@ -895,7 +893,7 @@ public class Objects3DPopulation {
     public double[][] distancesAllPairsCenter(Objects3DPopulation pop) {
         int s = objects.size();
         int ss = pop.getNbObjects();
-        double res[][] = new double[s][s];
+        double[][] res = new double[s][s];
         Object3D obj1, obj2;
         double dist;
 
@@ -921,7 +919,7 @@ public class Objects3DPopulation {
     public double[][] distancesAllPairsBorder(Objects3DPopulation pop) {
         int s = objects.size();
         int ss = pop.getNbObjects();
-        double res[][] = new double[s][s];
+        double[][] res = new double[s][s];
         Object3D obj1, obj2;
         double dist;
 
@@ -1042,7 +1040,7 @@ public class Objects3DPopulation {
      */
     public double[][] distancesAllPairsBorder() {
         int s = objects.size();
-        double res[][] = new double[s][s];
+        double[][] res = new double[s][s];
         Object3D obj1, obj2;
         double dist;
 
@@ -1086,7 +1084,7 @@ public class Objects3DPopulation {
     }
 
     // function to compute histogram of distances
-    private double[][] histogramDistances(double distances[][], double step) {
+    private double[][] histogramDistances(double[][] distances, double step) {
         int s = objects.size();
         double dmin = distances[0][1];
         double dmax = dmin;
@@ -1264,6 +1262,15 @@ public class Objects3DPopulation {
         }
 
         return res;
+    }
+
+    public void closestsBorderK(Object3D O, double dist) {
+        TreeSet<ObjectDistBB> set = new TreeSet(new ComparatorBorderDistance());
+        for (int i = 0; i < getNbObjects(); i++) {
+            Object3D object3D = getObject(i);
+            ObjectDistBB distBB = new ObjectDistBB(object3D, O.distBorderUnit(object3D));
+            set.add(distBB);
+        }
     }
 
     public Object3D closestBorder(Object3D O, int[] allowed, double dist) {
@@ -1456,6 +1463,9 @@ public class Objects3DPopulation {
     }
 
     public Object3D kClosestBorder(Object3D ob, int k) {
+        // TEST
+        closestsBorderK(ob, 0);
+        // TEST
         ArrayList<Object3D> exclude = new ArrayList<Object3D>();
         exclude.add(ob);
         if (k == 1) {
@@ -1583,9 +1593,9 @@ public class Objects3DPopulation {
             res[i] = 0;
         }
         Point3D[] ck = new Point3D[k];
-        double cx[] = new double[k];
-        double cy[] = new double[k];
-        double cz[] = new double[k];
+        double[] cx = new double[k];
+        double[] cy = new double[k];
+        double[] cz = new double[k];
         int[] nb = new int[k];
 
         //initialisation
