@@ -6,30 +6,30 @@ package mcib3d.geom;
 
 import ij.IJ;
 import ij.ImagePlus;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- *
- **
+ * *
  * /**
  * Copyright (C) 2008- 2012 Thomas Boudier and others
- *
- *
- *
+ * <p>
+ * <p>
+ * <p>
  * This file is part of mcib3d
- *
+ * <p>
  * mcib3d is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 3 of the License, or (at your option) any later
  * version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  * details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  *
@@ -37,8 +37,8 @@ import java.util.List;
  */
 public class Objects3DPopulationAnalysis extends Objects3DPopulation {
 
-    ArrayList<Object3D> orderedDistancesCenter[] = null;
-    ArrayList<Object3D> orderedDistancesBorder[] = null;
+    ArrayList<Object3D>[] orderedDistancesCenter = null;
+    ArrayList<Object3D>[] orderedDistancesBorder = null;
 
     public Objects3DPopulationAnalysis(ImagePlus plus) {
         super(plus);
@@ -46,8 +46,8 @@ public class Objects3DPopulationAnalysis extends Objects3DPopulation {
             this.getObject(i).computeContours();
         }
     }
-    
-    public Objects3DPopulationAnalysis(){
+
+    public Objects3DPopulationAnalysis() {
         super();
     }
 
@@ -66,11 +66,14 @@ public class Objects3DPopulationAnalysis extends Objects3DPopulation {
         }
     }
 
+    @Deprecated
     public ArrayList<Object3D> orderedDistancesBorderObjects(Object3D ob) {
+        ObjectsPopulationDistances populationDistances = new ObjectsPopulationDistances(this);
+        populationDistances.setCurrentObject(ob);
         ArrayList<Object3D> res = new ArrayList<Object3D>();
         res.add(ob);
         for (int i = 1; i < this.getNbObjects(); i++) {
-            Object3D clo = this.kClosestBorder(ob, i);
+            Object3D clo = populationDistances.kClosestBorder(i);
             if (clo != null) {
                 res.add(clo);
             }
