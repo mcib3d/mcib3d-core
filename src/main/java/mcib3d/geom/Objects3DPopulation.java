@@ -1264,14 +1264,38 @@ public class Objects3DPopulation {
         return res;
     }
 
-    public void closestsBorderK(Object3D O, double dist) {
+    public ArrayList<ObjectDistBB> closestsBorderK(Object3D O) {
         TreeSet<ObjectDistBB> set = new TreeSet(new ComparatorBorderDistance());
         for (int i = 0; i < getNbObjects(); i++) {
             Object3D object3D = getObject(i);
             ObjectDistBB distBB = new ObjectDistBB(object3D, O.distBorderUnit(object3D));
             set.add(distBB);
         }
+        ArrayList<ObjectDistBB> distBBS = new ArrayList<>();
+        for (ObjectDistBB objectDistBB : set) {
+            distBBS.add(objectDistBB);
+        }
+        set = null;
+
+        return distBBS;
     }
+
+    public ArrayList<ObjectDistBB> closestsBorderK(Object3D O, int k) {
+        TreeSet<ObjectDistBB> set = new TreeSet(new ComparatorBorderDistance());
+        for (int i = 0; i < getNbObjects(); i++) {
+            Object3D object3D = getObject(i);
+            ObjectDistBB distBB = new ObjectDistBB(object3D, O.distBorderUnit(object3D));
+            set.add(distBB);
+        }
+        ArrayList<ObjectDistBB> distBBS = new ArrayList<>();
+        for (int i = 0; i < k; i++) {
+            distBBS.add(set.pollFirst());
+        }
+        set = null;
+
+        return distBBS;
+    }
+
 
     public Object3D closestBorder(Object3D O, int[] allowed, double dist) {
         double distanceMinimum = Double.MAX_VALUE;
@@ -1463,9 +1487,12 @@ public class Objects3DPopulation {
     }
 
     public Object3D kClosestBorder(Object3D ob, int k) {
-        // TEST
-        closestsBorderK(ob, 0);
-        // TEST
+        ArrayList<ObjectDistBB> distBBS = closestsBorderK(ob);
+
+        return distBBS.get(k - 1).getObject3D();
+
+
+        /*
         ArrayList<Object3D> exclude = new ArrayList<Object3D>();
         exclude.add(ob);
         if (k == 1) {
@@ -1481,7 +1508,8 @@ public class Objects3DPopulation {
             }
             kk++;
         }
-        return clo;
+        return clo
+        */
     }
 
     /**
