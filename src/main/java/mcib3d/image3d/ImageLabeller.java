@@ -427,6 +427,7 @@ public class ImageLabeller {
                 label++;
             }
         }
+
         return res;
     }
 

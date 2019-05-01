@@ -138,6 +138,8 @@
             <id>imagej.public</id>
             <url>https://maven.imagej.net/content/groups/public</url>
         </repository>
+
+
     </repositories>
     <!-- 	<pluginRepositories>
     <pluginRepository>

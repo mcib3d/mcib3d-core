@@ -261,6 +261,9 @@ public class FastFilters3D {
             ThreadUtil.startAndJoin(threads);
             show.log("Finished");
         }
+        // copy info from input image
+        res.setScale(stackorig);
+        res.setOffset(stackorig);
 
         return res;
     }
@@ -395,6 +398,9 @@ public class FastFilters3D {
             ThreadUtil.startAndJoin(threads);
             show.log("Finished");
         }
+        // copy info from input image
+        res.setScale(stackorig);
+        res.setOffset(stackorig);
 
         return res;
     }
@@ -597,6 +603,9 @@ public class FastFilters3D {
         } else if (filter == ADAPTIVE) {
             //res = ima.adaptiveFilter(voisx, voisy, voisz, nbcpus);
         }
+        // copy info from input image
+        res.setScale(stackorig);
+        res.setOffset(stackorig);
 
         return res;
     }
@@ -687,6 +696,9 @@ public class FastFilters3D {
         } else if (filter == ADAPTIVE) {
             //res = ima.adaptiveFilter(voisx, voisy, voisz, nbcpus);
         }
+        // copy info from input image
+        res.setScale(stackorig);
+        res.setOffset(stackorig);
 
         return res;
     }

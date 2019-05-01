@@ -1,15 +1,13 @@
 package mcib3d.image3d.distanceMap3d;
 
-import ij.IJ;
 import ij.ImagePlus;
-import ij.measure.Calibration;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import mcib3d.image3d.*;
 import mcib3d.utils.ThreadUtil;
 import mcib3d.utils.exceptionPrinter;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * @author thomas !
@@ -83,6 +81,7 @@ public class EDT {
         return run_includeInside(ip, thresh, (float) ip.getScaleXY(), (float) ip.getScaleZ(), absolute, nbCPUs);
     }
 
+    @Deprecated
     public static ImageFloat localThickness(ImageHandler in, ImageInt mask, float thld, float radiusXY, float radiusZ, boolean inside, int nbCPUs) {
         ImageFloat edm = EDT.run(in, thld, radiusXY, radiusZ, inside, nbCPUs);
         if (mask != null) {
@@ -103,6 +102,7 @@ public class EDT {
         return (ImageFloat) ImageFloat.wrap(localThickness);
     }
 
+    @Deprecated
     public static ImageFloat localThickness(ImageHandler in, ImageInt mask, float thld, boolean inside, int nbCPUs) {
         return localThickness(in, mask, thld, (float) in.getScaleXY(), (float) in.getScaleZ(), inside, nbCPUs);
     }
@@ -152,7 +152,7 @@ public class EDT {
                     //idx[count] = new VoxEVF(distanceMap.pixels[z][xy], xy, z);
                     //count++;
                 } else {
-                    distanceMap.setPixel(xy, z, 1.0f);
+                    distanceMap.setPixel(xy, z, -1.0f);
                 }
             }
         }
@@ -160,11 +160,12 @@ public class EDT {
             return;
         }
         VoxEVF[] idx = new VoxEVF[idxList.size()];
-        idx = (VoxEVF[]) idxList.toArray(idx);
+        idx = idxList.toArray(idx);
         double volume = idx.length;
         Arrays.sort(idx);
+        Collections.sort(idxList);
         for (int i = 0; i < idx.length - 1; i++) {
-            // gestion des repetitions
+            // manage repetitions
             if (idx[i + 1].distance == idx[i].distance) {
                 int j = i + 1;
                 while (j < (idx.length - 1) && idx[i].distance == idx[j].distance) {

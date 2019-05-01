@@ -35,6 +35,8 @@ import java.util.List;
  *
  * @author thomas
  */
+
+@Deprecated
 public class Objects3DPopulationAnalysis extends Objects3DPopulation {
 
     ArrayList<Object3D>[] orderedDistancesCenter = null;
