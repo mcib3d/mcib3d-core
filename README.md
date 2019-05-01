@@ -19,7 +19,7 @@ If you want to include this library as part as your maven project, use this depe
 		
 		<artifactId>mcib3d-core</artifactId>
 		
-		<version>master-SNAPSHOT</version>
+		<version>3.94</version>
 		
 `</dependency>`
 
