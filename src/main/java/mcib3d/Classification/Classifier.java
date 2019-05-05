@@ -19,7 +19,8 @@ public class Classifier {
 
     public Classifier() {
         classifier = new RandomForest();
-        classifier.setNumTrees(200);
+        //classifier.setNumTrees(200);
+        classifier.setNumIterations(200);
         classifier.setNumExecutionSlots(ThreadUtil.getNbCpus());
     }
 

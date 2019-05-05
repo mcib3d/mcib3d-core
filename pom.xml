@@ -123,9 +123,9 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>weka</groupId>
-            <artifactId>weka</artifactId>
-            <version>3.7.6</version>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>weka-dev</artifactId>
+            <version>3.9.3</version>
         </dependency>
     </dependencies>
 
