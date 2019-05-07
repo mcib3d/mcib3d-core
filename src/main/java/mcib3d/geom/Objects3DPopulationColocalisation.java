@@ -14,11 +14,7 @@ public class Objects3DPopulationColocalisation {
     // populations
     private Objects3DPopulation population1;
     private Objects3DPopulation population2;
-    // values indices
-    //private HashMap<Integer, Integer> indices1 = null;
-    //private HashMap<Integer, Integer> indices2 = null;
-    // stored coloc information
-    private int[][] colocs;
+    private HashMap<String, PairColocalisation> colocs;
 
     private boolean needToComputeColoc = false;
 
@@ -31,10 +27,8 @@ public class Objects3DPopulationColocalisation {
     public Objects3DPopulationColocalisation(Objects3DPopulation population1, Objects3DPopulation population2) {
         this.population1 = population1;
         this.population2 = population2;
-        colocs = new int[population1.getNbObjects()][population2.getNbObjects()];
-        for (int i1 = 0; i1 < population1.getNbObjects(); i1++)
-            for (int i2 = 0; i2 < population2.getNbObjects(); i2++)
-                colocs[i1][i2] = 0;
+        // init colocs
+        colocs = new HashMap<>();
         population1.updateNamesAndValues();
         population2.updateNamesAndValues();
         needToComputeColoc = true;
@@ -58,7 +52,7 @@ public class Objects3DPopulationColocalisation {
                     int pix1 = image1.getPixelInt(x, y, k);
                     int pix2 = image2.getPixelInt(x, y, k);
                     if ((pix1 > 0) && (pix2 > 0)) {
-                        colocs[population1.getObjectIndex(pix1)][population2.getObjectIndex(pix2)]++;
+                        incrementColoc(pix1, pix2);
                     }
                 }
             }
@@ -66,6 +60,13 @@ public class Objects3DPopulationColocalisation {
 
 
         needToComputeColoc = false;
+    }
+
+    private void incrementColoc(int val1, int val2) {
+        String key = "" + val1 + "-" + val2;
+        if (!colocs.containsKey(key))
+            colocs.put(key, new PairColocalisation(population1.getObjectByValue(val1), population2.getObjectByValue(val2)));
+        colocs.get(key).incrementVolumeColoc();
     }
 
 
@@ -91,21 +92,26 @@ public class Objects3DPopulationColocalisation {
                 rt.setLabel("A" + population1.getObject(ia).getValue(), ia);
             }
             for (int ib = 0; ib < population2.getNbObjects(); ib++) {
+                int coloc;
+                String key = population1.getObject(ia).getValue() + "-" + population2.getObject(ib).getValue();
+                if (colocs.containsKey(key))
+                    coloc = colocs.get(key).getVolumeColoc();
+                else coloc = 0;
                 if (ia == 0) {
                     if (!useValueObject) {
-                        rt.setValue("B" + ib, ia, colocs[ia][ib]);
+                        rt.setValue("B" + ib, ia, coloc);
                         colums.put("B" + ib, rt.getColumnIndex("B" + ib));
                     } else {
                         int v2 = population2.getObject(ib).getValue();
-                        rt.setValue("B" + v2, ia, colocs[ia][ib]);
+                        rt.setValue("B" + v2, ia, coloc);
                         colums.put("B" + v2, rt.getColumnIndex("B" + v2));
                     }
                 } else {
                     if (!useValueObject) {
-                        rt.setValue(colums.get("B" + ib), ia, colocs[ia][ib]);
+                        rt.setValue(colums.get("B" + ib), ia, coloc);
                     } else {
                         int v2 = population2.getObject(ib).getValue();
-                        rt.setValue(colums.get("B" + v2), ia, colocs[ia][ib]);
+                        rt.setValue(colums.get("B" + v2), ia, coloc);
                     }
                 }
             }
@@ -164,7 +170,12 @@ public class Objects3DPopulationColocalisation {
      */
     public int getColocRaw(int i1, int i2) {
         if (needToComputeColoc) computeColocalisation();
-        return colocs[i1][i2];
+        int coloc;
+        String key = population1.getObject(i1).getValue() + "-" + population2.getObject(i2).getValue();
+        if (colocs.containsKey(key))
+            coloc = colocs.get(key).getVolumeColoc();
+        else coloc = 0;
+        return coloc;
     }
 
     /**
@@ -178,8 +189,13 @@ public class Objects3DPopulationColocalisation {
         if (needToComputeColoc) computeColocalisation();
         int v1 = object3D1.getValue();
         int v2 = object3D2.getValue();
+        int coloc;
+        String key = v1 + "-" + v2;
+        if (colocs.containsKey(key))
+            coloc = colocs.get(key).getVolumeColoc();
+        else coloc = 0;
 
-        return colocs[population1.getObjectIndex(v1)][population2.getObjectIndex(v2)];
+        return coloc;
     }
 
     /**
@@ -190,15 +206,10 @@ public class Objects3DPopulationColocalisation {
     public ArrayList<PairColocalisation> getAllColocalisationPairs() {
         if (needToComputeColoc) computeColocalisation();
         ArrayList<PairColocalisation> pairColocalisations = new ArrayList<PairColocalisation>();
-        for (int i1 = 0; i1 < population1.getNbObjects(); i1++) {
-            for (int i2 = 0; i2 < population2.getNbObjects(); i2++) {
-                int vol = colocs[i1][i2];
-                if (vol > 0) {
-                    PairColocalisation pairColocalisation = new PairColocalisation(population1.getObject(i1), population2.getObject(i2), vol);
-                    pairColocalisations.add(pairColocalisation);
-                }
-            }
+        for (String key : colocs.keySet()) {
+            pairColocalisations.add(new PairColocalisation(colocs.get(key).getObject3D1(), colocs.get(key).getObject3D2(), colocs.get(key).getVolumeColoc()));
         }
+
         return pairColocalisations;
     }
 
@@ -211,19 +222,12 @@ public class Objects3DPopulationColocalisation {
     public ArrayList<PairColocalisation> getObject1ColocalisationPairs(Object3D object3D) {
         if (needToComputeColoc) computeColocalisation();
         ArrayList<PairColocalisation> pairColocalisations = new ArrayList<PairColocalisation>();
-        int i1 = population1.getObjectIndex(object3D.getValue());
-        for (int i2 = 0; i2 < population2.getNbObjects(); i2++) {
-//            if (i1 >= colocs.length) IJ.log(" " + i1 + " " + colocs.length);
-//            if (i2 >= colocs[0].length) {
-//                IJ.log(" " + i1 + " " + colocs.length + " " + population1.getNbObjects());
-//                IJ.log(" " + i2 + " " + colocs[0].length + " " + population2.getNbObjects());
-//            }
-            int vol = colocs[i1][i2];
-            if (vol > 0) {
-                PairColocalisation pairColocalisation = new PairColocalisation(population1.getObject(i1), population2.getObject(i2), vol);
-                pairColocalisations.add(pairColocalisation);
-            }
+        int i1 = object3D.getValue();
+        for (String key : colocs.keySet()) {
+            if (key.startsWith("" + i1 + "-"))
+                pairColocalisations.add(new PairColocalisation(colocs.get(key).getObject3D1(), colocs.get(key).getObject3D2(), colocs.get(key).getVolumeColoc()));
         }
+
         return pairColocalisations;
     }
 
@@ -236,13 +240,10 @@ public class Objects3DPopulationColocalisation {
     public ArrayList<PairColocalisation> getObject2ColocalisationPairs(Object3D object3D) {
         if (needToComputeColoc) computeColocalisation();
         ArrayList<PairColocalisation> pairColocalisations = new ArrayList<PairColocalisation>();
-        int i2 = population2.getIndexOf(object3D);
-        for (int i1 = 0; i1 < population1.getNbObjects(); i1++) {
-            int vol = colocs[i1][i2];
-            if (vol > 0) {
-                PairColocalisation pairColocalisation = new PairColocalisation(population1.getObject(i1), population2.getObject(i2), vol);
-                pairColocalisations.add(pairColocalisation);
-            }
+        int i2 = object3D.getValue();
+        for (String key : colocs.keySet()) {
+            if (key.endsWith("-" + i2))
+                pairColocalisations.add(new PairColocalisation(colocs.get(key).getObject3D1(), colocs.get(key).getObject3D2(), colocs.get(key).getVolumeColoc()));
         }
         return pairColocalisations;
     }
