@@ -15,7 +15,7 @@
 
     <name>MCIB3D-CORE</name>
     <description>The mcib3d library is the core for most of the mcib3d plugins developed.</description>
-    <url>http://sites.imagej.net/Tboudier/plugins/mcib3d-suite/</url>
+    <url>https://sites.imagej.net/Tboudier/plugins/mcib3d-suite/</url>
     <inceptionYear>2012</inceptionYear>
 
     <licenses>
