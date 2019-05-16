@@ -15,7 +15,7 @@
 
     <name>MCIB3D-CORE</name>
     <description>The mcib3d library is the core for most of the mcib3d plugins developed.</description>
-    <url>http://sites.imagej.net/Tboudier/plugins/mcib3d-suite/</url>
+    <url>https://sites.imagej.net/Tboudier/plugins/mcib3d-suite/</url>
     <inceptionYear>2012</inceptionYear>
 
     <licenses>
@@ -135,8 +135,8 @@
             <url>https://jitpack.io</url>
         </repository>
         <repository>
-            <id>imagej.public</id>
-            <url>https://maven.imagej.net/content/groups/public</url>
+            <id>scijava.public</id>
+            <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
 
 
