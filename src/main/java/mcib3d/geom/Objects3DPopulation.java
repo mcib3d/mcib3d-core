@@ -1516,7 +1516,7 @@ public class Objects3DPopulation {
     public ArrayList<Object3D> shuffle() {
         ArrayList<Object3D> shuObj = new ArrayList<Object3D>();
         Random ra = new Random();
-        ImageInt maskImage = mask.getMaxLabelImage(1);
+        ImageHandler maskImage = mask.getMaxLabelImage(1);
         Object3DVoxels maskVox = mask.getObject3DVoxels();
 
         // shuffle indices

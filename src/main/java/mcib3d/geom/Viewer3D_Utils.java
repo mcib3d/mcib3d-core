@@ -7,7 +7,7 @@ import ij.ImagePlus;
 import ij3d.Volume;
 import marchingcubes.MCCube;
 import mcib3d.image3d.ImageByte;
-import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageShort;
 
 import java.io.IOException;
@@ -24,7 +24,7 @@ public class Viewer3D_Utils {
     public static List computeMeshSurface(Object3D object3D, boolean calibrated) {
         //IJ.showStatus("computing mesh");
         // use miniseg
-        ImageInt miniseg = object3D.getLabelImage();
+        ImageHandler miniseg = object3D.getLabelImage();
         ImageByte miniseg8 = ((ImageShort) (miniseg)).convertToByte(false);
         ImagePlus objectImage = miniseg8.getImagePlus();
         if (calibrated) {

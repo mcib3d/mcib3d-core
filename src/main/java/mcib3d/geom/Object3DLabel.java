@@ -314,25 +314,25 @@ public class Object3DLabel extends Object3D {
                 for (int i = xmin; i <= xmax; i++) {
                     cont = false;
                     pix1 = pix2 = pix3 = pix4 = pix5 = pix6 = 0;
-                    pix0 = labelImage.getPixelInt(i, j, k);
+                    pix0 = (int) labelImage.getPixel(i, j, k);
                     if (pix0 == value) {
                         if (i + 1 < sx) {
-                            pix1 = labelImage.getPixelInt(i + 1, j, k);
+                            pix1 = (int) labelImage.getPixel(i + 1, j, k);
                         }
                         if (i > 0) {
-                            pix2 = labelImage.getPixelInt(i - 1, j, k);
+                            pix2 = (int) labelImage.getPixel(i - 1, j, k);
                         }
                         if (j + 1 < sy) {
-                            pix3 = labelImage.getPixelInt(i, j + 1, k);
+                            pix3 = (int) labelImage.getPixel(i, j + 1, k);
                         }
                         if (j > 0) {
-                            pix4 = labelImage.getPixelInt(i, j - 1, k);
+                            pix4 = (int) labelImage.getPixel(i, j - 1, k);
                         }
                         if (k + 1 < sz) {
-                            pix5 = labelImage.getPixelInt(i, j, k + 1);
+                            pix5 = (int) labelImage.getPixel(i, j, k + 1);
                         }
                         if (k > 0) {
-                            pix6 = labelImage.getPixelInt(i, j, k - 1);
+                            pix6 = (int) labelImage.getPixel(i, j, k - 1);
                         }
                         if (pix1 != value) {
                             cont = true;
@@ -951,7 +951,7 @@ public class Object3DLabel extends Object3D {
         int zmax0;
 
         int val = other.getValue();
-        ImageInt otherseg = other.getMaxLabelImage(val);
+        ImageHandler otherseg = other.getMaxLabelImage(val);
 
         xmin0 = getXmin();
         ymin0 = getYmin();
@@ -999,7 +999,7 @@ public class Object3DLabel extends Object3D {
         int zmax0;
 
         int val = obj.getValue();
-        ImageInt otherseg = obj.getLabelImage();
+        ImageHandler otherseg = obj.getLabelImage();
 
         xmin0 = getXmin();
         ymin0 = getYmin();

@@ -91,7 +91,7 @@ public class Segment3DSpots {
     }
 
     public static Object3DVoxels[] splitSpotWatershed(Object3D obj, float rad, float dist) {
-        ImageInt seg = obj.createSegImage(0, 0, 0, obj.getXmax(), obj.getYmax(), obj.getZmax(), 255);
+        ImageHandler seg = obj.createSegImage(0, 0, 0, obj.getXmax(), obj.getYmax(), obj.getZmax(), 255);
        //seg.show();
         ImagePlus segplus = seg.getImagePlus();
         segplus.setCalibration(obj.getCalibration());

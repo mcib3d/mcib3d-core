@@ -205,7 +205,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * label image, starts at 0,0,0
      */
-    protected ImageInt labelImage = null;
+    protected ImageHandler labelImage = null;
     /**
      * current image used for quantification (to compute results once)
      */
@@ -391,7 +391,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      *
      * @return the image with the labelled object
      */
-    public ImageInt getLabelImage() {
+    public ImageHandler getLabelImage() {
         if (labelImage == null) {
             labelImage = this.createSegImage();
         }
@@ -424,7 +424,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param val the value to draw the binary mask
      * @return The binary mask for the object
      */
-    public ImageInt getMaxLabelImage(int val) {
+    public ImageHandler getMaxLabelImage(int val) {
         return createMaxSegImage(val);
     }
 
@@ -2160,7 +2160,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         if (val == 0) {
             val = 1;
         }
-        ImageInt label = this.getLabelImage();
+        ImageHandler label = this.getLabelImage();
         int testX = (int) Math.round(x) - label.offsetX;
         int testY = (int) Math.round(y) - label.offsetY;
         int testZ = (int) Math.round(z) - label.offsetZ;
@@ -2269,10 +2269,10 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return the image with 3 values (val1 for this, val2 for other, val1+val2
      * for intersection)
      */
-    public ImageInt createIntersectionImage(Object3D other, int val1, int val2, int border) {
+    public ImageHandler createIntersectionImage(Object3D other, int val1, int val2, int border) {
         // keep label image
-        ImageInt label = this.getLabelImage();
-        ImageInt label2 = other.getLabelImage();
+        ImageHandler label = this.getLabelImage();
+        ImageHandler label2 = other.getLabelImage();
         // bounding box
         int xmi = Math.min(this.xmin, other.xmin) - border;
         if (xmi < 0) {
@@ -2291,12 +2291,12 @@ public abstract class Object3D implements Comparable<Object3D> {
         int zma = Math.max(this.zmax, other.zmax) + border;
 
         // this will update label image and change offset
-        ImageInt imgThis = this.createSegImage(xmi, ymi, zmi, xma, yma, zma, val1);
-        ImageInt imgOther = other.createSegImage(xmi, ymi, zmi, xma, yma, zma, val2);
+        ImageHandler imgThis = this.createSegImage(xmi, ymi, zmi, xma, yma, zma, val1);
+        ImageHandler imgOther = other.createSegImage(xmi, ymi, zmi, xma, yma, zma, val2);
 
         //imgThis.show();
         //imgOther.show();
-        ImageInt addImage = imgThis.addImage(imgOther);
+        ImageHandler addImage = imgThis.addImage(imgOther,1,1);
         addImage.offsetX = xmi;
         addImage.offsetY = ymi;
         addImage.offsetZ = zmi;
@@ -2320,7 +2320,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return the image with 3 values (val1 for this, val2 for other, val1+val2
      * for intersection)
      */
-    public ImageInt createIntersectionImage(Object3D other, int val1, int val2) {
+    public ImageHandler createIntersectionImage(Object3D other, int val1, int val2) {
         return createIntersectionImage(other, val1, val2, 0);
 
     }
@@ -2336,7 +2336,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         if (disjointBox(other)) {
             return null;
         }
-        ImageInt inter = this.createIntersectionImage(other, 1, 2);
+        ImageHandler inter = this.createIntersectionImage(other, 1, 2);
         Object3DVoxels obj = new Object3DVoxels(inter, 3);
         obj.setValue(this.getValue());
         obj.translate(inter.offsetX, inter.offsetY, inter.offsetZ);
@@ -3073,7 +3073,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     /**
      * @return
      */
-    private ImageInt createSegImage() {
+    private ImageHandler createSegImage() {
         // case value =0
         if (value != 0) {
             return createSegImage(xmin, ymin, zmin, xmax, ymax, zmax, value);
@@ -3082,7 +3082,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         }
     }
 
-    private ImageInt createMaxSegImage(int val) {
+    private ImageHandler createMaxSegImage(int val) {
         return createSegImage(0, 0, 0, xmax, ymax, zmax, val);
     }
 
@@ -3096,8 +3096,11 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param val
      * @return
      */
-    public ImageInt createSegImage(int xmi, int ymi, int zmi, int xma, int yma, int zma, int val) {
-        ImageInt segImage = new ImageShort("Object", xma - xmi + 1, yma - ymi + 1, zma - zmi + 1);
+    public ImageHandler createSegImage(int xmi, int ymi, int zmi, int xma, int yma, int zma, int val) {
+        ImageHandler segImage;
+        if (val > 65535)
+            segImage = new ImageFloat("Object", xma - xmi + 1, yma - ymi + 1, zma - zmi + 1);
+        else segImage = new ImageShort("Object", xma - xmi + 1, yma - ymi + 1, zma - zmi + 1);
         // FIXME offset useful --> yes, see intersection image for mereo, and also for dilated object
         int offX = xmi;
         int offY = ymi;
@@ -3116,7 +3119,7 @@ public abstract class Object3D implements Comparable<Object3D> {
         return segImage;
     }
 
-    public ImageInt createSegImage(int bx, int by, int bz) {
+    public ImageHandler createSegImage(int bx, int by, int bz) {
         return createSegImage(xmin - bx, ymin - by, zmin - bz, xmax + bx, ymax + by, zmax + bz, value);
     }
 
@@ -3187,7 +3190,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     public List computeMeshSurface(boolean calibrated) {
         //IJ.showStatus("computing mesh");
         // use miniseg
-        ImageInt miniseg = this.getLabelImage();
+        ImageHandler miniseg = this.getLabelImage();
         ImageByte miniseg8 = ((ImageShort) (miniseg)).convertToByte(false);
         ImagePlus objectImage = miniseg8.getImagePlus();
         if (calibrated) {
@@ -3393,7 +3396,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             labelImage = createSegImage((int) (radX + 1), (int) (radY + 1), (int) (radZ + 1));
         }
 
-        ImageInt segImage2;
+        ImageHandler segImage2;
         /// use fastFilter if rx != ry
         if ((radY != radX) || (radZ == 0)) {
             int filter = 0;
@@ -3406,7 +3409,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             } else if (op == BinaryMorpho.MORPHO_OPEN) {
                 filter = FastFilters3D.OPENGRAY;
             }
-            segImage2 = FastFilters3D.filterIntImage(getLabelImage(), filter, radX, radY, radZ, 0, true);
+            segImage2 = FastFilters3D.filterImage(getLabelImage(), filter, radX, radY, radZ, 0, true);
             segImage2.setOffset(labelImage);
         } // else use binaryMorpho class (based on edm)
         else {
@@ -3550,7 +3553,7 @@ public abstract class Object3D implements Comparable<Object3D> {
             return null;
         }
         //ImageInt img = mask.createSegImageMini(255, 1);
-        ImageInt img = mask.getLabelImage();
+        ImageHandler img = mask.getLabelImage();
         ImageHandler dup = img.createSameDimensions();
         this.draw(dup, 255, -img.offsetX, -img.offsetY, -img.offsetZ);
         ImageFloat edt = EDT.run(dup, 128, (float) resXY, (float) resZ, true, 0);

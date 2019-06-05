@@ -465,7 +465,7 @@ public class FastFilters3D {
 
     public static int[] createKernelFromObject(Object3D obj) {
         int[] bb = obj.getBoundingBox();
-        ImageInt seg = obj.getLabelImage();
+        ImageHandler seg = obj.getLabelImage();
         int vx = bb[1] - bb[0] + 1;
         int vy = bb[3] - bb[2] + 1;
         int vz = bb[5] - bb[4] + 1;

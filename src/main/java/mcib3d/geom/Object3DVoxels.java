@@ -381,7 +381,7 @@ public class Object3DVoxels extends Object3D {
     }
 
     private void substractObjectImage(Object3D obj) {
-        ImageInt seg = this.createSegImage(0, 0, 0, getXmax(), getYmax(), getZmax(), getValue());
+        ImageHandler seg = this.createSegImage(0, 0, 0, getXmax(), getYmax(), getZmax(), getValue());
         obj.draw(seg, 0);
         // reset voxels
         voxels = createArrayList(seg, null);
@@ -426,14 +426,14 @@ public class Object3DVoxels extends Object3D {
 
     public boolean isConnex() {
         //ImageShort seg = (ImageShort) this.createSegImageMini(1, 1);
-        ImageInt seg = this.getLabelImage();
+        ImageHandler seg = this.getLabelImage();
         // label the seg image
         ImageLabeller labeler = new ImageLabeller();
         return (labeler.getNbObjectsTotal(seg) == 1);
     }
 
     public ArrayList<Object3DVoxels> getConnexComponents() {
-        ImageInt seg = this.getLabelImage();
+        ImageHandler seg = this.getLabelImage();
         ImageLabeller labeler = new ImageLabeller();
         ArrayList<Object3DVoxels> objs = labeler.getObjects(seg);
         for (Object3DVoxels O : objs) {
@@ -445,7 +445,7 @@ public class Object3DVoxels extends Object3D {
 
     public Object3DVoxels getInterior3DFill() {
         //ImageHandler seg = createSegImageMini(255, 1);
-        ImageInt seg = this.getLabelImage();
+        ImageHandler seg = this.getLabelImage();
         ImageHandler fill = seg.duplicate();
         FillHoles3D.process(fill, value, 0, false);
         ImageFloat res = fill.subtractImage(seg);
@@ -678,7 +678,7 @@ public class Object3DVoxels extends Object3D {
     /**
      * Compute the contours of the object rad=0.5
      */
-    private void computeContours(ImageInt segImage, int x0, int y0, int z0) {
+    private void computeContours(ImageHandler segImage, int x0, int y0, int z0) {
         //IJ.log("computing contours for "+this+"  "+x0+" "+y0+" "+z0+" "+xmin+" "+ymin+" "+zmin);
         //segImage.show(""+this);
         // init kdtree
@@ -720,37 +720,37 @@ public class Object3DVoxels extends Object3D {
                 for (int i = xmin - x0; i <= xmax - x0; i++) {
                     cont = false;
                     if (segImage.contains(i, j, k)) {
-                        pix0 = segImage.getPixelInt(i, j, k);
+                        pix0 = (int)segImage.getPixel(i, j, k);
                         if (pix0 == val) {
                             face = 0;
                             class3or4 = 0;
                             if (i + 1 < sx) {
-                                pix1 = segImage.getPixelInt(i + 1, j, k);
+                                pix1 = (int)segImage.getPixel(i + 1, j, k);
                             } else {
                                 pix1 = 0;
                             }
                             if (i - 1 >= 0) {
-                                pix2 = segImage.getPixelInt(i - 1, j, k);
+                                pix2 = (int)segImage.getPixel(i - 1, j, k);
                             } else {
                                 pix2 = 0;
                             }
                             if (j + 1 < sy) {
-                                pix3 = segImage.getPixelInt(i, j + 1, k);
+                                pix3 = (int)segImage.getPixel(i, j + 1, k);
                             } else {
                                 pix3 = 0;
                             }
                             if (j - 1 >= 0) {
-                                pix4 = segImage.getPixelInt(i, j - 1, k);
+                                pix4 = (int)segImage.getPixel(i, j - 1, k);
                             } else {
                                 pix4 = 0;
                             }
                             if (k + 1 < sz) {
-                                pix5 = segImage.getPixelInt(i, j, k + 1);
+                                pix5 = (int)segImage.getPixel(i, j, k + 1);
                             } else {
                                 pix5 = 0;
                             }
                             if (k - 1 >= 0) {
-                                pix6 = segImage.getPixelInt(i, j, k - 1);
+                                pix6 = (int)segImage.getPixel(i, j, k - 1);
                             } else {
                                 pix6 = 0;
                             }
@@ -852,7 +852,7 @@ public class Object3DVoxels extends Object3D {
 
     @Override
     public void computeContours() {
-        ImageInt label = this.getLabelImage();
+        ImageHandler label = this.getLabelImage();
         this.computeContours(label, label.offsetX, label.offsetY, label.offsetZ);
     }
 
@@ -1044,8 +1044,8 @@ public class Object3DVoxels extends Object3D {
         int zmax0;
 
         int val = obj.getValue();
-        ImageInt otherseg = obj.getLabelImage();
-        ImageInt label = this.getLabelImage();
+        ImageHandler otherseg = obj.getLabelImage();
+        ImageHandler label = this.getLabelImage();
 
 //        int offX0 = labelImage.offsetX;
 //        int offY0 = labelImage.offsetY;
@@ -1101,11 +1101,11 @@ public class Object3DVoxels extends Object3D {
     }
 
     private int getColocImageIntersection(Object3D other) {
-        ImageInt inter = this.createIntersectionImage(other, 1, 2);
+        ImageHandler inter = this.createIntersectionImage(other, 1, 2);
         int count = 0;
         for (int z = 0; z < inter.sizeZ; z++)
             for (int i = 0; i < inter.sizeXY; i++) {
-                if (inter.getPixelInt(i, z) == 3) {
+                if (inter.getPixel(i, z) == 3) {
                     count++;
                 }
             }
@@ -1572,10 +1572,8 @@ public class Object3DVoxels extends Object3D {
             double pmax = Double.NEGATIVE_INFINITY;
 
             double i, j, k;
-            Voxel3D vox;
             int nb = 0;
-            for (Voxel3D voxel : voxels) {
-                vox = voxel;
+            for (Voxel3D vox: voxels) {
                 i = vox.getX();
                 j = vox.getY();
                 k = vox.getZ();
@@ -1633,9 +1631,7 @@ public class Object3DVoxels extends Object3D {
             double pmax = -Double.MAX_VALUE;
 
             double i, j, k;
-            Voxel3D vox;
-            for (Voxel3D voxel : voxels) {
-                vox = voxel;
+            for (Voxel3D vox : voxels) {
                 if (ima.contains(vox) && mask.contains(vox) && (mask.getPixel(vox) > 0)) {
                     i = vox.getX();
                     j = vox.getY();
@@ -1835,20 +1831,20 @@ public class Object3DVoxels extends Object3D {
     public Object3DVoxels dilate(float dilateSize, ImageInt mask, int nbCPUs) {
         // use getdilatedObject
         Object3DVoxels dilated = this.getDilatedObject(dilateSize, dilateSize, dilateSize);
-        ImageInt seg = dilated.getLabelImage();
+        ImageHandler seg = dilated.getLabelImage();
 
 //        ImageInt oldMiniLabelImage = this.miniLabelImage;
 //        ImageInt seg = this.createSegImageMini(1, 0);
 //        float dilateSizeZ = (float) (dilateSize * this.resXY / this.resZ);
 //        ImageInt dil = BinaryMorpho.binaryDilate(seg, dilateSize, dilateSizeZ, true, type);
 //        //dil.show("Dilate");
-        ImageInt label = this.getLabelImage();
+        ImageHandler label = this.getLabelImage();
         LinkedList<Voxel3D> vox = new LinkedList<Voxel3D>();
         int xx, yy, zz;
         for (int z = 0; z < seg.sizeZ; z++) {
             for (int y = 0; y < seg.sizeY; y++) {
                 for (int x = 0; x < seg.sizeX; x++) {
-                    if (seg.getPixelInt(x, y, z) != 0) {
+                    if (seg.getPixel(x, y, z) != 0) {
                         xx = x + label.offsetX;
                         yy = y + label.offsetY;
                         zz = z + label.offsetZ;

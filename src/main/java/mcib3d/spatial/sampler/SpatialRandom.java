@@ -24,7 +24,7 @@ public class SpatialRandom implements SpatialModel {
     private int nbObjects;
     private Object3D mask;
     private Object3DVoxels maskVox;
-    private ImageInt maskimg;
+    private ImageHandler maskimg;
 
     public SpatialRandom(int nbObjects, Object3D mask) {
         this.nbObjects = nbObjects;
@@ -45,7 +45,7 @@ public class SpatialRandom implements SpatialModel {
         Objects3DPopulation pop = new Objects3DPopulation();
         pop.setMask(mask);
 
-        ImageInt maskimgTmp = maskimg.duplicate();
+        ImageHandler maskimgTmp = maskimg.duplicate();
         Random ra = new Random();
 
         for (int i = 0; i < nbObjects; i++) {

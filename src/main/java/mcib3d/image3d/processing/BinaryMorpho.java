@@ -1,9 +1,6 @@
 package mcib3d.image3d.processing;
 
-import mcib3d.image3d.ImageByte;
-import mcib3d.image3d.ImageFloat;
-import mcib3d.image3d.ImageInt;
-import mcib3d.image3d.ImageShort;
+import mcib3d.image3d.*;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.utils.ThreadRunner;
 import mcib3d.utils.ThreadUtil;
@@ -45,7 +42,7 @@ public class BinaryMorpho {
         return binaryMorpho(in, op, radius, radiusZ, 0);
     }
 
-    public static ImageByte binaryMorpho(ImageInt in, int op, float radius, float radiusZ, int nbCPUs) {
+    public static ImageByte binaryMorpho(ImageHandler in, int op, float radius, float radiusZ, int nbCPUs) {
         switch (op) {
             case MORPHO_DILATE:
                 return binaryDilate(in, radius, radiusZ, nbCPUs);
@@ -60,11 +57,11 @@ public class BinaryMorpho {
         }
     }
 
-    public static ImageByte binaryOpen(ImageInt in, float radius, float radiusZ) {
+    public static ImageByte binaryOpen(ImageHandler in, float radius, float radiusZ) {
         return binaryOpen(in, radius, radiusZ, 0);
     }
 
-    public static ImageByte binaryOpen(ImageInt in, float radius, float radiusZ, int nbCPUs) {
+    public static ImageByte binaryOpen(ImageHandler in, float radius, float radiusZ, int nbCPUs) {
         try {
             if (nbCPUs == 0) {
                 nbCPUs = ThreadUtil.getNbCpus();
@@ -96,7 +93,7 @@ public class BinaryMorpho {
         return binaryErode(in, radius, radiusZ, 0);
     }
 
-    public static ImageByte binaryErode(ImageInt in, float radius, float radiusZ, int nbCPUs) {
+    public static ImageByte binaryErode(ImageHandler in, float radius, float radiusZ, int nbCPUs) {
         try {
             if (nbCPUs == 0) {
                 nbCPUs = ThreadUtil.getNbCpus();
@@ -150,13 +147,13 @@ public class BinaryMorpho {
     }
 
     // if no resize of the image, object at the border may be truncated
-    public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ, int nbCPUs, boolean enlarge) {
+    public static ImageByte binaryDilate(ImageHandler in, float radius, float radiusZ, int nbCPUs, boolean enlarge) {
         try {
             if (nbCPUs == 0) {
                 nbCPUs = ThreadUtil.getNbCpus();
             }
 
-            ImageInt resize = in;
+            ImageHandler resize = in;
 
             // resize
             int reX = (int) (radius + 1);
@@ -184,7 +181,7 @@ public class BinaryMorpho {
     }
 
 
-    public static ImageByte binaryDilate(ImageInt in, float radius, float radiusZ, int nbCPUs) {
+    public static ImageByte binaryDilate(ImageHandler in, float radius, float radiusZ, int nbCPUs) {
         // use generic version of binaryDilate
         return binaryDilate(in, radius, radiusZ, nbCPUs, true);
 
@@ -237,7 +234,7 @@ public class BinaryMorpho {
         return close.crop3D("binaryClose", ox, ox + in.sizeX - 1, oy, oy + in.sizeY - 1, oz, oz + in.sizeZ - 1);
     }
 
-    public static ImageByte binaryClose(ImageInt in, float radius, float radiusZ, int nbCPUs) {
+    public static ImageByte binaryClose(ImageHandler in, float radius, float radiusZ, int nbCPUs) {
         // use binary dilate
         ImageByte dilated = binaryDilate(in, radius, radiusZ, nbCPUs, true);
         ImageByte close = binaryErode(dilated, radius, radiusZ, nbCPUs);

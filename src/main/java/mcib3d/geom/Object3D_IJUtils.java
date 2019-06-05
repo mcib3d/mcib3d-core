@@ -188,7 +188,7 @@ public class Object3D_IJUtils {
         int ymax = object3DLabel.getYmax();
         int xmin = object3DLabel.getXmin();
         int xmax = object3DLabel.getXmax();
-        ImageInt labelImage = object3DLabel.getLabelImage();
+        ImageHandler labelImage = object3DLabel.getLabelImage();
         int value = object3DLabel.getValue();
         for (int z = zmin; z <= zmax; z++) {
             tmp = mask.getProcessor(z + 1);
@@ -213,7 +213,7 @@ public class Object3D_IJUtils {
         int ymax = object3DLabel.getYmax();
         int xmin = object3DLabel.getXmin();
         int xmax = object3DLabel.getXmax();
-        ImageInt labelImage = object3DLabel.getLabelImage();
+        ImageHandler labelImage = object3DLabel.getLabelImage();
         int value = object3DLabel.getValue();
         for (int z = zmin; z <= zmax; z++) {
             tmp = mask.getProcessor(z + 1);

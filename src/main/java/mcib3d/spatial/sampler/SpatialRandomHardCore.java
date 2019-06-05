@@ -22,7 +22,7 @@ public class SpatialRandomHardCore implements SpatialModel {
     private Object3D mask;
     // init values
     private Object3DVoxels maskVox;
-    private ImageInt maskimg;
+    private ImageHandler maskimg;
 
     public SpatialRandomHardCore(int nbObjects, double distHardCore, Object3D mask) {
         this.nbObjects = nbObjects;
@@ -43,7 +43,7 @@ public class SpatialRandomHardCore implements SpatialModel {
         Point3D[] points = new Point3D[nbObjects];
         Objects3DPopulation pop = new Objects3DPopulation();
         Random ra = new Random();
-        ImageInt maskImgTmp = maskimg.duplicate();
+        ImageHandler maskImgTmp = maskimg.duplicate();
         ObjectCreator3D create = new ObjectCreator3D(maskImgTmp);
         for (int i = 0; i < nbObjects; i++) {
             Voxel3D vox = maskVox.getRandomVoxel(ra);
