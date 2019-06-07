@@ -51,14 +51,13 @@ import mcib3d.image3d.ImageFloat;
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
+
 /**
- *
  * @author thomas
  */
 public class EdtByteInv {
 
     /**
-     *
      * @param imp
      * @param thresh
      * @param scaleXY
@@ -109,19 +108,21 @@ public class EdtByteInv {
             IJ.error("A thread was interrupted in step 2 .");
         }
         //Transformation 3. h (in s) -> s
-        Step3Thread[] s3t = new Step3Thread[nbCPUs];
-        for (int thread = 0; thread < nbCPUs; thread++) {
-            s3t[thread] = new Step3Thread(thread, nbCPUs, w, h, d, s, data, thresh, scale);
-            s3t[thread].start();
-        }
-        try {
+        if (imp.sizeZ > 1) {
+            Step3Thread[] s3t = new Step3Thread[nbCPUs];
             for (int thread = 0; thread < nbCPUs; thread++) {
-                s3t[thread].join();
+                s3t[thread] = new Step3Thread(thread, nbCPUs, w, h, d, s, data, thresh, scale);
+                s3t[thread].start();
             }
-        } catch (InterruptedException ie) {
-            IJ.error("A thread was interrupted in step 3 .");
+            try {
+                for (int thread = 0; thread < nbCPUs; thread++) {
+                    s3t[thread].join();
+                }
+            } catch (InterruptedException ie) {
+                IJ.error("A thread was interrupted in step 3 .");
+            }
         }
-		//Find the largest distance for scaling
+        //Find the largest distance for scaling
         //Also fill in the background values.
         float distMax = 0;
         int wh = w * h;

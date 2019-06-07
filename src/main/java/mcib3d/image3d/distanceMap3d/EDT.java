@@ -8,6 +8,7 @@ import mcib3d.utils.exceptionPrinter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 
 /**
  * @author thomas !
@@ -108,7 +109,7 @@ public class EDT {
     }
 
     /**
-     * @param objects : 16-bit obeject label image
+     * @param objects : 16-bit object label image
      * @param scaleXY
      * @param scaleZ
      * @return
@@ -138,7 +139,7 @@ public class EDT {
 
     public static void normalizeDistanceMap(ImageFloat distanceMap, ImageHandler mask, boolean excludeZeros) {
         // int count = 0;
-        ArrayList<VoxEVF> idxList = new ArrayList<VoxEVF>();
+        LinkedList<VoxEVF> idxList = new LinkedList<VoxEVF>();
         //VoxEVF[] idx = new VoxEVF[mask.countMaskVolume()];
         //double volume = idx.length;
         double minDist = Double.NEGATIVE_INFINITY;
