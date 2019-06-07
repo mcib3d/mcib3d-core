@@ -5,10 +5,7 @@ import mcib3d.image3d.*;
 import mcib3d.utils.ThreadUtil;
 import mcib3d.utils.exceptionPrinter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * @author thomas !
@@ -34,12 +31,11 @@ public class EDT {
                 return (inverse) ? new EdtShortInv().run((ImageShort) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs) : new EdtShort().run((ImageShort) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs);
             } else if (ip instanceof ImageByte) {
                 //return ((inverse) ? new EdtByteInv().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs) : new EdtByte().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs));
-               if(inverse){
-                   return new EdtByteInv().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs);
-               }
-               else {
-                   return new EdtByte().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs);
-               }
+                if (inverse) {
+                    return new EdtByteInv().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs);
+                } else {
+                    return new EdtByte().run((ImageByte) ip, (int) (thresh + 0.5), scaleXY, scaleZ, nbCPUs);
+                }
             } else if (ip instanceof ImageFloat) {
                 return (inverse) ? new EdtFloatInv().run((ImageFloat) ip, thresh, scaleXY, scaleZ, nbCPUs) : new EdtFloat().run((ImageFloat) ip, thresh, scaleXY, scaleZ, nbCPUs);
             }
@@ -138,8 +134,53 @@ public class EDT {
     }
 
     public static void normalizeDistanceMap(ImageFloat distanceMap, ImageHandler mask, boolean excludeZeros) {
+        ArrayList<VoxEVF> idxList = new ArrayList<>();
+        double minDist = Double.NEGATIVE_INFINITY;
+        if (excludeZeros) {
+            minDist = 0;
+        }
+        for (int z = 0; z < distanceMap.sizeZ; z++) {
+            for (int xy = 0; xy < distanceMap.sizeXY; xy++) {
+                if ((mask.getPixel(xy, z) > 0) && (distanceMap.getPixel(xy, z) > minDist)) {
+                    idxList.add(new VoxEVF(distanceMap.pixels[z][xy], xy, z));
+                } else {
+                    distanceMap.setPixel(xy, z, -1.0f);
+                }
+            }
+        }
+        if (idxList.isEmpty()) {
+            return;
+        }
+        Collections.sort(idxList);
+        double volume = idxList.size();
+        for (int i = 0; i < idxList.size() - 1; i++) {
+            // manage repetitions
+            if (idxList.get(i + 1).distance == idxList.get(i).distance) {
+                int j = i + 1;
+                while (j < (idxList.size() - 1) && idxList.get(i).distance == idxList.get(j).distance) {
+                    j++;
+                }
+                double median = (i + j) / 2d;
+                for (int k = i; k <= j; k++) {
+                    idxList.get(k).index = median;
+                }
+                i = j;
+            } else {
+                idxList.get(i).index = i;
+            }
+        }
+        if (idxList.get(idxList.size() - 1).index == 0) {
+            idxList.get(idxList.size() - 1).index = idxList.size() - 1;
+        }
+        for (VoxEVF idx1 : idxList) {
+            distanceMap.pixels[idx1.z][idx1.xy] = (float) (idx1.index / volume);
+        }
+    }
+
+    private static void normalizeDistanceMapOLD(ImageFloat distanceMap, ImageHandler mask, boolean excludeZeros) {
         // int count = 0;
-        LinkedList<VoxEVF> idxList = new LinkedList<VoxEVF>();
+        ArrayList<VoxEVF> idxList = new ArrayList<>();
+        //TreeSet<VoxEVF> idxList=new TreeSet<>();
         //VoxEVF[] idx = new VoxEVF[mask.countMaskVolume()];
         //double volume = idx.length;
         double minDist = Double.NEGATIVE_INFINITY;
@@ -160,11 +201,13 @@ public class EDT {
         if (idxList.isEmpty()) {
             return;
         }
-        VoxEVF[] idx = new VoxEVF[idxList.size()];
-        idx = idxList.toArray(idx);
-        double volume = idx.length;
-        Arrays.sort(idx);
         Collections.sort(idxList);
+        double volume = idxList.size();
+        //VoxEVF[] idx = new VoxEVF[idxList.size()];
+        //idx = idxList.toArray(idx);
+        //double volume = idx.length;
+        //Arrays.sort(idx);
+        /*
         for (int i = 0; i < idx.length - 1; i++) {
             // manage repetitions
             if (idx[i + 1].distance == idx[i].distance) {
@@ -187,5 +230,29 @@ public class EDT {
         for (VoxEVF idx1 : idx) {
             distanceMap.pixels[idx1.z][idx1.xy] = (float) (idx1.index / volume);
         }
+        */
+        for (int i = 0; i < idxList.size() - 1; i++) {
+            // manage repetitions
+            if (idxList.get(i + 1).distance == idxList.get(i).distance) {
+                int j = i + 1;
+                while (j < (idxList.size() - 1) && idxList.get(i).distance == idxList.get(j).distance) {
+                    j++;
+                }
+                double median = (i + j) / 2d;
+                for (int k = i; k <= j; k++) {
+                    idxList.get(k).index = median;
+                }
+                i = j;
+            } else {
+                idxList.get(i).index = i;
+            }
+        }
+        if (idxList.get(idxList.size() - 1).index == 0) {
+            idxList.get(idxList.size() - 1).index = idxList.size() - 1;
+        }
+        for (VoxEVF idx1 : idxList) {
+            distanceMap.pixels[idx1.z][idx1.xy] = (float) (idx1.index / volume);
+        }
     }
+
 }
