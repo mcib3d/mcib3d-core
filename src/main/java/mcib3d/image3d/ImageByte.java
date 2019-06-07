@@ -1111,7 +1111,22 @@ public class ImageByte extends ImageInt {
 
     // mask operation
     @Override
+    @Deprecated
     public void intersectMask(ImageInt mask) {
+        if (mask == null) {
+            return;
+        }
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (mask.getPixel(xy, z) == 0) {
+                    pixels[z][xy] = 0;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void intersectMask(ImageHandler mask) {
         if (mask == null) {
             return;
         }

@@ -2106,8 +2106,10 @@ public abstract class ImageHandler {
         return res;
     }
 
-
+    @Deprecated
     public abstract void intersectMask(ImageInt mask);
+
+    public abstract void intersectMask(ImageHandler mask);
 
     public abstract void intersectMask2D(ImageInt mask, int z);
 

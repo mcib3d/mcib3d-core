@@ -883,7 +883,19 @@ public class ImageFloat extends ImageHandler {
     }
 
     @Override
+    @Deprecated
     public void intersectMask(ImageInt mask) {
+        for (int z = 0; z < sizeZ; z++) {
+            for (int xy = 0; xy < sizeXY; xy++) {
+                if (mask.getPixel(xy, z) == 0) {
+                    pixels[z][xy] = 0;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void intersectMask(ImageHandler mask) {
         for (int z = 0; z < sizeZ; z++) {
             for (int xy = 0; xy < sizeXY; xy++) {
                 if (mask.getPixel(xy, z) == 0) {
@@ -903,6 +915,7 @@ public class ImageFloat extends ImageHandler {
 
     }
 
+    @Deprecated
     public void intersectMask(ImageFloat mask) {
         for (int z = 0; z < sizeZ; z++) {
             for (int xy = 0; xy < sizeXY; xy++) {
