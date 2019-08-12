@@ -118,7 +118,7 @@ public abstract class ImageInt extends ImageHandler {
     public abstract int getPixelIntInterpolated(Point3D P);
 
     public TreeMap<Integer, int[]> getBounds(boolean addBorder) { //xmin, xmax, ymin, ymax, zmin, zmax, nbvox
-        TreeMap<Integer, int[]> bounds = new TreeMap<Integer, int[]>();
+        TreeMap<Integer, int[]> bounds = new TreeMap<>();
         for (int z = 0; z < sizeZ; z++) {
             for (int y = 0; y < sizeY; y++) {
                 for (int x = 0; x < sizeX; x++) {
@@ -778,6 +778,40 @@ public abstract class ImageInt extends ImageHandler {
         }
         resetStats(); // ??
     }
+
+    public void filterPooling(ImageInt out, int stepx, int stepy, int stepz, int zmin, int zmax, int filter, Chrono timer, AbstractLog log) {
+        if (zmin < 0) {
+            zmin = 0;
+        }
+        if (zmax > this.sizeZ) {
+            zmax = this.sizeZ;
+        }
+        ArrayUtil tab;
+
+        for (int k = zmin; k < zmax; k += stepz) {
+            //IJ.log("3D filter : " + (k + 1) + "/" + zmax);
+            for (int j = 0; j < sizeY; j += stepy) {
+                for (int i = 0; i < sizeX; i += stepx) {
+                    tab = getNeighborhoodBrick(i, j, k, stepx, stepy, stepz);
+                    if (filter == FastFilters3D.MAX) {
+                        out.setPixel(i / stepx, j / stepy, k / stepz, Math.round(tab.getMaximum()));
+                    } else if (filter == FastFilters3D.MIN) {
+                        out.setPixel(i / stepx, j / stepy, k / stepz, Math.round(tab.getMinimum()));
+                    }
+                }
+            }
+            if (timer != null) {
+                String ti = timer.getFullInfo(1);
+                if (ti != null) log.log("3D filtering : " + ti);
+            }
+        }
+        resetStats(); // ??
+    }
+
+    public void filterPooling(ImageInt out, int stepx, int stepy, int stepz, int zmin, int zmax) {
+        filterPooling(out, stepx, stepy, stepz, zmin, zmax, FastFilters3D.MAX, null, null);
+    }
+
 
     /**
      * Generic arithmetic between images

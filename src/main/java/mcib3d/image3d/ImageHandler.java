@@ -199,6 +199,8 @@ public abstract class ImageHandler {
                 }
             }
         }
+        out.setScale(images[0]);
+
         return out;
     }
 
@@ -229,8 +231,42 @@ public abstract class ImageHandler {
             }
             offset += max - min + 1;
         }
+        out.setScale(images[0]);
+
         return out;
     }
+
+    public static ImageHandler merge3DRaw(ImageHandler[] images, int sizeX, int sizeY, int sizeZ) {
+        // merge raw data images, no overlap between images, only pixels > 0
+        ImageHandler out;
+        if (images[0] instanceof ImageInt) out = new ImageShort("merge", sizeX, sizeY, sizeZ);
+        else out = new ImageFloat("merge", sizeX, sizeY, sizeZ);
+        if (images == null || images.length == 0 || images[0] == null) {
+            return out;
+        }
+        int offset = 1;
+        for (ImageHandler image : images) {
+            for (int z = 0; z < image.sizeZ; z++) {
+                for (int y = 0; y < image.sizeY; y++) {
+                    for (int x = 0; x < image.sizeX; x++) {
+                        float val = image.getPixel(x, y, z);
+                        if (val > 0) {
+                            int xx = x + image.offsetX;
+                            int yy = y + image.offsetY;
+                            int zz = z + image.offsetZ;
+                            if (zz >= 0 && zz < sizeZ && xx >= 0 && xx < sizeX && yy >= 0 && yy < sizeY) {
+                                out.setPixel(xx, yy, zz, val);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        out.setScale(images[0]);
+
+        return out;
+    }
+
 
     public static ImagePlus getHyperStack(String title, ImageHandler[] images) { //assumes images have same size
         homogenizeBitDepth(images);
@@ -553,7 +589,6 @@ public abstract class ImageHandler {
         }
         return res;
     }
-
 
 
     /**
@@ -1087,6 +1122,29 @@ public abstract class ImageHandler {
         } else {
             return null;
         }
+    }
+
+    public ArrayUtil getNeighborhoodBrick(int x, int y, int z, int stepx, int stepy, int stepz) {
+        if (stepx <= 0) stepx = 1;
+        if (stepy <= 0) stepy = 1;
+        if (stepz <= 0) stepz = 1;
+        ArrayUtil tab = new ArrayUtil(stepx * stepy * stepz);
+        int idx = 0;
+        for (int k = 0; k < stepz; k++) {
+            for (int j = 0; j < stepy; j++) {
+                for (int i = 0; i < stepx; i++) {
+                    int xi = x + i;
+                    int yj = y + j;
+                    int zk = z + k;
+                    if (xi < sizeX && yj < sizeY && zk < sizeZ) {
+                        tab.putValue(idx, getPixel(x + i, y + j, z + k));
+                        idx++;
+                    }
+                }
+            }
+        }
+
+        return tab;
     }
 
     public ImageStack getImageStack() {

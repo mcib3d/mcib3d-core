@@ -796,7 +796,7 @@ public class ImageShort extends ImageInt {
         for (int idx = 0; idx < ihs.length; idx++) {
             int label = keys.get(idx);
             int[] bds = bounds.get(label);
-            ihs[idx] = this.crop3D(title + ":" + label, bds[0], bds[1], bds[2], bds[3], bds[4], bds[5]);
+            ihs[idx] = this.crop3D(title + "_" + label, bds[0], bds[1], bds[2], bds[3], bds[4], bds[5]); // was : 
         }
         return ihs;
     }

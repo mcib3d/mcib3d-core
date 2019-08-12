@@ -463,6 +463,34 @@ public class FastFilters3D {
         return ker;
     }
 
+    /**
+     * Create a kernel neighorhood as an ellipsoid
+     *
+     * @param stepx Radius x of the ellipsoid
+     * @param stepy Radius y of the ellipsoid
+     * @param stepz Radius z of the ellipsoid
+     * @return The kernel as an array
+     */
+    public static int[] createKernelBrick(int stepx, int stepy, int stepz) {
+        int vx = stepx;
+        int vy = stepy;
+        int vz = stepz;
+        int[] ker = new int[vx*vy*vz];
+
+        int idx = 0;
+        for (int k = 0; k < vz; k++) {
+            for (int j = 0; j < vy; j++) {
+                for (int i = 0; i < vx; i++) {
+                    ker[idx] = 1;
+                    idx++;
+                }
+            }
+        }
+
+        return ker;
+    }
+
+
     public static int[] createKernelFromObject(Object3D obj) {
         int[] bb = obj.getBoundingBox();
         ImageHandler seg = obj.getLabelImage();

@@ -2,6 +2,7 @@ package mcib3d.image3d.regionGrowing;
 
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
+import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.distanceMap3d.EDT;
 import mcib3d.utils.Logger.AbstractLog;
@@ -11,7 +12,7 @@ import mcib3d.utils.Logger.IJLog;
  * Created by thomasb on 17/8/16.
  */
 public class Watershed3DVoronoi {
-    private ImageInt seeds = null;
+    private ImageInt seeds;
     private float radiusMax = Float.MAX_VALUE;
     private ImageFloat EDTImage = null;
     private ImageInt watershed = null;
@@ -74,11 +75,12 @@ public class Watershed3DVoronoi {
         log.log("Computing Voronoi");
         ImageByte mask = EDTImage.threshold(radiusMax, true, true);
         voronoi = watershed.duplicate();
-        voronoi.intersectMask(mask);
+        voronoi.intersectMask((ImageHandler)mask);
     }
 
     public ImageInt getVoronoiZones(boolean show) {
         if (voronoi == null) computeVoronoi(show);
+        voronoi.setScale(seeds);
 
         return voronoi;
     }
@@ -88,7 +90,8 @@ public class Watershed3DVoronoi {
         log.log("Computing voronoi lines");
         ImageByte mask = EDTImage.threshold(radiusMax, true, true);
         voronoi = lines.duplicate();
-        voronoi.intersectMask(mask);
+        voronoi.intersectMask((ImageHandler)mask);
+        voronoi.setScale(seeds);
 
         return voronoi;
     }
