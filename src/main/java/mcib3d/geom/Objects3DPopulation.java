@@ -1265,7 +1265,6 @@ public class Objects3DPopulation {
     }
 
 
-
     public Object3D closestBorder(Object3D O, int[] allowed, double dist) {
         double distanceMinimum = Double.MAX_VALUE;
         Object3D res = null;
@@ -1400,6 +1399,9 @@ public class Objects3DPopulation {
         if (kdtree == null) {
             this.createKDTreeCenters();
         }
+        // put ref object into exclude list
+        if (exclude == null) exclude = new ArrayList<>();
+        if (!exclude.contains(ob)) exclude.add(ob);
 
         int nbClosest = 0;
         Item kClosest = null;
@@ -1415,16 +1417,16 @@ public class Objects3DPopulation {
         return (Object3D) kClosest.obj;
     }
 
-
     public ArrayList<Object3D> getObjectsWithinDistanceCenter(Object3D ob, double dist) {
+        double dist2 = dist * dist;
         ArrayList<Object3D> list = new ArrayList<Object3D>();
-        // first method test all distances
-        // FIXME use kdtree
-        for (Object3D object : objects) {
-            double tmp = ob.distCenterUnit(object);
-            if (tmp <= dist) {
-                list.add(object);
-            }
+        // use kdtree
+        Item[] items = kdtree.getNearestNeighbor(ob.getCenterAsArray(), getNbObjects());
+        for (Item item : items) {
+            double d2 = item.distanceSq;
+            if (d2 < dist2) {
+                list.add((Object3D) item.obj);
+            } else break;
         }
 
         return list;
@@ -1454,7 +1456,6 @@ public class Objects3DPopulation {
 
         return list;
     }
-
 
 
     /**
@@ -1514,6 +1515,23 @@ public class Objects3DPopulation {
     }
 
     public ArrayList<Object3D> shuffle() {
+        int maxTry = 1000;
+        int tryShuffle = 0;
+
+        ArrayList<Object3D> shuffled = tryShuffle();
+        while (shuffled == null) {
+            tryShuffle++;
+            if (tryShuffle > maxTry) {
+                IJ.log("Could not shuffle after " + tryShuffle + " tries");
+                return this.getObjectsList();
+            }
+            shuffled = tryShuffle();
+        }
+
+        return shuffled;
+    }
+
+    private ArrayList<Object3D> tryShuffle() {
         ArrayList<Object3D> shuObj = new ArrayList<Object3D>();
         Random ra = new Random();
         ImageHandler maskImage = mask.getMaxLabelImage(1);
@@ -1529,7 +1547,7 @@ public class Objects3DPopulation {
             Point3D center = obj.getCenterAsPoint();
             boolean ok = false;
             int it = 0;
-            int maxIt = 1000000;
+            int maxIt = Math.min(1000000, mask.getVolumePixels());
             while (!ok) {
                 //log.log("Shuffling " + getObject3D(i).getValue());
                 Voxel3D vox = maskVox.getRandomVoxel(ra);
@@ -1538,7 +1556,7 @@ public class Objects3DPopulation {
                 it++;
                 obj.resetQuantifImage();
                 if (maskVox.includesBox(obj)) {
-                    if (obj.getPixMinValue(maskImage) < 1) {
+                    if (obj.hasOneVoxelValueRange(maskImage, 0, 0)) {
                         ok = false;
                     }
                 } else {
@@ -1549,8 +1567,9 @@ public class Objects3DPopulation {
                 }
             }
             if (it == maxIt) {
-                if (log != null) log.log("Could not shuffle " + obj);
+                if (log != null) IJ.log("Could not shuffle " + obj);
                 obj.setNewCenter(center.x, center.y, center.z);
+                return null;
             }
             shuObj.add(obj);
             // update mask
