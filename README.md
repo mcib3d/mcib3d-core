@@ -7,8 +7,7 @@ Please follow these instructions to download and compile the source code :
 
 `git clone https://github.com/mcib3d/mcib3d-core.git`
 
-`mvn clean process-resources
-mvn package`
+`mvn clean process-resources; mvn package`
 
 You then should be able to open the project in Netbeans or Eclipse. 
 
