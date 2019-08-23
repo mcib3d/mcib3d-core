@@ -223,6 +223,8 @@ public abstract class ImageInt extends ImageHandler {
 
     public ImageByte[] crop3DBinary() {
         TreeMap<Integer, int[]> bounds = this.getBounds(false);
+        if(bounds.isEmpty()) return null;
+
         return crop3DBinary(bounds);
     }
 

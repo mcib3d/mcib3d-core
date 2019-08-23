@@ -7,7 +7,7 @@ Please follow these instructions to download and compile the source code :
 
 `git clone https://github.com/mcib3d/mcib3d-core.git`
 
-`mvn clean process-resources; mvn package`
+`mvn package`
 
 You then should be able to open the project in Netbeans or Eclipse. 
 
@@ -19,7 +19,7 @@ If you want to include this library as part as your maven project, use this depe
 		
 		<artifactId>mcib3d-core</artifactId>
 		
-		<version>3.94</version>
+		<version>3.96</version>
 		
 `</dependency>`
 
