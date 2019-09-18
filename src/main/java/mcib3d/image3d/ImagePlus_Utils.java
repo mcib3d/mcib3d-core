@@ -4,6 +4,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.io.FileSaver;
+import ij.plugin.Duplicator;
 import ij.process.ImageProcessor;
 import ij.process.StackStatistics;
 
@@ -66,7 +67,6 @@ public class ImagePlus_Utils {
         return true;
     }
 
-
     private static void rgb332(ImagePlus imagePlus, int max) {
         byte[] reds = new byte[256];
         byte[] greens = new byte[256];
@@ -80,5 +80,21 @@ public class ImagePlus_Utils {
         ImageProcessor ip = imagePlus.getChannelProcessor();
         ip.setColorModel(cm);
         ip.setMinAndMax(0, max);
+    }
+
+    public static ImagePlus extractCurrentStack(ImagePlus plus) {
+        // check dimensions
+        int[] dims = plus.getDimensions();//XYCZT
+        int channel = plus.getChannel();
+        int frame = plus.getFrame();
+        ImagePlus stack;
+        // crop actual frame
+        if ((dims[2] > 1) || (dims[4] > 1)) {
+            IJ.log("Hyperstack found, extracting current channel " + channel + " and frame " + frame);
+            Duplicator duplicator = new Duplicator();
+            stack = duplicator.run(plus, channel, channel, 1, dims[3], frame, frame);
+        } else stack = plus.duplicate();
+
+        return stack;
     }
 }

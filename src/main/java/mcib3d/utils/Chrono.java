@@ -202,7 +202,7 @@ public final class Chrono {
                         res = new String(d3 + " h " + r2 + " min " + reste + " s");
                     } else {
                         long d4 = d3 / 24;
-                        res = new String(d4 + " j " + d3 + " h " + r2 + " min " + reste + " s");
+                        res = new String(d4 + " d " + d3 + " h " + r2 + " min " + reste + " s");
                     }
                 }
             }
