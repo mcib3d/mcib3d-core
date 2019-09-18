@@ -487,7 +487,20 @@ public class ImageLabeller {
             label++;
         }
         return res;
+    }
 
+    public ImageFloat getLabelsIndividualVoxelsFloat(ImageHandler mask) {
+        if ((listSpots == null) || (mask != currentMask)) {
+            labelIndividualVoxel(mask);
+        }
+        ImageFloat res = new ImageFloat(mask.getTitle() + "::segmented", mask.sizeX, mask.sizeY, mask.sizeZ);
+        short label = 1;
+        for (Spot3D s : listSpots.values()) {
+            Vox3D vox = s.voxels.get(0);
+            res.pixels[vox.z][vox.xy] = label;
+            label++;
+        }
+        return res;
     }
 
     // classical default neighborhood for segmentation is 26
