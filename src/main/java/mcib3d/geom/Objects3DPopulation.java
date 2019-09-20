@@ -47,7 +47,7 @@ public class Objects3DPopulation {
     private final ArrayList<Object3D> objects;
     //private ImageInt labelImage = null;
     AbstractLog log = null;
-    private Object3D mask = null; // usually a object3dlabel
+    private Object3D mask = null;
     // all objects should have same calibration !
     @Deprecated
     private Calibration calibration = null; // deprecated
@@ -94,7 +94,6 @@ public class Objects3DPopulation {
 
     public Objects3DPopulation(ImageHandler plus) {
         objects = new ArrayList<>();
-        // TEST addImageInt
         addImage(plus, 0);
     }
 
@@ -597,6 +596,56 @@ public class Objects3DPopulation {
                 Object3DVoxels ob = new Object3DVoxels(objectstmp[i]);
                 //ob.setLabelImage(null);// the image can be closed anytime
                 //Object3D_IJUtils.setCalibration(ob, calibration);
+                ob.setCalibration(seg.getScaleXY(), seg.getScaleZ(), seg.getUnit());
+                ob.setName("Obj-" + c + "-" + ob.getValue());
+                addObject(ob);
+                c++;
+            }
+        }
+        // update kdtree if available
+        kdtree = null;
+        // need to update hash tables
+        hashValue = null;
+        hashName = null;
+    }
+
+    // TEST
+    public void addImageWithOffset(ImageHandler seg, int threshold) {
+        seg.resetStats(null);
+        int min = (int) seg.getMinAboveValue(threshold);
+        int max = (int) seg.getMax();
+        if (max == 0) {
+            if (log != null) log.log("No objects found");
+            return;
+        }
+        // iterate in image  and constructs objects
+        LinkedList<Voxel3D>[] objectstmp = new LinkedList[max - min + 1];
+        for (int i = 0; i < max - min + 1; i++) {
+            objectstmp[i] = new LinkedList<>();
+        }
+        int pix;
+        int sz = seg.sizeZ;
+        int sy = seg.sizeY;
+        int sx = seg.sizeX;
+        int offx = seg.offsetX;
+        int offy = seg.offsetY;
+        int offz = seg.offsetZ;
+
+        for (int k = 0; k < sz; k++) {
+            for (int j = 0; j < sy; j++) {
+                for (int i = 0; i < sx; i++) {
+                    pix = (int) seg.getPixel(i, j, k);
+                    if (pix > threshold) {
+                        objectstmp[pix - min].add(new Voxel3D(i + offx, j + offy, k + offz, pix)); // use offset here
+                    }
+                }
+            }
+        }
+        // ARRAYLIST
+        int c = 1;
+        for (int i = 0; i < max - min + 1; i++) {
+            if (!objectstmp[i].isEmpty()) {
+                Object3DVoxels ob = new Object3DVoxels(objectstmp[i]);
                 ob.setCalibration(seg.getScaleXY(), seg.getScaleZ(), seg.getUnit());
                 ob.setName("Obj-" + c + "-" + ob.getValue());
                 addObject(ob);
