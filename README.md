@@ -40,5 +40,5 @@ and
   Bioinformatics 29(14):1840-1. doi: 10.1093/bioinformatics/btt276.
   
   Documentations are available on the Imagej wiki website : 
-  http://imagejdocu.tudor.lu/doku.php?id=plugin:stacks:3d_ij_suite:start
+  http://imagejdocu.list.lu/doku.php?id=plugin:stacks:3d_ij_suite:start
 
