@@ -33,4 +33,8 @@ public class PairColocalisation {
     public void incrementVolumeColoc() {
         volumeColoc++;
     }
+
+    public void incrementVolumeColoc(int volume) {
+        volumeColoc += volume;
+    }
 }
