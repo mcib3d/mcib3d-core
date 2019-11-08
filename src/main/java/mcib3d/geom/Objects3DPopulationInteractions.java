@@ -151,16 +151,17 @@ public class Objects3DPopulationInteractions {
             } else {
                 rt.setLabel("A" + object1.getValue(), ia);
             }
-            ArrayList<PairColocalisation> list = getObject1ColocalisationPairs(object1);
-            if (list.size() == 0) {
+            ArrayList<PairColocalisation> list1 = getObject1ColocalisationPairs(object1);
+            ArrayList<PairColocalisation> list2 = getObject2ColocalisationPairs(object1);
+            if ((list1.size() == 0) && (list2.size() == 0)) {
                 if (!useValueObject)
                     rt.setValue("O1", ia, 0);
                 else
                     rt.setValue("O1", ia, 0);
                 rt.setValue("V1", ia, 0);
             }
-            for (int c = 0; c < list.size(); c++) {
-                PairColocalisation colocalisation = list.get(c);
+            for (int c = 0; c < list1.size(); c++) {
+                PairColocalisation colocalisation = list1.get(c);
                 if (colocalisation.getObject3D1() != object1) IJ.log("Pb colocalisation " + object1);
                 Object3D object2 = colocalisation.getObject3D2();
                 int i2 = population.getIndexOf(object2);
@@ -169,6 +170,18 @@ public class Objects3DPopulationInteractions {
                 else
                     rt.setValue("O" + (c + 1), ia, object2.getValue());
                 rt.setValue("V" + (c + 1), ia, colocalisation.getVolumeColoc());
+            }
+            int offset = list1.size();
+            for (int c = 0; c < list2.size(); c++) {
+                PairColocalisation colocalisation = list2.get(c);
+                if (colocalisation.getObject3D1() != object1) IJ.log("Pb colocalisation " + object1);
+                Object3D object2 = colocalisation.getObject3D2();
+                int i2 = population.getIndexOf(object2);
+                if (!useValueObject)
+                    rt.setValue("O" + (offset + c + 1), ia, i2);
+                else
+                    rt.setValue("O" + (offset + c + 1), ia, object2.getValue());
+                rt.setValue("V" + (offset + c + 1), ia, colocalisation.getVolumeColoc());
             }
         }
         return rt;
@@ -199,4 +212,17 @@ public class Objects3DPopulationInteractions {
 
         return pairColocalisations;
     }
+
+    public ArrayList<PairColocalisation> getObject2ColocalisationPairs(Object3D object3D) {
+        ArrayList<PairColocalisation> pairColocalisations = new ArrayList<PairColocalisation>();
+        int i1 = object3D.getValue();
+        for (String key : interactions.keySet()) {
+            if (key.endsWith("-" + i1)) {
+                pairColocalisations.add(new PairColocalisation(interactions.get(key).getObject3D2(), interactions.get(key).getObject3D1(), interactions.get(key).getVolumeColoc()));
+            }
+        }
+
+        return pairColocalisations;
+    }
+
 }
