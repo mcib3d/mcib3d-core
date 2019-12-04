@@ -16,7 +16,10 @@ import mcib3d.image3d.ImageShort;
 import mcib3d.utils.Logger.AbstractLog;
 import mcib3d.utils.Logger.IJLog;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.TreeSet;
 
 /**
  * Copyright (C) Thomas Boudier
@@ -47,9 +50,9 @@ public class Watershed3D {
     private final int seedsThreshold;
     private ImageHandler rawImage; // raw image
     private ImageHandler seedsImage; // positions of seeds
-    private ImageInt watershedImage = null; // watershed from seeds
-    private ImageInt labelQueueImage = null; // watershed from seeds
-    private ImageInt damImage = null; // image for separation between objects
+    private ImageHandler watershedImage = null; // watershed from seeds
+    private ImageHandler labelQueueImage = null; // watershed from seeds
+    private ImageHandler damImage = null; // image for separation between objects
     private LinkedList<Voxel3DComparable> voxels = null; // voxels to compute watershed
     //private boolean okseeds = false;
     private boolean anim = false;
@@ -140,14 +143,14 @@ public class Watershed3D {
         return DAM;
     }
 
-    public ImageInt getWatershedImage3D() {
+    public ImageHandler getWatershedImage3D() {
         if (watershedImage == null) {
             processWatershed();
         }
         return watershedImage;
     }
 
-    public ImageInt getDamImage() {
+    public ImageHandler getDamImage() {
         if (watershedImage == null) {
             processWatershed();
         }
@@ -225,7 +228,7 @@ public class Watershed3D {
         if (log instanceof IJLog) ((IJLog) (log)).setUpdate(false);
         log.log("Watershed completed.");
 
-        damImage = (ImageInt) watershedImage.createSameDimensions();
+        damImage = watershedImage.createSameDimensions();
         watershedImage.transfertPixelValues(damImage, 1, 255);
 
         // replace dam values with 0

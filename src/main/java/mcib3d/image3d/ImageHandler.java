@@ -975,7 +975,7 @@ public abstract class ImageHandler {
      * @param water
      * @return
      */
-    public ArrayUtil getNeighborhoodLayer(int x, int y, int z, float r0, float r1, ImageInt water) {
+    public ArrayUtil getNeighborhoodLayer(int x, int y, int z, float r0, float r1, ImageHandler water) {
         int index = 0;
         double r02 = r0 * r0;
         double r12 = r1 * r1;
@@ -989,14 +989,14 @@ public abstract class ImageHandler {
         double[] pix = new double[(2 * vx + 1) * (2 * vy + 1) * (2 * vz + 1)];
         int wat = 0;
         if (water != null) {
-            wat = water.getPixelInt(x, y, z);
+            wat = (int) water.getPixel(x, y, z);
         }
 
         for (int k = z - vz; k <= z + vz; k++) {
             for (int j = y - vy; j <= y + vy; j++) {
                 for (int i = x - vx; i <= x + vx; i++) {
                     if (i >= 0 && j >= 0 && k >= 0 && i < sizeX && j < sizeY && k < sizeZ) {
-                        if (((water != null) && (water.getPixel(i, j, k) == wat)) || (water == null)) {
+                        if (water == null || (water.getPixel(i, j, k) == wat)) {
                             dist = ((x - i) * (x - i)) + ((y - j) * (y - j)) + ((z - k) * (z - k) * ratio2);
                             if ((dist >= r02) && (dist < r12)) {
                                 //t.putValue(index, );
@@ -1057,7 +1057,7 @@ public abstract class ImageHandler {
             for (int j = y - vy; j <= y + vy; j++) {
                 for (int i = x - vx; i <= x + vx; i++) {
                     if (i >= 0 && j >= 0 && k >= 0 && i < sizeX && j < sizeY && k < sizeZ) {
-                        if (((water != null) && (water.getPixel(i, j, k) == wat)) || (water == null)) {
+                        if (water == null || (water.getPixel(i, j, k) == wat)) {
                             dist = ((x - i) * (x - i)) + ((y - j) * (y - j)) + ((z - k) * (z - k) * ratio2);
                             if ((dist >= r02) && (dist < r12)) {
                                 voxel3DS.add(new Voxel3D(i, j, k, getPixel(i, j, k)));
@@ -2046,6 +2046,16 @@ public abstract class ImageHandler {
         resetStats();
     }
 
+    public void transfertPixelValues(ImageHandler other, float val, float rep) {
+        for (int z = 0; z < sizeZ; z++)
+            for (int k = 0; k < sizeXY; k++) {
+                if (this.getPixel(k, z) == val) {
+                    other.setPixel(k, z, rep);
+                }
+            }
+        other.resetStats();
+    }
+
     public ImageHandler enlarge(int dx, int dy, int dz) {
         ImageHandler enlarged = this.createSameType(sizeX + 2 * dx, sizeY + 2 * dy, sizeZ + 2 * dz);
         enlarged.insert(this, dx, dy, dz, false);
@@ -2264,7 +2274,7 @@ public abstract class ImageHandler {
      * @param water
      * @return arry with mean radial values
      */
-    public double[] radialDistribution(int x0, int y0, int z0, int maxR, int measure, ImageInt water) {
+    public double[] radialDistribution(int x0, int y0, int z0, int maxR, int measure, ImageHandler water) {
         //int maxR = 10;
         double[] radPlot = new double[2 * maxR + 1];
         ArrayUtil raddist;

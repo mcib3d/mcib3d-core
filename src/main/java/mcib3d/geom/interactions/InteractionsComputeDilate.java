@@ -39,13 +39,9 @@ public class InteractionsComputeDilate implements InteractionsCompute {
             for (int i = 0; i < distinctValues.size(); i++) {
                 int other = distinctValues.getValueInt(i);
                 if ((other == 0) || (other == value)) continue;
-                //String key = value + "-" + other;
-                //if (other < value) key = other + "-" + value;
                 if (!interactions.contains(value, other)) {
                     interactions.addInteraction(object3D, population.getObjectByValue(other), arrayUtil.countValue(other));
                 }
-                //map.get(key).incrementVolumeColoc(arrayUtil.countValue(other)); // next version
-                //for (int v = 0; v < arrayUtil.countValue(other); v++) interactions.get(key).incrementVolumeColoc();
             }
         }
 

@@ -401,15 +401,6 @@ public abstract class ImageInt extends ImageHandler {
         resetStats();
     }
 
-    public void transfertPixelValues(ImageInt other, int val, int rep) {
-        for (int z = 0; z < sizeZ; z++)
-            for (int k = 0; k < sizeXY; k++) {
-                if (this.getPixel(k, z) == val) {
-                    other.setPixel(k, z, rep);
-                }
-            }
-        other.resetStats();
-    }
 
     /**
      * Replace a pixel value by another

@@ -12,20 +12,20 @@ import mcib3d.utils.Logger.IJLog;
  * Created by thomasb on 17/8/16.
  */
 public class Watershed3DVoronoi {
-    private ImageInt seeds;
+    private ImageHandler seeds;
     private float radiusMax = Float.MAX_VALUE;
     private ImageFloat EDTImage = null;
-    private ImageInt watershed = null;
-    private ImageInt voronoi = null;
-    private ImageInt lines = null;
+    private ImageHandler watershed = null;
+    private ImageHandler voronoi = null;
+    private ImageHandler lines = null;
     private boolean labelSeeds = false;
     private AbstractLog log = new IJLog();
 
-    public Watershed3DVoronoi(ImageInt seeds) {
+    public Watershed3DVoronoi(ImageHandler seeds) {
         this.seeds = seeds;
     }
 
-    public Watershed3DVoronoi(ImageInt seeds, float radiusMax) {
+    public Watershed3DVoronoi(ImageHandler seeds, float radiusMax) {
         this.seeds = seeds;
         if (!Float.isNaN(radiusMax))
             this.radiusMax = radiusMax;
@@ -78,19 +78,19 @@ public class Watershed3DVoronoi {
         voronoi.intersectMask((ImageHandler)mask);
     }
 
-    public ImageInt getVoronoiZones(boolean show) {
+    public ImageHandler getVoronoiZones(boolean show) {
         if (voronoi == null) computeVoronoi(show);
         voronoi.setScale(seeds);
 
         return voronoi;
     }
 
-    public ImageInt getVoronoiLines(boolean show) {
+    public ImageHandler getVoronoiLines(boolean show) {
         if (voronoi == null) computeVoronoi(show);
         log.log("Computing voronoi lines");
         ImageByte mask = EDTImage.threshold(radiusMax, true, true);
         voronoi = lines.duplicate();
-        voronoi.intersectMask((ImageHandler)mask);
+        voronoi.intersectMask((ImageHandler) mask);
         voronoi.setScale(seeds);
 
         return voronoi;

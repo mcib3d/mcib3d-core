@@ -40,7 +40,6 @@ import java.util.LinkedList;
  */
 
 /**
- *
  * @author thomas
  */
 public class Segment3DSpots {
@@ -61,7 +60,7 @@ public class Segment3DSpots {
     ArrayList<Object3D> segmentedObjects = null;
     ImageHandler rawImage; // raw image
     ImageHandler seedsImage; // positions of seeds
-    ImageInt watershedImage = null; // watershed from seeds
+    ImageHandler watershedImage = null; // watershed from seeds
     ImageHandler labelImage = null; // labelled image with objects
     ImageHandler indexImage = null; // indexed image with objects
     int seedsThreshold = -1; // global threshold (min value from seeds)
@@ -81,7 +80,6 @@ public class Segment3DSpots {
     private float diff;
 
     /**
-     *
      * @param image raw image
      * @param seeds seeds image
      */
@@ -92,11 +90,11 @@ public class Segment3DSpots {
 
     public static Object3DVoxels[] splitSpotWatershed(Object3D obj, float rad, float dist) {
         ImageHandler seg = obj.createSegImage(0, 0, 0, obj.getXmax(), obj.getYmax(), obj.getZmax(), 255);
-       //seg.show();
+        //seg.show();
         ImagePlus segplus = seg.getImagePlus();
         segplus.setCalibration(obj.getCalibration());
         // return
-        Object3DVoxels res[] = null;
+        Object3DVoxels[] res = null;
         try {
             int cpus = ThreadUtil.getNbCpus();
             // FIXME variable multithread
@@ -200,20 +198,20 @@ public class Segment3DSpots {
                 return null;
             }
             // find closest max local to two barycenters, in case barycenters outside object
-            Voxel3D PP1closest=new Voxel3D(locals.get(0));
-            Voxel3D PP2closest=new Voxel3D(locals.get(0));
-            double dist1=PP1.distanceSquare(PP1closest);
-            double dist2=PP2.distanceSquare(PP2closest);
-            for(Voxel3D local:locals){
-                double dd1=PP1.distanceSquare(local);
-                double dd2=PP2.distanceSquare(local);
-                if(dd1<dist1){
-                    dist1=dd1;
-                    PP1closest=local;
+            Voxel3D PP1closest = new Voxel3D(locals.get(0));
+            Voxel3D PP2closest = new Voxel3D(locals.get(0));
+            double dist1 = PP1.distanceSquare(PP1closest);
+            double dist2 = PP2.distanceSquare(PP2closest);
+            for (Voxel3D local : locals) {
+                double dd1 = PP1.distanceSquare(local);
+                double dd2 = PP2.distanceSquare(local);
+                if (dd1 < dist1) {
+                    dist1 = dd1;
+                    PP1closest = local;
                 }
-                if(dd2<dist2){
-                    dist2=dd2;
-                    PP2closest=local;
+                if (dd2 < dist2) {
+                    dist2 = dd2;
+                    PP2closest = local;
                 }
             }
 
@@ -226,7 +224,7 @@ public class Segment3DSpots {
 //            ImageInt wat2 = wat.getWatershedImage3D();
             //ImageHandler edt16 = edt3d.convertToShort(true);
             Watershed3D wat = new Watershed3D(edt3d, seeds, 0, 0);
-            ImageInt wat2 = wat.getWatershedImage3D();
+            ImageHandler wat2 = wat.getWatershedImage3D();
             //wat2.show();
             // in watershed label starts at 1
             Object3DVoxels ob1 = new Object3DVoxels(wat2, 1);
@@ -247,6 +245,7 @@ public class Segment3DSpots {
 
     /**
      * NOT USED, see splitSpotWatershed
+     *
      * @param ori
      * @param val
      * @param f
@@ -494,7 +493,7 @@ public class Segment3DSpots {
          *
          */
         //cz1 = (k1 + k2) / 2.0;
-            /*
+        /*
          * // z pour spot 2 k = f.getZmin(); while ((seg.getPixel((int) cx2,
          * (int) cy2, k) != val) && (k < sizez)) { k++; } if (k >= sizez) { k1 =
          * f.getZmin(); k2 = f.getZmax(); } else { k1 = k; while
@@ -579,7 +578,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @return current local threshold
      */
     public int getLocalThreshold() {
@@ -587,7 +585,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param localThreshold
      */
     public void setLocalThreshold(int localThreshold) {
@@ -595,7 +592,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @return global threshold
      */
     public int getSeedsThreshold() {
@@ -603,7 +599,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param globalThreshold
      */
     public void setSeedsThreshold(int globalThreshold) {
@@ -611,7 +606,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @return raw image
      */
     public ImageHandler getRawImage() {
@@ -619,7 +613,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param image
      */
     public void setRawImage(ImageHandler image) {
@@ -627,7 +620,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @return seeds image
      */
     public ImageHandler getSeeds() {
@@ -635,7 +627,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param seeds image
      */
     public void setSeeds(ImageInt seeds) {
@@ -643,7 +634,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @return
      */
     public ArrayList<Object3D> getObjects() {
@@ -651,7 +641,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @return
      */
     public ImageHandler getInternalLabelImage() {
@@ -681,7 +670,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param method
      */
     public void setMethodSeg(int method) {
@@ -689,7 +677,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param method
      */
     public void setMethodLocal(int method) {
@@ -697,7 +684,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param wa
      */
     public void setWatershed(boolean wa) {
@@ -709,7 +695,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param noiseWatershed
      */
     @Deprecated
@@ -718,7 +703,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param r0
      * @param r1
      * @param r2
@@ -732,7 +716,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param r0
      * @param r1
      * @param r2
@@ -746,7 +729,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param pc
      */
     public void setGaussPc(double pc) {
@@ -754,7 +736,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param gm
      */
     public void setGaussMaxr(int gm) {
@@ -762,7 +743,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @return
      */
     public int getVolumeMax() {
@@ -770,7 +750,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param volMax
      */
     public void setVolumeMax(int volMax) {
@@ -778,7 +757,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @return
      */
     public int getVolumeMin() {
@@ -786,7 +764,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param volMin
      */
     public void setVolumeMin(int volMin) {
@@ -845,7 +822,7 @@ public class Segment3DSpots {
             double dist;
             float pix;
             int water;
-            int waterc = watershedImage.getPixelInt(xc, yc, zc);
+            int waterc = (int) watershedImage.getPixel(xc, yc, zc);
 
             // compute bounding
             zd = (int) (zc - rad2);
@@ -878,14 +855,14 @@ public class Segment3DSpots {
                     for (int x = xd; x < xf; x++) {
                         dist = (x - xc) * (x - xc) + (y - yc) * (y - yc) + (z - zc) * (z - zc);
                         if (dist <= rad02) {
-                            water = watershedImage.getPixelInt(x, y, z);
+                            water = (int) watershedImage.getPixel(x, y, z);
                             if (water == waterc) {
                                 pix = rawImage.getPixel(x, y, z);
                                 sumspot += pix;
                                 nbspot++;
                             }
                         } else if ((dist >= rad12) && (dist <= rad22)) {
-                            water = watershedImage.getPixelInt(x, y, z);
+                            water = (int) watershedImage.getPixel(x, y, z);
                             if (water == waterc) {
                                 pix = rawImage.getPixel(x, y, z);
                                 sumback += pix;
@@ -912,7 +889,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param x
      * @param y
      * @param z
@@ -1061,7 +1037,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param xdep
      * @param ydep
      * @param zdep
@@ -1167,7 +1142,6 @@ public class Segment3DSpots {
     }
 
     /**
-     *
      * @param xdep
      * @param ydep
      * @param zdep
@@ -1222,7 +1196,7 @@ public class Segment3DSpots {
                         if (labelImage.contains(i, j, k) && labelImage.getPixel(i, j, k) == val) {
                             pixelCenter = original.getPixel(i, j, k);
                             if (WATERSHED) {
-                                water = watershedImage.getPixelInt(i, j, k);
+                                water = (int) watershedImage.getPixel(i, j, k);
                             }
                             // create neighbors list
                             neigh = new ArrayList<Voxel3D>();
@@ -1231,7 +1205,7 @@ public class Segment3DSpots {
                                     for (l = i - 1; l < i + 2; l++) {
                                         if ((l >= 0) && (l < sx) && (m >= 0) && (m < sy) && (n >= 0) && (n < sz)) {
                                             if (WATERSHED) {
-                                                waterne = watershedImage.getPixelInt(l, m, n);
+                                                waterne = (int) watershedImage.getPixel(l, m, n);
                                             }
                                             if ((labelImage.getPixel(l, m, n) == 0) && (original.getPixel(l, m, n) >= lcThreshold) && (waterne == water)) {
                                                 neigh.add(new Voxel3D(l, m, n, original.getPixel(l, m, n)));
@@ -1242,11 +1216,8 @@ public class Segment3DSpots {
                             } //n
 
                             // analyse list
-                            ok = true;
                             // empty
-                            if (neigh.isEmpty()) {
-                                ok = false;
-                            }
+                            ok = !neigh.isEmpty();
                             // test 1 neighbor
                             if (neigh.size() == 1) {
                                 ok = false;
@@ -1329,10 +1300,10 @@ public class Segment3DSpots {
      * Segment an object from a seed
      *
      * @param lcThreshold Threshold to connect pixels
-     * @param val value of the object
-     * @param xdep x coordinate of the seed
-     * @param ydep y coordinate of the seed
-     * @param zdep z coordinate of the seed
+     * @param val         value of the object
+     * @param xdep        x coordinate of the seed
+     * @param ydep        y coordinate of the seed
+     * @param zdep        z coordinate of the seed
      * @return true if object cold be segmented
      */
     public LinkedList<Voxel3D> segmentSpotClassical(int xdep, int ydep, int zdep, int lcThreshold, int val) {
@@ -1370,14 +1341,14 @@ public class Segment3DSpots {
                     for (i = sens == 1 ? xdep : xEnd; ((sens == 1 && i <= xEnd) || (sens == -1 && i >= xdep)); i += sens) {
                         if (labelImage.contains(i, j, k) && labelImage.getPixel(i, j, k) == val) {
                             if (WATERSHED) {
-                                waterCenter = watershedImage.getPixelInt(i, j, k);
+                                waterCenter = (int) watershedImage.getPixel(i, j, k);
                             }
                             for (n = k - 1; n < k + 2; n++) {
                                 for (m = j - 1; m < j + 2; m++) {
                                     for (l = i - 1; l < i + 2; l++) {
                                         if (labelImage.contains(l, m, n)) {
                                             if (WATERSHED) {
-                                                water = watershedImage.getPixelInt(l, m, n);
+                                                water = (int) watershedImage.getPixel(l, m, n);
                                             }
                                             if ((labelImage.getPixel(l, m, n) == 0) && (original.getPixel(l, m, n) >= lcThreshold) && (water == waterCenter)) {
                                                 labelImage.setPixel(l, m, n, val);
@@ -1430,10 +1401,10 @@ public class Segment3DSpots {
      * Segment an object from a seed, keep only max local
      *
      * @param lcThreshold Threshold to connect pixels
-     * @param val value of the object
-     * @param xdep x coordinate of the seed
-     * @param ydep y coordinate of the seed
-     * @param zdep z coordinate of the seed
+     * @param val         value of the object
+     * @param xdep        x coordinate of the seed
+     * @param ydep        y coordinate of the seed
+     * @param zdep        z coordinate of the seed
      * @return true if object cold be segmented
      */
     public LinkedList<Voxel3D> segmentSpotMax(int xdep, int ydep, int zdep, int lcThreshold, int val) {
@@ -1475,7 +1446,7 @@ public class Segment3DSpots {
                     for (i = sens == 1 ? xdep : xfin; ((sens == 1 && i <= xfin) || (sens == -1 && i >= xdep)); i += sens) {
                         if (labelImage.contains(i, j, k) && labelImage.getPixel(i, j, k) == val) {
                             if (WATERSHED) {
-                                waterCenter = watershedImage.getPixelInt(i, j, k);
+                                waterCenter = (int) watershedImage.getPixel(i, j, k);
                             }
                             pixelCenter = original.getPixel(i, j, k);
                             for (n = k - 1; n < k + 2; n++) {
@@ -1483,7 +1454,7 @@ public class Segment3DSpots {
                                     for (l = i - 1; l < i + 2; l++) {
                                         if (labelImage.contains(l, m, n)) {
                                             if (WATERSHED) {
-                                                water = watershedImage.getPixelInt(l, m, n);
+                                                water = (int) watershedImage.getPixel(l, m, n);
                                             }
                                             if ((labelImage.getPixel(l, m, n) == 0) && (original.getPixel(l, m, n) >= lcThreshold) && (original.getPixel(l, m, n) <= pixelCenter) && (water == waterCenter)) {
                                                 labelImage.setPixel(l, m, n, val);
