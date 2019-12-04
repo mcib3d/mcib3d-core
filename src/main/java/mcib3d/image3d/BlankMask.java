@@ -1,9 +1,10 @@
 package mcib3d.image3d;
 
 import ij.ImagePlus;
-import java.util.TreeMap;
 import mcib3d.geom.IntCoord3D;
 import mcib3d.geom.Object3D;
+
+import java.util.TreeMap;
 
 /**
  *
@@ -87,12 +88,12 @@ public class BlankMask extends ImageByte { // TODO extends imageInt
     }
 
     @Override
-    public TreeMap<Integer, int[]> getBounds(boolean addBorder) {
+    public TreeMap<Float, int[]> getBounds(boolean addBorder) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public ImageByte crop3DBinary(String title, int label, int x_min, int x_max, int y_min, int y_max, int z_min, int z_max) {
+    public ImageByte crop3DBinary(String title, float label, int x_min, int x_max, int y_min, int y_max, int z_min, int z_max) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -188,7 +189,7 @@ public class BlankMask extends ImageByte { // TODO extends imageInt
     }
 
     @Override
-    public ImageByte crop3DMask(String title, ImageInt mask, int label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
+    public ImageByte crop3DMask(String title, ImageInt mask, float label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

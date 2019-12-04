@@ -128,7 +128,7 @@ public class ImageFloat extends ImageHandler {
         int offZ = 0;
         int sizeXY = img.getWidth() * img.getHeight();
         for (int slice = 0; slice < img.getNSlices(); slice++) {
-            System.arraycopy((float[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
+            System.arraycopy(img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
             offZ += sizeXY;
         }
         return res;
@@ -142,7 +142,7 @@ public class ImageFloat extends ImageHandler {
         int offZ = 0;
         int sizeXY = sizeX * sizeY;
         for (int z = 0; z < sizeZ; z++) {
-            System.arraycopy(pixels, offZ, (float[]) res.getImageStack().getPixels(z + 1), 0, sizeXY);
+            System.arraycopy(pixels, offZ, res.getImageStack().getPixels(z + 1), 0, sizeXY);
             offZ += sizeXY;
         }
         if (setMinAndMax) {
@@ -194,7 +194,7 @@ public class ImageFloat extends ImageHandler {
     public static float[] convert(short[] input) {
         float[] res = new float[input.length];
         for (int i = 0; i < input.length; i++) {
-            res[i] = (float) (input[i] + 0.5f);
+            res[i] = input[i] + 0.5f;
         }
         return res;
     }
@@ -202,7 +202,7 @@ public class ImageFloat extends ImageHandler {
     public static float[] convert(byte[] input) {
         float[] res = new float[input.length];
         for (int i = 0; i < input.length; i++) {
-            res[i] = (float) (input[i]);
+            res[i] = input[i];
         }
         return res;
     }
@@ -226,7 +226,7 @@ public class ImageFloat extends ImageHandler {
             float[] res = new float[(int) sizeXYZ];
             int offZ = 0;
             for (int slice = 0; slice < img.getNSlices(); slice++) {
-                System.arraycopy((float[]) img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
+                System.arraycopy(img.getImageStack().getPixels(slice + 1), 0, res, offZ, sizeXY);
                 offZ += sizeXY;
             }
             return res;
@@ -235,7 +235,7 @@ public class ImageFloat extends ImageHandler {
 
     public Object getArray1D(int z) {
         float[] res = new float[sizeXY];
-        System.arraycopy((float[]) img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
+        System.arraycopy(img.getImageStack().getPixels(z + 1), 0, res, 0, sizeXY);
         return res;
     }
 
@@ -662,7 +662,7 @@ public class ImageFloat extends ImageHandler {
     }
 
     @Override
-    public ImageFloat crop3DMask(String title, ImageInt mask, int label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
+    public ImageFloat crop3DMask(String title, ImageInt mask, float label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
         int x_min = x_min_;
         int z_min = z_min_;
         int y_min = y_min_;

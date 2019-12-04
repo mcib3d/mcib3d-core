@@ -225,7 +225,7 @@ public class ImageShort extends ImageInt {
     public static short[] convert(byte[] input) {
         short[] res = new short[input.length];
         for (int i = 0; i < input.length; i++) {
-            res[i] = (short) (input[i]);
+            res[i] = input[i];
         }
         return res;
     }
@@ -802,7 +802,7 @@ public class ImageShort extends ImageInt {
     }
 
     @Override
-    public ImageShort crop3DMask(String title, ImageInt mask, int label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
+    public ImageShort crop3DMask(String title, ImageInt mask, float label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
         int x_min = x_min_;
         int z_min = z_min_;
         int y_min = y_min_;
@@ -874,7 +874,7 @@ public class ImageShort extends ImageInt {
     }
 
     @Override
-    public ImageByte crop3DBinary(String title, int label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
+    public ImageByte crop3DBinary(String title, float label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
         //IJ.log("crop:"+x_min_+";"+x_max_+y_min_+";"+y_max_+z_min_+";"+z_max_);
         int x_min = x_min_;
         int z_min = z_min_;

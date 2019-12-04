@@ -712,7 +712,7 @@ public class ImageByte extends ImageInt {
     }
 
     @Override
-    public ImageByte crop3DMask(String title, ImageInt mask, int label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
+    public ImageByte crop3DMask(String title, ImageInt mask, float label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
         int x_min = x_min_;
         int z_min = z_min_;
         int y_min = y_min_;
@@ -784,7 +784,7 @@ public class ImageByte extends ImageInt {
     }
 
     @Override
-    public ImageByte crop3DBinary(String title, int label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
+    public ImageByte crop3DBinary(String title, float label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_) {
         int x_min = x_min_;
         int z_min = z_min_;
         int y_min = y_min_;

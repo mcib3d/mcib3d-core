@@ -2005,11 +2005,57 @@ public abstract class ImageHandler {
      */
     public abstract ImageHandler cropRadius(int x0, int y0, int z0, int rx, int ry, int rz, boolean mean, boolean sphere);
 
+    public TreeMap<Float, int[]> getBounds(boolean addBorder) { //xmin, xmax, ymin, ymax, zmin, zmax, nbvox
+        TreeMap<Float, int[]> bounds = new TreeMap<>();
+        for (int z = 0; z < sizeZ; z++) {
+            for (int y = 0; y < sizeY; y++) {
+                for (int x = 0; x < sizeX; x++) {
+                    float value = getPixel(x + y * sizeX, z);
+                    if (value != 0) {
+                        int[] bds = bounds.get(value);
+                        if (bds != null) {
+                            if (x < bds[0]) {
+                                bds[0] = x;
+                            } else if (x > bds[1]) {
+                                bds[1] = x;
+                            }
+                            if (y < bds[2]) {
+                                bds[2] = y;
+                            } else if (y > bds[3]) {
+                                bds[3] = y;
+                            }
+                            if (z < bds[4]) {
+                                bds[4] = z;
+                            } else if (z > bds[5]) {
+                                bds[5] = z;
+                            }
+                            bds[6]++;
+                        } else {
+                            int[] nb = {x, x, y, y, z, z, 1};
+                            bounds.put(value, nb);
+                        }
+                    }
+                }
+            }
+        }
+        if (addBorder) {
+            for (int[] bds : bounds.values()) {
+                bds[0]--;
+                bds[1]++;
+                bds[2]--;
+                bds[3]++;
+                bds[4]--;
+                bds[5]++;
+            }
+        }
+        return bounds;
+    }
+
     public abstract ImageHandler crop3D(String title, int x_min, int x_max, int y_min, int y_max, int z_min, int z_max);
 
     public abstract ImageHandler[] crop3D(TreeMap<Integer, int[]> bounds);
 
-    public abstract ImageHandler crop3DMask(String title, ImageInt mask, int label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_);
+    public abstract ImageHandler crop3DMask(String title, ImageInt mask, float label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_);
 
     /**
      * Insert a 3D image to a specified location
