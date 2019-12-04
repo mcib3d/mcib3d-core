@@ -2053,7 +2053,7 @@ public abstract class ImageHandler {
 
     public abstract ImageHandler crop3D(String title, int x_min, int x_max, int y_min, int y_max, int z_min, int z_max);
 
-    public abstract ImageHandler[] crop3D(TreeMap<Integer, int[]> bounds);
+    public abstract ImageHandler[] crop3D(TreeMap<Float, int[]> bounds);
 
     public abstract ImageHandler crop3DMask(String title, ImageInt mask, float label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_);
 

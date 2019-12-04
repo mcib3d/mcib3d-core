@@ -144,7 +144,7 @@ public abstract class ImageInt extends ImageHandler {
     public abstract boolean shiftIndexes(TreeMap<Integer, int[]> bounds);
 
     @Override
-    public abstract ImageInt[] crop3D(TreeMap<Integer, int[]> bounds);
+    public abstract ImageInt[] crop3D(TreeMap<Float, int[]> bounds);
 
     @Override
     public abstract ImageInt crop3DMask(String title, ImageInt mask, float label, int x_min_, int x_max_, int y_min_, int y_max_, int z_min_, int z_max_);

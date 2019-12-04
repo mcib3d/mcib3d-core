@@ -650,11 +650,11 @@ public class ImageFloat extends ImageHandler {
     }
 
     @Override
-    public ImageFloat[] crop3D(TreeMap<Integer, int[]> bounds) {
+    public ImageFloat[] crop3D(TreeMap<Float, int[]> bounds) {
         ImageFloat[] ihs = new ImageFloat[bounds.size()];
-        ArrayList<Integer> keys = new ArrayList<Integer>(bounds.keySet());
+        ArrayList<Float> keys = new ArrayList<>(bounds.keySet());
         for (int idx = 0; idx < ihs.length; idx++) {
-            int label = keys.get(idx);
+            float label = keys.get(idx);
             int[] bds = bounds.get(label);
             ihs[idx] = this.crop3D(title + ":" + label, bds[0], bds[1], bds[2], bds[3], bds[4], bds[5]);
         }

@@ -184,7 +184,7 @@ public class BlankMask extends ImageByte { // TODO extends imageInt
     }
 
     @Override
-    public ImageByte[] crop3D(TreeMap<Integer, int[]> bounds) {
+    public ImageByte[] crop3D(TreeMap<Float, int[]> bounds) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
