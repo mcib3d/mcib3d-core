@@ -94,7 +94,7 @@ public class AboutMCIB extends JFrame {
      * @return the contact label
      */
     private JLabel contact() {
-        JLabel cont = new JLabel("contact : thomas boudier at wehi edu au");
+        JLabel cont = new JLabel("contact : thomas boudier at upmc fr");
         cont.setAlignmentX(Component.CENTER_ALIGNMENT);
         cont.setCursor(new Cursor(Cursor.HAND_CURSOR));
         cont.addMouseListener(
@@ -103,7 +103,7 @@ public class AboutMCIB extends JFrame {
                     @Override
                     public void mouseClicked(MouseEvent me) {
                         try {
-                            BrowserLauncher.openURL("http://imagejdocu.tudor.lu/doku.php?id=plugin:stacks:3d_ij_suite:start");
+                            BrowserLauncher.openURL("http://imagejdocu.list.lu/doku.php?id=plugin:stacks:3d_ij_suite:start");
                         } catch (IOException ioe) {
                             IJ.log("cannot open link\n" + ioe);
                         }
@@ -124,29 +124,9 @@ public class AboutMCIB extends JFrame {
         Image image = Toolkit.getDefaultToolkit().getImage(url);
         ImageIcon icon = new ImageIcon(image);
 
-        // WEHI (Thomas)
-        JLabel wehi;
-        url = getClass().getResource("/icons/WEHI.png");
-        image = Toolkit.getDefaultToolkit().getImage(url);
-        icon = new ImageIcon(image);
-        wehi = new JLabel(icon, JLabel.CENTER);
-        wehi.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        wehi.addMouseListener(
-                new MouseAdapter() {
-
-                    @Override
-                    public void mouseClicked(MouseEvent me) {
-                        try {
-                            BrowserLauncher.openURL("https://www.wehi.edu.au/");
-                        } catch (IOException ioe) {
-                            IJ.log("cannot open url https://www.wehi.edu.au/\n" + ioe);
-                        }
-                    }
-                });
-
-        // UPMC (Jean)
+        // UPMC (Jean+Thomas)
         JLabel upmc;
-        url = getClass().getResource("/icons/upmc.gif");
+        url = getClass().getResource("/icons/SU.png");
         image = Toolkit.getDefaultToolkit().getImage(url);
         icon = new ImageIcon(image);
         upmc = new JLabel(icon, JLabel.CENTER);
@@ -205,7 +185,6 @@ public class AboutMCIB extends JFrame {
                 });
 
         inst.add(upmc);
-        inst.add(wehi);
         inst.add(suite);
 
         return inst;
