@@ -13,11 +13,11 @@ You then should be able to open the project in Netbeans or Eclipse.
 
 If you want to include this library as part as your maven project, use this dependency : 
 
-`<dependency>`
+`<dependency>
 		<groupId>com.github.mcib3d</groupId>
 		<artifactId>mcib3d-core</artifactId>
 		<version>3.96</version>		
-`</dependency>`
+</dependency>`
 
 and 
 
