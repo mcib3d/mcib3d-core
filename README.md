@@ -13,7 +13,7 @@ You then should be able to open the project in Netbeans or Eclipse.
 
 If you want to include this library as part as your maven project, use this dependency : 
 
-`<dependency>
+<dependency>
 
 		<groupId>com.github.mcib3d</groupId>
 		
@@ -21,17 +21,18 @@ If you want to include this library as part as your maven project, use this depe
 		
 		<version>3.96</version>	
 		
-</dependency>`
+</dependency>
 
 and 
 
-`<repository>	
+<repository>	
 
 	<id>jitpack.io</id>
 	
 	<url>https://jitpack.io</url>
 	
-</repository>`
+</repository>
+
 
   
   If you use MCIB library or plugins in your experiments, please cite : 
