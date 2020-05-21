@@ -86,7 +86,7 @@ public class Watershed3D {
      */
     public Watershed3D(ImageStack image, ImageStack seeds, double noi, int seth) {
         this.rawImage = ImageHandler.wrap(image);
-        this.seedsImage = ImageInt.wrap(seeds);
+        this.seedsImage = ImageHandler.wrap(seeds);
         this.rawThreshold = noi;
         this.seedsThreshold = seth;
         seedsValue = new HashMap<Integer, Integer>();
@@ -239,7 +239,6 @@ public class Watershed3D {
         }
     }
 
-
     private void createNeigList() {
         voxels = new LinkedList<Voxel3DComparable>();
         int sx = rawImage.sizeX;
@@ -247,16 +246,20 @@ public class Watershed3D {
         int sz = rawImage.sizeZ;
 
         // watershed images
-        watershedImage = new ImageShort("watershed", sx, sy, sz);
-        labelQueueImage = new ImageShort("labelQ", sx, sy, sz);
+        if (seedsImage instanceof ImageFloat) {
+            watershedImage = new ImageFloat("watershed", sx, sy, sz);
+            labelQueueImage = new ImageFloat("labelQ", sx, sy, sz);
+        } else {
+            watershedImage = new ImageShort("watershed", sx, sy, sz);
+            labelQueueImage = new ImageShort("labelQ", sx, sy, sz);
+        }
 
         //okseeds = false;
-
         float pix;
         float se;
 
         // compute the seeds image
-        // threshold, // TODO 32-bits seeds ?
+        // threshold
         ImageHandler seedsLabel = seedsImage.duplicate();
         seedsLabel.thresholdCut(seedsThreshold, false, true);
 
