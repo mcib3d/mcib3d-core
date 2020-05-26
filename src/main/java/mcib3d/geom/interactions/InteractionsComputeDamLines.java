@@ -36,4 +36,5 @@ public class InteractionsComputeDamLines implements InteractionsCompute {
 
         return interactions;
     }
+
 }

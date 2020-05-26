@@ -70,6 +70,7 @@ public abstract class Object3D implements Comparable<Object3D> {
     public static final byte MEASURE_INTENSITY_MIN = 12;
     public static final byte MEASURE_INTENSITY_MAX = 13;
     public static final byte MEASURE_INTENSITY_MEDIAN = 14;
+
     /**
      * Centred Moments order 2
      */

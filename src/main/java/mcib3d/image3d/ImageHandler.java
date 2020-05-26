@@ -30,7 +30,6 @@ import java.util.logging.Logger;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-
 /**
  * Copyright (C) 2012 Jean Ollion
  * <p>
@@ -55,7 +54,6 @@ import static java.lang.Math.min;
  * @author Thomas Boudier
  */
 public abstract class ImageHandler {
-
     public static double defZoomFactor = 1d;
     public int sizeX, sizeY, sizeZ, sizeXY, offsetX, offsetY, offsetZ;
     public long sizeXYZ;// for images > 2GB

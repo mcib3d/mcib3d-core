@@ -35,6 +35,7 @@ import mcib3d.utils.Logger.AbstractLog;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -283,16 +284,12 @@ public class Objects3DPopulation {
         for (Object3D object : objects) {
             ob = object;
             Object3D_IJUtils.draw(ob, ima, col);
-            //ob.draw(ima, col);
         }
     }
 
     public void draw(ImageHandler ima, int col) {
-        Object3D ob;
-        for (Object3D object : objects) {
-            ob = object;
-            ob.draw(ima, col);
-        }
+        // TEST STREAM
+        objects.parallelStream().forEach(object3D -> object3D.draw(ima, col));
     }
 
     public void draw(ImageStack ima) {
@@ -304,11 +301,8 @@ public class Objects3DPopulation {
     }
 
     public void draw(ImageHandler ima) {
-        Object3D ob;
-        for (Object3D object : objects) {
-            ob = object;
-            ob.draw(ima, ob.getValue());
-        }
+        // TEST STREAM
+        objects.parallelStream().forEach(object3D -> object3D.draw(ima, object3D.getValue()));
     }
 
     /**
@@ -820,9 +814,9 @@ public class Objects3DPopulation {
     public ImageInt drawPopulation() {
         int[] sizes = this.getMaxSizeAllObjects();
         ImageInt drawImage = new ImageShort("population", sizes[0] + 1, sizes[1] + 1, sizes[2] + 1);
-        for (Object3D object3DVoxels : getObjectsList()) {
-            object3DVoxels.draw(drawImage);
-        }
+        // TEST STREAM
+        objects.parallelStream().forEach(object3D -> object3D.draw(drawImage));
+
         return drawImage;
     }
 
@@ -833,7 +827,6 @@ public class Objects3DPopulation {
         }
         return drawImage;
     }
-
 
     /**
      * @return
@@ -1725,7 +1718,7 @@ public class Objects3DPopulation {
     }
 
     public ArrayList<double[]> getMeasureCentroid() {
-        // geometrical mesure volume (pix and unit) and surface (pix and unit)
+        // geometrical measure volume (pix and unit) and surface (pix and unit)
         ArrayList<double[]> al = new ArrayList<double[]>();
         for (Object3D ob : objects) {
             double[] mes = {ob.getValue(), ob.getCenterX(), ob.getCenterY(), ob.getCenterZ()};

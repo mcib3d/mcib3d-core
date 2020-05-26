@@ -1,5 +1,6 @@
 package mcib3d.geom;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
@@ -12,6 +13,9 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 
 import java.awt.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.stream.Stream;
 
 /**
  * static methods to use with ImageJ for the Object3D class
@@ -122,6 +126,7 @@ public class Object3D_IJUtils {
 
     public static boolean draw(Object3D object3D, ByteProcessor mask, int z, int col) {
         boolean ok = false;
+
         for (Voxel3D vox : object3D.getVoxels()) {
             if (Math.abs(z - vox.getZ()) < 0.5) {
                 mask.putPixel(vox.getRoundX(), vox.getRoundY(), col);
@@ -135,9 +140,11 @@ public class Object3D_IJUtils {
      *
      */
     public static void draw(Object3D object3D, ImageStack mask, int col) {
-        for (Voxel3D vox : object3D.getVoxels()) {
-            mask.setVoxel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), col);
-        }
+        // TEST STREAM
+        Stream<Voxel3D> stream = object3D.getVoxels().parallelStream();
+        stream.forEach(vox -> {
+             mask.setVoxel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), col);
+        });
     }
 
     /**

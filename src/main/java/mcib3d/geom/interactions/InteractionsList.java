@@ -43,7 +43,7 @@ public class InteractionsList {
 
     public int incrementPairVolume(int a, int b, int vol) {
         PairColocalisation pair = getPair(a, b);
-        pair.incrementVolumeColoc(); // TODO update for next version
+        pair.incrementVolumeColoc(vol);
 
         return pair.getVolumeColoc();
     }
@@ -52,6 +52,8 @@ public class InteractionsList {
     public PairColocalisation getPair(int a, int b) {
         return interactions.get(buildKey(a, b));
     }
+
+
 
     // to be removed
     @Deprecated
