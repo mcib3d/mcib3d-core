@@ -2,7 +2,6 @@ package mcib3d.geom;
 
 //import ij.IJ;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
@@ -19,17 +18,12 @@ import mcib3d.utils.KDTreeC;
 
 import java.awt.*;
 import java.io.*;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * /**
@@ -759,21 +753,21 @@ public class Object3DVoxels extends Object3D {
                             if (pix1 != val) {
                                 cont = true;
                                 areaContactUnit += XZ;
-                                areaContactVoxels++
+                                areaContactVoxels++;
                                 face++;
                                 if (pix2 != val) {
                                     class3or4 = 1;
                                 }
-                            } else discreteContactArea++;
+                            }
                             if (pix2 != val) {
                                 cont = true;
-                                areaContactVoxels++
+                                areaContactVoxels++;
                                 areaContactUnit += XZ;
                                 face++;
                             }
                             if (pix3 != val) {
                                 cont = true;
-                                areaContactVoxels++
+                                areaContactVoxels++;
                                 areaContactUnit += XZ;
                                 face++;
                                 if (pix4 != val) {
@@ -782,13 +776,13 @@ public class Object3DVoxels extends Object3D {
                             }
                             if (pix4 != val) {
                                 cont = true;
-                                areaContactVoxels++
+                                areaContactVoxels++;
                                 areaContactUnit += XZ;
                                 face++;
                             }
                             if (pix5 != val) {
                                 cont = true;
-                                areaContactVoxels++
+                                areaContactVoxels++;
                                 areaContactUnit += XX;
                                 face++;
                                 if (pix6 != val) {
@@ -797,7 +791,7 @@ public class Object3DVoxels extends Object3D {
                             }
                             if (pix6 != val) {
                                 cont = true;
-                                areaContactVoxels++
+                                areaContactVoxels++;
                                 areaContactUnit += XX;
                                 face++;
                             }
