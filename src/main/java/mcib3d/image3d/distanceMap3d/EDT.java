@@ -5,7 +5,9 @@ import mcib3d.image3d.*;
 import mcib3d.utils.ThreadUtil;
 import mcib3d.utils.exceptionPrinter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.TreeMap;
 
 /**
  * @author thomas !
@@ -176,6 +178,22 @@ public class EDT {
             distanceMap.pixels[idx1.z][idx1.xy] = (float) (idx1.index / volume);
         }
     }
+
+    private ImageHandler normaliseLabel(ImageInt labels, ImageFloat edt) {
+        TreeMap<Float, int[]> bounds = labels.getBounds(false);
+        ImageHandler[] evfs = new ImageHandler[bounds.size()];
+        int i = 0;
+        for (Float label : bounds.keySet()) {
+            int[] bound = bounds.get(label);
+            ImageInt cropLabel = labels.crop3DMask("cropLabel", labels, label, bound[0], bound[1], bound[2], bound[3], bound[4], bound[5]);
+            ImageFloat cropEdt = edt.crop3DMask("cropEDT_" + label, labels, label, bound[0], bound[1], bound[2], bound[3], bound[4], bound[5]);
+            EDT.normalizeDistanceMap(cropEdt, cropLabel);
+            evfs[i] = cropEdt;
+            i++;
+        }
+        return ImageHandler.merge3DRaw(evfs, edt.sizeX, edt.sizeY, edt.sizeZ);
+    }
+
 
     private static void normalizeDistanceMapOLD(ImageFloat distanceMap, ImageHandler mask, boolean excludeZeros) {
         // int count = 0;
