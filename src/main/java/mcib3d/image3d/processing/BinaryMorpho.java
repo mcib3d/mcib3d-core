@@ -159,7 +159,7 @@ public class BinaryMorpho {
             int reX = (int) (radius + 1);
             int reY = (int) (radius + 1);
             int reZ = (int) (radiusZ + 1);
-            if (enlarge) resize = (ImageInt) in.enlarge(reX, reY, reZ);
+            if (enlarge) resize = in.enlarge(reX, reY, reZ);
 
             ImageFloat edm = EDT.run(resize, 0, 1, radius / radiusZ, true, nbCPUs);
             //edm.duplicate().show("edm");
@@ -553,10 +553,7 @@ public class BinaryMorpho {
             if (in.getPixel(x, y, z - 1) < thld) {
                 return false;
             }
-            if (in.getPixel(x, y, z + 1) < thld) {
-                return false;
-            }
-            return true;
+            return !(in.getPixel(x, y, z + 1) < thld);
         } else {
             return false;
         }
@@ -616,10 +613,7 @@ public class BinaryMorpho {
             if (z > 0 && in.getPixel(x, y, z - 1) >= thld) {
                 return true;
             }
-            if ((z + 1) < in.sizeZ && in.getPixel(x, y, z + 1) >= thld) {
-                return true;
-            }
-            return false;
+            return (z + 1) < in.sizeZ && in.getPixel(x, y, z + 1) >= thld;
         } else {
             return true;
         }
@@ -671,6 +665,7 @@ public class BinaryMorpho {
             ImageInt temp = ImageShort.merge3DBinary(ihs, in.sizeX, in.sizeY, in.sizeZ);
             temp.setScale(in);
             temp.setOffset(in);
+
             return temp;
         }
         return in;

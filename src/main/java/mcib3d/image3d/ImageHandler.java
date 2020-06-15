@@ -2003,7 +2003,7 @@ public abstract class ImageHandler {
      */
     public abstract ImageHandler cropRadius(int x0, int y0, int z0, int rx, int ry, int rz, boolean mean, boolean sphere);
 
-    public TreeMap<Float, int[]> getBounds(boolean addBorder) { //xmin, xmax, ymin, ymax, zmin, zmax, nbvox
+    public TreeMap<Float, int[]> getBounds(boolean addBorder) { //xmin, xmax, ymin, ymax, zmin, zmax
         TreeMap<Float, int[]> bounds = new TreeMap<>();
         for (int z = 0; z < sizeZ; z++) {
             for (int y = 0; y < sizeY; y++) {

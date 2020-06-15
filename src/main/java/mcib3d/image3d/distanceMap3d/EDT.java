@@ -179,7 +179,7 @@ public class EDT {
         }
     }
 
-    private ImageHandler normaliseLabel(ImageInt labels, ImageFloat edt) {
+    public static ImageHandler normaliseLabel(ImageInt labels, ImageFloat edt) {
         TreeMap<Float, int[]> bounds = labels.getBounds(false);
         ImageHandler[] evfs = new ImageHandler[bounds.size()];
         int i = 0;
