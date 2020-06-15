@@ -9,10 +9,7 @@ import ij.ImageStack;
 import mcib3d.geom.ComparatorVoxel;
 import mcib3d.geom.Voxel3D;
 import mcib3d.geom.Voxel3DComparable;
-import mcib3d.image3d.ImageHandler;
-import mcib3d.image3d.ImageInt;
-import mcib3d.image3d.ImageLabeller;
-import mcib3d.image3d.ImageShort;
+import mcib3d.image3d.*;
 import mcib3d.utils.Logger.AbstractLog;
 import mcib3d.utils.Logger.IJLog;
 
