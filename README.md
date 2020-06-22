@@ -17,7 +17,7 @@ If you want to include this library as part as your maven project, use this depe
 <dependency>
 		<groupId>com.github.mcib3d</groupId>
 		<artifactId>mcib3d-core</artifactId>
-		<version>3.96.2</version>		
+		<version>3.96.3</version>		
 </dependency>
 ```
 
