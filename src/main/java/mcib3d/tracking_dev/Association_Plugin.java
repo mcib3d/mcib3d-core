@@ -14,7 +14,7 @@ import mcib3d.utils.ArrayUtil;
 
 import java.util.*;
 
-public class Association_ implements PlugIn {
+public class Association_Plugin implements PlugIn {
     ImageHandler voronoi;
 
     @Override

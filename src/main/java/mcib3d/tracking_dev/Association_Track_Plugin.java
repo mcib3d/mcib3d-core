@@ -10,7 +10,7 @@ import mcib3d.image3d.ImageInt;
 
 import java.io.File;
 
-public class Association_Track implements PlugIn {
+public class Association_Track_Plugin implements PlugIn {
     @Override
     public void run(String s) {
         String dirSeg = IJ.getDirectory("Select main dir");
