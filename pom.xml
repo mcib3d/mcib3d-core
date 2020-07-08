@@ -61,7 +61,7 @@
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>ij</artifactId>
-            <version>RELEASE</version>
+            <version>1.53c</version>
         </dependency>
         <dependency>
             <groupId>org.scijava</groupId>

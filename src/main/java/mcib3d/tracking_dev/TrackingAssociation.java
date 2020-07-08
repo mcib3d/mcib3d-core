@@ -11,10 +11,11 @@ import java.util.List;
 import java.util.TreeSet;
 
 public class TrackingAssociation {
-    List<AssociationPair> finalAssociations;
-    List<Object3D> finalOrphan1;
-    List<Object3D> finalOrphan2;
-    List<Mitosis> finalMitosis;
+    List<AssociationPair> finalAssociations; // TODO
+    List<Object3D> finalOrphan1; // TODO
+    List<Object3D> finalOrphan2; // TODO
+    List<Mitosis> finalMitosis; // TODO
+
     private ImageHandler img1;
     private ImageHandler img2;
     private ImageHandler path = null;
@@ -22,6 +23,7 @@ public class TrackingAssociation {
     private ImageHandler pathed = null;
 
     private boolean merge = false;
+    private boolean mitosis = false;
 
     public TrackingAssociation(ImageHandler img1, ImageHandler img2) {
         this.img1 = img1;
@@ -60,6 +62,11 @@ public class TrackingAssociation {
         this.tracked = null;
     }
 
+    public void setMitosis(boolean mitosis) {
+        this.mitosis = mitosis;
+        this.tracked = null;
+    }
+
     private void computeTracking() {
         this.tracked = this.img1.createSameDimensions();
         if (this.path != null) this.pathed = this.img1.createSameDimensions();
@@ -89,22 +96,24 @@ public class TrackingAssociation {
             association.drawAssociationPath(this.pathed, this.path, this.tracked);
         }
 
-        TreeSet<Mitosis> treeSet = mitosisDetector.detectMitosis();
-        List<Object3D> mito = new LinkedList<>();
-        for (Mitosis mitosis : treeSet) {
-            Object3D d1 = mitosis.getDaughter1();
-            Object3D d2 = mitosis.getDaughter2();
-            Object3D mo = mitosis.getMother();
-            double coloc = mitosis.getColocMitosis();
-            int valPath = (int) mo.getPixMeanValue(this.path);
-            if (!mito.contains(d1) && !mito.contains(d2) && coloc > mitosisDetector.getMinColocMitosis()) {
-                IJ.log("MITOSIS : " + d1.getValue() + " " + d2.getValue() + " " + mo.getValue() + " " + coloc + " " + valPath);
-                mito.add(d1);
-                mito.add(d2);
-
-                if (this.path != null) {
-                    d1.draw(this.pathed, valPath);
-                    d2.draw(this.pathed, valPath);
+        // MITOSIS
+        if (mitosis) {
+            TreeSet<Mitosis> treeSet = mitosisDetector.detectMitosis();
+            List<Object3D> mito = new LinkedList<>();
+            for (Mitosis mitosis : treeSet) {
+                Object3D d1 = mitosis.getDaughter1();
+                Object3D d2 = mitosis.getDaughter2();
+                Object3D mo = mitosis.getMother();
+                double coloc = mitosis.getColocMitosis();
+                int valPath = (int) mo.getPixMeanValue(this.path);
+                if (!mito.contains(d1) && !mito.contains(d2) && coloc > mitosisDetector.getMinColocMitosis()) {
+                    IJ.log("MITOSIS : " + d1.getValue() + " " + d2.getValue() + " " + mo.getValue() + " " + coloc + " " + valPath);
+                    mito.add(d1);
+                    mito.add(d2);
+                    if (this.path != null) {
+                        d1.draw(this.pathed, valPath);
+                        d2.draw(this.pathed, valPath);
+                    }
                 }
             }
         }
