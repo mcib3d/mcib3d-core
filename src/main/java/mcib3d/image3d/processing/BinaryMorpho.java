@@ -648,6 +648,7 @@ public class BinaryMorpho {
     }
 
     public static ImageInt binaryCloseMultilabel(ImageInt in, float radiusXY, float radiusZ, int nbCPUs) {
+        // FIXME should get same label as input
         ImageByte[] ihs = in.crop3DBinary();
         if (ihs != null) {
             //ij.IJ.log("BinaryClose multilabel nb :"+ihs.length);

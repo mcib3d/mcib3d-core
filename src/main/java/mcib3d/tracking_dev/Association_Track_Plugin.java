@@ -40,8 +40,8 @@ public class Association_Track_Plugin implements PlugIn {
             // merge split
             trackingAssociation.setMerge(false);
             // tracking
-            ImageHandler tracked = trackingAssociation.getTracked();
-            ImageHandler pathed = trackingAssociation.getPathed();
+            ImageHandler tracked = trackingAssociation.getTrackedImage();
+            ImageHandler pathed = trackingAssociation.getPathedImage();
             // save
             saver = new FileSaver(tracked.getImagePlus());
             saver.saveAsZip(dirSeg + File.separator + "track" + File.separator + "track" + IJ.pad(i, 4) + ".zip");

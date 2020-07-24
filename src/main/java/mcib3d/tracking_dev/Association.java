@@ -9,6 +9,8 @@ import mcib3d.image3d.ImageHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 
 public class Association {
@@ -58,6 +60,7 @@ public class Association {
         return new int[]{val1, val2};
     }
 
+    @Deprecated
     public void drawAssociation(ImageHandler draw) {
         if (CostsAll == null) computeAssociation();
 
@@ -81,6 +84,23 @@ public class Association {
         }
     }
 
+    public List<AssociationPair> getAssociationPairs() {
+        if (CostsAll == null) computeAssociation();
+
+        List<AssociationPair> pairs = new LinkedList<>();
+
+        for (String a : CostsOK.keySet()) {
+            int[] vals = Association.getValues(a);
+            int val1 = vals[0];
+            int val2 = vals[1];
+            AssociationPair pair = new AssociationPair(population1.getObjectByValue(val1), population2.getObjectByValue(val2), CostsOK.get(a));
+            pairs.add(pair);
+        }
+
+        return pairs;
+    }
+
+    @Deprecated
     public void drawAssociationPath(ImageHandler draw, ImageHandler path, ImageHandler track) {
         if (CostsAll == null) computeAssociation();
 
@@ -104,6 +124,7 @@ public class Association {
         }
     }
 
+    @Deprecated
     public void drawOrphan1(ImageHandler draw) {
         if (CostsAll == null) computeAssociation();
 
@@ -115,6 +136,7 @@ public class Association {
         }
     }
 
+    @Deprecated
     public void drawOrphan2(ImageHandler draw) {
         if (CostsAll == null) computeAssociation();
 
@@ -126,6 +148,7 @@ public class Association {
         }
     }
 
+    @Deprecated
     public ResultsTable getAssociationTable() {
         ResultsTable rt = ResultsTable.getResultsTable();
         if (rt == null) rt = new ResultsTable();
@@ -240,7 +263,7 @@ public class Association {
         else return null;
     }
 
-    public ArrayList<String> getOrphan1() {
+    public List<String> getOrphan1() {
         if (CostsAll == null) computeAssociation();
 
         return Orphan1;
@@ -258,7 +281,7 @@ public class Association {
         return pop;
     }
 
-    public ArrayList<String> getOrphan2() {
+    public List<String> getOrphan2() {
         if (CostsAll == null) computeAssociation();
 
         return Orphan2;

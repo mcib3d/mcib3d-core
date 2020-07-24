@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 public class TrackingAssociation {
-    List<AssociationPair> finalAssociations; // TODO
+    List<AssociationPair> finalAssociations = null; // TODO
     List<Object3D> finalOrphan1; // TODO
     List<Object3D> finalOrphan2; // TODO
     List<Mitosis> finalMitosis; // TODO
@@ -34,43 +34,46 @@ public class TrackingAssociation {
         this.path = path;
     }
 
-    public ImageHandler getTracked() {
-        if (this.tracked == null) computeTracking();
+    public ImageHandler getTrackedImage() {
+        if (finalAssociations == null) computeTracking();
+        if (this.tracked == null) drawAssociation();
 
         return this.tracked;
     }
 
-    public ImageHandler getPathed() {
+    public ImageHandler getPathedImage() {
+        if (finalAssociations == null) computeTracking();
         if (this.path == null) return null;
-        if (this.pathed == null) computeTracking();
+        if (this.pathed == null) drawAssociation();
 
         return this.pathed;
     }
 
     public void setImage1(ImageHandler img1) {
+        this.finalAssociations = null;
         this.img1 = img1;
         this.tracked = null;
     }
 
     public void setImage2(ImageHandler img2) {
+        this.finalAssociations = null;
         this.img2 = img2;
         this.tracked = null;
     }
 
     public void setMerge(boolean merge) {
+        this.finalAssociations = null;
         this.merge = merge;
         this.tracked = null;
     }
 
     public void setMitosis(boolean mitosis) {
+        this.finalAssociations = null;
         this.mitosis = mitosis;
         this.tracked = null;
     }
 
     private void computeTracking() {
-        this.tracked = this.img1.createSameDimensions();
-        if (this.path != null) this.pathed = this.img1.createSameDimensions();
-
         Objects3DPopulation population1 = new Objects3DPopulation(this.img1);
         Objects3DPopulation population2 = new Objects3DPopulation(this.img2);
 
@@ -81,6 +84,7 @@ public class TrackingAssociation {
 
         MitosisDetector mitosisDetector = new MitosisDetector(this.img1, this.img2, association);
 
+        // compute merging
         if (this.merge) {
             this.img2 = mitosisDetector.detectAndMergeSplit();
 
@@ -90,13 +94,12 @@ public class TrackingAssociation {
             mitosisDetector = new MitosisDetector(this.img1, this.img2, association);
         }
 
-        association.drawAssociation(this.tracked);
+        // final associations
+        finalAssociations = association.getAssociationPairs();
+        finalOrphan1 = association.getOrphan1Population().getObjectsList();
+        finalOrphan2 = association.getOrphan2Population().getObjectsList();
 
-        if (this.path != null) {
-            association.drawAssociationPath(this.pathed, this.path, this.tracked);
-        }
-
-        // MITOSIS
+        // MITOSIS DETECTION
         if (mitosis) {
             TreeSet<Mitosis> treeSet = mitosisDetector.detectMitosis();
             List<Object3D> mito = new LinkedList<>();
@@ -108,6 +111,8 @@ public class TrackingAssociation {
                 int valPath = (int) mo.getPixMeanValue(this.path);
                 if (!mito.contains(d1) && !mito.contains(d2) && coloc > mitosisDetector.getMinColocMitosis()) {
                     IJ.log("MITOSIS : " + d1.getValue() + " " + d2.getValue() + " " + mo.getValue() + " " + coloc + " " + valPath);
+                    // FIXME
+                    finalMitosis.add(mitosis);
                     mito.add(d1);
                     mito.add(d2);
                     if (this.path != null) {
@@ -117,5 +122,40 @@ public class TrackingAssociation {
                 }
             }
         }
+
+        // draw associations
     }
+
+    private void drawAssociation() {
+        if (finalAssociations == null) computeTracking();
+        // create results
+        this.tracked = this.img1.createSameDimensions();
+        if (this.path != null) this.pathed = this.img1.createSameDimensions();
+        // draw results
+        int max = 0;
+        for (AssociationPair pair : finalAssociations) {
+            int val1 = pair.getObject3D1().getValue();
+            //object3D2.setValue(val1);
+            pair.getObject3D2().draw(this.tracked, val1);
+            if (val1 > max) max = val1;
+        }
+        // orphan2
+        for (Object3D object3D : finalOrphan2) {
+            max++;
+            object3D.draw(this.tracked, max);
+        }
+
+        // mitosis
+        if ((mitosis) && (this.path != null)) {
+            for (Mitosis mitosis : finalMitosis) {
+                Object3D d1 = mitosis.getDaughter1();
+                Object3D d2 = mitosis.getDaughter2();
+                Object3D mo = mitosis.getMother();
+                int valPath = (int) mo.getPixMeanValue(this.path);
+                d1.draw(this.pathed, valPath);
+                d2.draw(this.pathed, valPath);
+            }
+        }
+    }
+
 }
