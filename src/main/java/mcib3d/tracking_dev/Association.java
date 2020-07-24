@@ -25,7 +25,7 @@ public class Association {
     HashMap<String, Double> CostsCompute;
     ArrayList<String> Orphan1;
     ArrayList<String> Orphan2;
-    boolean verbose = false;
+    public boolean verbose = false;
 
 
     public Association(Objects3DPopulation population1, Objects3DPopulation population2, AssociationCost associationCost) {

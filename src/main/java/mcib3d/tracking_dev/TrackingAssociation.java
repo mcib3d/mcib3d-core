@@ -1,6 +1,7 @@
 package mcib3d.tracking_dev;
 
 import ij.IJ;
+import ij.measure.ResultsTable;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.geom.Objects3DPopulationColocalisation;
@@ -78,7 +79,7 @@ public class TrackingAssociation {
         Objects3DPopulation population2 = new Objects3DPopulation(this.img2);
 
         Association association = new Association(population1, population2, new CostColocalisation(new Objects3DPopulationColocalisation(population1, population2)));
-        association.verbose = true;
+        association.verbose = false;
 
         association.computeAssociation();
 
@@ -98,6 +99,7 @@ public class TrackingAssociation {
         finalAssociations = association.getAssociationPairs();
         finalOrphan1 = association.getOrphan1Population().getObjectsList();
         finalOrphan2 = association.getOrphan2Population().getObjectsList();
+        finalMitosis = new LinkedList<>();
 
         // MITOSIS DETECTION
         if (mitosis) {
@@ -157,5 +159,60 @@ public class TrackingAssociation {
             }
         }
     }
+
+    public ResultsTable getResultsTableAssociation() {
+        if (finalAssociations == null) computeTracking();
+        // create results table
+        ResultsTable table = new ResultsTable();
+        // list associations
+        int row = table.getCounter();
+        for (AssociationPair pair : finalAssociations) {
+            int val1 = pair.getObject3D1().getValue();
+            int val2 = pair.getObject3D2().getValue();
+            double cost = pair.getAsso();
+            // table
+            table.setValue("Label1", row, val1);
+            table.setValue("Label2", row, val2);
+            table.setValue("Cost", row, cost);
+            row++;
+        }
+        // orphan1
+        row = table.getCounter();
+        for (Object3D object3D : finalOrphan1) {
+            table.setValue("Label1", row, object3D.getValue());
+            table.setValue("Label2", row, 0);
+            table.setValue("CostAsso", row, 0);
+            row++;
+        }
+        // orphan2
+        row = table.getCounter();
+        for (Object3D object3D : finalOrphan2) {
+            table.setValue("Label1", row, 0);
+            table.setValue("Label2", row, object3D.getValue());
+            table.setValue("CostAsso", row, 0);
+            row++;
+        }
+
+        return table;
+    }
+
+    public ResultsTable getResultsTableMitosis() {
+        if (finalAssociations == null) computeTracking();
+        // create results table
+        ResultsTable table = new ResultsTable();
+        // list associations
+        int row = table.getCounter();
+        for (Mitosis mitosis : finalMitosis) {
+            // table
+            table.setValue("Mother", row, mitosis.getMother().getValue());
+            table.setValue("Daughter1", row, mitosis.getDaughter1().getValue());
+            table.setValue("Daughter2", row, mitosis.getDaughter2().getValue());
+            table.setValue("Colocalisation", row, mitosis.getColocMitosis());
+            row++;
+        }
+
+        return table;
+    }
+
 
 }
