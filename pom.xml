@@ -56,13 +56,18 @@
     <!--
     TODO add a issueManagement field once there is a bug tracker
     -->
-
     <dependencies>
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>ij</artifactId>
             <version>1.53c</version>
         </dependency>
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>3D_Viewer</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+        <!-- Java 3D dependencies -->
         <dependency>
             <groupId>org.scijava</groupId>
             <artifactId>j3dcore</artifactId>
@@ -79,12 +84,6 @@
             <version>1.0.0</version>
         </dependency>
         <dependency>
-            <groupId>sc.fiji</groupId>
-            <artifactId>3D_Viewer</artifactId>
-            <version>4.0.1</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
             <groupId>nz.ac.waikato.cms.weka</groupId>
             <artifactId>weka-dev</artifactId>
             <version>3.9.3</version>
@@ -97,14 +96,15 @@
             <url>https://jitpack.io</url>
         </repository>
         <repository>
-            <id>scijava.public</id>
-            <url>https://maven.scijava.org/content/groups/public</url>
+            <id>imagej.public</id>
+            <url>http://maven.imagej.net/content/groups/public</url>
         </repository>
         <repository>
             <id>j3dcore</id>
             <url>https://mvnrepository.com/artifact/org.scijava</url>
         </repository>
     </repositories>
+
     <build>
         <pluginManagement>
             <plugins>
