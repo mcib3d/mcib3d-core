@@ -100,8 +100,10 @@
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
         </repository>
-
-
+        <repository>
+            <id>j3dcore</id>
+            <url>https://mvnrepository.com/artifact/org.scijava</url>
+        </repository>
     </repositories>
     <build>
         <pluginManagement>
