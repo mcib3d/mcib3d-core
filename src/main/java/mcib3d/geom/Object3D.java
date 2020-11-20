@@ -227,11 +227,18 @@ public abstract class Object3D implements Comparable<Object3D> {
     // log
     AbstractLog logger;
     boolean logging = true;
-    // center distances stat
-    double distcentermin = Double.NaN;
-    double distcentermax = Double.NaN;
-    double distcentermean = Double.NaN;
-    double distcentersigma = Double.NaN;
+
+    // center distances stat unit
+    double distCenterMinUnit = Double.NaN;
+    double distCenterMaxUnit = Double.NaN;
+    double distCenterMeanUnit = Double.NaN;
+    double distCenterSigmaUnit = Double.NaN;
+    // center distances stat pixel
+    double distCenterMinPixel = Double.NaN;
+    double distCenterMaxPixel = Double.NaN;
+    double distCenterMeanPixel = Double.NaN;
+    double distCenterSigmaPixel = Double.NaN;
+
 
     public static int getNbMoments3D() {
         return 5;
@@ -1052,10 +1059,10 @@ public abstract class Object3D implements Comparable<Object3D> {
         s002 = Double.NaN;
         eigen = null;
         // dist center
-        distcentermin = Double.NaN;
-        distcentermax = Double.NaN;
-        distcentermean = Double.NaN;
-        distcentersigma = Double.NaN;
+        distCenterMinUnit = Double.NaN;
+        distCenterMaxUnit = Double.NaN;
+        distCenterMeanUnit = Double.NaN;
+        distCenterSigmaUnit = Double.NaN;
         // feret
         feret = Double.NaN;
         feret1 = null;
@@ -1700,11 +1707,11 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return the min distance(in real unit)
      */
     public double getDistCenterMin() {
-        if (Double.isNaN(distcentermin)) {
+        if (Double.isNaN(distCenterMinUnit)) {
             this.computeDistCenter();
         }
 
-        return distcentermin;
+        return distCenterMinUnit;
     }
 
     /**
@@ -1713,11 +1720,11 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return the max distance(in real unit)
      */
     public double getDistCenterMax() {
-        if (Double.isNaN(distcentermax)) {
+        if (Double.isNaN(distCenterMaxUnit)) {
             this.computeDistCenter();
         }
 
-        return distcentermax;
+        return distCenterMaxUnit;
     }
 
     /**
@@ -1726,11 +1733,11 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return the mean distance(in real unit)
      */
     public double getDistCenterMean() {
-        if (Double.isNaN(distcentermean)) {
+        if (Double.isNaN(distCenterMeanUnit)) {
             this.computeDistCenter();
         }
 
-        return distcentermean;
+        return distCenterMeanUnit;
     }
 
     /**
@@ -1739,11 +1746,63 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return the SD distance
      */
     public double getDistCenterSigma() {
-        if (Double.isNaN(distcentersigma)) {
+        if (Double.isNaN(distCenterSigmaUnit)) {
             this.computeDistCenter();
         }
 
-        return distcentersigma;
+        return distCenterSigmaUnit;
+    }
+
+    /**
+     * the minimum distance between center and contours
+     *
+     * @return the min distance(in pixel)
+     */
+    public double getDistCenterMinPixel() {
+        if (Double.isNaN(distCenterMinPixel)) {
+            this.computeDistCenter();
+        }
+
+        return distCenterMinPixel;
+    }
+
+    /**
+     * the maximum distance between center and contours
+     *
+     * @return the max distance(in pixel)
+     */
+    public double getDistCenterMaxPixel() {
+        if (Double.isNaN(distCenterMaxPixel)) {
+            this.computeDistCenter();
+        }
+
+        return distCenterMaxPixel;
+    }
+
+    /**
+     * the average distance between center and contours
+     *
+     * @return the mean distance(in real unit)
+     */
+    public double getDistCenterMeanPixel() {
+        if (Double.isNaN(distCenterMeanPixel)) {
+            this.computeDistCenter();
+        }
+
+        return distCenterMeanPixel;
+    }
+
+    /**
+     * the sigma value for distances between center and contours
+     *
+     * @return the SD distance
+     */
+    public double getDistCenterSigmaPixel() {
+        if (Double.isNaN(distCenterSigmaPixel)) {
+            this.computeDistCenter();
+        }
+
+        return distCenterSigmaPixel;
     }
 
     /**
@@ -1759,6 +1818,13 @@ public abstract class Object3D implements Comparable<Object3D> {
      */
     private void computeDistCenter() {
         if (centerInside()) {
+            // pixel
+            double dist2Pix;
+            double distmaxPix = 0;
+            double distminPix = Double.POSITIVE_INFINITY;
+            double distsumPix = 0;
+            double distsum2Pix = 0;
+            // unit
             double dist2;
             double distmax = 0;
             double distmin = Double.POSITIVE_INFINITY;
@@ -1779,6 +1845,17 @@ public abstract class Object3D implements Comparable<Object3D> {
 
             for (int j = 0; j < s; j++) {
                 p2 = (Voxel3D) cont.get(j);
+                // pixel
+                dist2Pix = ((ccx - p2.getX()) * (ccx - p2.getX()))+ ((ccy - p2.getY()) * (ccy - p2.getY())) +((ccz - p2.getZ()) * (ccz - p2.getZ()));
+                distsumPix += Math.sqrt(dist2Pix);
+                distsum2Pix += dist2Pix;
+                if (dist2Pix > distmaxPix) {
+                    distmaxPix = dist2Pix;
+                }
+                if (dist2Pix < distminPix) {
+                    distminPix = dist2Pix;
+                }
+                // unit
                 dist2 = rx2 * ((ccx - p2.getX()) * (ccx - p2.getX()) + ((ccy - p2.getY()) * (ccy - p2.getY()))) + rz2 * (ccz - p2.getZ()) * (ccz - p2.getZ());
                 distsum += Math.sqrt(dist2);
                 distsum2 += dist2;
@@ -1787,16 +1864,19 @@ public abstract class Object3D implements Comparable<Object3D> {
                 }
                 if (dist2 < distmin) {
                     distmin = dist2;
-                    //tmpmin = p2;
-                    //System.out.println("pix=" + tmpmin + " dist=" + distmin);
                 }
 
             }
-
-            distcentermax = Math.sqrt(distmax);
-            distcentermin = Math.sqrt(distmin);
-            distcentermean = distsum / (double) s;
-            distcentersigma = Math.sqrt((distsum2 - ((distsum * distsum) / (double) s)) / ((double) s - 1));
+            // unit
+            distCenterMaxUnit = Math.sqrt(distmax);
+            distCenterMinUnit = Math.sqrt(distmin);
+            distCenterMeanUnit = distsum / (double) s;
+            distCenterSigmaUnit = Math.sqrt((distsum2 - ((distsum * distsum) / (double) s)) / ((double) s - 1));
+            // unit
+            distCenterMaxUnit = Math.sqrt(distmax);
+            distCenterMinUnit = Math.sqrt(distmin);
+            distCenterMeanUnit = distsum / (double) s;
+            distCenterSigmaUnit = Math.sqrt((distsum2 - ((distsum * distsum) / (double) s)) / ((double) s - 1));
         }
     }
 
@@ -1960,6 +2040,18 @@ public abstract class Object3D implements Comparable<Object3D> {
     public double distCenterUnit(Object3D autre) {
         return Math.sqrt((bx - autre.bx) * (bx - autre.bx) * resXY * resXY + (by - autre.by) * (by - autre.by) * resXY * resXY + (bz - autre.bz) * (bz - autre.bz) * resZ * resZ);
     }
+
+    /**
+     * distance from center to center (in pixel)
+     *
+     * @param other the other Object3D
+     * @return distance
+     */
+    public double distCenterPixel(Object3D other) {
+        return Math.sqrt((bx - other.bx) * (bx - other.bx) + (by - other.by) * (by - other.by)  + (bz - other.bz) * (bz - other.bz));
+    }
+
+
 
     /**
      * 2D distance from center to center (in real distance)

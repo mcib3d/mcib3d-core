@@ -4,7 +4,6 @@
  */
 package mcib3d.geom;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -46,10 +45,10 @@ public class Object3DPoint extends Object3DVoxels {
         s002 = Double.NaN;
         eigen = null;
         // dist center
-        distcentermin = Double.NaN;
-        distcentermax = Double.NaN;
-        distcentermean = Double.NaN;
-        distcentersigma = Double.NaN;
+        distCenterMinUnit = Double.NaN;
+        distCenterMaxUnit = Double.NaN;
+        distCenterMeanUnit = Double.NaN;
+        distCenterSigmaUnit = Double.NaN;
         // feret
         feret = Double.NaN;
         feret1 = null;

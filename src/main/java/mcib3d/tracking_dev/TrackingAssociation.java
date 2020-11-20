@@ -78,7 +78,7 @@ public class TrackingAssociation {
         Objects3DPopulation population1 = new Objects3DPopulation(this.img1);
         Objects3DPopulation population2 = new Objects3DPopulation(this.img2);
 
-        Association association = new Association(population1, population2, new CostColocalisation(new Objects3DPopulationColocalisation(population1, population2)));
+        Association association = new Association(population1, population2, new CostColocalisation(population1, population2,10));
         association.verbose = false;
 
         association.computeAssociation();
@@ -90,7 +90,7 @@ public class TrackingAssociation {
             this.img2 = mitosisDetector.detectAndMergeSplit();
 
             population2 = new Objects3DPopulation(this.img2);
-            association = new Association(population1, population2, new CostColocalisation(new Objects3DPopulationColocalisation(population1, population2)));
+            association = new Association(population1, population2, new CostColocalisation(population1, population2,10));
             association.computeAssociation();
             mitosisDetector = new MitosisDetector(this.img1, this.img2, association);
         }

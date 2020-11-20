@@ -199,6 +199,25 @@ public class Objects3DPopulationColocalisation {
     }
 
     /**
+     * Return the colocalisation between two objects
+     *
+     * @param v1 The object value in population 1
+     * @param v2 The object value in population 2
+     * @return the colocalisation volume (intersection) between the two objects
+     */
+    public int getColocObject(int v1, int v2) {
+        if (needToComputeColoc) computeColocalisation();
+        int coloc = 0;
+        String key = v1 + "-" + v2;
+        if (colocs.containsKey(key))
+            coloc = colocs.get(key).getVolumeColoc();
+
+        return coloc;
+    }
+
+
+
+    /**
      * Returns all the colocalisations
      *
      * @return List of colocalisation as PairColocalisation
