@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.TreeSet;
 
 public class TrackingAssociation {
-    List<AssociationPair> finalAssociations = null; // TODO
-    List<Object3D> finalOrphan1; // TODO
-    List<Object3D> finalOrphan2; // TODO
-    List<Mitosis> finalMitosis; // TODO
+    List<AssociationPair> finalAssociations = null;
+    List<Object3D> finalOrphan1;
+    List<Object3D> finalOrphan2;
+    List<Mitosis> finalMitosis;
 
     private ImageHandler img1;
     private ImageHandler img2;
