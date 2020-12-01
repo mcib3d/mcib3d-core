@@ -10,7 +10,7 @@
 
     <groupId>mcib</groupId>
     <artifactId>mcib3d-core</artifactId>
-    <version>3.96.3</version>
+    <version>3.96.31</version>
     <packaging>jar</packaging>
 
     <name>MCIB3D-CORE</name>
