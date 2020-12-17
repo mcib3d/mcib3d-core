@@ -199,8 +199,19 @@ public class EdtFloat {
                         background[i] = (dk[i + w * j] <= thresh);
                     }
                     for (int i = 0; i < w; i++) {
-                        min = Math.min(i + 1, w - i); // distance minimale = distance au bord le plus proche + 1
-                        min *= min;
+                        // wrong, not to compare with distance to image borders, otherwise borders will be considered as joints
+                        // compare only to x where f(xjk) = 0 (background[x])
+                        // min = Math.min(i + 1, w - i); // distance minimale = distance au bord le plus proche + 1
+                        // min *= min;
+                        // compute initial value for min
+                        // TODO: if there is no background pixel on this row, there is no initial min value
+                        for (int x = 0; x<w; x++){
+                            if (background[x]) {
+                                min = i - x;
+                                min *= min;
+                                break; // take distance to first background pixel as initial value
+                            }
+                        }
                         for (int x = i; x < w; x++) {
                             if (background[x]) {
                                 test = i - x;
@@ -208,7 +219,7 @@ public class EdtFloat {
                                 if (test < min) {
                                     min = test;
                                 }
-                                break;
+                                break; // break here if background[x] true is acceptable. all background pixels in this row must be considered. the closest to be considered
                             }
                         }
                         for (int x = i - 1; x >= 0; x--) {
@@ -269,11 +280,13 @@ public class EdtFloat {
                     }
                     if (nonempty) {
                         for (int j = 0; j < h; j++) {
-                            min = Math.min(j + 1, h - j);
-                            min *= min;
-                            delta = j;
+                            // TODO: wrong, not to compare with distance to image borders, otherwise borders will be considered as joints
+                            // min = Math.min(j + 1, h - j);
+                            // min *= min;
+                            // delta = j;
+                            min = tempS[0] + j *j ; // initial value for min at first pixel in this column
                             for (int y = 0; y < h; y++) {
-                                test = tempS[y] + delta * delta--;
+                                test = tempS[y] + (y - j) * (y - j); // not delta * delta-- as befored
                                 if (test < min) {
                                     min = test;
                                 }
@@ -287,7 +300,7 @@ public class EdtFloat {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 
     class Step3Thread extends Thread {
 
@@ -353,8 +366,9 @@ public class EdtFloat {
                         for (int k = 0; k < d; k++) {
                             //Limit to the non-background to save time,
                             if ((data[k][i + w * j] > thresh)) {
-                                min = Math.min(k + 1, d - k);// bug fixed
-                                min *= min * scaleZ;
+                                // wrong, not to compare with distance to image borders, otherwise borders will be considered as joints
+                                // min = Math.min(k + 1, d - k);// bug fixed
+                                // min *= min * scaleZ;
                                 zBegin = zStart;
                                 zEnd = zStop;
                                 if (zBegin > k) {
@@ -363,10 +377,10 @@ public class EdtFloat {
                                 if (zEnd < k) {
                                     zEnd = k;
                                 }
-                                delta = (k - zBegin);
+                                min = tempS[zBegin] + (k - zBegin) * (k - zBegin) * scaleZ; // set initial value for min with first z index
 
                                 for (int z = zBegin; z <= zEnd; z++) {
-                                    test = tempS[z] + delta * delta-- * scaleZ;
+                                    test = tempS[z] + (k - z) * (k - z) * scaleZ;
                                     if (test < min) {
                                         min = test;
                                     }
@@ -382,5 +396,5 @@ public class EdtFloat {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 }
