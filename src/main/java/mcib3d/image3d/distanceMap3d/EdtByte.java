@@ -192,6 +192,10 @@ public class EdtByte {
                         // min = Math.min(i + 1, sizeX - i); // distance minimale = distance au bord le plus proche + 1
                         // min *= min;
                         // TODO: if there is no background pixel on this row, there is no initial min value
+                        // float min;
+                        min = Math.min(i + 1, sizeX - i); // distance minimale = distance au bord le plus proche + 1
+                        min *= min;
+                        // initialize then recompute this min as distance to closest background pixel on the same row
                         for (int x = 0; x < sizeX; x++) {
                             if (background[x]) {
                                 min = i - x;
