@@ -199,11 +199,20 @@ public class EdtShortInv {
                     }
                     for (int i = 0; i < w; i++) {
                         min = noResult;
+                        for (int x = 0; x<w; x++){
+                            if (background[x]) {
+                                min = i - x;
+                                min *= min;
+                                break; // take distance to first background pixel as initial value
+                            }
+                        }
                         for (int x = i; x < w; x++) {
                             if (background[x]) {
                                 test = i - x;
                                 test *= test;
-                                min = test;
+                                if (test < min) {
+                                  min = test;
+                                }
                                 break;
                             }
                         }
@@ -266,9 +275,10 @@ public class EdtShortInv {
                     if (nonempty) {
                         for (int j = 0; j < h; j++) {
                             min = noResult;
-                            delta = j;
+
                             for (int y = 0; y < h; y++) {
-                                test = tempS[y] + delta * delta--;
+                                delta = y-j;
+                                test = tempS[y] + delta * delta;
                                 if (test < min) {
                                     min = test;
                                 }
@@ -282,7 +292,7 @@ public class EdtShortInv {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 
     class Step3Thread extends Thread {
 
@@ -356,10 +366,11 @@ public class EdtShortInv {
                                 if (zEnd < k) {
                                     zEnd = k;
                                 }
-                                delta = (k - zBegin);
+                                // delta = (k - zBegin);
 
                                 for (int z = zBegin; z <= zEnd; z++) {
-                                    test = tempS[z] + delta * delta-- * scaleZ;
+                                    delta = k - z;
+                                    test = tempS[z] + delta * delta * scaleZ;
                                     if (test < min) {
                                         min = test;
                                     }
@@ -375,5 +386,5 @@ public class EdtShortInv {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 }

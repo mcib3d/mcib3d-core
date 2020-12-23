@@ -203,7 +203,9 @@ public class EdtFloatInv {
                             if (background[x]) {
                                 test = i - x;
                                 test *= test;
-                                min = test;
+				                        if (test < min) {
+                                    min = test;
+				                        }
                                 break;
                             }
                         }
@@ -282,7 +284,7 @@ public class EdtFloatInv {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 
     class Step3Thread extends Thread {
 
@@ -376,5 +378,5 @@ public class EdtFloatInv {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 }

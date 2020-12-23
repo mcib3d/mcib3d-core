@@ -187,7 +187,7 @@ public class EdtFloat {
             if (d > n) {
                 n = d;
             }
-            //int noResult = 3*(n+1)*(n+1);
+            float noResult = 3*(n+1)*(n+1);
             boolean[] background = new boolean[n];
             boolean nonempty;
             float test, min;
@@ -206,9 +206,11 @@ public class EdtFloat {
                         // compute initial value for min
                         // TODO: if there is no background pixel on this row, there is no initial min value
                         // float min;
-                        min = Math.min(i + 1, w - i); // distance minimale = distance au bord le plus proche + 1
-                        min *= min;
+                        // TODO: this way to define min is wrong. The pixels at corners will be always at 0
+                        // min = Math.min(i + 1, w - i); // distance minimale = distance au bord le plus proche + 1
+                        // min *= min;
                         // initialize then recompute this min as distance to closest background pixel on the same row
+                        min = noResult;
                         for (int x = 0; x<w; x++){
                             if (background[x]) {
                                 min = i - x;
@@ -266,7 +268,7 @@ public class EdtFloat {
             if (d > n) {
                 n = d;
             }
-            //int noResult = 3*(n+1)*(n+1);
+            float noResult = 3*(n+1)*(n+1);
             float[] tempInt = new float[n];
             float[] tempS = new float[n];
             boolean nonempty;
