@@ -197,13 +197,13 @@ public class EdtByte {
                         // min *= min;
                         // initialize then recompute this min as distance to closest background pixel on the same row
                         min = noResult;
-                        for (int x = 0; x < sizeX; x++) {
-                            if (background[x]) {
-                                min = i - x;
-                                min *= min;
-                                break;
-                            }
-                        }
+                        // for (int x = 0; x < sizeX; x++) {
+                        //     if (background[x]) {
+                        //         min = i - x;
+                        //         min *= min;
+                        //         break;
+                        //     }
+                        // }
                         for (int x = i; x < sizeX; x++) {
                             if (background[x]) {
                                 test = i - x;
