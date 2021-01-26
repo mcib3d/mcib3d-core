@@ -27,6 +27,8 @@ import java.util.Arrays;
  *
  * @author fabrice cordelieres @created 6 mars 2009
  */
+
+@Deprecated
 public class Segment3DImage {
 
     float lowThreshold;
@@ -427,8 +429,6 @@ public class Segment3DImage {
 
     /**
      * Set to zero pixels below the threshold in the "imgArray" arrays.
-     *
-     * @param img The image
      */
     private void imgArrayModifier() {
         int index = 0;
@@ -457,18 +457,7 @@ public class Segment3DImage {
      * Generates the ImagePlus based on Counter3D object width, height and
      * number of slices, the input array and title.
      *
-     * @param imgArray containing the pixels intensities (integer array).
-     * @param cenArray containing the coordinates of pixels where the labels
-     * should be put (integer array).
-     * @param title to attribute to the ImagePlus (string).
-     * @param drawDots should be true if dots should be drawn instead of a
-     * single pixel for each coordinate of imgArray (boolean).
-     * @param drawNb should be true if numbers have to be drawn at each
-     * coordinate stored in cenArray (boolean).
-     * @param whiteNb should be true if numbers have to appear white (boolean).
-     * @param dotSize size of the dots to be drawn (integer).
-     * @param fontSize font size of the numbers to be shown (integer).
-     * @return Description of the Return Value
+     * @return a new Image
      */
     private ImageInt buildImg(int[] IDobj) {
         int index = 0;
