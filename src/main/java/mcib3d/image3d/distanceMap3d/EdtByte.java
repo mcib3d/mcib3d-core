@@ -177,7 +177,7 @@ public class EdtByte {
             if (sizeZ > n) {
                 n = sizeZ;
             }
-            //int noResult = 3 * (n + 1) * (n + 1);
+            float noResult = 3 * (n + 1) * (n + 1);
             boolean[] background = new boolean[n];
             boolean nonempty;
             float test, min;
@@ -189,8 +189,21 @@ public class EdtByte {
                         background[i] = ((datak[i + sizeX * j] & 255) <= thresh);
                     }
                     for (int i = 0; i < sizeX; i++) {
-                        min = Math.min(i + 1, sizeX - i); // distance minimale = distance au bord le plus proche + 1
-                        min *= min;
+                        // min = Math.min(i + 1, sizeX - i); // distance minimale = distance au bord le plus proche + 1
+                        // min *= min;
+                        // TODO: if there is no background pixel on this row, there is no initial min value
+                        // float min;
+                        // min = Math.min(i + 1, sizeX - i); // distance minimale = distance au bord le plus proche + 1
+                        // min *= min;
+                        // initialize then recompute this min as distance to closest background pixel on the same row
+                        min = noResult;
+                        // for (int x = 0; x < sizeX; x++) {
+                        //     if (background[x]) {
+                        //         min = i - x;
+                        //         min *= min;
+                        //         break;
+                        //     }
+                        // }
                         for (int x = i; x < sizeX; x++) {
                             if (background[x]) {
                                 test = i - x;
@@ -259,11 +272,12 @@ public class EdtByte {
                     }
                     if (nonempty) {
                         for (int j = 0; j < h; j++) {
-                            min = Math.min(j + 1, h - j);
-                            min *= min;
-                            delta = j;
+                            // min = Math.min(j + 1, h - j);
+                            // min *= min;
+                            // delta = j;
+                            min = tempS[0] + j * j ;
                             for (int y = 0; y < h; y++) {
-                                test = tempS[y] + delta * delta--;
+                                test = tempS[y] + (y -j ) * (y -j);
                                 if (test < min) {
                                     min = test;
                                 }
@@ -277,7 +291,7 @@ public class EdtByte {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 
     class Step3Thread extends Thread {
 
@@ -341,8 +355,8 @@ public class EdtByte {
                         for (int k = 0; k < d; k++) {
                             //Limit to the non-background to save time,
                             if (((data[k][i + w * j] & 255) > thresh)) {
-                                min = Math.min(k + 1, d - k);// BUG fixed
-                                min *= min * scaleZ;
+                                // min = Math.min(k + 1, d - k);// BUG fixed
+                                // min *= min * scaleZ;
                                 zBegin = zStart;
                                 zEnd = zStop;
                                 if (zBegin > k) {
@@ -351,9 +365,10 @@ public class EdtByte {
                                 if (zEnd < k) {
                                     zEnd = k;
                                 }
-                                delta = (k - zBegin);
+                                min = tempS[zBegin] + (k - zBegin) * (k - zBegin) * scaleZ; // set initial value for min with first z index
+                                // delta = (k - zBegin);
                                 for (int z = zBegin; z <= zEnd; z++) {
-                                    test = tempS[z] + delta * delta-- * scaleZ;
+                                    test = tempS[z] + (k - z) * (k - z) * scaleZ;
                                     if (test < min) {
                                         min = test;
                                     }
@@ -369,5 +384,5 @@ public class EdtByte {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 }

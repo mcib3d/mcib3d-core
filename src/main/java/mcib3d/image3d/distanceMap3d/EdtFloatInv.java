@@ -199,11 +199,20 @@ public class EdtFloatInv {
                     }
                     for (int i = 0; i < w; i++) {
                         min = noResult;
+                        // for (int x = 0; x<w; x++){
+                        //     if (background[x]) {
+                        //         min = i - x;
+                        //         min *= min;
+                        //         break; // take distance to first background pixel as initial value
+                        //     }
+                        // }
                         for (int x = i; x < w; x++) {
                             if (background[x]) {
                                 test = i - x;
                                 test *= test;
-                                min = test;
+				                        if (test < min) {
+                                    min = test;
+				                        }
                                 break;
                             }
                         }
@@ -282,7 +291,7 @@ public class EdtFloatInv {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 
     class Step3Thread extends Thread {
 
@@ -376,5 +385,5 @@ public class EdtFloatInv {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 }

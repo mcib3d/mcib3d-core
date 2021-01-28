@@ -189,7 +189,7 @@ public class EdtShort {
             if (d > n) {
                 n = d;
             }
-            //int noResult = 3*(n+1)*(n+1);
+            float noResult = 3*(n+1)*(n+1);
             boolean[] background = new boolean[n];
             boolean nonempty;
             float test, min;
@@ -201,8 +201,17 @@ public class EdtShort {
                         background[i] = ((dk[i + w * j] & 0xffff) <= thresh);
                     }
                     for (int i = 0; i < w; i++) {
-                        min = Math.min(i + 1, w - i); // distance minimale = distance au bord le plus proche + 1
-                        min *= min;
+                        // min = Math.min(i + 1, w - i); // distance minimale = distance au bord le plus proche + 1
+                        // min *= min;
+                        // initialize then recompute this min as distance to closest background pixel on the same row
+                        min = noResult;
+                        // for (int x = 0; x<w; x++){
+                        //     if (background[x]) {
+                        //         min = i - x;
+                        //         min *= min;
+                        //         break; // take distance to first background pixel as initial value
+                        //     }
+                        // }
                         for (int x = i; x < w; x++) {
                             if (background[x]) {
                                 test = i - x;
@@ -272,11 +281,12 @@ public class EdtShort {
                     }
                     if (nonempty) {
                         for (int j = 0; j < h; j++) {
-                            min = Math.min(j + 1, h - j);
-                            min *= min;
-                            delta = j;
+                            // min = Math.min(j + 1, h - j);
+                            // min *= min;
+                            min = tempS[0] + j *j ; // initial value for min at first pixel in this column
                             for (int y = 0; y < h; y++) {
-                                test = tempS[y] + delta * delta--;
+                                delta = y-j;
+                                test = tempS[y] + delta * delta;
                                 if (test < min) {
                                     min = test;
                                 }
@@ -290,7 +300,7 @@ public class EdtShort {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 
     class Step3Thread extends Thread {
 
@@ -366,10 +376,11 @@ public class EdtShort {
                                 if (zEnd < k) {
                                     zEnd = k;
                                 }
-                                delta = (k - zBegin);
+                                // delta = (k - zBegin);
 
                                 for (int z = zBegin; z <= zEnd; z++) {
-                                    test = tempS[z] + delta * delta-- * scaleZ;
+                                  delta = k - z;
+                                    test = tempS[z] + delta * delta * scaleZ;
                                     if (test < min) {
                                         min = test;
                                     }
@@ -385,5 +396,5 @@ public class EdtShort {
                 }
             }
         }//run
-    }//Step2Thread	
+    }//Step2Thread
 }
