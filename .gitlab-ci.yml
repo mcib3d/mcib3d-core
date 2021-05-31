@@ -1,0 +1,21 @@
+image: maven:latest
+
+stages:
+  - clean
+  - build
+
+variables:
+  MAVEN_CLI_OPTS: "--batch-mode"
+  GITLAB_BASE_URL: "https://gitlab.com"
+  DEP_PROJECT_ID: 8873767
+
+clean:
+    stage: clean
+    script:
+      mvn $MAVEN_CLI_OPTS clean
+
+build:
+  stage: build
+  script:
+    - mvn $MAVEN_CLI_OPTS compile
+
