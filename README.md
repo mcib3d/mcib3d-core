@@ -15,7 +15,7 @@ If you want to include this library as part as your maven project, use this depe
 
 ```
 <dependency>
-		<groupId>com.github.mcib3d</groupId>
+		<groupId>org.framagit.mcib3d</groupId>
 		<artifactId>mcib3d-core</artifactId>
 		<version>3.96.3</version>		
 </dependency>
@@ -38,5 +38,5 @@ and
   Bioinformatics 29(14):1840-1. doi: 10.1093/bioinformatics/btt276.
   
   Documentations are available on the Imagej wiki website : 
-  https://imagej.net/3D_ImageJ_Suite
+  https://imagej.github.io/plugins/3d-imagej-suite/index
 
