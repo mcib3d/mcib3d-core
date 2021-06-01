@@ -24,6 +24,8 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * /**
@@ -1492,6 +1494,28 @@ public class Object3DVoxels extends Object3D {
         }
     }
 
+    public void saveObjectZip(String path) {
+        saveObject(path);
+
+        String zipFileName = path+name+"-3droi.zip";
+        try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFileName));
+             FileInputStream fis = new FileInputStream(path+name+"3droi"))
+        {
+            ZipEntry zipEntry = new ZipEntry(path+name+"3droi");
+            zos.putNextEntry(zipEntry);
+
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len = fis.read(buffer)) > 0) {
+                zos.write(buffer, 0, len);
+            }
+            zos.closeEntry();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * @param path

@@ -29,6 +29,9 @@ import java.util.Arrays;
  */
 
 @Deprecated
+/**
+ * @see ImageLabeller
+ */
 public class Segment3DImage {
 
     float lowThreshold;
