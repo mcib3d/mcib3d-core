@@ -15,7 +15,7 @@
 
     <name>MCIB3D-CORE</name>
     <description>The mcib3d library is the core for most of the mcib3d plugins developed.</description>
-    <url>https://sites.imagej.net/Tboudier/plugins/mcib3d-suite/</url>
+    <url>https://imagej.github.io/plugins/3d-imagej-suite/index</url>
     <inceptionYear>2012</inceptionYear>
 
     <licenses>
@@ -40,20 +40,18 @@
     <contributors>
         <contributor>
             <name>Ollion Jean</name>
-            <email>ollion@mnhn.fr</email>
             <roles>
                 <role>developer</role>
             </roles>
         </contributor>
     </contributors>
-    <!--
-    TODO add a issueManagement field once there is a bug tracker
-    -->
+
     <dependencies>
+        <!-- ImageJ and 3D Viewer -->
         <dependency>
             <groupId>net.imagej</groupId>
             <artifactId>ij</artifactId>
-            <version>1.53c</version>
+            <version>1.53j</version>
         </dependency>
         <dependency>
             <groupId>sc.fiji</groupId>
@@ -66,6 +64,7 @@
             <artifactId>j3dcore</artifactId>
             <version>1.6.0-scijava-2</version>
         </dependency>
+        <!-- Misc. -->
         <dependency>
             <groupId>com.googlecode.combinatoricslib</groupId>
             <artifactId>combinatoricslib</artifactId>

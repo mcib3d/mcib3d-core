@@ -9,7 +9,7 @@ Please follow these instructions to download and compile the source code :
 
 `mvn package`
 
-You then should be able to open the project in Netbeans, Eclipse, or IntelliJ. 
+You then should be able to open the project in your favorite IDE. 
 
 If you want to include this library as part as your maven project, use this dependency : 
 
