@@ -37,6 +37,6 @@ and
   TANGO: a generic tool for high-throughput 3D image analysis for studying nuclear organization.
   Bioinformatics 29(14):1840-1. doi: 10.1093/bioinformatics/btt276.
   
-  Documentations are available on the Imagej wiki website : 
-  https://imagej.github.io/plugins/3d-imagej-suite/index
+  Documentations are available on the wiki  : 
+  https://framagit.org/mcib3d/mcib3d-core/-/wikis/home
 
