@@ -7,24 +7,31 @@ import ij.process.ImageProcessor;
 import mcib3d.image3d.ImageByte;
 
 public class FillHoles2D {
+    int foreground = 255;
+    int background = 0;
 
+    public FillHoles2D() {
+    }
 
-    // Binary fill by Gabriel Landini, G.Landini at bham.ac.uk
-    // 21/May/2008
+    public FillHoles2D(int foreground, int background) {
+        this.foreground = foreground;
+        this.background = background;
+    }
 
-
-    public static void process(ImageByte image, int foreground, int background) {
+    public  void process(ImageByte image) {
         if (image.sizeZ == 1) {
-            fill(image.getImagePlus().getProcessor(), foreground, background);
+            fill(image.getImagePlus().getProcessor());
         } else {
             ImageStack stack = image.getImageStack();
             for (int i = 1; i <= image.sizeZ; i++) {
-                fill(stack.getProcessor(i), foreground, background);
+                fill(stack.getProcessor(i));
             }
         }
     }
 
-    protected static void fill(ImageProcessor ip, int foreground, int background) {
+    // Binary fill by Gabriel Landini, G.Landini at bham.ac.uk
+    // 21/May/2008
+    protected  void fill(ImageProcessor ip) {
         int width = ip.getWidth();
         int height = ip.getHeight();
         FloodFiller ff = new FloodFiller(ip);
