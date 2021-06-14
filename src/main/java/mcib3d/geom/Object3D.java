@@ -551,7 +551,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @return the array of pixel values
      */
     public float[] getArrayValues(ImageHandler ima) {
-        LinkedList<Voxel3D> vox = getVoxels();
+        List<Voxel3D> vox = getVoxels();
         float[] res = new float[vox.size()];
         int i = 0;
         int x, y, z;
@@ -791,7 +791,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param ima the image with signal
      * @return the list of Voxels
      */
-    public LinkedList<Voxel3D> listVoxels(ImageHandler ima) {
+    public List<Voxel3D> listVoxels(ImageHandler ima) {
         return listVoxels(ima, Double.NEGATIVE_INFINITY);
     }
 
@@ -818,7 +818,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param thresh the threshold
      * @return the list of Voxels with values > threshold
      */
-    public abstract LinkedList<Voxel3D> listVoxels(ImageHandler ima, double thresh);
+    public abstract List<Voxel3D> listVoxels(ImageHandler ima, double thresh);
 
     /**
      * List Voxels in the image with values > threshold0 and < threshold1
@@ -828,7 +828,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param thres1  the max threshold
      * @return the list of Voxels with values > threshold
      */
-    public abstract LinkedList<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thres1);
+    public abstract List<Voxel3D> listVoxels(ImageHandler ima, double thresh0, double thres1);
 
     /**
      * List Voxels in the image with with distances in specific range from a reference point
@@ -839,9 +839,9 @@ public abstract class Object3D implements Comparable<Object3D> {
      * @param contourOnly lsit only voxels from the contour of the object
      * @return
      */
-    public LinkedList<Voxel3D> listVoxelsByDistance(Point3D P0, double dist0, double dist1, boolean contourOnly) {
-        LinkedList<Voxel3D> res = new LinkedList<Voxel3D>();
-        LinkedList<Voxel3D> list;
+    public List<Voxel3D> listVoxelsByDistance(Point3D P0, double dist0, double dist1, boolean contourOnly) {
+        List<Voxel3D> res = new LinkedList<Voxel3D>();
+        List<Voxel3D> list;
         if (contourOnly) {
             if (contours == null) {
                 computeContours();
@@ -3221,7 +3221,7 @@ public abstract class Object3D implements Comparable<Object3D> {
      *
      * @return the list of voxels
      */
-    public abstract LinkedList<Voxel3D> getVoxels();
+    public abstract List<Voxel3D> getVoxels();
 
     /**
      * @param path

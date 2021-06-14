@@ -23,7 +23,7 @@ public class Object3DPoint extends Object3DVoxels {
     private void init(int label, double x, double y, double z) {
         this.voxels = new LinkedList<Voxel3D>();
         voxels.add(new Voxel3D(x, y, z, 0));
-        this.contours=voxels;
+        this.contours.addAll(voxels);
         this.value = label;
         resXY = 1.0;
         resZ = 1.0;

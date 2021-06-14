@@ -11,6 +11,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import mcib3d.image3d.ImageHandler;
 
@@ -237,7 +238,7 @@ public class Object3DFuzzy extends Object3DVoxels {
     }
 
     @Override
-    public LinkedList listVoxels(ImageHandler ima) {
+    public List listVoxels(ImageHandler ima) {
         LinkedList vector = new LinkedList();
         Voxel3D pixel;
 
@@ -344,7 +345,7 @@ public class Object3DFuzzy extends Object3DVoxels {
     }
 
     @Override
-    public LinkedList<Voxel3D> getVoxels() {
+    public List<Voxel3D> getVoxels() {
         return voxels;
     }
 

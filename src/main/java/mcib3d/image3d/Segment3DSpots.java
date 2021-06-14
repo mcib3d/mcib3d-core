@@ -21,6 +21,7 @@ import mcib3d.utils.ThreadUtil;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Copyright (C) Thomas Boudier
@@ -106,7 +107,7 @@ public class Segment3DSpots {
             //ImageStack localMax = FastFilters3D.filterFloatImageStack(edt3d.getImageStack(), FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
             ImageFloat maxlocal3d = FastFilters3D.filterFloatImage(edt3dseeds, FastFilters3D.MAXLOCAL, rad, rad, rad, cpus, false);
             //maxlocal3d.show("max local");
-            LinkedList<Voxel3D> locals = obj.listVoxels(maxlocal3d, 0);
+            List<Voxel3D> locals = obj.listVoxels(maxlocal3d, 0);
 
             int nb = locals.size();
             // IJ.log("nb=" + nb);
@@ -304,7 +305,7 @@ public class Segment3DSpots {
          *
          */
         // with ArrayList
-        LinkedList<Voxel3D> list = f.getVoxels();
+        List<Voxel3D> list = f.getVoxels();
         ArrayList<Voxel3D> maxlo = new ArrayList<Voxel3D>();
 
         Iterator it = list.iterator();

@@ -931,7 +931,7 @@ public class ObjectCreator3D {
         // work in pixel coordinate
         //double ratio = 1.0 / (double) (endz - startz);
         for (int k = startz; k <= endz; k++) {
-            IJ.showStatus("Cylinder " + k + "/" + endz);
+            IJ.showStatus("Cone " + k + "/" + endz);
 
             ddz = (k - centerz);
             for (int j = starty; j <= endy; j++) {
@@ -952,7 +952,7 @@ public class ObjectCreator3D {
                     dy = V2.get(1, 0);
                     dz = V2.get(2, 0);
 
-                    // cylinder
+                    // cone
                     if (Math.abs(dz) < height / 2) {
                         double rx = rx0 + (rx1 - rx0) * (dz + height / 2) / height;
                         double rx2 = rx * rx;

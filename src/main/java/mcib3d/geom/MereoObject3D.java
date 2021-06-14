@@ -6,6 +6,7 @@ package mcib3d.geom;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * *
@@ -525,12 +526,13 @@ public class MereoObject3D {
         if (ba || bb) {
             val2 = 3;
         }
-        LinkedList<Voxel3D> list = inter.getVoxels();
+        List<Voxel3D> list = inter.getVoxels();
         for (Voxel3D vox : list) {
             if ((vox.getValue() == val1) || (vox.getValue() == val2)) {
                 c++;
             }
         }
+
         return c;
     }
 }

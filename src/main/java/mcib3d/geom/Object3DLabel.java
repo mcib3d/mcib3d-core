@@ -18,9 +18,9 @@ import mcib3d.image3d.ImageInt;
 import mcib3d.utils.ArrayUtil;
 import mcib3d.utils.KDTreeC;
 
-import java.awt.*;
-import java.util.ArrayList;
+import java.awt.Color;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * *
@@ -908,9 +908,9 @@ public class Object3DLabel extends Object3D {
     }
 
     @Override
-    public LinkedList<Voxel3D> getVoxels() {
+    public List<Voxel3D> getVoxels() {
         if (voxels == null) {
-            voxels = listVoxels(null);
+            voxels = new LinkedList<>(listVoxels(null));
         }
 
         return voxels;
