@@ -2,17 +2,19 @@ package mcib3d.geom;
 
 public class IntCoord3D {
     public int x, y, z;
+
     public IntCoord3D() {
-        this.x=0;
-        this.y=0;
-        this.z=0;
+        this.x = 0;
+        this.y = 0;
+        this.z = 0;
     }
+
     public IntCoord3D(int x, int y, int z) {
-        this.x=x;
-        this.y=y;
-        this.z=z;
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
-    
+
 //    public boolean increment(int sizeX, int sizeY, int sizeZ)  {
 //        x++;
 //        if (x==sizeX) {

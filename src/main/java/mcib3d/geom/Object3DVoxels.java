@@ -61,6 +61,7 @@ public class Object3DVoxels extends Object3D {
     // debug
     private boolean showStatus = false;
     private double correctedSurfaceArea = -1;
+
     /**
      *
      */
@@ -954,7 +955,7 @@ public class Object3DVoxels extends Object3D {
         for (Voxel3D vox : voxels) {
             float pix = img.getPixel(vox);
             if ((pix >= t0) && (pix <= t1)) {
-               return true;
+                return true;
             }
         }
 
@@ -1453,19 +1454,6 @@ public class Object3DVoxels extends Object3D {
         return voxels.get(ra.nextInt(getVolumePixels()));
     }
 
-    /**
-     * @param ra
-     * @return
-     * @link Object3DVoxels.getRandomVoxel()
-     */
-    @Deprecated
-    public Voxel3D getRandomvoxel(Random ra) {
-        if (isEmpty()) {
-            return null;
-        }
-        return voxels.get(ra.nextInt(getVolumePixels()));
-    }
-
     // From Bribiesca 2008 Pattern Recognition
     // An easy measure of compactness for 2D and 3D shapes
     public double getDiscreteCompactness() {
@@ -1524,11 +1512,10 @@ public class Object3DVoxels extends Object3D {
     public void saveObjectZip(String path) {
         saveObject(path);
 
-        String zipFileName = path+name+"-3droi.zip";
+        String zipFileName = path + name + "-3droi.zip";
         try (ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFileName));
-             FileInputStream fis = new FileInputStream(path+name+"3droi"))
-        {
-            ZipEntry zipEntry = new ZipEntry(path+name+"3droi");
+             FileInputStream fis = new FileInputStream(path + name + "3droi")) {
+            ZipEntry zipEntry = new ZipEntry(path + name + "3droi");
             zos.putNextEntry(zipEntry);
 
             byte[] buffer = new byte[1024];
@@ -1727,8 +1714,8 @@ public class Object3DVoxels extends Object3D {
     public List<Voxel3D> listVoxels(ImageHandler ima, double thresholdLow, double thresholdHigh) {
         return voxels.stream()
                 .filter(voxel -> ima.contains(voxel.getX(), voxel.getY(), voxel.getZ()))
-                .filter(voxel -> ima.getPixel(voxel)>thresholdLow)
-                .filter(voxel -> ima.getPixel(voxel)<thresholdHigh)
+                .filter(voxel -> ima.getPixel(voxel) > thresholdLow)
+                .filter(voxel -> ima.getPixel(voxel) < thresholdHigh)
                 .collect(Collectors.toList());
 
 
@@ -1754,15 +1741,22 @@ public class Object3DVoxels extends Object3D {
     }
 
     // list voxels when object translated to new position for center
-    public ArrayUtil listVoxels(ImageHandler ima, int newCenterX, int newCenterY, int newCenterZ) {
-        ArrayUtil list = new ArrayUtil(this.getVolumePixels());
+    public List<Float> listVoxels(ImageHandler ima, int newCenterX, int newCenterY, int newCenterZ) {
+        double tx = newCenterX - bx;
+        double ty = newCenterY - by;
+        double tz = newCenterZ - bz;
+
+        return voxels.stream()
+                .filter(voxel -> ima.contains((int) Math.round(tx + voxel.getX()), (int) Math.round(ty + voxel.getY()), (int) Math.round(tz + voxel.getZ())))
+                .map(voxel -> ima.getPixel((int) Math.round(tx + voxel.getX()), (int) Math.round(ty + voxel.getY()), (int) Math.round(tz + voxel.getZ())))
+                .collect(Collectors.toList());
+
+        /*ArrayUtil list = new ArrayUtil(this.getVolumePixels());
         Voxel3D voxel;
 
         Iterator<Voxel3D> it = voxels.iterator();
         float pixvalue;
-        double tx = newCenterX - bx;
-        double ty = newCenterY - by;
-        double tz = newCenterZ - bz;
+
         int idx = 0;
         while (it.hasNext()) {
             voxel = it.next();
@@ -1777,7 +1771,7 @@ public class Object3DVoxels extends Object3D {
 
         }
         list.setSize(idx);
-        return list;
+        return list;*/
     }
 
     @Override
@@ -1787,7 +1781,11 @@ public class Object3DVoxels extends Object3D {
 
     @Override
     public void draw(ImageHandler mask, float col) {
-        Voxel3D vox;
+        voxels.stream()
+                .filter(vox -> mask.contains(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ()))
+                .forEach(vox -> mask.setPixel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), col));
+
+       /* Voxel3D vox;
         for (Voxel3D voxel : voxels) {
             vox = voxel;
             int x = vox.getRoundX();
@@ -1796,13 +1794,17 @@ public class Object3DVoxels extends Object3D {
             if (mask.contains(x, y, z)) {
                 mask.setPixel(x, y, z, col);
             }
-        }
+        }*/
     }
 
 
     @Override
     public void draw(ImageHandler mask, int col, int tx, int ty, int tz) {
-        Voxel3D vox;
+        voxels.stream()
+                .filter(vox -> mask.contains(vox.getRoundX() + tx, vox.getRoundY() + ty, vox.getRoundZ() + tz))
+                .forEach(vox -> mask.setPixel(vox.getRoundX() + tx, vox.getRoundY() + ty, vox.getRoundZ() + tz, col));
+
+        /*Voxel3D vox;
         for (Voxel3D voxel : voxels) {
             vox = voxel;
             int x = vox.getRoundX() + tx;
@@ -1811,7 +1813,7 @@ public class Object3DVoxels extends Object3D {
             if (mask.contains(x, y, z)) {
                 mask.setPixel(x, y, z, col);
             }
-        }
+        }*/
     }
 
     @Override
@@ -1874,6 +1876,7 @@ public class Object3DVoxels extends Object3D {
                 res[i++] = im.getPixel(v);
             }
         }
+
         return res;
     }
 
@@ -1888,7 +1891,7 @@ public class Object3DVoxels extends Object3D {
 //        ImageInt dil = BinaryMorpho.binaryDilate(seg, dilateSize, dilateSizeZ, true, type);
 //        //dil.show("Dilate");
         ImageHandler label = this.getLabelImage();
-        LinkedList<Voxel3D> vox = new LinkedList<Voxel3D>();
+        LinkedList<Voxel3D> vox = new LinkedList<>();
         int xx, yy, zz;
         for (int z = 0; z < seg.sizeZ; z++) {
             for (int y = 0; y < seg.sizeY; y++) {

@@ -3,6 +3,9 @@ package mcib3d.geom;
 //import javax.vecmath.Point3f;
 import org.scijava.vecmath.Point3f;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 /**
  * Copyright (C) Thomas Boudier
  *
@@ -41,12 +44,11 @@ public class Voxel3D extends Point3D implements Comparable<Voxel3D> {
     }
 
     /**
-     * constructeurs
      *
-     * @param x Description of the Parameter
-     * @param y Description of the Parameter
-     * @param z Description of the Parameter
-     * @param val
+     * @param x coordinate X
+     * @param y coordinate Y
+     * @param z coordinate Z
+     * @param val Voxel value
      */
     public Voxel3D(int x, int y, int z, float val) {
         super(x, y, z);
@@ -56,10 +58,10 @@ public class Voxel3D extends Point3D implements Comparable<Voxel3D> {
     /**
      * Constructor for the Voxel3D object
      *
-     * @param x Description of the Parameter
-     * @param y Description of the Parameter
-     * @param z Description of the Parameter
-     * @param val
+     * @param x coordinate X
+     * @param y coordinate Y
+     * @param z coordinate Z
+     * @param val Voxel value
      */
     public Voxel3D(int x, int y, int z, double val) {
         super(x, y, z);
@@ -68,10 +70,10 @@ public class Voxel3D extends Point3D implements Comparable<Voxel3D> {
 
     /**
      *
-     * @param x
-     * @param y
-     * @param z
-     * @param val
+     * @param x coordinate X
+     * @param y coordinate Y
+     * @param z coordinate Z
+     * @param val Voxel value
      */
     public Voxel3D(double x, double y, double z, double val) {
 
@@ -152,7 +154,8 @@ public class Voxel3D extends Point3D implements Comparable<Voxel3D> {
 
     @Override
     public String toString() {
-        return ("(" + getX() + " , " + getY() + " , " + getZ() + ")");
+        NumberFormat nf = NumberFormat.getNumberInstance(Locale.ENGLISH);
+        return ("(" + nf.format(getX()) + " ; " + nf.format(getY()) + " ; " + nf.format(getZ()) + ")");
     }
 
     /**

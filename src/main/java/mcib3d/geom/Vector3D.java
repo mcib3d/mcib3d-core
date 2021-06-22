@@ -1,6 +1,8 @@
 package mcib3d.geom;
 
 import java.text.NumberFormat;
+import java.util.Locale;
+
 import org.scijava.vecmath.Point3f;
 //import org.scijava.vecmath.Vector3f;
 //import javax.vecmath.Point3f;
@@ -570,10 +572,10 @@ public class Vector3D extends Point3D {
      */
     @Override
     public String toString() {
-        NumberFormat nf = NumberFormat.getInstance();
+        NumberFormat nf = NumberFormat.getInstance(Locale.ENGLISH);
         nf.setMaximumFractionDigits(3);
 
-        return "(" + nf.format(getX()) + ", " + nf.format(getY()) + ", " + nf.format(getZ()) + ")";
+        return "(" + nf.format(getX()) + "; " + nf.format(getY()) + "; " + nf.format(getZ()) + ")";
     }
 
     /**
