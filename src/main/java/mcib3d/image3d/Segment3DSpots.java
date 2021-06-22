@@ -1017,16 +1017,13 @@ public class Segment3DSpots {
             }
         }
         switch (methodSeg) {
-            case SEG_CLASSICAL:
-                obj = this.segmentSpotClassical(x, y, z, localThreshold, o);
-                break;
             case SEG_MAX:
                 obj = this.segmentSpotMax(x, y, z, localThreshold, o);
                 break;
             case SEG_BLOCK:
                 obj = this.segmentSpotBlock(x, y, z, localThreshold, o);
                 break;
-            default:
+            default: // CLASSICAL
                 obj = this.segmentSpotClassical(x, y, z, localThreshold, o);
                 break;
         }
