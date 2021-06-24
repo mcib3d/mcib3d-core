@@ -3,7 +3,7 @@ package mcib3d.geom2.measurements;
 import mcib3d.Jama.EigenvalueDecomposition;
 import mcib3d.Jama.Matrix;
 import mcib3d.geom.Vector3D;
-import mcib3d.geom2.Object3D;
+import mcib3d.geom2.Object3DInt;
 
 
 public class MeasureEllipsoid extends MeasureAbstract {
@@ -16,17 +16,17 @@ public class MeasureEllipsoid extends MeasureAbstract {
     private double radius2, radius3;
     private Vector3D Axis1, Axis2, Axis3;
 
-    public MeasureEllipsoid(Object3D object3D) {
-        super(object3D);
+    public MeasureEllipsoid(Object3DInt object3DInt) {
+        super(object3DInt);
     }
 
     @Override
-    public String[] getNames() {
+    protected String[] getNames() {
         return new String[]{ELL_VOL_UNIT, ELL_VOl_RATIO, ELL_MAJOR_RADIUS_UNIT, ELL_ELONGATION, ELL_FLATNESS};
     }
 
     public Double[] getRadii(){
-        return new Double[]{getValue(ELL_MAJOR_RADIUS_UNIT), radius2, radius3};
+        return new Double[]{getValueMeasurement(ELL_MAJOR_RADIUS_UNIT), radius2, radius3};
     }
 
     public Vector3D getAxis1() {
@@ -47,7 +47,7 @@ public class MeasureEllipsoid extends MeasureAbstract {
     @Override
     protected void computeAll() {
         Matrix mat = new Matrix(3, 3);
-        MeasureCentroid centroid = new MeasureCentroid(object3D);
+        MeasureCentroid centroid = new MeasureCentroid(object3DInt);
         Double[] sums = computation3D.computeMoments2(centroid.getCentroidAsVoxel(), true);
 
         mat.set(0, 0, sums[0]); // xx
@@ -67,10 +67,10 @@ public class MeasureEllipsoid extends MeasureAbstract {
         double R2 = Math.sqrt(5.0 * eigenValues[1]);
         double R3 = Math.sqrt(5.0 * eigenValues[0]);
         double volEll = (4.0 / 3.0) * Math.PI * R1 * R2 * R3;
-        MeasureVolume volume = new MeasureVolume(object3D);
+        MeasureVolume volume = new MeasureVolume(object3DInt);
 
         keysValues.put(ELL_VOL_UNIT, volEll);
-        keysValues.put(ELL_VOl_RATIO, volume.getVolumeUnit() / volEll);
+        keysValues.put(ELL_VOl_RATIO, volume.getValueMeasurement(MeasureVolume.VOLUME_UNIT) / volEll);
         keysValues.put(ELL_MAJOR_RADIUS_UNIT, R1);
         keysValues.put(ELL_ELONGATION, R1 / R2);
         keysValues.put(ELL_FLATNESS, R2 / R3);

@@ -1,7 +1,7 @@
 package mcib3d.geom2.measurements;
 
 import mcib3d.geom.Voxel3D;
-import mcib3d.geom2.Object3D;
+import mcib3d.geom2.Object3DInt;
 import mcib3d.geom2.VoxelInt;
 import mcib3d.image3d.ImageHandler;
 
@@ -17,12 +17,12 @@ public class MeasureDistancesCenter extends MeasureAbstract {
     public final static String DIST_CENTER_AVG_UNIT = "DistCenterAvgUnit";
     public final static String DIST_CENTER_SD_UNIT = "DistCenterSDUnit";
 
-    public MeasureDistancesCenter(Object3D object3D) {
-        super(object3D);
+    public MeasureDistancesCenter(Object3DInt object3DInt) {
+        super(object3DInt);
     }
 
     @Override
-    public String[] getNames() {
+    protected String[] getNames() {
         return new String[]{DIST_CENTER_MIN_PIX, DIST_CENTER_MAX_PIX, DIST_CENTER_AVG_PIX, DIST_CENTER_SD_PIX,
                 DIST_CENTER_MIN_UNIT, DIST_CENTER_MAX_UNIT, DIST_CENTER_AVG_UNIT, DIST_CENTER_SD_UNIT};
     }
@@ -32,7 +32,7 @@ public class MeasureDistancesCenter extends MeasureAbstract {
         // check if centre is inside object
         ImageHandler labelImage = computation3D.createLabelImage();
 
-        MeasureCentroid centroid = new MeasureCentroid(object3D);
+        MeasureCentroid centroid = new MeasureCentroid(object3DInt);
         VoxelInt centreInt = centroid.getCentroidRoundedAsVoxelInt();
         if (labelImage.getPixel(centreInt.x, centreInt.y, centreInt.z) == 0) {
             // pix
@@ -57,8 +57,8 @@ public class MeasureDistancesCenter extends MeasureAbstract {
         // min, max, sum, sum²
         final double[] distancesPix = {Double.POSITIVE_INFINITY, 0, 0, 0};
         final double[] distancesUnit = {Double.POSITIVE_INFINITY, 0, 0, 0};
-        double xy = object3D.getResXY();
-        double xz = object3D.getResZ();
+        double xy = object3DInt.getResXY();
+        double xz = object3DInt.getResZ();
         contour.forEach(V -> {
             // pix
             double dist2Pix = V.distanceSquare(centre);

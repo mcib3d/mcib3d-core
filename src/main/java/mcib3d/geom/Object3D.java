@@ -1837,14 +1837,13 @@ public abstract class Object3D implements Comparable<Object3D> {
             double ccx = center.getX();
             double ccy = center.getY();
             double ccz = center.getZ();
-            Voxel3D p2;
-            LinkedList cont = this.getContours();
+
+            LinkedList<Voxel3D> cont = this.getContours();
 
             int s = getContours().size();
             //Voxel3D tmpmin = null;
 
-            for (int j = 0; j < s; j++) {
-                p2 = (Voxel3D) cont.get(j);
+            for (Voxel3D p2:cont) {
                 // pixel
                 dist2Pix = ((ccx - p2.getX()) * (ccx - p2.getX()))+ ((ccy - p2.getY()) * (ccy - p2.getY())) +((ccz - p2.getZ()) * (ccz - p2.getZ()));
                 distsumPix += Math.sqrt(dist2Pix);
@@ -1872,11 +1871,11 @@ public abstract class Object3D implements Comparable<Object3D> {
             distCenterMinUnit = Math.sqrt(distmin);
             distCenterMeanUnit = distsum / (double) s;
             distCenterSigmaUnit = Math.sqrt((distsum2 - ((distsum * distsum) / (double) s)) / ((double) s - 1));
-            // unit
-            distCenterMaxUnit = Math.sqrt(distmax);
-            distCenterMinUnit = Math.sqrt(distmin);
-            distCenterMeanUnit = distsum / (double) s;
-            distCenterSigmaUnit = Math.sqrt((distsum2 - ((distsum * distsum) / (double) s)) / ((double) s - 1));
+            // pixel
+            distCenterMaxPixel = Math.sqrt(distmaxPix);
+            distCenterMinPixel = Math.sqrt(distminPix);
+            distCenterMeanPixel = distsumPix / (double) s;
+            distCenterSigmaPixel = Math.sqrt((distsum2Pix - ((distsumPix * distsumPix) / (double) s)) / ((double) s - 1));
         }
     }
 

@@ -1,22 +1,22 @@
 package mcib3d.geom2.measurements;
 
-import mcib3d.geom2.Object3D;
+import mcib3d.geom2.Object3DInt;
 
 public class MeasureVolume extends MeasureAbstract {
-    public final String VOLUME_PIX = "VolumePix";
-    public final String VOLUME_UNIT = "VolumeUnit";
+    public final static String VOLUME_PIX = "VolumePix";
+    public final static String VOLUME_UNIT = "VolumeUnit";
 
-    public MeasureVolume(Object3D object3D) {
-        super(object3D);
+    public MeasureVolume(Object3DInt object3DInt) {
+        super(object3DInt);
     }
 
     @Override
-    public String[] getNames() {
+    protected String[] getNames() {
         return new String[]{VOLUME_PIX, VOLUME_UNIT};
     }
 
     @Override
-    public void computeAll() {
+    protected void computeAll() {
         computeGeometryVolume();
     }
 
@@ -34,7 +34,7 @@ public class MeasureVolume extends MeasureAbstract {
 
     private void computeGeometryVolume() {
         // volumes
-        keysValues.put(VOLUME_PIX, object3D.size());
-        keysValues.put(VOLUME_UNIT, object3D.size() * object3D.getResXY() * object3D.getResXY() * object3D.getResZ());
+        keysValues.put(VOLUME_PIX, object3DInt.size());
+        keysValues.put(VOLUME_UNIT, object3DInt.size() * object3DInt.getResXY() * object3DInt.getResXY() * object3DInt.getResZ());
     }
 }

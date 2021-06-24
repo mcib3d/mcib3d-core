@@ -2,7 +2,7 @@ package mcib3d.geom2.measurements;
 
 import ij.IJ;
 import mcib3d.geom.Voxel3D;
-import mcib3d.geom2.Object3D;
+import mcib3d.geom2.Object3DInt;
 import mcib3d.geom2.VoxelInt;
 
 import java.util.List;
@@ -13,12 +13,12 @@ public class MeasureFeret extends MeasureAbstract {
     private VoxelInt feret1 = null, feret2 = null;
     private double feret = Double.NaN;
 
-    public MeasureFeret(Object3D object3D) {
-        super(object3D);
+    public MeasureFeret(Object3DInt object3DInt) {
+        super(object3DInt);
     }
 
     @Override
-    public String[] getNames() {
+    protected String[] getNames() {
         return new String[]{FERET_UNIT};
     }
 
@@ -30,19 +30,19 @@ public class MeasureFeret extends MeasureAbstract {
 
     public Voxel3D getFeret1() {
         if (feret1 == null) computeFeret();
-        return new Voxel3D(feret1.x, feret1.y, feret1.z, object3D.getValue());
+        return new Voxel3D(feret1.x, feret1.y, feret1.z, object3DInt.getValue());
     }
 
     public Voxel3D getFeret2() {
         if (feret2 == null) computeFeret();
-        return new Voxel3D(feret2.x, feret2.y, feret2.z, object3D.getValue());
+        return new Voxel3D(feret2.x, feret2.y, feret2.z, object3DInt.getValue());
     }
 
     private void computeFeret() {
         double distmax = 0;
         double dist;
-        double rx = object3D.getResXY();
-        double rz = object3D.getResZ();
+        double rx = object3DInt.getResXY();
+        double rz = object3DInt.getResZ();
         VoxelInt p1;
         VoxelInt p2;
         List<VoxelInt> cont = computation3D.getContour();

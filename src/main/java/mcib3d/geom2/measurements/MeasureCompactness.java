@@ -1,7 +1,7 @@
 package mcib3d.geom2.measurements;
 
 
-import mcib3d.geom2.Object3D;
+import mcib3d.geom2.Object3DInt;
 
 public class MeasureCompactness extends MeasureAbstract {
     public final static String COMP_UNIT = "CompactnessPix";
@@ -13,19 +13,19 @@ public class MeasureCompactness extends MeasureAbstract {
     public final static String SPHER_CORRECTED = "SphericityCorrPix";
 
 
-    public MeasureCompactness(Object3D object3D) {
-        super(object3D);
+    public MeasureCompactness(Object3DInt object3DInt) {
+        super(object3DInt);
     }
 
     @Override
-    public String[] getNames() {
+    protected String[] getNames() {
         return new String[]{COMP_UNIT, COMP_PIX, COMP_CORRECTED, COMP_DISCRETE, SPHER_PIX, SPHER_UNIT, SPHER_CORRECTED};
     }
 
     @Override
-    public void computeAll() {
-        MeasureVolume volume = new MeasureVolume(object3D);
-        MeasureSurface surface = new MeasureSurface(object3D);
+    protected void computeAll() {
+        MeasureVolume volume = new MeasureVolume(object3DInt);
+        MeasureSurface surface = new MeasureSurface(object3DInt);
 
         double s3 = Math.pow(surface.getSurfaceContactPix(), 3);
         double v2 = Math.pow(volume.getVolumePix(), 2);

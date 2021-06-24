@@ -1049,29 +1049,29 @@ public class Objects3DPopulation {
     }
 
 
-    public ArrayList<double[]> getMeasuresGeometrical() {
+    public List<Double[]> getMeasuresGeometrical() {
         // geometrical measure volume (pix and unit) and surface (pix and unit)
-        ArrayList<double[]> al = new ArrayList<double[]>();
+        ArrayList<Double[]> al = new ArrayList<>();
         for (Object3D ob : objects) {
-            double[] mes = {ob.getValue(), ob.getVolumePixels(), ob.getVolumeUnit(), ob.getAreaPixels(), ob.getAreaUnit()};
+            Double[] mes = {(double) ob.getValue(), (double) ob.getVolumePixels(), ob.getVolumeUnit(), ob.getAreaPixels(), ob.getAreaUnit()};
             al.add(mes);
         }
 
         return al;
     }
 
-    public ArrayList<double[]> getMeasuresStats(ImageHandler raw) {
+    public List<Double[]> getMeasuresStats(ImageHandler raw) {
         // geometrical measure volume (pix and unit) and surface (pix and unit)
-        ArrayList<double[]> al = new ArrayList<double[]>();
+        ArrayList<Double[]> al = new ArrayList<>();
         for (Object3D ob : objects) {
-            double[] mes = {ob.getValue(), ob.getPixMeanValue(raw), ob.getPixStdDevValue(raw), ob.getPixMinValue(raw), ob.getPixMaxValue(raw), ob.getIntegratedDensity(raw)};
+            Double[] mes = {(double) ob.getValue(), ob.getPixMeanValue(raw), ob.getPixStdDevValue(raw), ob.getPixMinValue(raw), ob.getPixMaxValue(raw), ob.getIntegratedDensity(raw)};
             al.add(mes);
         }
 
         return al;
     }
 
-    public ArrayList<double[]> getMeasuresStats(ImageStack raw) {
+    public List<Double[]> getMeasuresStats(ImageStack raw) {
         return getMeasuresStats(ImageHandler.wrap(raw));
     }
 
@@ -1717,21 +1717,21 @@ public class Objects3DPopulation {
 
     }
 
-    public ArrayList<double[]> getMeasureCentroid() {
+    public List<Double[]> getMeasureCentroid() {
         // geometrical measure volume (pix and unit) and surface (pix and unit)
-        ArrayList<double[]> al = new ArrayList<double[]>();
+        ArrayList<Double[]> al = new ArrayList<>();
         for (Object3D ob : objects) {
-            double[] mes = {ob.getValue(), ob.getCenterX(), ob.getCenterY(), ob.getCenterZ()};
+            Double[] mes = new Double[]{(double) ob.getValue(), ob.getCenterX(), ob.getCenterY(), ob.getCenterZ()};
             al.add(mes);
         }
 
         return al;
     }
 
-    public ArrayList<double[]> getMeasuresShape() {
-        ArrayList<double[]> al = new ArrayList<double[]>();
+    public List<Double[]> getMeasuresShape() {
+        List<Double[]> al = new ArrayList<>();
         for (Object3D ob : objects) {
-            double[] mes = {ob.getValue(), ob.getCompactness(true), ob.getSphericity(true), ob.getMainElongation(), ob.getMedianElongation(), ob.getRatioEllipsoid()};
+            Double[] mes = {(double) ob.getValue(), ob.getCompactness(true), ob.getSphericity(true), ob.getMainElongation(), ob.getMedianElongation(), ob.getRatioEllipsoid()};
             al.add(mes);
         }
 
@@ -1739,15 +1739,15 @@ public class Objects3DPopulation {
     }
 
     @Deprecated
-    public ArrayList<double[]> getMeasuresMesh() {
+    public List<Double[]> getMeasuresMesh() {
         // geometrical measure volume (pix and unit) and surface (pix and unit)
-        ArrayList<double[]> al = new ArrayList<double[]>();
+        ArrayList<Double[]> al = new ArrayList<>();
         for (Object3D ob : objects) {
             Object3DSurface surf = new Object3DSurface(ob.computeMeshSurface(true), ob.getValue());
             Object3D_IJUtils.setCalibration(surf, calibration);
             surf.setSmoothingFactor(0.1f);
 
-            double[] mes = {surf.getValue(), surf.getSurfaceMesh(), surf.getSmoothSurfaceArea()};
+            Double[] mes = {(double) surf.getValue(), surf.getSurfaceMesh(), surf.getSmoothSurfaceArea()};
             al.add(mes);
         }
 

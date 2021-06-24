@@ -1,6 +1,6 @@
 package mcib3d.geom2.measurements;
 
-import mcib3d.geom2.Object3D;
+import mcib3d.geom2.Object3DInt;
 
 
 public class MeasureMoments extends MeasureAbstract {
@@ -10,12 +10,12 @@ public class MeasureMoments extends MeasureAbstract {
     public static final String MOMENT_4 = "Moment4";
     public static final String MOMENT_5 = "Moment5";
 
-    public MeasureMoments(Object3D object3D) {
-        super(object3D);
+    public MeasureMoments(Object3DInt object3DInt) {
+        super(object3DInt);
     }
 
     @Override
-    public String[] getNames() {
+    protected String[] getNames() {
         return new String[]{MOMENT_1, MOMENT_2, MOMENT_3, MOMENT_4, MOMENT_5};
     }
 
@@ -42,12 +42,12 @@ public class MeasureMoments extends MeasureAbstract {
      *
      * @return 3D moments (5)
      */
-    public Double[] getMoments3D() {
-        MeasureCentroid centroid = new MeasureCentroid(object3D);
+    private Double[] getMoments3D() {
+        MeasureCentroid centroid = new MeasureCentroid(object3DInt);
         Double[] moments = computation3D.computeMoments2(centroid.getCentroidAsVoxel(), false);
 
         // normalize
-        MeasureVolume volume = new MeasureVolume(object3D);
+        MeasureVolume volume = new MeasureVolume(object3DInt);
         double v = volume.getVolumeUnit();
         double v53 = Math.pow(v, 5.0 / 3.0); // keep in integer ?
         double s200 = moments[0] / v53;

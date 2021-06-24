@@ -1,28 +1,28 @@
 package mcib3d.geom2.measurements;
 
-import mcib3d.geom2.Object3D;
+import mcib3d.geom2.Object3DInt;
 import mcib3d.geom2.VoxelInt;
 import mcib3d.image3d.ImageHandler;
 
 import java.util.List;
 
 public class MeasureSurface extends MeasureAbstract {
-    public final String SURFACE_PIX = "SurfaceContPix";
-    public final String SURFACE_UNIT = "SurfaceContUnit";
-    public final String SURFACE_CORRECTED = "SurfaceCorrPix";
-    public final String SURFACE_NB_VOXELS = "SurfaceNBbPix";
+    public final static String SURFACE_PIX = "SurfaceContPix";
+    public final static String SURFACE_UNIT = "SurfaceContUnit";
+    public final static String SURFACE_CORRECTED = "SurfaceCorrPix";
+    public final static String SURFACE_NB_VOXELS = "SurfaceNBbPix";
 
-    public MeasureSurface(Object3D object3D) {
-        super(object3D);
+    public MeasureSurface(Object3DInt object3DInt) {
+        super(object3DInt);
     }
 
     @Override
-    public String[] getNames() {
+    protected String[] getNames() {
         return new String[]{SURFACE_PIX, SURFACE_UNIT, SURFACE_CORRECTED, SURFACE_NB_VOXELS};
     }
 
     @Override
-    public void computeAll() {
+    protected void computeAll() {
         computeGeometrySurface();
     }
 
@@ -62,7 +62,7 @@ public class MeasureSurface extends MeasureAbstract {
         keysValues.put(SURFACE_NB_VOXELS, contours.getSurfaceNbVoxelsContour());
     }
 
-    class ComputeContours {
+    private  class ComputeContours {
         private double surfaceNbVoxelsContour = Double.NaN;
         private double surfaceCorrectedVoxels = Double.NaN;
         private double surfaceContactUnit = Double.NaN;
@@ -82,8 +82,8 @@ public class MeasureSurface extends MeasureAbstract {
             sy = segImage.sizeY;
             sz = segImage.sizeZ;
 
-            XZ = object3D.getResXY() * object3D.getResZ();
-            XX = object3D.getResXY() * object3D.getResXY();
+            XZ = object3DInt.getResXY() * object3DInt.getResZ();
+            XX = object3DInt.getResXY() * object3DInt.getResXY();
         }
 
 

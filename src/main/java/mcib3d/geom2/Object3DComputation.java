@@ -11,22 +11,22 @@ import java.util.stream.Collectors;
 
 
 public class Object3DComputation {
-    private Object3D object3D;
+    private Object3DInt object3DInt;
 
-    public Object3DComputation(Object3D object3D) {
-        this.object3D = object3D;
+    public Object3DComputation(Object3DInt object3DInt) {
+        this.object3DInt = object3DInt;
     }
 
-    public Object3D getObject3D() {
-        return object3D;
+    public Object3DInt getObject3D() {
+        return object3DInt;
     }
 
-    public void setObject3D(Object3D object3D) {
-        this.object3D = object3D;
+    public void setObject3D(Object3DInt object3DInt) {
+        this.object3DInt = object3DInt;
     }
 
     public Voxel3D getSumCoordinates() {
-        return object3D.getObject3DPlanes().parallelStream()
+        return object3DInt.getObject3DPlanes().parallelStream()
                 .map(Object3DPlane::getSumCoordinates)
                 .reduce(new Voxel3D(), (s, v) -> new Voxel3D(s.x + v.x, s.y + v.y, s.z + v.z, s.value));
     }
@@ -39,7 +39,7 @@ public class Object3DComputation {
         final DoubleAdder s101 = new DoubleAdder();
         final DoubleAdder s002 = new DoubleAdder();
 
-        object3D.getObject3DPlanes().parallelStream()
+        object3DInt.getObject3DPlanes().parallelStream()
                 .forEach(plane -> {
                     Double[] sums = plane.computeMoments2(centroid, normalize);
                     s200.add(sums[0]);
@@ -51,8 +51,8 @@ public class Object3DComputation {
                 });
 
         // resolution
-        double resXY = object3D.getResXY();
-        double resZ = object3D.getResZ();
+        double resXY = object3DInt.getResXY();
+        double resZ = object3DInt.getResZ();
         double sum200 = s200.sum() * resXY * resXY;
         double sum020 = s020.sum() * resXY * resXY;
         double sum002 = s020.sum() * resZ * resZ;
@@ -62,7 +62,7 @@ public class Object3DComputation {
 
         // normalize by volume
         if (normalize) {
-            double volume = object3D.size();
+            double volume = object3DInt.size();
             sum200 /= volume;
             sum020 /= volume;
             sum002 /= volume;
@@ -78,14 +78,14 @@ public class Object3DComputation {
     // (not a mini label image only within the bounding box)
     public ImageHandler createLabelImage() {
         // bounding box
-        BoundingBox box = object3D.getBoundingBox();
+        BoundingBox box = object3DInt.getBoundingBox();
         int xma = box.xmax;
         int yma = box.ymax;
         int zma = box.zmax;
 
         ImageHandler segImage = new ImageByte("Object", xma + 1, yma + 1, zma + 1);
 
-        object3D.drawObject(segImage, 1);
+        object3DInt.drawObject(segImage, 1);
 
         return segImage;
     }
@@ -93,14 +93,14 @@ public class Object3DComputation {
     public List<VoxelInt> getContour() {
         final ImageHandler labelImage = createLabelImage();
         final List<VoxelInt> voxelInts = new LinkedList<>();
-        object3D.getObject3DPlanes().forEach(p -> voxelInts.addAll(computeContourPlane(p, labelImage)));
+        object3DInt.getObject3DPlanes().forEach(p -> voxelInts.addAll(computeContourPlane(p, labelImage)));
 
         return voxelInts;
     }
 
     public List<VoxelInt> getContourFromImage(ImageHandler image) {
         final List<VoxelInt> voxelInts = new LinkedList<>();
-        object3D.getObject3DPlanes().forEach(p -> voxelInts.addAll(computeContourPlane(p, image)));
+        object3DInt.getObject3DPlanes().forEach(p -> voxelInts.addAll(computeContourPlane(p, image)));
 
         return voxelInts;
     }
