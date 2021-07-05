@@ -18,4 +18,8 @@ build:
   stage: build
   script:
     - mvn $MAVEN_CLI_OPTS compile
+  artifacts:
+    paths:
+      - mcib3d-core.jar
+    expire_in: 1 week
 
