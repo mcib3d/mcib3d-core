@@ -3,6 +3,7 @@ image: maven:latest
 stages:
   - clean
   - build
+  - pack
 
 variables:
   MAVEN_CLI_OPTS: "--batch-mode"
@@ -19,8 +20,12 @@ build:
   stage: build
   script:
     - mvn $MAVEN_CLI_OPTS compile
+
+pack:
+  stage: pack
+  script:
+    - mvn $MAVEN_CLI_OPTS package
   artifacts:
     paths:
       - mcib3d-core-$VERSION.jar
-    expire_in: 1 week
-
+    expire_in: 1 month
