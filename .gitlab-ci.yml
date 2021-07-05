@@ -27,5 +27,5 @@ pack:
     - mvn $MAVEN_CLI_OPTS package
   artifacts:
     paths:
-      - mcib3d-core-$VERSION.jar
+      - /target/mcib3d-core-$VERSION.jar
     expire_in: 1 month
