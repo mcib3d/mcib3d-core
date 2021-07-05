@@ -8,6 +8,7 @@ variables:
   MAVEN_CLI_OPTS: "--batch-mode"
   GITLAB_BASE_URL: "https://gitlab.com"
   DEP_PROJECT_ID: 8873767
+  VERSION: 3.96.31
 
 clean:
     stage: clean
@@ -20,6 +21,6 @@ build:
     - mvn $MAVEN_CLI_OPTS compile
   artifacts:
     paths:
-      - mcib3d-core-3.96.31.jar
+      - mcib3d-core-$VERSION.jar
     expire_in: 1 week
 
