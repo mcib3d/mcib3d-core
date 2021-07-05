@@ -3,8 +3,8 @@ package mcib3d.geom2.measurements;
 import mcib3d.geom2.Object3DInt;
 
 public class MeasureVolume extends MeasureAbstract {
-    public final static String VOLUME_PIX = "VolumePix";
-    public final static String VOLUME_UNIT = "VolumeUnit";
+    public final static String VOLUME_PIX = "Volume(Pix)";
+    public final static String VOLUME_UNIT = "Volume(Unit)";
 
     public MeasureVolume(Object3DInt object3DInt) {
         super(object3DInt);

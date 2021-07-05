@@ -7,10 +7,10 @@ import mcib3d.image3d.ImageHandler;
 import java.util.List;
 
 public class MeasureSurface extends MeasureAbstract {
-    public final static String SURFACE_PIX = "SurfaceContPix";
-    public final static String SURFACE_UNIT = "SurfaceContUnit";
-    public final static String SURFACE_CORRECTED = "SurfaceCorrPix";
-    public final static String SURFACE_NB_VOXELS = "SurfaceNBbPix";
+    public final static String SURFACE_PIX = "Surface(Pix)";
+    public final static String SURFACE_UNIT = "Surface(Unit)";
+    public final static String SURFACE_CORRECTED = "SurfaceCorr(Pix)";
+    public final static String SURFACE_NB_VOXELS = "SurfaceNbPix";
 
     public MeasureSurface(Object3DInt object3DInt) {
         super(object3DInt);

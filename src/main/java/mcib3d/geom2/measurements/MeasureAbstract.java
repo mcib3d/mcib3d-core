@@ -19,11 +19,11 @@ public abstract class MeasureAbstract {
 
     protected abstract String[] getNames();
 
-    public String[] getNamesMeasurement(){
+    public String[] getNamesMeasurement() {
         String[] names = getNames();
-        String[] namesMeasurement = new String[names.length+1];
-        namesMeasurement[0]=VALUE;
-        for (int i = 0; i < names.length; i++) namesMeasurement[i+1] = new String(names[i]);
+        String[] namesMeasurement = new String[names.length + 1];
+        namesMeasurement[0] = VALUE;
+        for (int i = 0; i < names.length; i++) namesMeasurement[i + 1] = names[i];
 
         return namesMeasurement;
     }

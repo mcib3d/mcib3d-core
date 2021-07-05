@@ -60,7 +60,7 @@ public class Objects3DIntPopulation {
         Constructor<MeasureAbstract> constructor = classe.getDeclaredConstructor(Object3DInt.class);
 
         for (Object3DInt object3DInt : objects3DInt) {
-            MeasureAbstract measureAbstract = measureAbstract = constructor.newInstance(object3DInt);
+            MeasureAbstract measureAbstract = constructor.newInstance(object3DInt);
             Double[] values = measureAbstract.getValuesMeasurement();
             measures.add(values);
         }

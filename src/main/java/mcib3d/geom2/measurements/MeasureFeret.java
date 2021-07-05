@@ -9,6 +9,12 @@ import java.util.List;
 
 public class MeasureFeret extends MeasureAbstract {
     public static final String FERET_UNIT = "FeretUnit";
+    public static final String FERET1_X = "Feret1X(pix)";
+    public static final String FERET1_Y = "Feret1Y(pix)";
+    public static final String FERET1_Z = "Feret1Z(pix)";
+    public static final String FERET2_X = "Feret2X(pix)";
+    public static final String FERET2_Y = "Feret2YY(pix)";
+    public static final String FERET2_Z = "Feret2Z(pix)";
 
     private VoxelInt feret1 = null, feret2 = null;
     private double feret = Double.NaN;
@@ -19,13 +25,19 @@ public class MeasureFeret extends MeasureAbstract {
 
     @Override
     protected String[] getNames() {
-        return new String[]{FERET_UNIT};
+        return new String[]{FERET_UNIT, FERET1_X, FERET1_Y, FERET1_Z, FERET2_X, FERET2_Y, FERET2_Z};
     }
 
     @Override
     protected void computeAll() {
         computeFeret();
         keysValues.put(FERET_UNIT, feret);
+        keysValues.put(FERET1_X, (double) feret1.x);
+        keysValues.put(FERET1_Y, (double) feret1.y);
+        keysValues.put(FERET1_Z, (double) feret1.z);
+        keysValues.put(FERET2_X, (double) feret2.x);
+        keysValues.put(FERET2_Y, (double) feret2.y);
+        keysValues.put(FERET2_Z, (double) feret2.z);
     }
 
     public Voxel3D getFeret1() {
