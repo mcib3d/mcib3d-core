@@ -20,6 +20,6 @@ build:
     - mvn $MAVEN_CLI_OPTS compile
   artifacts:
     paths:
-      - mcib3d-core.jar
+      - mcib3d-core-3.96.31.jar
     expire_in: 1 week
 
