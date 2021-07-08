@@ -18,7 +18,7 @@ import java.net.URL;
 public class AboutMCIB extends JFrame {
 
     private static String name;
-    private static final double VERSION = 3.96;
+    private static final String VERSION = "4.0.1";
 
     /**
      * Constructor for the AboutWindow object
@@ -48,7 +48,7 @@ public class AboutMCIB extends JFrame {
         return label;
     }
 
-    public static double getVERSION() {
+    public static String getVERSION() {
         return VERSION;
     }
 
@@ -58,7 +58,7 @@ public class AboutMCIB extends JFrame {
      * @return the licence label
      */
     private JLabel licence() {
-        JLabel lic = new JLabel("distributed under the Licence Cecill");
+        JLabel lic = new JLabel("GPL v3.0");
         lic.setAlignmentX(Component.CENTER_ALIGNMENT);
         lic.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lic.addMouseListener(
@@ -66,7 +66,7 @@ public class AboutMCIB extends JFrame {
 
                     @Override
                     public void mouseClicked(MouseEvent me) {
-                        String url = "http://www.cecill.info/licences/Licence_CeCILL_V2-en.html";
+                        String url = "https://www.gnu.org/licenses/gpl-3.0.en.html";
                         try {
                             BrowserLauncher.openURL(url);
                         } catch (IOException ioe) {
@@ -103,7 +103,7 @@ public class AboutMCIB extends JFrame {
                     @Override
                     public void mouseClicked(MouseEvent me) {
                         try {
-                            BrowserLauncher.openURL("http://imagejdocu.list.lu/doku.php?id=plugin:stacks:3d_ij_suite:start");
+                            BrowserLauncher.openURL("https://imagej.net/plugins/3d-imagej-suite/");
                         } catch (IOException ioe) {
                             IJ.log("cannot open link\n" + ioe);
                         }
@@ -137,9 +137,9 @@ public class AboutMCIB extends JFrame {
                     @Override
                     public void mouseClicked(MouseEvent me) {
                         try {
-                            BrowserLauncher.openURL("http://www.upmc.fr/en/");
+                            BrowserLauncher.openURL("https://www.sorbonne-universite.fr/en");
                         } catch (IOException ioe) {
-                            IJ.log("cannot open url http://www.upmc.fr/en/\n" + ioe);
+                            IJ.log("cannot open url\n" + ioe);
                         }
                     }
                 });
@@ -177,9 +177,9 @@ public class AboutMCIB extends JFrame {
                     @Override
                     public void mouseClicked(MouseEvent me) {
                         try {
-                            BrowserLauncher.openURL("http://imagejdocu.tudor.lu/doku.php?id=plugin:stacks:3d_ij_suite:start");
+                            BrowserLauncher.openURL("https://imagej.net/plugins/3d-imagej-suite/");
                         } catch (IOException ioe) {
-                            IJ.log("cannot open url http://imagejdocu.tudor.lu/doku.php?id=plugin:stacks:3d_ij_suite:start\n" + ioe);
+                            IJ.log("cannot open url \n" + ioe);
                         }
                     }
                 });
@@ -202,7 +202,7 @@ public class AboutMCIB extends JFrame {
             Dimension dim = tmp.getMinimumSize();
             tmp.setSize(sizeX, (int) dim.getHeight());
         }
-        setSize(sizeX, 160);
+        setSize(sizeX, 400);
         setResizable(false);
         setVisible(true);
     }

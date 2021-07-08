@@ -35,9 +35,11 @@ public class Object3D_IJUtils {
     }
 
     public static void setCalibration(Object3D object3D, Calibration cal) {
-        object3D.setResXY(cal.pixelWidth);
-        object3D.setResZ(cal.pixelDepth);
-        object3D.setUnits(cal.getUnits());
+        if (cal != null) {
+            object3D.setResXY(cal.pixelWidth);
+            object3D.setResZ(cal.pixelDepth);
+            object3D.setUnits(cal.getUnits());
+        }
     }
 
     public static boolean touchBorders(Object3D object3D, ImagePlus img, boolean Z) {
@@ -143,7 +145,7 @@ public class Object3D_IJUtils {
         // TEST STREAM
         Stream<Voxel3D> stream = object3D.getVoxels().parallelStream();
         stream.forEach(vox -> {
-             mask.setVoxel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), col);
+            mask.setVoxel(vox.getRoundX(), vox.getRoundY(), vox.getRoundZ(), col);
         });
     }
 

@@ -13,7 +13,7 @@ public class MeasureFeret extends MeasureAbstract {
     public static final String FERET1_Y = "Feret1Y(pix)";
     public static final String FERET1_Z = "Feret1Z(pix)";
     public static final String FERET2_X = "Feret2X(pix)";
-    public static final String FERET2_Y = "Feret2YY(pix)";
+    public static final String FERET2_Y = "Feret2Y(pix)";
     public static final String FERET2_Z = "Feret2Z(pix)";
 
     private VoxelInt feret1 = null, feret2 = null;
