@@ -17,7 +17,7 @@ If you want to include this library as part as your maven project, use this depe
 <dependency>
 		<groupId>org.framagit.mcib3d</groupId>
 		<artifactId>mcib3d-core</artifactId>
-		<version>3.96.3</version>		
+		<version>4.0.1</version>		
 </dependency>
 ```
 
