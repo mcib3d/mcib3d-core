@@ -88,7 +88,6 @@ public class TrackingAssociation {
         // compute merging
         if (this.merge) {
             this.img2 = mitosisDetector.detectAndMergeSplit();
-
             population2 = new Objects3DPopulation(this.img2);
             association = new Association(population1, population2, new CostColocalisation(population1, population2,10));
             association.computeAssociation();
@@ -124,8 +123,6 @@ public class TrackingAssociation {
                 }
             }
         }
-
-        // draw associations
     }
 
     private void drawAssociation() {

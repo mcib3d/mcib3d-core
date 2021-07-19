@@ -377,6 +377,8 @@ public class Association {
         int nb2 = valuesIndices2.size();
         if (nb1 * nb2 == 0) {
             IJ.log("No association to compute");
+            // Do the association
+
             return;
         }
 
