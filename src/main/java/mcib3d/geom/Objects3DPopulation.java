@@ -25,6 +25,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
+import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
@@ -427,8 +428,8 @@ public class Objects3DPopulation {
     }
 
     public void updateNamesAndValues() {
-        hashName = new HashMap<String, Integer>(getNbObjects());
-        hashValue = new HashMap<Integer, Integer>(getNbObjects());
+        hashName = new HashMap<>(getNbObjects());
+        hashValue = new HashMap<>(getNbObjects());
 
         for (int i = 0; i < getNbObjects(); i++) {
             Object3D O = getObject(i);
@@ -778,6 +779,14 @@ public class Objects3DPopulation {
         return arrayUtil;
     }
 
+    public int getMaxValueObjects() {
+        int max = 0;
+        for (int i = 0; i < getNbObjects(); i++)
+            max = Math.max(max, getObject(i).getValue());
+
+        return max;
+    }
+
     public Object3D[] getObjectsArray() {
         return (Object3D[]) objects.toArray();
     }
@@ -811,13 +820,23 @@ public class Objects3DPopulation {
         return new int[]{maxX, maxY, maxZ};
     }
 
-    public ImageInt drawPopulation() {
+    public ImageHandler drawPopulation() {
+        // Will return 32-bit image if max value of objects > 65,535
+        ImageHandler drawImage = null;
         int[] sizes = this.getMaxSizeAllObjects();
-        ImageInt drawImage = new ImageShort("population", sizes[0] + 1, sizes[1] + 1, sizes[2] + 1);
-        // TEST STREAM
-        objects.parallelStream().forEach(object3D -> object3D.draw(drawImage));
+        if(getMaxValueObjects()>65535)
+            drawImage = new ImageFloat("population", sizes[0] + 1, sizes[1] + 1, sizes[2] + 1);
+        else
+            drawImage = new ImageShort("population", sizes[0] + 1, sizes[1] + 1, sizes[2] + 1);
+
+        drawPopulation(drawImage);
 
         return drawImage;
+    }
+
+    public void drawPopulation(ImageHandler drawImage) {
+        // TEST STREAM
+        objects.parallelStream().forEach(object3D -> object3D.draw(drawImage));
     }
 
     public ImageInt drawPopulation(int sizex, int sizey, int sizez) {

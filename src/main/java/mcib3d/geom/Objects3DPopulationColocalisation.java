@@ -2,6 +2,7 @@ package mcib3d.geom;
 
 import ij.IJ;
 import ij.measure.ResultsTable;
+import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class Objects3DPopulationColocalisation {
      * @param image1 first image of labelled objects
      * @param image2 second image of labelled objects
      */
-    private void computeColocalisationImage(ImageInt image1, ImageInt image2) {
+    private void computeColocalisationImage(ImageHandler image1, ImageHandler image2) {
         int Xmax = Math.min(image1.sizeX, image2.sizeX);
         int Ymax = Math.min(image1.sizeY, image2.sizeY);
         int Zmax = Math.min(image1.sizeZ, image2.sizeZ);
@@ -49,8 +50,8 @@ public class Objects3DPopulationColocalisation {
             //IJ.showStatus("Colocalisation " + k);
             for (int x = 0; x < Xmax; x++) {
                 for (int y = 0; y < Ymax; y++) {
-                    int pix1 = image1.getPixelInt(x, y, k);
-                    int pix2 = image2.getPixelInt(x, y, k);
+                    int pix1 = (int) image1.getPixel(x, y, k);
+                    int pix2 = (int) image2.getPixel(x, y, k);
                     if ((pix1 > 0) && (pix2 > 0)) {
                         incrementColoc(pix1, pix2);
                     }
@@ -155,8 +156,8 @@ public class Objects3DPopulationColocalisation {
      * Compute the colocalisation between the two populations
      */
     private void computeColocalisation() {
-        ImageInt image1 = population1.drawPopulation();
-        ImageInt image2 = population2.drawPopulation();
+            ImageHandler image1 = population1.drawPopulation();
+            ImageHandler image2 = population2.drawPopulation();
 
         computeColocalisationImage(image1, image2);
     }

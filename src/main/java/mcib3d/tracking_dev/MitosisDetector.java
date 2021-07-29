@@ -270,7 +270,7 @@ import java.util.*;
          Objects3DPopulation popTemp = new Objects3DPopulation();
          popTemp.addObject(object3D1);
          popTemp.addObject(object3D2);
-         ImageInt imageInt = popTemp.drawPopulation();
+         ImageHandler imageInt = popTemp.drawPopulation();
          int nbInter = interactionsDamLines(imageInt, object3D1.getValue(), object3D2.getValue());
          if (nbInter == 0) return null;
 
