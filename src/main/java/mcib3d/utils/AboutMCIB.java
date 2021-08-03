@@ -43,7 +43,7 @@ public class AboutMCIB extends JFrame {
      * @return the label with the version
      */
     private JLabel version() {
-        JLabel label = new JLabel(name + " (MCIB V" + VERSION+")");
+        JLabel label = new JLabel(name + " (MCIB V" + VERSION + ")");
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
         return label;
     }
@@ -120,15 +120,12 @@ public class AboutMCIB extends JFrame {
     private JPanel institutions() {
         JPanel inst = new JPanel();
         inst.setLayout(new BoxLayout(inst, BoxLayout.X_AXIS));
-        URL url = getClass().getResource("/icons/institut_curie.gif");
-        Image image = Toolkit.getDefaultToolkit().getImage(url);
-        ImageIcon icon = new ImageIcon(image);
 
         // UPMC (Jean+Thomas)
         JLabel upmc;
-        url = getClass().getResource("/icons/SU.png");
-        image = Toolkit.getDefaultToolkit().getImage(url);
-        icon = new ImageIcon(image);
+        URL url = getClass().getResource("/icons/SU.png");
+        Image image = Toolkit.getDefaultToolkit().getImage(url);
+        ImageIcon icon = new ImageIcon(image);
         upmc = new JLabel(icon, JLabel.CENTER);
         upmc.setCursor(new Cursor(Cursor.HAND_CURSOR));
         upmc.addMouseListener(
@@ -144,25 +141,26 @@ public class AboutMCIB extends JFrame {
                     }
                 });
 
-        // CNRS (OLD)
-        url = getClass().getResource("/icons/cnrs.gif");
-        image = Toolkit.getDefaultToolkit().getImage(url);
-        icon = new ImageIcon(image);
-        JLabel cnrs = new JLabel(icon, JLabel.CENTER);
-        cnrs.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        //JLabel cnrs = new JLabel(" CNRS ");
-        cnrs.addMouseListener(
-                new MouseAdapter() {
-
-                    @Override
-                    public void mouseClicked(MouseEvent me) {
-                        try {
-                            BrowserLauncher.openURL("http://www.cnrs.fr");
-                        } catch (IOException ioe) {
-                            IJ.log("cannot open url http://www.cnrs.fr\n" + ioe);
+        // CNRS
+        if(false) {
+            url = getClass().getResource("/icons/cnrs.gif");
+            image = Toolkit.getDefaultToolkit().getImage(url);
+            icon = new ImageIcon(image);
+            JLabel cnrs = new JLabel(icon, JLabel.CENTER);
+            cnrs.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            //JLabel cnrs = new JLabel(" CNRS ");
+            cnrs.addMouseListener(
+                    new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent me) {
+                            try {
+                                BrowserLauncher.openURL("http://www.cnrs.fr");
+                            } catch (IOException ioe) {
+                                IJ.log("cannot open url http://www.cnrs.fr\n" + ioe);
+                            }
                         }
-                    }
-                });
+                    });
+        }
 
         // 3D SUITE
         JLabel suite;
@@ -173,11 +171,10 @@ public class AboutMCIB extends JFrame {
         suite.setCursor(new Cursor(Cursor.HAND_CURSOR));
         suite.addMouseListener(
                 new MouseAdapter() {
-
                     @Override
                     public void mouseClicked(MouseEvent me) {
                         try {
-                            BrowserLauncher.openURL("https://imagej.net/plugins/3d-imagej-suite/");
+                            BrowserLauncher.openURL("https://mcib3d.frama.io/3d-suite-imagej/");
                         } catch (IOException ioe) {
                             IJ.log("cannot open url \n" + ioe);
                         }
