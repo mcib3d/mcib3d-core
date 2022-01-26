@@ -1746,6 +1746,17 @@ public class Objects3DPopulation {
 
         return al;
     }
+    
+    public List<Double[]> getMeasureCentroidUnit() {
+        // geometrical measure volume (pix and unit) and surface (pix and unit)
+        ArrayList<Double[]> al = new ArrayList<>();
+        for (Object3D ob : objects) {
+            Double[] mes = new Double[]{(double) ob.getValue(), ob.getCenterX() * obj.resXY ob.getCenterY() * ob.resXY, ob.getCenterZ() * ob.resZ};
+            al.add(mes);
+        }
+
+        return al;
+    }
 
     public List<Double[]> getMeasuresShape() {
         List<Double[]> al = new ArrayList<>();
