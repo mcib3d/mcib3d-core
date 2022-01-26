@@ -1,4 +1,7 @@
 # MCIB3D
+This github repository is a mirror from up-to-date official repository on Framagit :
+https://framagit.org/mcib3d/mcib3d-core
+
 The mcib3d library is the core for most of the mcib3d plugins developed. This is a joint effort to
 create robust library for 3D images and objects for analysis. Main developers are Thomas Boudier and
 Jean Ollion. 
